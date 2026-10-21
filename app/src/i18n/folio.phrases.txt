@@ -1,0 +1,124 @@
+# Folio interface only. source | en | zh-TW | ja | ko | de | fr | ru
+开始写作...|Start writing…|開始寫作…|書き始める…|작성을 시작하세요…|Schreiben beginnen…|Commencez à écrire…|Начните писать…
+目录|Table of contents|目錄|目次|목차|Inhaltsverzeichnis|Table des matières|Оглавление
+添加标题后将在此显示目录。|Add a heading to build the table of contents.|新增標題後將在此顯示目錄。|見出しを追加すると目次が表示されます。|제목을 추가하면 목차가 표시됩니다.|Überschriften hinzufügen, um das Inhaltsverzeichnis zu erstellen.|Ajoutez un titre pour créer la table des matières.|Добавьте заголовки для создания оглавления.
+另有 {count} 个标题|{count} more headings|另有 {count} 個標題|ほか {count} 件の見出し|제목 {count}개 더 보기|{count} weitere Überschriften|{count} titres supplémentaires|Ещё заголовков: {count}
+斜杠菜单|Slash commands|斜線指令|スラッシュコマンド|슬래시 명령|Slash-Befehle|Commandes slash|Команды через косую черту
+基础|Basic|基本|基本|기본|Grundlagen|Général|Основное
+列表|Lists|清單|リスト|목록|Listen|Listes|Списки
+媒体|Media|媒體|メディア|미디어|Medien|Médias|Медиа
+高级|Advanced|進階|詳細|고급|Erweitert|Avancé|Дополнительно
+插入块|Insert block|插入區塊|ブロックを挿入|블록 삽입|Block einfügen|Insérer un bloc|Вставить блок
+在下方添加块|Add block below|在下方新增區塊|下にブロックを追加|아래에 블록 추가|Block darunter einfügen|Ajouter un bloc en dessous|Добавить блок ниже
+拖拽块|Drag block|拖曳區塊|ブロックをドラッグ|블록 드래그|Block ziehen|Déplacer le bloc|Перетащить блок
+文本格式|Text formatting|文字格式|テキスト書式|텍스트 서식|Textformatierung|Mise en forme|Форматирование текста
+链接 URL|Link URL|連結 URL|リンク URL|링크 URL|Link-URL|URL du lien|Адрес ссылки
+加粗|Bold|粗體|太字|굵게|Fett|Gras|Полужирный
+斜体|Italic|斜體|斜体|기울임꼴|Kursiv|Italique|Курсив
+下划线|Underline|底線|下線|밑줄|Unterstrichen|Souligné|Подчёркнутый
+删除线|Strike|刪除線|取り消し線|취소선|Durchgestrichen|Barré|Зачёркнутый
+代码|Code|程式碼|コード|코드|Code|Code|Код
+链接|Link|連結|リンク|링크|Link|Lien|Ссылка
+高亮|Highlight|醒目標示|ハイライト|강조|Hervorheben|Surligner|Выделение
+添加表格列|Add table column|新增表格欄|表に列を追加|표에 열 추가|Tabellenspalte hinzufügen|Ajouter une colonne au tableau|Добавить столбец таблицы
+添加列|Add column|新增欄|列を追加|열 추가|Spalte hinzufügen|Ajouter une colonne|Добавить столбец
+添加表格行|Add table row|新增表格列|表に行を追加|표에 행 추가|Tabellenzeile hinzufügen|Ajouter une ligne au tableau|Добавить строку таблицы
+添加行|Add row|新增列|行を追加|행 추가|Zeile hinzufügen|Ajouter une ligne|Добавить строку
+文本|Text|文字|テキスト|텍스트|Text|Texte|Текст
+从普通文本开始|Start with plain text|從一般文字開始|通常のテキストを入力|일반 텍스트 작성|Mit einfachem Text beginnen|Commencer par du texte simple|Начать с обычного текста
+一级标题|Heading 1|一級標題|見出し 1|제목 1|Überschrift 1|Titre 1|Заголовок 1
+大型章节标题|Large section heading|大型章節標題|大きな見出し|큰 구역 제목|Große Abschnittsüberschrift|Grand titre de section|Крупный заголовок раздела
+二级标题|Heading 2|二級標題|見出し 2|제목 2|Überschrift 2|Titre 2|Заголовок 2
+中型章节标题|Medium section heading|中型章節標題|中程度の見出し|중간 구역 제목|Mittlere Abschnittsüberschrift|Titre de section moyen|Средний заголовок раздела
+三级标题|Heading 3|三級標題|見出し 3|제목 3|Überschrift 3|Titre 3|Заголовок 3
+小型章节标题|Small section heading|小型章節標題|小さな見出し|작은 구역 제목|Kleine Abschnittsüberschrift|Petit titre de section|Малый заголовок раздела
+项目符号列表|Bulleted list|項目符號清單|箇条書きリスト|글머리 기호 목록|Aufzählung|Liste à puces|Маркированный список
+创建项目符号列表|Create a bulleted list|建立項目符號清單|箇条書きを作成|글머리 기호 목록 만들기|Aufzählung erstellen|Créer une liste à puces|Создать маркированный список
+编号列表|Numbered list|編號清單|番号付きリスト|번호 매기기 목록|Nummerierte Liste|Liste numérotée|Нумерованный список
+创建编号列表|Create a numbered list|建立編號清單|番号付きリストを作成|번호 목록 만들기|Nummerierte Liste erstellen|Créer une liste numérotée|Создать нумерованный список
+待办列表|Task list|待辦清單|タスクリスト|할 일 목록|Aufgabenliste|Liste de tâches|Список задач
+用复选框跟踪任务|Track tasks with checkboxes|使用核取方塊追蹤任務|チェックボックスでタスクを管理|체크박스로 작업 관리|Aufgaben mit Kontrollkästchen verwalten|Suivre les tâches avec des cases à cocher|Отмечать выполнение задач
+引用|Quote|引文|引用|인용|Zitat|Citation|Цитата
+记录引用或摘录|Capture a quote or excerpt|記錄引文或摘錄|引用や抜粋を記録|인용문 또는 발췌 기록|Zitat oder Auszug festhalten|Noter une citation ou un extrait|Записать цитату или выдержку
+提示框|Callout|提示框|コールアウト|강조 블록|Hinweis|Encadré|Выноска
+突出重要信息|Highlight information in a callout|突顯重要資訊|重要な情報を強調|중요한 정보 강조|Wichtige Informationen hervorheben|Mettre une information en évidence|Выделить важную информацию
+提示|Callout|提示|ヒント|안내|Hinweis|Note|Примечание
+分割线|Divider|分隔線|区切り線|구분선|Trennlinie|Séparateur|Разделитель
+添加水平分割线|Add a horizontal divider|新增水平分隔線|水平の区切り線を追加|가로 구분선 추가|Horizontale Trennlinie einfügen|Ajouter un séparateur horizontal|Добавить горизонтальный разделитель
+代码块|Code block|程式碼區塊|コードブロック|코드 블록|Codeblock|Bloc de code|Блок кода
+编写带格式的代码|Write code with formatting|編寫格式化程式碼|書式付きコードを入力|서식 있는 코드 작성|Formatierten Code schreiben|Écrire du code mis en forme|Написать форматированный код
+表格|Table|表格|表|표|Tabelle|Tableau|Таблица
+插入简单表格|Insert a simple table|插入簡單表格|簡単な表を挿入|간단한 표 삽입|Einfache Tabelle einfügen|Insérer un tableau simple|Вставить простую таблицу
+图片|Image|圖片|画像|이미지|Bild|Image|Изображение
+通过 URL 嵌入图片|Embed an image by URL|透過 URL 嵌入圖片|URL から画像を挿入|URL로 이미지 삽입|Bild über URL einfügen|Insérer une image par URL|Вставить изображение по адресу
+书签|Bookmark|書籤|ブックマーク|북마크|Lesezeichen|Signet|Закладка
+保存富链接书签|Save a rich link bookmark|儲存豐富連結書籤|リンクのブックマークを保存|링크 북마크 저장|Link als Lesezeichen speichern|Enregistrer un lien enrichi|Сохранить закладку со ссылкой
+提及|Mention|提及|メンション|멘션|Erwähnung|Mention|Упоминание
+提及人物或引用对象|Mention a person or reference|提及人物或參考項目|人物や参照先をメンション|사람 또는 항목 언급|Person oder Referenz erwähnen|Mentionner une personne ou une référence|Упомянуть человека или объект
+折叠块|Toggle|摺疊區塊|折りたたみ|접기 블록|Klappbereich|Bloc repliable|Сворачиваемый блок
+创建可折叠章节|Create a collapsible section|建立可摺疊章節|折りたためる節を作成|접을 수 있는 구역 만들기|Aufklappbaren Abschnitt erstellen|Créer une section repliable|Создать сворачиваемый раздел
+插入目录|Insert a table of contents|插入目錄|目次を挿入|목차 삽입|Inhaltsverzeichnis einfügen|Insérer une table des matières|Вставить оглавление
+文档操作|Document actions|文件操作|ドキュメント操作|문서 작업|Dokumentaktionen|Actions du document|Действия с документом
+编辑选中的媒体|Edit selected media|編輯所選媒體|選択したメディアを編集|선택한 미디어 편집|Ausgewählte Medien bearbeiten|Modifier le média sélectionné|Изменить выбранный медиаобъект
+上移块|Move block up|上移區塊|ブロックを上へ|블록 위로 이동|Block nach oben|Déplacer le bloc vers le haut|Переместить блок вверх
+下移块|Move block down|下移區塊|ブロックを下へ|블록 아래로 이동|Block nach unten|Déplacer le bloc vers le bas|Переместить блок вниз
+重做|Redo|重做|やり直し|다시 실행|Wiederholen|Rétablir|Повторить
+地址|URL|位址|アドレス|주소|Adresse|Adresse|Адрес
+替代文本|Alternative text|替代文字|代替テキスト|대체 텍스트|Alternativtext|Texte de remplacement|Альтернативный текст
+图片说明|Caption|圖片說明|画像の説明|이미지 설명|Bildunterschrift|Légende|Подпись
+标题|Title|標題|タイトル|제목|Titel|Titre|Заголовок
+描述|Description|說明|説明|설명|Beschreibung|Description|Описание
+上传图片|Upload image|上傳圖片|画像をアップロード|이미지 업로드|Bild hochladen|Importer une image|Загрузить изображение
+正在上传图片…|Uploading image…|正在上傳圖片…|画像をアップロード中…|이미지 업로드 중…|Bild wird hochgeladen…|Importation de l’image…|Загрузка изображения…
+重试上传|Retry upload|重試上傳|アップロードを再試行|업로드 다시 시도|Upload wiederholen|Réessayer l’importation|Повторить загрузку
+移除链接|Remove link|移除連結|リンクを削除|링크 제거|Link entfernen|Supprimer le lien|Удалить ссылку
+请输入安全地址。链接支持 HTTP、HTTPS、mailto、tel 和相对路径；图片支持 HTTP、HTTPS 和相对路径。|Enter a safe URL. Use HTTP or HTTPS for images.|請輸入安全位址。圖片請使用 HTTP 或 HTTPS。|安全な URL を入力してください。画像は HTTP または HTTPS を使用します。|안전한 URL을 입력하세요. 이미지는 HTTP 또는 HTTPS를 사용하세요.|Sichere URL eingeben. Für Bilder HTTP oder HTTPS verwenden.|Saisissez une URL sûre. Utilisez HTTP ou HTTPS pour les images.|Введите безопасный адрес. Для изображений используйте HTTP или HTTPS.
+未能完成此操作。|This action could not be completed.|無法完成此操作。|操作を完了できませんでした。|작업을 완료하지 못했습니다.|Diese Aktion konnte nicht ausgeführt werden.|Cette action n’a pas pu être effectuée.|Не удалось выполнить действие.
+没有匹配的提及对象|No matching mentions|沒有符合的提及對象|該当するメンションはありません|일치하는 멘션 없음|Keine passenden Erwähnungen|Aucune mention correspondante|Нет подходящих упоминаний
+搜索提及对象|Search mentions|搜尋提及對象|メンションを検索|멘션 검색|Erwähnungen suchen|Rechercher des mentions|Поиск упоминаний
+表格操作|Table actions|表格操作|表の操作|표 작업|Tabellenaktionen|Actions du tableau|Действия с таблицей
+删除行|Delete row|刪除列|行を削除|행 삭제|Zeile löschen|Supprimer la ligne|Удалить строку
+删除列|Delete column|刪除欄|列を削除|열 삭제|Spalte löschen|Supprimer la colonne|Удалить столбец
+切换表头行|Toggle header row|切換標題列|見出し行を切り替え|머리글 행 전환|Kopfzeile umschalten|Activer la ligne d’en-tête|Переключить строку заголовков
+切换表头列|Toggle header column|切換標題欄|見出し列を切り替え|머리글 열 전환|Kopfspalte umschalten|Activer la colonne d’en-tête|Переключить столбец заголовков
+合并选中单元格|Merge selected cells|合併所選儲存格|選択したセルを結合|선택한 셀 병합|Ausgewählte Zellen verbinden|Fusionner les cellules sélectionnées|Объединить выбранные ячейки
+拆分单元格|Split cell|分割儲存格|セルを分割|셀 분할|Zelle teilen|Scinder la cellule|Разделить ячейку
+删除表格|Delete table|刪除表格|表を削除|표 삭제|Tabelle löschen|Supprimer le tableau|Удалить таблицу
+块操作|Block actions|區塊操作|ブロック操作|블록 작업|Blockaktionen|Actions du bloc|Действия с блоком
+复制块|Copy blocks|複製區塊|ブロックをコピー|블록 복사|Blöcke kopieren|Copier les blocs|Копировать блоки
+创建块副本|Duplicate blocks|建立區塊副本|ブロックを複製|블록 복제|Blöcke duplizieren|Dupliquer les blocs|Дублировать блоки
+删除块|Delete blocks|刪除區塊|ブロックを削除|블록 삭제|Blöcke löschen|Supprimer les blocs|Удалить блоки
+复制块链接|Copy block link|複製區塊連結|ブロックのリンクをコピー|블록 링크 복사|Blocklink kopieren|Copier le lien du bloc|Копировать ссылку на блок
+转换为|Turn into|轉換為|変換|변환|Umwandeln in|Transformer en|Преобразовать в
+文字颜色|Text color|文字顏色|文字色|글자 색|Textfarbe|Couleur du texte|Цвет текста
+正文|Text|本文|本文|본문|Fließtext|Texte|Основной текст
+无序列表|Bulleted list|項目符號清單|箇条書きリスト|글머리 기호 목록|Aufzählung|Liste à puces|Маркированный список
+有序列表|Numbered list|編號清單|番号付きリスト|번호 목록|Nummerierte Liste|Liste numérotée|Нумерованный список
+提示块|Callout|提示區塊|コールアウト|강조 블록|Hinweisblock|Encadré|Блок выноски
+灰色|Gray|灰色|グレー|회색|Grau|Gris|Серый
+红色|Red|紅色|赤|빨강|Rot|Rouge|Красный
+橙色|Orange|橙色|オレンジ|주황|Orange|Orange|Оранжевый
+绿色|Green|綠色|緑|초록|Grün|Vert|Зелёный
+蓝色|Blue|藍色|青|파랑|Blau|Bleu|Синий
+紫色|Purple|紫色|紫|보라|Violett|Violet|Фиолетовый
+个块已选中|blocks selected|個區塊已選取|個のブロックを選択中|개 블록 선택됨|Blöcke ausgewählt|blocs sélectionnés|блоков выбрано
+查找替换|Find and replace|尋找與取代|検索と置換|찾기 및 바꾸기|Suchen und Ersetzen|Rechercher et remplacer|Поиск и замена
+查找内容|Find in document|尋找內容|ドキュメント内を検索|문서에서 찾기|Im Dokument suchen|Rechercher dans le document|Найти в документе
+替换为|Replace with|取代為|置換後の文字列|바꿀 내용|Ersetzen durch|Remplacer par|Заменить на
+区分大小写|Match case|區分大小寫|大文字と小文字を区別|대소문자 구분|Groß-/Kleinschreibung beachten|Respecter la casse|Учитывать регистр
+全词匹配|Whole word|全字相符|単語全体|단어 단위로|Ganzes Wort|Mot entier|Слово целиком
+上一处|Previous match|上一筆|前の一致|이전 결과|Vorheriger Treffer|Résultat précédent|Предыдущее совпадение
+下一处|Next match|下一筆|次の一致|다음 결과|Nächster Treffer|Résultat suivant|Следующее совпадение
+替换|Replace|取代|置換|바꾸기|Ersetzen|Remplacer|Заменить
+全部替换|Replace all|全部取代|すべて置換|모두 바꾸기|Alle ersetzen|Tout remplacer|Заменить всё
+关闭查找|Close search|關閉尋找|検索を閉じる|찾기 닫기|Suche schließen|Fermer la recherche|Закрыть поиск
+无匹配|No matches|沒有符合項目|一致なし|결과 없음|Keine Treffer|Aucun résultat|Нет совпадений
+第 {current} / {total} 处|{current} of {total}|第 {current} / {total} 筆|{total} 件中 {current} 件目|{total}개 중 {current}번째|{current} von {total}|{current} sur {total}|{current} из {total}
+超过 {count} 处，请缩小查找范围|{count}+ matches. Refine your search to replace all.|超過 {count} 筆，請縮小尋找範圍|{count} 件以上あります。検索範囲を絞ってください。|{count}개 이상입니다. 검색 범위를 좁혀 주세요.|Mehr als {count} Treffer. Suche eingrenzen.|Plus de {count} résultats. Affinez la recherche.|Более {count} совпадений. Уточните поиск.
+分栏|Columns|分欄|段組み|단 나누기|Spalten|Colonnes|Колонки
+拆分栏|Remove columns|移除分欄|段組みを解除|단 나누기 해제|Spalten aufheben|Supprimer les colonnes|Убрать колонки
+列宽|Column widths|欄寬|列幅|열 너비|Spaltenbreiten|Largeur des colonnes|Ширина колонок
+评论|Comments|評論|コメント|댓글|Kommentare|Commentaires|Комментарии
+添加评论|Add comment|新增評論|コメントを追加|댓글 추가|Kommentar hinzufügen|Ajouter un commentaire|Добавить комментарий
+评论内容|Comment text|評論內容|コメント本文|댓글 내용|Kommentartext|Texte du commentaire|Текст комментария
+文档浏览|Document browsing|文件瀏覽|ドキュメント閲覧|문서 탐색|Dokumentansicht|Lecture du document|Просмотр документа

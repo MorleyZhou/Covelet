@@ -1,0 +1,13 @@
+# Packaged sync WASM core
+
+`src/wasm/sync-core.wasm` is a fixed local module compiled with Rust 1.85.1 for `wasm32-unknown-unknown`. It implements SHA-256 and HMAC-SHA256 using RustCrypto `sha2 = 0.10.9` and `hmac = 0.12.1`; the complete dependency graph and registry source checksums are pinned in `Cargo.lock`. It does not implement custom cryptography, networking, AES, credentials storage, a plugin loader or remote code execution. Browser Web Crypto handles authenticated encryption outside this module.
+
+The published crate source metadata pins `sha2` to RustCrypto/hashes commit `82c36a428f8d6f05f3bfccdedb243e9d1f85359d` (`sha2/`) and `hmac` to RustCrypto/MACs commit `46797e3b44973a30edb9d7f3a3ebb41810061d90` (`hmac/`). The checked-in `LICENSES.txt` retains third-party notices; include it with binary distributions.
+
+The module has zero host imports, no allocator and exactly 2 MiB of linear memory with growth prohibited. ABI 1 exports fixed input (1 MiB), key (512 bytes), and result (32 bytes) buffers. Oversize digest/signature calls return error code 1 before reading input. `sync_plan` compares three 32-byte digests and returns 0 unchanged, 1 push, 2 pull, or 3 merge; equality between local and remote always means unchanged. Actual merge, conflict preservation, transport and persistence belong to the JS controller.
+
+`src/lib/sync-wasm.js` loads only the fixed bundled path, exposes async hashing/signing/planning functions, copies callers' bytes before use, and clears used linear buffers after each operation. These best-effort clears are not a promise that browser/JIT/Rust stack copies of sensitive material can be eliminated. `createSyncWasm(bytes)` is a test seam for the same real reviewed binary; the UI provides no binary upload or URL selector.
+
+Run `node scripts/build-sync-wasm.mjs --check` to verify source, Cargo.lock and binary hashes plus ABI/import/memory limits without Rust. `--rebuild` uses the existing pinned compiler and **offline locked** Cargo dependencies; it never installs tools, downloads crates or changes the system PATH. `COVELET_RUSTC` can specify the compiler executable. On Windows, the build also recognizes the dedicated cache under `%LOCALAPPDATA%/Covelet/rust-build/rustup/toolchains/1.85.1-x86_64-pc-windows-msvc/bin/`. Populate the exact locked build dependencies separately when preparing another build machine. Compiler flags and source hashes are in `manifest.json`; no timestamp is recorded.
+
+The module is included in the extension package for store review. New local development output does not change the already submitted v0.1.0 archive or establish store approval.

@@ -1,0 +1,66 @@
+.widget-config-form { gap: 0; overflow: hidden; min-height: 0; }
+.widget-config-form > .settings-scroll { min-height: 260px; }
+.widget-tile { min-width: 0; min-height: 0; height: 100%; align-self: stretch; flex-direction: column; align-items: center; gap: 10px; container: desktop-widget / size; }
+.widget-caption { flex-shrink: 0; text-align: center; }
+.widget-tile.widget-size-mini { gap: 10px; padding-top: 3px; justify-content: flex-start; }
+.widget-size-mini .widget-live-content { flex: 0 0 auto; align-self: center; width: var(--rendered-icon-size, var(--icon-size)); height: var(--rendered-icon-size, var(--icon-size)); }
+.github-widget {
+  --github-0: #e8ebe8; --github-1: #a8d69c; --github-2: #75b963; --github-3: #4b953f; --github-4: #2c6533;
+  position: relative; display: flex; flex: 1; width: 100%; min-width: 0; min-height: 0;
+  padding: 15px; border: 0; border-radius: 26px; overflow: hidden;
+  background: var(--widget-surface, var(--panel)); color: var(--ink); text-shadow: none; outline: none;
+}
+.github-widget-small { padding: 13px; }
+.github-widget-large { padding: 20px; }
+.github-widget.github-widget-mini { padding: 8px; border-radius: 24%; }
+.github-calendar-panels { display: grid; place-items: center; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
+.github-calendar-stack { display: flex; flex-direction: column; gap: var(--calendar-gap); flex: none; }
+.github-calendar {
+  display: grid; grid-template-columns: repeat(var(--calendar-weeks), var(--calendar-cell));
+  grid-template-rows: repeat(7, var(--calendar-cell)); grid-auto-flow: column; gap: var(--calendar-gap);
+}
+.github-day {
+  display: block; width: var(--calendar-cell); height: var(--calendar-cell); min-width: 0; min-height: 0;
+  padding: 0; margin: 0; border: 0; border-radius: calc(var(--calendar-cell) * .16);
+}
+.github-day.is-padding { background: color-mix(in srgb, var(--github-0) 42%, transparent); }
+.github-level-0 { background: var(--github-0); }
+.github-level-1 { background: var(--github-1); }
+.github-level-2 { background: var(--github-2); }
+.github-level-3 { background: var(--github-3); }
+.github-level-4 { background: var(--github-4); }
+.github-refresh {
+  position: absolute; top: 7px; right: 7px; display: grid; place-items: center;
+  width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--widget-surface, var(--panel)); color: var(--muted); opacity: 0;
+  transition: opacity .15s ease; outline: none;
+}
+.github-widget:hover .github-refresh, .github-widget:focus-within .github-refresh,
+.github-refresh.has-error { opacity: 1; }
+.github-refresh:focus-visible { outline: 1.5px solid var(--ink); outline-offset: -2px; }
+.github-widget-mini .github-refresh { top: 2px; right: 2px; width: 23px; height: 23px; }
+.github-widget-placeholder {
+  display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; min-width: 0; min-height: 0; text-align: center; font-size: 12px; line-height: 1.65; color: var(--muted);
+}
+.github-widget-placeholder svg { flex-shrink: 0; }
+.github-widget-mini .github-widget-placeholder span { display: none; }
+.github-widget-preview { margin: 0; width: min(100%, 420px); }
+.github-widget-preview .github-widget { height: 190px; padding: 16px; background: var(--panel); }
+.github-widget-preview figcaption { margin-top: 10px; font-size: 10px; text-align: center; color: var(--muted); }
+.theme-dark .github-widget { --github-0: #323735; --github-1: #244b31; --github-2: #397742; --github-3: #5ba457; --github-4: #8bcb75; }
+@media (prefers-color-scheme: dark) {
+  .theme-system .github-widget { --github-0: #323735; --github-1: #244b31; --github-2: #397742; --github-3: #5ba457; --github-4: #8bcb75; }
+}
+@container desktop-widget (height < 250px) {
+  .github-widget { padding: 11px; border-radius: 23px; }
+  .github-widget-small { padding: 10px; }
+  .github-widget.github-widget-mini { padding: 7px; border-radius: 24%; }
+}
+@media (hover: none) {
+  .github-widget:focus-within .github-refresh { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .github-refresh { transition: none; } }
+@media (forced-colors: active) {
+  .github-day { forced-color-adjust: none; }
+}

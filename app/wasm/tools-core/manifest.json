@@ -1,0 +1,39 @@
+{
+  "abi": 1,
+  "compiler": "Rust 1.85.1",
+  "target": "wasm32-unknown-unknown",
+  "flags": [
+    "--crate-name",
+    "covelet_tools_core",
+    "--crate-type",
+    "cdylib",
+    "--edition=2021",
+    "--target",
+    "wasm32-unknown-unknown",
+    "-C",
+    "opt-level=s",
+    "-C",
+    "lto=fat",
+    "-C",
+    "panic=abort",
+    "-C",
+    "strip=symbols",
+    "-C",
+    "codegen-units=1",
+    "-C",
+    "link-arg=--initial-memory=1048576",
+    "-C",
+    "link-arg=--max-memory=1048576",
+    "-C",
+    "link-arg=-zstack-size=65536",
+    "-C",
+    "link-arg=--stack-first"
+  ],
+  "bytes": 7600,
+  "sha256": "f7633e7189c3b33c70f632e84ea0489e0100564ae8c614c32074d6d9427b9149",
+  "sources": {
+    "wasm/tools-core/src/lib.rs": "1103d2ae7969c27e6585b8d0d219903a215fc9032695b336bdcb59cd95084126",
+    "wasm/tools-core/Cargo.toml": "11bd7115d3a101e17c744f795b21a2825a4cde33057940c44c9589bd9c8c59d1",
+    "scripts/build-tools-wasm.mjs": "0824eb9dad880f52d7703df1bbbb9c743c76f650b299f8024406491a8a69c0de"
+  }
+}

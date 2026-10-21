@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Covelet"
+  },
+  "extensionDescription": {
+    "message": "Приватная новая вкладка: навигация, поиск, виджеты, синхронизация браузера и ежедневные обои Bing."
+  },
+  "actionTitle": {
+    "message": "Добавить в Covelet"
+  }
+}

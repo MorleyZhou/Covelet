@@ -1,0 +1,63 @@
+.background-options { display: flex; align-items: stretch; gap: 12px; }
+button.background-choice {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex: 0 0 126px; width: 126px; height: 99px; min-height: 99px; padding: 12px;
+  gap: 9px; border: 0; border-radius: 12px;
+  font-size: 12px; color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+.background-choice.selected { outline: 2px solid var(--accent); outline-offset: 2px; }
+.background-choice-swatch { width: 31px; height: 31px; border-radius: 50%; }
+.background-color-panel {
+  position: fixed; inset: auto; z-index: 1100; margin: 0; padding: 0;
+  border: 0; border-radius: 18px; overflow: hidden;
+  background: var(--panel, #fff); color: var(--ink, #1d1d1f);
+  box-shadow: 0 8px 28px #0000001a; font-size: 13px; line-height: 1.5;
+}
+.background-color-panel:popover-open { display: flex; flex-direction: column; }
+.background-color-panel::backdrop { background: transparent; }
+.background-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 10px; flex-shrink: 0; }
+.background-panel-header h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.background-panel-header h3:focus { outline: 0; }
+.background-panel-header .icon-button { width: 30px; height: 30px; background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.background-panel-body { display: flex; flex-direction: column; gap: 14px; padding: 2px 18px 18px; overflow: auto; min-height: 0; overscroll-behavior: contain; }
+.background-colors { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; padding: 4px; margin: 0 -4px; }
+.background-color-stop, .background-color-add, .background-color-remove { display: grid; place-items: center; flex: 0 0 27px; width: 27px; height: 27px; padding: 0; border: 0; border-radius: 50%; }
+.background-color-stop[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 3px; }
+.background-color-stop:focus-visible { outline-offset: 5px; }
+.background-color-add, .background-color-remove { color: var(--muted); background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.background-color-add:disabled { opacity: .35; }
+.background-color-remove { margin-left: auto; background: transparent; }
+.background-color-picker { display: flex; flex-direction: column; gap: 13px; }
+button.color-plane { position: relative; width: 100%; height: 112px; padding: 0; border: 0; border-radius: 10px; touch-action: none; cursor: crosshair; background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), var(--color-hue); }
+.color-plane-point { position: absolute; width: 13px; height: 13px; border-radius: 50%; transform: translate(-50%, -50%); border: 2px solid white; box-shadow: 0 0 0 1px #0006; pointer-events: none; }
+input.color-hue { appearance: none; width: 100%; height: 14px; margin: 0; border-radius: 8px; background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); cursor: pointer; }
+input.color-hue::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; border: 2px solid white; border-radius: 50%; background: transparent; box-shadow: 0 0 0 1px #0005; }
+input.color-hue::-moz-range-thumb { width: 14px; height: 14px; border: 2px solid white; border-radius: 50%; background: transparent; box-shadow: 0 0 0 1px #0005; }
+.background-color-panel label.color-hex-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; }
+.color-hex-row > span { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: .03em; }
+.background-color-panel .color-hex-row > input { width: 116px; min-height: 34px; height: 34px; padding: 6px 10px; font: inherit; font-variant-numeric: tabular-nums; border: 0; border-radius: 8px; color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.gradient-preview { height: 20px; flex-shrink: 0; border-radius: 6px; }
+.background-color-panel label.gradient-direction { display: flex; flex-direction: column; gap: 5px; }
+.gradient-direction > span { display: flex; align-items: center; justify-content: space-between; }
+.gradient-direction output { color: var(--muted); font-variant-numeric: tabular-nums; }
+.gradient-direction input { margin: 0; width: 100%; accent-color: var(--accent); }
+.gradient-curve-editor { display: flex; flex-direction: column; gap: 10px; }
+.gradient-curve-editor .own-select { flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; }
+.gradient-curve-editor .own-select-label { font: inherit; }
+.gradient-curve-editor .own-select-trigger { width: 126px; min-height: 34px; padding: 6px 10px; border-radius: 8px; font-size: 13px; }
+.gradient-curve-graph { position: relative; height: 100px; border-radius: 10px; background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.gradient-curve-graph svg { position: absolute; inset: 14px; width: calc(100% - 28px); height: calc(100% - 28px); overflow: visible; }
+.gradient-curve-graph path { fill: none; vector-effect: non-scaling-stroke; }
+.curve-diagonal { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 4; opacity: .2; }
+.curve-handle-line { stroke: var(--accent); stroke-width: 1; opacity: .45; }
+.curve-path { stroke: var(--accent); stroke-width: 2; }
+button.curve-control-point { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; padding: 0; border: 0; border-radius: 50%; touch-action: none; background: transparent; cursor: grab; }
+.curve-control-point::after { content: ''; display: block; width: 10px; height: 10px; margin: auto; border-radius: 50%; background: var(--panel); box-shadow: 0 0 0 2px var(--accent); }
+.curve-control-point:active { cursor: grabbing; }
+.curve-coordinates { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+.background-color-panel .curve-coordinates label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.curve-coordinates label > span { color: var(--muted); font-size: 10px; }
+.background-color-panel .curve-coordinates input { width: 100%; min-height: 32px; padding: 5px 6px; border: 0; border-radius: 7px; font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; background: color-mix(in srgb, var(--ink) 5%, transparent); }
+@media (max-width: 370px) {
+  button.background-choice { flex: 1 1 0; width: auto; min-width: 0; padding: 10px 7px; }
+}

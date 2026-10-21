@@ -1,0 +1,38 @@
+{
+  "name": "covelet",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:extension": "wxt --browser chrome --mv3",
+    "build": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node scripts/clock-wasm.mjs --check && node scripts/build-tools-wasm.mjs --check && vite build && node scripts/prepare-sites-build.mjs",
+    "preview": "vite preview",
+    "test:sites": "node --test tests/sites-worker.test.mjs",
+    "test": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node --test src/lib/*.test.js",
+    "check:wasm": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node scripts/clock-wasm.mjs --check && node scripts/build-tools-wasm.mjs --check",
+    "generate:clock-wasm": "node scripts/clock-wasm.mjs --write",
+    "build:wasm": "node scripts/build-wasm.mjs --rebuild",
+    "build:sync-wasm": "node scripts/build-sync-wasm.mjs --rebuild",
+    "build:extension": "node scripts/build-extension.mjs",
+    "check:extension": "node scripts/check-extension.mjs",
+    "build:github-wasm": "node scripts/build-github-wasm.mjs --rebuild",
+    "generate:tools-wasm": "node scripts/build-tools-wasm.mjs --generate",
+    "generate:i18n": "node scripts/localize-source.mjs --catalog"
+  },
+  "dependencies": {
+    "@futelab/folio": "0.2.1",
+    "@phosphor-icons/react": "^2.1.10",
+    "@vitejs/plugin-react": "5.0.4",
+    "fflate": "^0.8.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "vite": "6.4.2"
+  },
+  "devDependencies": {
+    "wxt": "0.21.4"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

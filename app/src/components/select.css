@@ -1,0 +1,122 @@
+.own-select {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ink, #1d1d1f);
+}
+
+.own-select-label {
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+button.own-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 13px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel, #fff) 96%, var(--ink, #1d1d1f) 4%);
+  color: var(--ink, #1d1d1f);
+  font: inherit;
+  line-height: 1.5;
+  text-align: left;
+  box-shadow: none;
+  transition: background 140ms ease;
+}
+
+.own-select-trigger:not(:disabled):hover {
+  background: color-mix(in srgb, var(--panel, #fff) 92%, var(--ink, #1d1d1f) 8%);
+}
+
+.own-select-trigger[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--panel, #fff) 93%, var(--accent, #007aff) 7%);
+}
+
+.own-select-trigger:focus-visible {
+  outline: 2px solid var(--accent, #007aff);
+  outline-offset: 3px;
+}
+
+.own-select-trigger > svg {
+  color: var(--muted, #6e6e73);
+  flex-shrink: 0;
+}
+
+.own-select-trigger[data-placeholder] .own-select-value {
+  color: var(--muted, #6e6e73);
+}
+
+.own-select-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.own-select-menu {
+  position: fixed;
+  inset: auto;
+  z-index: 1000;
+  margin: 0;
+  padding: 6px;
+  max-height: 320px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: var(--panel, #fff);
+  color: var(--ink, #1d1d1f);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: 0 6px 18px #00000014;
+}
+
+.own-select-menu::backdrop {
+  background: transparent;
+}
+
+.own-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.own-select-option > span {
+  overflow-wrap: anywhere;
+}
+
+.own-select-option > svg {
+  color: var(--accent, #007aff);
+  flex-shrink: 0;
+}
+
+.own-select-option[data-active] {
+  background: color-mix(in srgb, var(--accent, #007aff) 12%, transparent);
+}
+
+.own-select-option[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .own-select-trigger {
+    transition: none;
+  }
+}

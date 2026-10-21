@@ -1,0 +1,374 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { createCloudSync, supportsCloudSync } from './cloud-sync.js';
+import { createSyncWasm } from './sync-wasm.js';
+import { createEmptyState } from './model.js';
+import { decryptCloudPayload, encryptCloudPayload } from './cloud-crypto.js';
+
+const signer = await createSyncWasm(await readFile(new URL('../wasm/sync-core.wasm', import.meta.url)));
+const encode = (value) => new TextEncoder().encode(value);
+const decode = (value) => new TextDecoder().decode(value);
+const clone = (value) => structuredClone(value);
+const profile = { provider: 'github', owner: 'covelet-test', repo: 'private-sync', branch: 'main', prefix: 'test-directory' };
+const secrets = { token: 'fake-test-token-never-persist' };
+const password = 'private offline test passphrase';
+const actor = (value) => value.repeat(32);
+const site = (id, order = 0) => ({ id, type: 'site', name: id, url: `https://${id}.example/`, groupId: 'group-home', parentId: null, icon: { kind: 'letter', value: id.slice(0, 2) }, order });
+
+function cloud() {
+  const objects = new Map();
+  const calls = [];
+  let failWrites = false;
+  let unknownWrite = false;
+  const factory = () => ({
+    async list() { calls.push(['list']); return [...objects].map(([name, bytes]) => ({ name, size: bytes.length })); },
+    async read(name) { calls.push(['read', name]); return objects.get(name)?.slice(); },
+    async write(name, bytes) {
+      calls.push(['write', name, bytes.slice()]);
+      if (failWrites) throw new Error(`network error ${secrets.token}`);
+      if (objects.has(name)) assert.deepEqual(bytes, objects.get(name), 'an immutable object name must never change its body');
+      objects.set(name, bytes.slice());
+      if (unknownWrite) { unknownWrite = false; throw new Error(`unknown result ${secrets.token}`); }
+    },
+  });
+  return { factory, objects, calls, set failWrites(value) { failWrites = value; }, set unknownWrite(value) { unknownWrite = value; } };
+}
+
+function memory(value = null) {
+  let current = clone(value);
+  return { async read() { return clone(current); }, async write(next) { current = clone(next); }, async clear() { current = null; }, get value() { return clone(current); } };
+}
+
+function device(remote, id, options = {}) {
+  let state = createEmptyState();
+  const configStore = options.configStore || memory();
+  const sessionStore = options.sessionStore || memory();
+  const subscribers = new Set();
+  let race = false;
+  const stateStore = {
+    async loadState() { return clone(state); },
+    async saveState(next, revision) {
+      if (race) { race = false; state.settings.width = 1440; state.revision++; }
+      if (revision !== state.revision) throw Object.assign(new Error('revision conflict'), { code: 'REVISION_CONFLICT' });
+      state = { ...clone(next), revision: revision + 1 };
+      for (const listener of subscribers) listener(clone(state));
+      return clone(state);
+    },
+    subscribeState(listener) { subscribers.add(listener); return () => subscribers.delete(listener); },
+  };
+  const make = () => createCloudSync({ stateStore, configStore, sessionStore, providerFactory: remote.factory, signer, hasPermission: async () => true,
+    uuid: () => actor(id), eventWindow: null, eventDocument: null, ...options });
+  return { api: make(), make, configStore, sessionStore, stateStore, get state() { return clone(state); },
+    edit(update) { const next = clone(state); update(next); next.revision++; state = next; for (const listener of subscribers) listener(clone(state)); },
+    set race(value) { race = value; } };
+}
+
+async function configure(subject, options = {}) { return subject.api.saveCloudSyncSettings(profile, secrets, password, options); }
+
+test('cloud settings persist only a nonsecret target and independent off-by-default controls; extension tabs share session unlock', async () => {
+  const remote = cloud();
+  const subject = device(remote, 'a');
+  assert.equal(supportsCloudSync(), false);
+  assert.deepEqual(await subject.api.loadCloudSyncSettings(), { profile: null, autoSync: false, configured: false, unlocked: false });
+  const result = await configure(subject);
+  assert.equal(result.autoSync, false);
+  assert.equal(result.unlocked, true);
+  assert.equal(remote.calls.length, 0, 'saving and unlocking make no network request');
+  const local = JSON.stringify(subject.configStore.value);
+  assert.equal(local.includes(secrets.token), false);
+  assert.equal(local.includes(password), false);
+  assert.equal(subject.sessionStore.value.password, password);
+  assert.equal((await subject.make().loadCloudSyncSettings()).unlocked, true, 'a new tab reuses storage.session');
+  await subject.api.lockCloudSync();
+  assert.equal((await subject.make().loadCloudSyncSettings()).unlocked, false);
+  assert.equal(subject.configStore.value.autoSync, false);
+});
+
+test('two devices merge portable navigation, keep original local icons and never upload credentials or image references', async () => {
+  const remote = cloud();
+  const a = device(remote, 'a'), b = device(remote, 'b');
+  await configure(a); await configure(b);
+  a.edit((state) => { state.entries.push({ ...site('alpha'), icon: { kind: 'image', value: 'original-image-only-on-a' }, iconBackground: '#123456' }); state.settings.adaptiveWallpaper = true; });
+  assert.equal((await a.api.syncCloudNow()).phase, 'saved');
+  assert.equal((await b.api.syncCloudNow()).phase, 'saved');
+  assert.equal(b.state.entries[0].name, 'alpha');
+  assert.equal(b.state.entries[0].icon.kind, 'letter');
+  assert.equal(b.state.settings.adaptiveWallpaper, true);
+  a.edit((state) => { state.entries.push(site('local-a', 1)); });
+  b.edit((state) => { state.entries.push(site('local-b', 1)); });
+  await a.api.syncCloudNow(); await b.api.syncCloudNow(); await a.api.syncCloudNow();
+  assert.deepEqual(a.state.entries.map((entry) => entry.id).sort(), ['alpha', 'local-a', 'local-b']);
+  assert.deepEqual(a.state.entries[0].icon, { kind: 'image', value: 'original-image-only-on-a' });
+  for (const [name, bytes] of remote.objects) {
+    assert.match(name, /^covelet-[a-f0-9]{32}-[1-9][0-9]*-[a-f0-9]{64}\.json$/);
+    const envelope = decode(bytes);
+    assert.equal(envelope.includes('alpha'), false);
+    const plain = decode(await decryptCloudPayload(bytes, password));
+    for (const forbidden of [secrets.token, password, 'original-image-only-on-a', 'private-sync', 'test-directory']) assert.equal(plain.includes(forbidden), false);
+  }
+});
+
+test('offline concurrent edits stay recoverable, including a deletion, and a selected recovery converges', async () => {
+  const remote = cloud();
+  const a = device(remote, 'a'), b = device(remote, 'b');
+  await configure(a); await configure(b);
+  a.edit((state) => { state.entries.push(site('alpha')); });
+  await a.api.syncCloudNow(); await b.api.syncCloudNow(); await a.api.syncCloudNow();
+  a.edit((state) => { state.entries = []; });
+  b.edit((state) => { state.entries[0].name = 'offline renamed'; });
+  await a.api.syncCloudNow(); await b.api.syncCloudNow(); await a.api.syncCloudNow();
+  assert.equal(a.state.entries.length, 0);
+  assert.equal(b.state.entries.length, 0);
+  const conflicts = await b.api.getCloudSyncConflicts();
+  const renamed = conflicts.find((conflict) => conflict.value?.name === 'offline renamed');
+  assert.ok(renamed, 'an offline rename is not falsely treated as observing the deletion');
+  await b.api.restoreCloudSyncConflict(renamed.id);
+  await b.api.syncCloudNow(); await a.api.syncCloudNow();
+  assert.equal(a.state.entries[0].name, 'offline renamed');
+  assert.equal((await a.api.getCloudSyncConflicts()).length, 0);
+});
+
+test('an unknown write result retries exactly one persisted ciphertext and never reuses a name with another body', async () => {
+  const remote = cloud(); const a = device(remote, 'a');
+  await configure(a);
+  a.edit((state) => { state.entries.push(site('alpha')); });
+  remote.unknownWrite = true;
+  const failed = await a.api.syncCloudNow();
+  assert.equal(failed.phase, 'error');
+  assert.equal(failed.message.includes(secrets.token), false);
+  const pending = a.configStore.value.metadata.pending;
+  assert.ok(pending);
+  const pendingClock = a.configStore.value.metadata.document.clock;
+  const writesBefore = remote.calls.filter(([method]) => method === 'write').length;
+  a.edit((state) => { state.settings.columns = 10; });
+  assert.equal((await a.api.syncCloudNow()).phase, 'saved');
+  assert.equal(a.configStore.value.metadata.pending, null);
+  assert.ok(a.configStore.value.metadata.document.clock > pendingClock);
+  assert.deepEqual(remote.objects.get(pending.name), encode(pending.body));
+  assert.equal(remote.calls.filter(([method]) => method === 'write').length, writesBefore + 1, 'the already committed pending version is read and verified rather than replaced');
+});
+
+test('wrong decryption passwords and one corrupt latest document reject the entire batch without local edits or uploads', async () => {
+  const remote = cloud(); const a = device(remote, 'a'), b = device(remote, 'b');
+  await configure(a); await configure(b);
+  a.edit((state) => { state.entries.push(site('alpha')); }); await a.api.syncCloudNow();
+  await b.api.unlockCloudSync(secrets, 'wrong but long password');
+  assert.equal((await b.api.syncCloudNow()).code, 'CLOUD_DECRYPT');
+  assert.equal(b.state.entries.length, 0);
+  assert.equal(remote.objects.size, 1);
+  await b.api.unlockCloudSync(secrets, password);
+  const badDocument = { version: 1, actor: actor('c'), clock: 1, records: {} };
+  const bytes = await encryptCloudPayload(encode(JSON.stringify(badDocument)), password);
+  const name = `covelet-${actor('c')}-1-${await signer.sha256(bytes)}.json`;
+  bytes[bytes.length - 10] ^= 1;
+  remote.objects.set(name, bytes);
+  const before = b.state;
+  assert.equal((await b.api.syncCloudNow()).code, 'CLOUD_INTEGRITY');
+  assert.deepEqual(b.state, before);
+  assert.equal(remote.objects.size, 2);
+});
+
+test('host permission checks guard every operation and local revision races preserve the later tab edit', async () => {
+  const remote = cloud(); const a = device(remote, 'a');
+  let permitted = false;
+  const b = device(remote, 'b', { hasPermission: async () => permitted });
+  await configure(a); await configure(b);
+  assert.equal((await b.api.syncCloudNow()).code, 'CLOUD_PERMISSION');
+  assert.equal(remote.calls.length, 0);
+  a.edit((state) => { state.entries.push(site('alpha')); }); await a.api.syncCloudNow();
+  permitted = true; b.race = true;
+  const beforeObjects = remote.objects.size;
+  assert.equal((await b.api.syncCloudNow()).code, 'REVISION_CONFLICT');
+  assert.equal(b.state.settings.width, 1440);
+  assert.equal(b.state.entries.length, 0);
+  assert.equal(remote.objects.size, beforeObjects, 'a conflicting local commit never publishes a partial merge');
+  assert.equal((await b.api.syncCloudNow()).phase, 'saved');
+  assert.equal(b.state.settings.width, 1440);
+  assert.equal(b.state.entries[0].name, 'alpha');
+});
+
+test('failed publication retains local edits and bounded cloud listings fail before any reads or partial merge', async () => {
+  const remote = cloud(); const a = device(remote, 'a');
+  await configure(a); a.edit((state) => { state.settings.columns = 12; });
+  remote.failWrites = true;
+  assert.equal((await a.api.syncCloudNow()).phase, 'error');
+  assert.equal(a.state.settings.columns, 12);
+  assert.ok(a.configStore.value.metadata.pending);
+  remote.failWrites = false;
+  assert.equal((await a.api.syncCloudNow()).phase, 'saved');
+  const tooMany = device(remote, 'b', { providerFactory: () => ({ async list() { return Array.from({ length: 2001 }, () => ({ name: 'invalid' })); }, async read() { assert.fail('must reject listing before reads'); } }) });
+  await configure(tooMany);
+  assert.equal((await tooMany.api.syncCloudNow()).code, 'CLOUD_CAPACITY');
+  assert.equal(tooMany.state.entries.length, 0);
+});
+
+test('duplicate same-clock ciphertext and too many actors are rejected before downloading a partial batch', async () => {
+  const remote = cloud();
+  const make = (listing) => device(remote, 'a', { providerFactory: () => ({ async list() { return listing; }, async read() { assert.fail('must reject before reads'); } }) });
+  const duplicate = make([
+    { name: `covelet-${actor('b')}-1-${'a'.repeat(64)}.json`, size: 100 },
+    { name: `covelet-${actor('b')}-1-${'b'.repeat(64)}.json`, size: 100 },
+  ]);
+  await configure(duplicate);
+  assert.equal((await duplicate.api.syncCloudNow()).code, 'CLOUD_INTEGRITY');
+  const actors = make(Array.from({ length: 101 }, (_, index) => ({ name: `covelet-${index.toString(16).padStart(32, '0')}-1-${'a'.repeat(64)}.json`, size: 100 })));
+  await configure(actors);
+  assert.equal((await actors.api.syncCloudNow()).code, 'CLOUD_CAPACITY');
+});
+
+test('auto sync remains opt-in, debounces edits, and locking stops later I/O while retaining settings', async () => {
+  const remote = cloud(); const a = device(remote, 'a', { autoDelay: 10 });
+  const stop = a.api.startCloudSync();
+  await configure(a);
+  a.edit((state) => { state.settings.columns = 10; });
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  assert.equal(remote.calls.length, 0, 'the native and cloud defaults stay off');
+  await configure(a, { autoSync: true });
+  a.edit((state) => { state.settings.columns = 11; });
+  a.edit((state) => { state.settings.columns = 12; });
+  for (let retry = 0; retry < 50 && !remote.objects.size; retry++) await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.equal(remote.objects.size, 1);
+  for (let retry = 0; retry < 50 && a.api.getCloudSyncStatus().phase === 'syncing'; retry++) await new Promise((resolve) => setTimeout(resolve, 10));
+  await a.api.lockCloudSync();
+  const calls = remote.calls.length;
+  a.edit((state) => { state.settings.columns = 8; });
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  assert.equal(remote.calls.length, calls);
+  assert.equal(a.configStore.value.profile.repo, profile.repo);
+  assert.equal(a.configStore.value.autoSync, true);
+  assert.equal(a.state.settings.columns, 8);
+  stop();
+});
+
+test('session locking or a target change during a read prevents the stale result from being committed locally', async () => {
+  const remote = cloud(); const a = device(remote, 'a');
+  await configure(a); a.edit((state) => { state.entries.push(site('alpha')); }); await a.api.syncCloudNow();
+  const b = device(remote, 'b'); await configure(b);
+  const factory = remote.factory;
+  const blocked = device(remote, 'b', { configStore: b.configStore, sessionStore: b.sessionStore,
+    providerFactory: (...args) => {
+      const provider = factory(...args);
+      return { ...provider, async read(name) { const bytes = await provider.read(name); await b.sessionStore.clear(); return bytes; } };
+    } });
+  assert.equal((await blocked.api.syncCloudNow()).code, 'CLOUD_LOCKED');
+  assert.equal(blocked.state.entries.length, 0);
+  assert.equal(blocked.configStore.value.profile.repo, profile.repo);
+  await b.api.unlockCloudSync(secrets, password);
+  const changed = device(remote, 'b', { configStore: b.configStore, sessionStore: b.sessionStore,
+    providerFactory: (...args) => {
+      const provider = factory(...args);
+      return { ...provider, async read(name) {
+        const bytes = await provider.read(name);
+        const config = await b.configStore.read(); config.profile.repo = 'another-target'; await b.configStore.write(config);
+        return bytes;
+      } };
+    } });
+  assert.equal((await changed.api.syncCloudNow()).code, 'CLOUD_LOCKED');
+  assert.equal(changed.state.entries.length, 0);
+  assert.equal(changed.configStore.value.profile.repo, 'another-target');
+});
+
+test('changing a target preserves an unpublished offline rename and its conflict after another device deletes the site', async () => {
+  const remote = cloud(); const a = device(remote, 'a'), b = device(remote, 'b');
+  await configure(a); await configure(b);
+  a.edit((state) => { state.entries.push(site('alpha')); });
+  await a.api.syncCloudNow(); await b.api.syncCloudNow(); await a.api.syncCloudNow();
+  a.edit((state) => { state.entries[0].name = 'the only offline rename'; });
+  b.edit((state) => { state.entries = []; });
+  await b.api.syncCloudNow();
+  remote.failWrites = true;
+  assert.equal((await a.api.syncCloudNow()).phase, 'error');
+  assert.equal(a.state.entries.length, 0, 'the concurrent deletion is visible after merging');
+  assert.ok(a.configStore.value.metadata.pending, 'the rename still exists in the unpublished local replica');
+  assert.ok((await a.api.getCloudSyncConflicts()).some((item) => item.value?.name === 'the only offline rename'));
+  const nextProfile = { ...profile, repo: 'another-target' };
+  const nextSecrets = { token: 'replacement-credentials-must-not-win' };
+  const beforeConfig = JSON.stringify(a.configStore.value);
+  const beforeSession = JSON.stringify(a.sessionStore.value);
+  await assert.rejects(a.api.saveCloudSyncSettings(nextProfile, nextSecrets, 'a different long password', { autoSync: true }), { code: 'CLOUD_TARGET_PENDING' });
+  assert.equal(JSON.stringify(a.configStore.value), beforeConfig, 'a rejected switch must not alter any persisted metadata byte');
+  assert.equal(JSON.stringify(a.sessionStore.value), beforeSession, 'the old unlock credentials must remain available');
+  remote.failWrites = false;
+  assert.equal((await a.api.syncCloudNow()).phase, 'saved');
+  assert.equal(a.configStore.value.metadata.pending, null);
+  const uploadedConfig = JSON.stringify(a.configStore.value);
+  const uploadedSession = JSON.stringify(a.sessionStore.value);
+  await assert.rejects(a.api.saveCloudSyncSettings(nextProfile, nextSecrets, 'a different long password'), { code: 'CLOUD_TARGET_CONFLICTS' });
+  assert.equal(JSON.stringify(a.configStore.value), uploadedConfig);
+  assert.equal(JSON.stringify(a.sessionStore.value), uploadedSession);
+  const conflict = (await a.api.getCloudSyncConflicts()).find((item) => item.value?.name === 'the only offline rename');
+  await a.api.restoreCloudSyncConflict(conflict.id);
+  await a.api.syncCloudNow();
+  assert.equal(a.state.entries[0].name, 'the only offline rename');
+  assert.equal((await a.api.getCloudSyncConflicts()).length, 0);
+  assert.equal((await a.api.saveCloudSyncSettings(nextProfile, nextSecrets, 'a different long password')).profile.repo, 'another-target');
+});
+
+test('locking between a provider existence check and its PUT blocks the second request and retains the exact pending payload', async () => {
+  const remote = cloud();
+  let releaseCheck;
+  let enteredCheck;
+  const checked = new Promise((resolve) => { enteredCheck = resolve; });
+  const release = new Promise((resolve) => { releaseCheck = resolve; });
+  let waiting = true;
+  let puts = 0;
+  const subject = device(remote, 'a', { providerFactory: (_profile, _secrets, options) => ({
+    async list() { await options.beforeRequest(); return [...remote.objects].map(([name, bytes]) => ({ name, size: bytes.length })); },
+    async read(name) { await options.beforeRequest(); return remote.objects.get(name).slice(); },
+    async write(name, bytes) {
+      await options.beforeRequest(); // provider-internal existence GET
+      if (waiting) { waiting = false; enteredCheck(); await release; }
+      await options.beforeRequest(); // provider-internal PUT, rechecked after signing/GET
+      puts++; remote.objects.set(name, bytes.slice());
+    },
+  }) });
+  await configure(subject); subject.edit((state) => { state.entries.push(site('alpha')); });
+  const syncing = subject.api.syncCloudNow();
+  await checked;
+  const pending = JSON.stringify(subject.configStore.value.metadata.pending);
+  await subject.api.lockCloudSync();
+  releaseCheck();
+  assert.equal((await syncing).phase, 'locked');
+  assert.equal(subject.api.getCloudSyncStatus().unlocked, false);
+  assert.equal(puts, 0);
+  assert.equal(remote.objects.size, 0);
+  assert.equal(JSON.stringify(subject.configStore.value.metadata.pending), pending);
+  await subject.api.unlockCloudSync(secrets, password);
+  assert.equal((await subject.api.syncCloudNow()).phase, 'saved');
+  assert.equal(puts, 1);
+});
+
+test('a completed in-flight PUT after locking cannot clear pending state or report saved/unlocked', async () => {
+  const remote = cloud();
+  let releaseResponse;
+  let enteredPut;
+  const sent = new Promise((resolve) => { enteredPut = resolve; });
+  const response = new Promise((resolve) => { releaseResponse = resolve; });
+  let waitOnce = true;
+  const subject = device(remote, 'a', { providerFactory: (_profile, _secrets, options) => ({
+    async list() { await options.beforeRequest(); return [...remote.objects].map(([name, bytes]) => ({ name, size: bytes.length })); },
+    async read(name) { await options.beforeRequest(); return remote.objects.get(name).slice(); },
+    async write(name, bytes) {
+      await options.beforeRequest();
+      remote.objects.set(name, bytes.slice()); // the already-sent PUT may commit
+      if (waitOnce) { waitOnce = false; enteredPut(); await response; }
+    },
+  }) });
+  await configure(subject); subject.edit((state) => { state.settings.columns = 10; });
+  const syncing = subject.api.syncCloudNow();
+  await sent;
+  const pending = JSON.stringify(subject.configStore.value.metadata.pending);
+  await subject.api.lockCloudSync();
+  releaseResponse();
+  const result = await syncing;
+  assert.equal(result.phase, 'locked'); assert.equal(result.unlocked, false);
+  assert.equal(JSON.stringify(subject.configStore.value.metadata.pending), pending);
+  assert.equal(subject.configStore.value.metadata.publishedClock, 0);
+  assert.equal(subject.configStore.value.metadata.lastSync, 0);
+  assert.equal(remote.objects.size, 1, 'an already committed request is not claimed to be undone');
+  await subject.api.unlockCloudSync(secrets, password);
+  assert.equal((await subject.api.syncCloudNow()).phase, 'saved');
+  assert.equal(subject.configStore.value.metadata.pending, null);
+  assert.equal(remote.objects.size, 1, 'unlocking verifies the existing ciphertext instead of publishing another name');
+});

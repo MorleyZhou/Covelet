@@ -1,0 +1,41 @@
+{
+  "abi": 1,
+  "compiler": "rustc 1.85.1 (4eb161250 2025-03-15)",
+  "target": "wasm32-unknown-unknown",
+  "flags": [
+    "--crate-name",
+    "covelet_github_core",
+    "--crate-type",
+    "cdylib",
+    "--edition=2021",
+    "--target",
+    "wasm32-unknown-unknown",
+    "-C",
+    "opt-level=s",
+    "-C",
+    "lto=fat",
+    "-C",
+    "codegen-units=1",
+    "-C",
+    "panic=abort",
+    "-C",
+    "debuginfo=0",
+    "-C",
+    "strip=symbols",
+    "-C",
+    "link-arg=--initial-memory=524288",
+    "-C",
+    "link-arg=--max-memory=524288",
+    "-C",
+    "link-arg=-zstack-size=65536",
+    "-C",
+    "link-arg=--stack-first"
+  ],
+  "bytes": 1202,
+  "sha256": "d4202ce71ab19aa9956d8c7cfd98f10ac521921fe1c4640e13d871c35eabc67b",
+  "sources": {
+    "wasm/github-core/Cargo.toml": "586ceda52b3204a038fbc4c33043c137774552169b1becc3e23b9f3040d8ed12",
+    "wasm/github-core/src/lib.rs": "7fa3bf3a16328bd26ea67476684eece5fcbc8203c4ced0e3bef98636bca4d4d5",
+    "scripts/build-github-wasm.mjs": "22079e8d7f841229236fa08cf0efba7f1d178fb59124838693c4bac85e5ce997"
+  }
+}

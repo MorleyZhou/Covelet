@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-20",
+  "product": "Covelet",
+  "mode": "UX writing and information hierarchy review; no product code changes",
+  "url": "http://127.0.0.1:4177/newtab.html",
+  "scope": ["Add website", "Settings > Enhancements", "Custom storage connection"],
+  "steps": [
+    {
+      "number": 1,
+      "name": "Add website",
+      "health": "Basic task is clear; secondary explanation and technical color details are overly prominent",
+      "screenshot": "01-add-site.png",
+      "observations": ["Visible preview-mode fallback sentence repeats the already visible text icon", "Optional name-read button embeds permission mechanics in the label", "HEX and reset action occupy the normal adding flow"],
+      "recommendations": ["Keep URL, name, icon preview and one primary Add action", "Show permission rationale only when optional name completion is initiated", "Open advanced color details from the swatch"]
+    },
+    {
+      "number": 2,
+      "name": "Enhancements",
+      "health": "Main copy reduction priority",
+      "screenshot": "02-enhancements.png",
+      "observations": ["Each toggle repeats its title with a description, implementation-preservation note and enabled status", "An additional local-processing paragraph repeats privacy and reversibility information"],
+      "recommendations": ["Use compact setting rows with a title, at most one useful sentence and a toggle", "Remove normal enabled-state confirmations", "Expose infrequent technical help through an accessible help entry"]
+    },
+    {
+      "number": 3,
+      "name": "Custom storage connection",
+      "health": "Structural issue beyond copy length",
+      "screenshot": "03-sync-settings.png",
+      "observations": ["Several long help paragraphs sit between credentials and actions", "Save connection and outer Save settings coexist with different persistence behavior", "Settings heading and navigation leave the viewport during the long form"],
+      "recommendations": ["Keep the synchronization entry in Enhancements but open connection details separately", "Use one primary submission action per form", "Keep password recovery limitations, restart-unlock behavior and actual data risks near the relevant action", "Keep title and navigation discoverable in long forms"]
+    }
+  ],
+  "sources": [
+    "https://developer.apple.com/design/human-interface-guidelines/design-principles",
+    "https://developer.apple.com/videos/play/wwdc2025/404/",
+    "https://developer.apple.com/design/human-interface-guidelines/feedback",
+    "https://developer.apple.com/design/human-interface-guidelines/settings",
+    "https://design-system.service.gov.uk/components/text-input/",
+    "https://design-system.service.gov.uk/components/details/",
+    "https://www.w3.org/WAI/WCAG22/Understanding/labels-or-instructions.html",
+    "https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html"
+  ],
+  "limits": ["Screenshots are from the current production-file web preview with test navigation data", "Native extension authorization and real cloud connections were not exercised", "No full accessibility, contrast, assistive-technology or usability study was performed", "No connection was saved and no website was added during the audit"]
+}

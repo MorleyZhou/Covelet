@@ -1,0 +1,26 @@
+{
+  "abi": 1,
+  "compiler": "rustc 1.85.1 (4eb161250 2025-03-15)",
+  "target": "wasm32-unknown-unknown",
+  "flags": [
+    "-C",
+    "link-arg=--initial-memory=2097152",
+    "-C",
+    "link-arg=--max-memory=2097152",
+    "-C",
+    "link-arg=-zstack-size=65536",
+    "-C",
+    "link-arg=--stack-first",
+    "--remap-path-prefix",
+    "<app>=covelet"
+  ],
+  "memoryBytes": 2097152,
+  "bytes": 10773,
+  "sha256": "45f0445669c48ae5326b624b77aaebb1b5ba792a6a54be382e3fee82c1830182",
+  "sources": {
+    "wasm/sync-core/Cargo.toml": "5f8959ff0b1a469fe358f226f6a8e9269e60be1f4fadd350bf0d2a4573c92771",
+    "wasm/sync-core/Cargo.lock": "5b89e9bc703693a0835a86cb265a94e8dd9ba2d3ed24747a2caf8dd586de75f4",
+    "wasm/sync-core/src/lib.rs": "54779fb22e5612f2e3005831bf18a0876e728a63df5d0ad0ae723903aaf7e097",
+    "scripts/build-sync-wasm.mjs": "7447a969f99d5f55b24c586dd7e2c3a9fa692f661f769b0826ab19e9941394fe"
+  }
+}

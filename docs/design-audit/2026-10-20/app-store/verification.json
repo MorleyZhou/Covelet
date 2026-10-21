@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-20",
+  "coreTests": 216,
+  "sitesTests": 4,
+  "webBuild": "passed",
+  "extensionBuild": "passed",
+  "staticFiles": 18,
+  "viewportsTested": [
+    [
+      1280,
+      900
+    ],
+    [
+      390,
+      844
+    ]
+  ],
+  "observations": {
+    "defaultColumns": 8,
+    "mediumTile": [
+      548,
+      262
+    ],
+    "largeTile": [
+      548,
+      548
+    ],
+    "mediumDates": 178,
+    "annualDates": 367,
+    "calendarKeyboardAcrossPanels": true,
+    "dragWidget": true,
+    "dragFolderCreation": true,
+    "removeUndo": true,
+    "returnFocus": true,
+    "nestedSyncForms": 0,
+    "cloudFooterStable": true,
+    "qaPageConsoleErrors": [],
+    "creditClearance": 12.5,
+    "darkActionContrast": 5.28
+  },
+  "finalPreview": {
+    "category": "组件型",
+    "dialog": {
+      "bottom": 819.2000045776367,
+      "height": 716,
+      "left": 24,
+      "right": 718.4000244140625,
+      "top": 103.20000457763672,
+      "width": 694.4000244140625,
+      "x": 24,
+      "y": 103.20000457763672
+    },
+    "overflow": false,
+    "viewport": [
+      742,
+      922
+    ]
+  },
+  "temporaryDemoCleaned": true,
+  "notVerified": [
+    "installed Chrome permission UI",
+    "real cloud credentials",
+    "cross-device propagation",
+    "store review"
+  ]
+}

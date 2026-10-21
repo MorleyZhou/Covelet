@@ -1,0 +1,464 @@
+# Detailed diagnostic fallback. Normal interface phrases have all eight locales.
+{0} 本地数据仍然保留。|{0} Local data is retained.
+{0}包含未知字段|{0} contains unknown fields.
+{0}格式无效|Invalid {0} format.
+{0}无效|Invalid {0}.
+{0}无效或过长。|{0} is invalid or too long.
+{0}须为 1 至 {1} 个字符|{0} must contain 1 to {1} characters.
+{0}须为开关值|{0} must be a boolean.
+{0}须在 {1} 至 {2} 之间|{0} must be between {1} and {2}.
+版本预览已失效，或本机导航已更新，请重新查看差异。|The preview expired or local navigation changed. Review the differences again.
+保存时缺少有效的数据版本。|A valid data revision is required to save.
+备份 ZIP 目录损坏。|The backup ZIP directory is corrupt.
+备份包含不支持的 ZIP 条目。|The backup contains unsupported ZIP entries.
+备份包含未知、重复或不安全的文件路径。|The backup contains unknown, duplicate or unsafe paths.
+备份格式或版本不受支持。|Unsupported backup format or version.
+备份解压大小与声明不一致。|The extracted size differs from the declared size.
+备份解压后超过 80 MiB。|The extracted backup exceeds 80 MiB.
+备份清单或资源超出限制。|Backup manifest or assets exceed limits.
+备份缺少清单或数据文件。|The backup is missing its manifest or data file.
+备份缺少图片资源：{0}|Missing backup image: {0}
+备份实际解压大小超出声明或限制。|The extracted size exceeds its declaration or limit.
+备份条目超出大小限制。|A backup entry exceeds the size limit.
+备份图片缺失、大小或哈希校验不一致。|A backup image is missing or has an incorrect size or hash.
+备份图片引用不完整。|Backup image references are incomplete.
+备份未完整包含所有图片资源。|The backup does not contain all referenced images.
+备份文件必须在 30 MiB 以内。|Backup files must be at most 30 MiB.
+备份文件区域重叠。|Backup file regions overlap.
+备份文件校验失败。|Backup file verification failed.
+备份中的 JSON 文件无效。|Invalid JSON in the backup.
+备份资源清单无效。|Invalid backup asset manifest.
+备份资源数量超出限制。|Too many backup assets.
+背景类型无效|Invalid background type.
+背景类型与渐变设置不符|Background type and gradient settings do not match.
+背景值无效|Invalid background value.
+本地或特殊地址请明确填写 HTTP 或 HTTPS 协议|Include HTTP or HTTPS explicitly for local or special addresses.
+本地配置版本无效；请先导出数据后再处理。|Invalid local configuration version. Export your data before proceeding.
+本地数据已保存，等待写入浏览器同步区。|Local data saved; waiting for browser sync storage.
+本地数据已保存；浏览器同步写入已排队，正在等待写入间隔。|Local data saved. Browser sync is queued until the write interval ends.
+本地同步元数据无效。|Invalid local sync metadata.
+本地图标缓存不可用。|Local icon cache is unavailable.
+本地图标缓存暂不可用。|Local icon cache is temporarily unavailable.
+本地图片不存在，请重新选择图片或恢复完整备份。|Local image missing. Choose it again or restore a complete backup.
+本地图片存储不可用。|Local image storage is unavailable.
+本机存储不足，请先导出并清理旧记录。|Local storage is full. Export and remove old records first.
+本机待上传版本无效。|Invalid pending local upload.
+本机工具存储已满，请先导出并清理旧记录。|Tool storage is full. Export and remove old records first.
+本机工具数据无效。|Invalid local tool data.
+本机云同步设备版本无效。|Invalid local cloud sync device revision.
+本机云同步文档无效。|Invalid local cloud sync document.
+壁纸缓存写入中断。|Wallpaper cache write was interrupted.
+壁纸缓存暂时不可用。|Wallpaper cache is temporarily unavailable.
+便笺格式无效。|Invalid note format.
+标签快照格式无效。|Invalid tab snapshot format.
+标签快照链接无效。|Invalid URL in tab snapshot.
+标签名称|Tab title
+标识|Identifier
+不能将条目拖到自身|An item cannot be dropped onto itself.
+不支持的数据版本|Unsupported data version.
+不支持的云端加密格式。|Unsupported cloud encryption format.
+不支持分卷、ZIP64 或超出限制的备份。|Split, ZIP64 or oversized backups are not supported.
+部分视觉增强暂不可用，已使用原始外观。|Some visual enhancements are unavailable. Original appearance is used.
+部分同步分片尚未到齐；已保留本地完整数据，等待浏览器传入剩余分片或稍后手动重试。|Some sync chunks have not arrived. Local data is retained. Wait for the remaining chunks or retry later.
+差异内容无效。|Invalid diff content.
+此并发版本尚未恢复：{0}|This conflicting version was not restored: {0}
+此并发版本已处理，请刷新冲突列表。|This conflict was handled. Refresh the conflict list.
+此并发版本已处理。|This conflicting version has already been handled.
+此设置已在其他页面修改，请重新载入设置。|Settings changed in another page. Reload them.
+待处理图标较多，暂时使用原始图标。|Too many icons are queued. Original icons are used for now.
+单次最多保存 1000 个标签。|Save at most 1,000 tabs per snapshot.
+当前窗口没有可保存的普通网页。|This window has no eligible web pages to save.
+当前环境不能解析书签 HTML|This environment cannot parse bookmark HTML.
+当前环境无法处理图片。|This environment cannot process images.
+当前环境无法处理网站图标。|This environment cannot process site icons.
+当前环境无法解码图片。|This environment cannot decode images.
+当前环境无法解码网站图标。|This environment cannot decode site icons.
+当前扩展的原生图标接口不可用，可重新加载更新后的扩展或使用文字图标。|The native favicon API is unavailable. Reload the updated extension or use letter icons.
+当前网站响应无法安全读取。|The website response cannot be read safely.
+当前云端还有可恢复的并发版本，请先恢复并完成同步，再切换存储位置。|Recoverable conflicts remain. Restore and sync them before switching storage.
+导航已在其他页面更新，请退出编辑后重试。|Navigation changed in another page. Exit editing and retry.
+导入计划|Import plan
+导入计划无效或条目过多|Invalid import plan or too many entries.
+导入计划中的文件夹名称重复|Duplicate folder names in the import plan.
+导入目标桌面不存在|Import destination does not exist.
+导入条目不能超过 {0}|Import at most {0} entries.
+导入网址|Imported URL
+导入网址引用了未知文件夹|An imported URL refers to an unknown folder.
+导入文件夹|Imported folder
+多选仅支持主屏幕条目。|Multiple selection supports home screen items only.
+额外搜索引擎数量须为 0 至 30|Between 0 and 30 additional search engines are allowed.
+分组|Group
+分组标识|Group ID
+分组标识重复|Duplicate group ID.
+分组名称|Group name
+分组数量须为 1 至 {0}|There must be between 1 and {0} groups.
+工具备份格式不支持。|Unsupported tool backup format.
+工具备份文件过大。|The tool backup file is too large.
+工具备份无法读取。|The tool backup could not be read.
+工具模块版本无效。|Invalid tool module version.
+工具模块包含外部依赖。|The tool module contains external dependencies.
+工具模块大小无效。|Invalid tool module size.
+贡献日历内容无效。|Invalid contribution calendar content.
+贡献日历日期或数值无效。|Invalid contribution calendar dates or values.
+贡献日历数量无效。|Invalid contribution calendar count.
+还没有可恢复的本地快照。|There is no local snapshot to restore.
+还有尚未上传的同步版本，请先完成当前云端同步，再切换存储位置。|An upload is pending. Complete cloud sync before switching storage.
+恢复前的图片校验失败。|Image validation before restore failed.
+计时数据无效。|Invalid timer data.
+记录版本无效。|Invalid record revision.
+记录标识无效。|Invalid record ID.
+记录标识重复。|Duplicate record ID.
+记录类型无效。|Invalid record type.
+加密口令至少需要 12 个字符，且不能超过 1024 字节。|The encryption password needs at least 12 characters and at most 1,024 bytes.
+加密口令至少需要 12 个字符。|The encryption password needs at least 12 characters.
+加密同步文档超过大小限制。|The encrypted sync document exceeds the size limit.
+渐变背景无效|Invalid gradient background.
+渐变背景与颜色设置不符|Gradient background and color settings do not match.
+今日背景暂不可用，继续显示上次缓存。|Today’s background is unavailable. The previous cache is shown.
+今日背景暂不可用，已使用内置背景。|Today’s background is unavailable. The bundled background is used.
+今日背景暂不可用；15 分钟后打开或返回页面时重试。|Today’s background is unavailable. Reopen or return to this page after 15 minutes to retry.
+今日壁纸已更新。|Today’s wallpaper is updated.
+仅支持 HTTP 和 HTTPS 网址|Only HTTP and HTTPS URLs are supported.
+局部视觉分析失败。|Local contrast analysis failed.
+局部视觉结果无效。|Invalid local contrast result.
+快照依赖的图片不存在，未改变当前数据。|A snapshot image is missing. Current data was not changed.
+扩展本地存储不可用，未切换到预览存储。|Extension local storage is unavailable. Preview storage was not used.
+链接过长。|The link is too long.
+链接列表无效。|Invalid link list.
+浏览器不支持这个时区。|The browser does not support this time zone.
+浏览器默认搜索由浏览器提供，不能保存为额外搜索引擎|Browser default search cannot be saved as an additional engine.
+浏览器事务锁不可用，未保存以免覆盖其他标签页。|Browser transaction locks are unavailable. Nothing was saved to avoid overwriting another tab.
+浏览器事务锁不可用，未开始同步。|Browser transaction locks are unavailable. Sync was not started.
+浏览器同步存储不可用；本地数据已保留。|Browser sync storage is unavailable. Local data was retained.
+浏览器同步尚未开启；数据仅保存在本机。|Browser sync is off. Data is stored only on this device.
+浏览器同步已关闭；本地数据和已有同步区数据均保留。|Browser sync is off. Local and existing sync data were retained.
+浏览器无法锁定本机数据，请关闭其他 Covelet 页面后重试。|Could not lock local data. Close other Covelet pages and retry.
+浏览器阅读清单超过 500 条，请先整理后再导入。|The browser reading list exceeds 500 entries. Reduce it before importing.
+浏览器暂无此网站图标，将使用文字图标。|No browser favicon is available. A letter icon will be used.
+路径搜索不能使用路径跳转符|Path-based search cannot use path traversal segments.
+没有可移动的导航。|No navigation items are available to move.
+每个容器的条目顺序须连续且不重复|Item order in each container must be consecutive and unique.
+每日背景来源无效|Invalid daily background source.
+目标位置|Target position
+目标文件夹无效|Invalid destination folder.
+目标桌面不存在|Destination desktop does not exist.
+闹钟数据无效。|Invalid legacy alarm data.
+内容超过工具处理上限。|Content exceeds the tool processing limit.
+内置背景无效|Invalid bundled background.
+内置视觉模块版本无效。|Invalid bundled visual module version.
+内置视觉模块大小无效。|Invalid bundled visual module size.
+内置视觉模块加载失败。|The bundled visual module could not load.
+内置视觉模块暂不可用，已使用原始外观。|The bundled visual module is unavailable. Original appearance is used.
+配置数据超过 2 MiB。|Configuration data exceeds 2 MiB.
+普通条目不能包含组件配置|Non-widget items cannot contain widget settings.
+请关闭旧版本 Covelet 标签页后重试。|Close tabs running an older Covelet version and retry.
+请加载 Chrome 或 Edge 扩展，再授权使用云同步。|Load the Chrome or Edge extension, then authorize cloud sync.
+请输入有效的云存储访问凭据。|Enter valid cloud storage credentials.
+请填写完整的 HTTP 或 HTTPS 图标地址。|Enter a complete HTTP or HTTPS icon URL.
+请填写有效的 IANA 时区。|Enter a valid IANA time zone.
+请填写有效的图标地址。|Enter a valid icon URL.
+请先保存云同步配置。|Save the cloud sync configuration first.
+请先检查备份文件。|Inspect the backup file first.
+请先将网址移到同一个容器|Move the URLs into the same container first.
+请先开启同步，再恢复并发版本。|Enable sync before restoring a conflicting version.
+请先完成待上传版本的同步，再恢复历史项目。|Complete the pending upload before restoring historical items.
+请先允许读取此网站的名称和图标。|Allow access to this website’s name and icons first.
+请允许读取这个网站的图标信息。|Allow access to this website’s icon metadata.
+请在 Chrome 或 Edge 扩展中开启浏览器同步。|Enable browser sync in the Chrome or Edge extension.
+请在扩展中允许读取标签页。|Allow tab access in the extension.
+请在扩展中允许访问阅读清单。|Allow reading list access in the extension.
+请在浏览器扩展中恢复标签快照。|Restore tab snapshots in the browser extension.
+尚未配置自定义云同步。|Custom cloud sync is not configured.
+尚未授权访问这个云服务，请先在设置中授权。|Cloud service access is not authorized. Allow it in settings first.
+稍后读格式无效。|Invalid reading list format.
+时间无效|Invalid time.
+时钟内核包含不支持的导入。|The clock module contains unsupported imports.
+时钟内核大小无效。|Invalid clock module size.
+时钟内核接口无效。|Invalid clock module interface.
+时钟数据无效。|Invalid clock data.
+视觉模块版本不兼容。|Incompatible visual module version.
+视觉模块处理失败。|Visual processing failed.
+视觉模块结果无效。|Invalid visual module result.
+视觉模块内存无效。|Invalid visual module memory.
+视觉模块输入无效。|Invalid visual module input.
+视觉区域无效。|Invalid visual region.
+书签文件无效或超过 5 MB|Bookmark file is invalid or exceeds 5 MB.
+数据修订号|Data revision
+数据已在另一个标签页更新，本次未覆盖；请重新同步。|Data changed in another tab. Nothing was overwritten; sync again.
+数据已在另一个标签页更新，请重新加载后再试。|Data changed in another tab. Reload and retry.
+数据已在另一个标签页更新。|Data changed in another tab.
+搜索词过长。|Search query is too long.
+搜索模板包含无效占位符|The search template contains an invalid placeholder.
+搜索模板格式无效|Invalid search template.
+搜索模板须包含且仅包含一个 {query}|The template must contain exactly one {query} placeholder.
+搜索文字无效或过长|Search text is invalid or too long.
+搜索引擎标识|Search engine ID
+搜索引擎标识重复|Duplicate search engine ID.
+搜索引擎的协议和域名必须固定|The search engine protocol and host must be fixed.
+搜索引擎名称|Search engine name
+搜索引擎已在其他页面修改，请重新载入设置。|The search engine changed in another page. Reload settings.
+搜索引擎域名必须固定|The search engine host must be fixed.
+搜索占位符不能放在片段中|The search placeholder cannot be placed in a URL fragment.
+搜索占位符只能放在查询参数值中|The search placeholder must be in a query parameter value.
+搜索占位符只能放在路径或查询参数值中|The search placeholder must be in a path or query parameter value.
+所选项目不能恢复，请重新查看差异并选择关联的文件夹。|These items cannot be restored. Review the changes and select related folders.
+条目标识|Item ID
+条目标识重复|Duplicate item ID.
+条目类型无效|Invalid item type.
+条目顺序|Item order
+条目引用了不存在的分组|An item refers to a missing group.
+同步 WASM 版本或内存限制不匹配。|Sync module version or memory limit mismatch.
+同步 WASM 不允许宿主导入。|Host imports are not allowed in the sync module.
+同步 WASM 缓冲区无效。|Invalid sync module buffer.
+同步 WASM 接口不完整。|Incomplete sync module interface.
+同步开关值无效。|Invalid sync switch value.
+同步历史超出限制，已保留本地数据；请使用 ZIP 备份。|Sync history exceeds limits. Local data is kept; use a ZIP backup.
+同步签名计算失败。|Sync signature calculation failed.
+同步设备标识无效。|Invalid sync device ID.
+同步文档超过加密大小限制。|The sync document exceeds the encryption size limit.
+同步已暂停：{0} 本地修改已保存，可导出 ZIP 备份。|Sync paused: {0} Local changes were saved and can be exported as ZIP.
+同步摘要计算失败。|Sync digest calculation failed.
+同步状态计算失败。|Sync state calculation failed.
+同一设备出现不一致的同步版本，已保留本地数据。|Inconsistent sync versions for one device. Local data was retained.
+图标背景色须为六位十六进制颜色|Icon background must be a six-digit HEX color.
+图标不可用。|Icon unavailable.
+图标分辨率不合适。|Icon resolution is unsuitable.
+图标类型无效|Invalid icon type.
+图标配置过大。|Icon configuration is too large.
+图标所在列|Icon column
+图标所在行|Icon row
+图标位置|Icon position
+图标显示方式无效|Invalid icon fit.
+图标只支持 HTTP 或 HTTPS 地址。|Icons support only HTTP or HTTPS URLs.
+图片保存失败。|The image could not be saved.
+图片必须使用本地资源标识|Images must use a local asset ID.
+图片必须为 10 MiB 以内的 PNG、JPEG 或 WebP。|Images must be PNG, JPEG or WebP and at most 10 MiB.
+图片标识|Image ID
+图片不属于当前扩展。|The image does not belong to this extension.
+图片尺寸超出限制。|Image dimensions exceed limits.
+图片尺寸信息不一致。|Inconsistent image dimensions.
+图片存储已取消。|Image storage was cancelled.
+图片格式或尺寸无效；仅支持 PNG、JPEG、WebP，最多 4000 万像素。|Invalid image format or dimensions. Use PNG, JPEG or WebP with at most 40 million pixels.
+图片来源无效。|Invalid image source.
+图片没有可显示的内容。|The image has no visible content.
+完整备份超过 30 MiB，请减少自定义图片。|The backup exceeds 30 MiB. Reduce custom images.
+网页预览不支持浏览器同步，请加载扩展后使用。|Browser sync is unavailable in web preview. Load the extension.
+网页预览使用文字图标。|Web preview uses letter icons.
+网页预览无法读取站点信息，请加载浏览器扩展后识别，或手动填写。|Web preview cannot read site metadata. Load the extension or enter it manually.
+网页预览无法申请站点访问权限，请加载浏览器扩展后识别，或手动填写。|Web preview cannot request site access. Load the extension or enter details manually.
+网站返回了无法识别的内容类型。|The website returned an unsupported content type.
+网站请求失败或发生重定向，请手动填写，或输入最终网址后重试。|The website request failed or redirected. Enter details manually or retry with the final URL.
+网站识别超时，请重试或手动填写。|Site recognition timed out. Retry or enter details manually.
+网站首页内容超过识别限制。|The site homepage exceeds the recognition limit.
+网站图标尺寸超出限制。|Site icon dimensions exceed limits.
+网站图标格式或大小无效。|Invalid site icon format or size.
+网站图标与声明格式不符。|The site icon does not match its declared format.
+网站图标转换失败。|Site icon conversion failed.
+网站未提供可用的高清图标，已保留原图。|No usable high-resolution icon was found. The original icon was kept.
+网站响应超过识别大小限制。|The website response exceeds the recognition size limit.
+网址不能包含用户名或密码|URLs cannot contain credentials.
+网址的文件夹引用无效或不在同一分组|The URL’s folder reference is invalid or in a different group.
+网址格式无效|Invalid URL.
+网址规范化不能移除搜索占位符|URL normalization must not remove the search placeholder.
+网址过长|URL is too long.
+网址和文件夹总数不能超过 {0}|Websites and folders must total at most {0}.
+网址条目|Website entry
+网址须为文字|The URL must be text.
+网址域名格式无效|Invalid URL host.
+未获取到网站名称和图标，将使用域名和文字图标，可手动修改。|Site name and icon unavailable. The host and a letter icon are used; you can edit them.
+未命名|Untitled
+文件夹标识|Folder ID
+文件夹不能包含网址字段|Folders cannot contain a URL field.
+文件夹不能嵌套|Folders cannot be nested.
+文件夹不能移入其他文件夹|Folders cannot be moved into other folders.
+文字对比度结果无效。|Invalid text contrast result.
+文字格式无效。|Invalid text format.
+文字区域无效。|Invalid text region.
+文字图标|Letter icon
+无法保存本地图标缓存。|Could not save the local icon cache.
+无法保存本机工具数据，请重试。|Could not save local tool data. Retry.
+无法保存本机云同步设置。|Could not save local cloud sync settings.
+无法保存本机云同步状态，未上传新版本。|Could not save local sync state. No new version was uploaded.
+无法保存本机云同步状态。|Could not save local cloud sync state.
+无法打开本地图标缓存。|Could not open the local icon cache.
+无法读取本地图标缓存。|Could not read the local icon cache.
+无法读取本机工具数据。|Could not read local tool data.
+无法读取本机时钟数据。|Could not read local clock data.
+无法读取本机云同步设置。|Could not read local cloud sync settings.
+无法读取网站图标信息。|Could not read site icon metadata.
+无法分析文字背景。|Could not analyze the text background.
+无法加载 GitHub 组件内核。|Could not load the GitHub widget module.
+无法加载包内同步计算内核。|Could not load the bundled sync module.
+无法加载工具模块。|Could not load the tool module.
+无法加载时钟内核。|Could not load the clock module.
+无法解密同步数据：请检查加密口令，或确认云端文档未损坏。|Could not decrypt sync data. Check the password and cloud file integrity.
+无效书签不能超过 {0}|Invalid bookmarks must not exceed {0}.
+新建文件夹|New folder
+新文件夹标识|New folder ID
+新文件夹标识已存在|The new folder ID already exists.
+一次请选择 1 至 50 个标签。|Select 1 to 50 tabs at a time.
+已从浏览器获取图标，可继续修改名称。|Browser favicon loaded. You can edit the name.
+已打开 {0} 个标签，其余标签未打开。快照仍然保留。|Opened {0} tabs. The remaining tabs were not opened; the snapshot is retained.
+已恢复所选并发版本，等待同步。|Selected conflicting version restored; waiting to sync.
+已恢复所选项目，等待同步。|Selected items restored; waiting to sync.
+已获取网站图标；名称暂用域名，可手动修改。|Site icon loaded. The name uses the host and can be edited.
+已解锁，凭据仅保留在当前浏览器会话。|Unlocked. Credentials remain only for this browser session.
+已识别网站名称；未获取到可用图标，将使用文字图标。|Site name recognized. No usable icon found; a letter icon is used.
+已识别网站名称和图标。|Site name and icon recognized.
+已停用用户壁纸上传；请使用 Bing 每日壁纸或内置背景。|Wallpaper upload is disabled. Use Bing daily wallpaper or the bundled background.
+已完成加密配置同步。|Encrypted configuration sync completed.
+已写入浏览器同步区，跨设备传输由浏览器管理。{0}|Saved to browser sync storage. The browser manages delivery to other devices. {0}
+有 {0} 个并发版本可在冲突列表恢复。|{0} conflicting versions can be restored from the conflict list.
+预设图标无效|Invalid preset icon.
+云存储配置无效，请检查填写内容。|Invalid cloud storage settings. Review the form.
+云存储身份验证失败，请检查凭据和访问权限。|Cloud authentication failed. Check credentials and access permissions.
+云端仓库、分支或存储目录不可访问，请检查配置和权限。|Cloud repository, branch or directory is inaccessible. Check settings and permissions.
+云端存在同名但内容不同的快照，已停止写入并保留本地数据。|A cloud snapshot has the same name but different content. Writes stopped; local data retained.
+云端加密文档编码无效。|Invalid cloud ciphertext encoding.
+云端加密文档大小无效。|Invalid cloud ciphertext size.
+云端加密文档格式无效。|Invalid cloud ciphertext format.
+云端加密文档无法解析。|Cloud ciphertext could not be parsed.
+云端快照数量或大小超出限制，请使用单独的存储目录。|Cloud snapshot count or size exceeds limits. Use a dedicated directory.
+云端同步对象过大或无效。|Cloud sync object is too large or invalid.
+云端同步数据校验失败，未用部分数据覆盖本机。|Cloud sync verification failed. Partial data did not replace local data.
+云服务返回了无效的数据，本地数据未被覆盖。|The cloud service returned invalid data. Local data was not overwritten.
+云服务请求过于频繁，请稍后重试。|Too many cloud requests. Retry later.
+云服务请求失败，请检查授权、凭据、网络及服务权限；本地数据仍然保留。|Cloud request failed. Check authorization, credentials, network and service permissions. Local data is retained.
+云服务请求未成功，请检查配置和网络后重试。|Cloud request failed. Check settings and connection, then retry.
+云同步本机设置无效。|Invalid local cloud sync settings.
+云同步配置或文档无效，已保留本地数据。|Invalid cloud sync settings or document. Local data was retained.
+云同步尚未解锁，请重新填写凭据和加密口令。|Cloud sync is locked. Re-enter credentials and encryption password.
+云同步数据或历史超出限制，已保留全部本地数据；请使用 ZIP 备份。|Cloud sync data or history exceeds limits. All local data was retained; use a ZIP backup.
+云同步状态存储失败。|Could not store cloud sync state.
+暂不支持动画 WebP 图片。|Animated WebP images are not supported.
+找不到要合并的条目|Could not find an item to combine.
+找不到要删除的条目|Could not find an item to delete.
+找不到要移动的条目|Could not find an item to move.
+这个链接已在稍后读中。|This link is already in Read later.
+这条记录已在其他页面修改，请重新打开后再保存。|This record changed in another page. Reopen it before saving.
+这一屏已发生变化，请重新打开屏幕管理。|This screen changed. Reopen screen management.
+正在读取并合并加密配置。|Reading and merging encrypted settings.
+正在合并并写入浏览器同步区。|Merging and writing to browser sync storage.
+正在使用今日缓存。|Using today’s cached wallpaper.
+只能处理已加载的本地图片。|Only already-loaded local images can be processed.
+只能在桌面放置图标和组件。|Icons and widgets can only be placed on the desktop.
+只有网站可以合并到文件夹。|Only websites can be combined into a folder.
+只有网站可以设置图标地址|Only websites can have icon URLs.
+只有网站可以移入文件夹|Only websites can be moved into folders.
+至少保留一屏。|Keep at least one screen.
+主屏幕列表无效|Invalid home screen list.
+主屏幕数量已达上限。|The maximum number of screens has been reached.
+主屏幕位置|Home screen position
+主屏幕位置无效。|Invalid home screen position.
+主题无效|Invalid theme.
+桌面列数无效。|Invalid desktop column count.
+自动同步设置无效。|Invalid auto-sync setting.
+组件不能合并为文件夹|Widgets cannot be combined into folders.
+组件放置状态无效|Invalid widget placement state.
+组件内核不允许宿主导入。|Host imports are not allowed in widget modules.
+组件内核超过大小限制。|The widget module exceeds the size limit.
+组件内核格式无效。|Invalid widget module format.
+组件内核缓冲区无效。|Invalid widget module buffer.
+组件内核接口无效。|Invalid widget module interface.
+组件已在其他页面移除，请重新打开扩展|The widget was removed in another page. Reopen extensions.
+组件只能放在桌面上|Widgets can only be placed on the desktop.
+Bing 图片请求超时。|Bing image request timed out.
+ICO 图标格式无效。|Invalid ICO format.
+ICO 图标目录无效。|Invalid ICO directory.
+ICO 图标内容无效。|Invalid ICO content.
+ICO 图标位图无效。|Invalid ICO bitmap.
+ZIP 本地文件头无效。|Invalid ZIP local file header.
+ZIP 条目目录损坏。|Corrupt ZIP entry directory.
+ZIP 条目越界。|ZIP entry is out of bounds.
+ZIP 文件大小声明不一致。|Inconsistent ZIP file size declaration.
+ZIP 文件内容越界或名称不一致。|ZIP file content is out of bounds or its name does not match.
+{0} 必须是 Uint8Array 或 ArrayBuffer。|{0} must be a Uint8Array or ArrayBuffer.
+{0} 超过 {1} 字节上限。|{0} exceeds the {1}-byte limit.
+本机时间无效，请校准系统时间。|Invalid device time. Correct the system clock.
+本机同步计算模块返回无效结果。|The local sync module returned an invalid result.
+本机同步计算模块尚未准备好。|The local sync module is not ready.
+待上传快照的内容与文件名不一致。|The pending snapshot does not match its filename.
+待上传快照内容与文件名不一致。|The pending snapshot does not match its filename.
+当前浏览器无法使用云同步，已停止请求。|Cloud sync is unavailable in this browser. Requests stopped.
+旧视觉设置无效。|Invalid legacy visual settings.
+浏览器同步版本信息不一致。|Browser sync version metadata does not match.
+浏览器同步分片校验失败，未覆盖本地数据。|Browser sync fragment verification failed. Local data was preserved.
+浏览器同步区容量不足（总计 100 KiB、单项 8 KiB）；完整数据已保留本机，请减少导航或继续使用 ZIP 备份。|Browser sync storage is full (100 KiB total, 8 KiB per item). All data remains on this device. Reduce navigation entries or use a ZIP backup.
+浏览器同步数据格式无效，未覆盖本地数据。|Invalid browser sync data. Local data was preserved.
+浏览器同步提交信息无效，未覆盖本地数据。|Invalid browser sync commit. Local data was preserved.
+配置及同步历史超过浏览器同步容量；完整数据已保留本机。|Configuration and sync history exceed the browser quota. All data remains on this device.
+签名密钥|Signing key
+签名数据|Signing data
+请稍后再刷新。|Please wait before refreshing again.
+请输入有效的 WebDAV 用户名和应用密码。|Enter a valid WebDAV username and app password.
+尚未授权访问这个云服务，已停止请求。|Access to this cloud service is not permitted. Requests stopped.
+视觉处理已取消。|Visual processing canceled.
+视觉处理暂不可用，已使用原始外观。|Visual processing is unavailable. Using the original appearance.
+同步 WASM|Sync WASM
+同步操作格式无效。|Invalid sync operation format.
+同步记录无法生成。|Could not generate the sync record.
+同步设备数量过多。|Too many sync devices.
+同步设备文档格式无效。|Invalid sync device document.
+同步设置包含未知字段。|Sync settings contain unknown fields.
+同步数据|Sync data
+同步条目标识与内容不一致。|The sync entry ID does not match its contents.
+同步因果版本无效。|Invalid sync causal version.
+同步摘要必须是完整的 SHA-256 十六进制字符串。|The sync digest must be a complete SHA-256 hexadecimal string.
+同一同步设备出现不一致版本，已保留本地数据。|Conflicting versions from the same sync device. Local data was preserved.
+未找到该 GitHub 用户。|GitHub user not found.
+无法连接 WebDAV，请检查网络、站点授权和跨域配置。|Could not connect to WebDAV. Check the network, site access and CORS configuration.
+无法连接云存储，请检查网络、站点授权和跨域配置。|Could not connect to cloud storage. Check the network, site access and CORS configuration.
+已取消|Canceled
+云存储返回的数据格式无效。|Cloud storage returned invalid data.
+云存储返回了不允许的跳转，已停止请求。|Cloud storage returned a disallowed redirect. Request stopped.
+云存储连接超时，未完成的操作会在下次同步时核对。|Cloud storage timed out. Incomplete operations will be reconciled on the next sync.
+云存储连接超时。|Cloud storage timed out.
+云存储请求过于频繁，请稍后再试。|Too many cloud storage requests. Try again later.
+云存储请求未成功，请检查服务配置后重试。|Cloud storage request failed. Check the service configuration and retry.
+云端快照数量或大小超出安全限制，请使用单独的存储目录。|Cloud snapshot count or size exceeds safe limits. Use a separate storage directory.
+云端快照文件名无效。|Invalid cloud snapshot filename.
+云端快照校验失败，已保留本地数据。|Cloud snapshot verification failed. Local data was preserved.
+云端文件、仓库或分支不可访问，请检查存储配置和权限。|Cloud file, repository or branch is inaccessible. Check the configuration and permissions.
+云同步已锁定或目标已更改，已停止请求。|Cloud sync was locked or the destination changed. Requests stopped.
+暂时无法读取 GitHub 贡献，请检查网络后重试。|Could not load GitHub contributions. Check your connection and retry.
+暂时无法读取 GitHub 贡献。|GitHub contributions are temporarily unavailable.
+自定义同步已锁定，已停止网络请求。|Custom sync is locked. Network requests stopped.
+Bing 每日图片数据无效。|Invalid Bing daily wallpaper data.
+Bing 请求失败或发生重定向。|Bing request failed or was redirected.
+Bing 图片标识无效。|Invalid Bing image ID.
+Bing 图片不能使用动画 WebP。|Animated WebP is not allowed for Bing wallpaper.
+Bing 图片参数无效。|Invalid Bing image parameters.
+Bing 图片尺寸超出限制。|Bing image dimensions exceed the limit.
+Bing 图片地址超出允许范围。|Bing image URL is outside the allowed scope.
+Bing 图片地址无效。|Invalid Bing image URL.
+Bing 图片格式或尺寸超出限制。|Bing image format or dimensions exceed the limit.
+Bing 图片日期无效。|Invalid Bing image date.
+Bing 图片说明链接无效。|Invalid Bing image credit link.
+Bing 图片说明无效。|Invalid Bing image credits.
+Bing 响应超过大小限制。|Bing response exceeds the size limit.
+Bing 响应类型无效。|Invalid Bing response type.
+GitHub 贡献日历超过大小限制。|GitHub contribution calendar exceeds the size limit.
+GitHub 贡献日历存在缺失或重复日期。|GitHub contribution calendar has missing or duplicate dates.
+GitHub 请求过于频繁，请稍后重试。|Too many GitHub requests. Try again later.
+GitHub 日历包含重复记录。|GitHub calendar has duplicate records.
+GitHub 日历地址发生变化。|GitHub calendar URL has changed.
+GitHub 日历格式已变化，请稍后重试。|GitHub calendar format has changed. Try again later.
+GitHub 日历格式已变化。|GitHub calendar format has changed.
+GitHub 日历内容无效。|Invalid GitHub calendar contents.
+GitHub 日历日期无效。|Invalid GitHub calendar date.
+GitHub 日历响应不可读取。|GitHub calendar response cannot be read.
+GitHub 日历响应超过大小限制。|GitHub calendar response exceeds the size limit.
+GitHub 日历响应无效或超过大小限制。|GitHub calendar response is invalid or exceeds the size limit.
+GitHub 未返回完整的贡献日历。|GitHub did not return a complete contribution calendar.
+GitHub 响应超时，请稍后重试。|GitHub timed out. Try again later.
+WebDAV 返回的数据不完整或格式无效，已停止同步。|WebDAV returned incomplete or invalid data. Sync stopped.
+WebDAV 返回了不允许的跳转，已停止请求。|WebDAV returned a disallowed redirect. Request stopped.
+WebDAV 连接超时，未完成的操作会在下次同步时核对。|WebDAV timed out. Incomplete operations will be reconciled on the next sync.
+WebDAV 目录数量或数据大小超出安全限制，请使用独立的同步目录。|WebDAV directory count or data size exceeds safe limits. Use a separate sync directory.
+WebDAV 配置无效，请检查服务器地址和目录。|Invalid WebDAV configuration. Check the server URL and directory.
+WebDAV 请求过于频繁，请稍后再试。|Too many WebDAV requests. Try again later.
+WebDAV 请求未成功，请检查服务配置后重试。|WebDAV request failed. Check the service configuration and retry.
+WebDAV 请求已停止，请重新解锁并检查站点权限。|WebDAV request stopped. Unlock sync and check site access.
+WebDAV 身份验证失败，请检查应用密码和目录权限。|WebDAV authentication failed. Check the app password and directory permissions.
+WebDAV 同步目录或文件不可访问，请先创建指定目录并检查权限。|WebDAV sync directory or file is inaccessible. Create the directory and check permissions.
+WebDAV 站点访问权限不可用，请重新授权。|WebDAV site access is unavailable. Grant access again.

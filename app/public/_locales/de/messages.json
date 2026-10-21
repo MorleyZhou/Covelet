@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Covelet"
+  },
+  "extensionDescription": {
+    "message": "Privater neuer Tab mit Navigation, Suche, Widgets, Browsersync und täglichen Bing-Hintergrundbildern."
+  },
+  "actionTitle": {
+    "message": "Zu Covelet hinzufügen"
+  }
+}

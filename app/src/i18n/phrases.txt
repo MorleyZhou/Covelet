@@ -1,0 +1,590 @@
+# source | English | Traditional Chinese | Japanese | Korean | German | French | Russian
+保存|Save|儲存|保存|저장|Speichern|Enregistrer|Сохранить
+取消|Cancel|取消|キャンセル|취소|Abbrechen|Annuler|Отмена
+删除|Delete|刪除|削除|삭제|Löschen|Supprimer|Удалить
+添加|Add|新增|追加|추가|Hinzufügen|Ajouter|Добавить
+新增|Add|新增|追加|추가|Hinzufügen|Ajouter|Добавить
+编辑|Edit|編輯|編集|편집|Bearbeiten|Modifier|Изменить
+修改|Change|修改|変更|변경|Ändern|Modifier|Изменить
+打开|Open|開啟|開く|열기|Öffnen|Ouvrir|Открыть
+关闭|Close|關閉|閉じる|닫기|Schließen|Fermer|Закрыть
+返回|Back|返回|戻る|뒤로|Zurück|Retour|Назад
+完成|Done|完成|完了|완료|Fertig|Terminé|Готово
+设置|Settings|設定|設定|설정|Einstellungen|Réglages|Настройки
+外观|Appearance|外觀|外観|모양|Darstellung|Apparence|Внешний вид
+布局|Layout|佈局|レイアウト|레이아웃|Layout|Disposition|Макет
+搜索|Search|搜尋|検索|검색|Suchen|Rechercher|Поиск
+增强|Enhancements|增強|機能強化|개선 기능|Verbesserungen|Améliorations|Улучшения
+数据|Data|資料|データ|데이터|Daten|Données|Данные
+主题|Theme|主題|テーマ|테마|Design|Thème|Тема
+跟随系统|System|跟隨系統|システム|시스템 설정|System|Système|Системная
+浅色|Light|淺色|ライト|라이트|Hell|Clair|Светлая
+深色|Dark|深色|ダーク|다크|Dunkel|Sombre|Тёмная
+背景|Background|背景|背景|배경|Hintergrund|Arrière-plan|Фон
+背景色|Background color|背景色|背景色|배경색|Hintergrundfarbe|Couleur de fond|Цвет фона
+背景颜色|Background color|背景顏色|背景色|배경색|Hintergrundfarbe|Couleur de fond|Цвет фона
+背景颜色 HEX|Background HEX color|背景 HEX 色碼|背景の HEX カラー|배경 HEX 색상|Hintergrundfarbe (HEX)|Couleur de fond HEX|Цвет фона HEX
+背景明暗|Background brightness|背景明暗|背景の明るさ|배경 밝기|Hintergrundhelligkeit|Luminosité du fond|Яркость фона
+背景遮罩|Background dimming|背景遮罩|背景の暗さ|배경 어둡게|Abdunklung|Assombrissement|Затемнение фона
+背景模糊|Background blur|背景模糊|背景のぼかし|배경 흐림|Hintergrundunschärfe|Flou du fond|Размытие фона
+颜色|Color|顏色|カラー|색상|Farbe|Couleur|Цвет
+自定|Custom|自訂|カスタム|사용자 지정|Benutzerdefiniert|Personnalisé|Свой вариант
+默认|Default|預設|標準|기본값|Standard|Par défaut|По умолчанию
+自动|Automatic|自動|自動|자동|Automatisch|Automatique|Автоматически
+名称|Name|名稱|名前|이름|Name|Nom|Название
+网址|URL|網址|URL|URL|URL|URL|Адрес
+网站|Website|網站|ウェブサイト|웹사이트|Website|Site web|Сайт
+网站导航|Navigation|網站導覽|サイト一覧|사이트 모음|Navigation|Navigation|Навигация
+文件夹|Folder|資料夾|フォルダー|폴더|Ordner|Dossier|Папка
+文件夹名称|Folder name|資料夾名稱|フォルダー名|폴더 이름|Ordnername|Nom du dossier|Имя папки
+位置|Position|位置|位置|위치|Position|Position|Положение
+顺序|Order|順序|順序|순서|Reihenfolge|Ordre|Порядок
+图标|Icon|圖示|アイコン|아이콘|Symbol|Icône|Значок
+图标大小|Icon size|圖示大小|アイコンのサイズ|아이콘 크기|Symbolgröße|Taille des icônes|Размер значков
+图标尺寸|Icon size|圖示尺寸|アイコンのサイズ|아이콘 크기|Symbolgröße|Taille des icônes|Размер значков
+图标间距|Icon spacing|圖示間距|アイコンの間隔|아이콘 간격|Symbolabstand|Espacement des icônes|Интервал значков
+图标地址|Icon URL|圖示網址|アイコン URL|아이콘 URL|Symbol-URL|URL de l’icône|Адрес значка
+图标背景|Icon background|圖示背景|アイコンの背景|아이콘 배경|Symbolhintergrund|Fond de l’icône|Фон значка
+图标背景色|Icon background color|圖示背景色|アイコンの背景色|아이콘 배경색|Symbolhintergrundfarbe|Couleur de fond de l’icône|Цвет фона значка
+图标背景色 HEX|Icon background HEX|圖示背景 HEX 色碼|アイコン背景の HEX カラー|아이콘 배경 HEX|Symbolhintergrund (HEX)|Fond de l’icône HEX|HEX фона значка
+图标适配|Icon fit|圖示適配|アイコンの表示|아이콘 맞춤|Symbolanpassung|Ajustement de l’icône|Подгонка значка
+图标预览|Icon preview|圖示預覽|アイコンのプレビュー|아이콘 미리 보기|Symbolvorschau|Aperçu de l’icône|Предпросмотр значка
+选择图标背景色|Choose icon background|選擇圖示背景色|アイコンの背景色を選択|아이콘 배경색 선택|Symbolhintergrund wählen|Choisir le fond de l’icône|Выбрать фон значка
+每行数量|Columns|每列數量|列数|열 수|Spalten|Colonnes|Столбцы
+每行图标数量|Icons per row|每列圖示數量|1 行のアイコン数|행당 아이콘 수|Symbole pro Zeile|Icônes par ligne|Значков в строке
+内容宽度|Content width|內容寬度|コンテンツの幅|콘텐츠 너비|Inhaltsbreite|Largeur du contenu|Ширина содержимого
+内容最大宽度|Maximum width|內容最大寬度|最大幅|최대 너비|Maximale Breite|Largeur maximale|Максимальная ширина
+导航名称|Navigation labels|導覽名稱|サイト名|사이트 이름|Navigationsnamen|Noms des raccourcis|Подписи навигации
+显示网站名称|Show website names|顯示網站名稱|サイト名を表示|사이트 이름 표시|Websitenamen anzeigen|Afficher les noms des sites|Показывать названия сайтов
+新标签打开|Open in new tab|在新分頁開啟|新しいタブで開く|새 탭에서 열기|In neuem Tab öffnen|Ouvrir dans un nouvel onglet|Открывать в новой вкладке
+在新标签页打开网站和搜索结果|Open websites and results in a new tab|在新分頁開啟網站與搜尋結果|サイトと検索結果を新しいタブで開く|사이트와 검색 결과를 새 탭에서 열기|Websites und Ergebnisse in neuem Tab öffnen|Ouvrir les sites et résultats dans un nouvel onglet|Открывать сайты и результаты в новой вкладке
+搜索或输入网址|Search or enter a URL|搜尋或輸入網址|検索または URL を入力|검색 또는 URL 입력|Suchen oder URL eingeben|Rechercher ou saisir une URL|Поиск или ввод адреса
+浏览器默认搜索|Browser default search|瀏覽器預設搜尋|ブラウザーの標準検索|브라우저 기본 검색|Standardsuche des Browsers|Recherche par défaut du navigateur|Поиск по умолчанию
+搜索引擎|Search engine|搜尋引擎|検索エンジン|검색 엔진|Suchmaschine|Moteur de recherche|Поисковая система
+引擎名称|Engine name|引擎名稱|エンジン名|엔진 이름|Name der Suchmaschine|Nom du moteur|Название системы
+搜索模板|Search template|搜尋範本|検索テンプレート|검색 템플릿|Suchvorlage|Modèle de recherche|Шаблон поиска
+搜索地址模板|Search URL template|搜尋網址範本|検索 URL テンプレート|검색 URL 템플릿|Such-URL-Vorlage|Modèle d’URL de recherche|Шаблон адреса поиска
+搜索地址，使用 {query} 表示关键词|Search URL; use {query} for the query|搜尋網址，以 {query} 代表關鍵字|検索 URL（検索語は {query}）|검색 URL에 검색어를 {query}로 표시|Such-URL; {query} steht für den Suchbegriff|URL de recherche ; {query} représente la requête|Адрес поиска; {query} обозначает запрос
+添加引擎|Add engine|新增引擎|エンジンを追加|엔진 추가|Suchmaschine hinzufügen|Ajouter un moteur|Добавить поисковую систему
+保存引擎|Save engine|儲存引擎|エンジンを保存|엔진 저장|Suchmaschine speichern|Enregistrer le moteur|Сохранить систему
+选择搜索引擎，当前为{0}|Choose search engine. Current: {0}|選擇搜尋引擎，目前為 {0}|検索エンジンを選択。現在：{0}|검색 엔진 선택. 현재: {0}|Suchmaschine wählen. Aktuell: {0}|Choisir un moteur. Actuel : {0}|Выбрать поиск. Сейчас: {0}
+清除搜索|Clear search|清除搜尋|検索をクリア|검색 지우기|Suche löschen|Effacer la recherche|Очистить поиск
+新标签页默认使用浏览器搜索引擎。|New tabs use your browser’s default search engine.|新分頁預設使用瀏覽器搜尋引擎。|新しいタブではブラウザーの標準検索を使用します。|새 탭에서는 브라우저 기본 검색 엔진을 사용합니다.|Neue Tabs verwenden die Standardsuche des Browsers.|Les nouveaux onglets utilisent le moteur par défaut du navigateur.|Новые вкладки используют поиск браузера по умолчанию.
+视觉增强|Visual enhancement|視覺增強|ビジュアル調整|시각 개선|Visuelle Anpassung|Adaptation visuelle|Визуальная адаптация
+自动适配文字颜色、图标和组件背景。|Adapt text, icon backgrounds and widget surfaces.|自動調整文字、圖示與小工具背景。|文字色、アイコンやウィジェットの背景を自動調整。|글자색과 아이콘 및 위젯 배경을 자동으로 조정합니다.|Text, Symbol- und Widgethintergründe automatisch anpassen.|Adapter le texte et le fond des icônes et widgets.|Автоматически подбирать текст, фон значков и виджетов.
+Bing 每日壁纸|Bing daily wallpaper|Bing 每日桌布|Bing の日替わり壁紙|Bing 오늘의 배경|Tägliches Bing-Hintergrundbild|Fond d’écran Bing du jour|Ежедневные обои Bing
+获取高清图标|Find high-resolution icon|取得高解析度圖示|高解像度アイコンを取得|고해상도 아이콘 찾기|Hochauflösendes Symbol suchen|Chercher une icône haute résolution|Найти значок высокого разрешения
+获取名称|Get name|取得名稱|名前を取得|이름 가져오기|Name abrufen|Obtenir le nom|Получить название
+添加网站|Add website|新增網站|サイトを追加|사이트 추가|Website hinzufügen|Ajouter un site|Добавить сайт
+编辑网站|Edit website|編輯網站|サイトを編集|사이트 편집|Website bearbeiten|Modifier le site|Изменить сайт
+网站操作|Website actions|網站操作|サイトの操作|사이트 작업|Websiteaktionen|Actions du site|Действия с сайтом
+布局操作|Layout actions|佈局操作|レイアウトの操作|레이아웃 작업|Layoutaktionen|Actions de disposition|Действия с макетом
+组件操作|Widget actions|小工具操作|ウィジェットの操作|위젯 작업|Widgetaktionen|Actions du widget|Действия с виджетом
+编辑布局|Edit layout|編輯佈局|レイアウトを編集|레이아웃 편집|Layout bearbeiten|Modifier la disposition|Изменить макет
+保存布局|Save layout|儲存佈局|レイアウトを保存|레이아웃 저장|Layout speichern|Enregistrer la disposition|Сохранить макет
+退出编辑|Exit editing|結束編輯|編集を終了|편집 종료|Bearbeitung beenden|Quitter la modification|Выйти из редактирования
+点击多选|Click to select multiple|點選以複選|クリックで複数選択|클릭하여 여러 항목 선택|Klicken zum Mehrfachauswählen|Cliquer pour sélectionner plusieurs éléments|Нажимайте для множественного выбора
+屏幕管理|Manage screens|管理螢幕|ページを管理|화면 관리|Seiten verwalten|Gérer les écrans|Управление экранами
+屏幕|Screen|螢幕|ページ|화면|Seite|Écran|Экран
+主屏幕|Home screen|主畫面|ホーム画面|홈 화면|Startseite|Écran d’accueil|Главный экран
+主屏幕分页|Home screen pages|主畫面分頁|ホーム画面のページ|홈 화면 페이지|Startseiten|Pages d’accueil|Страницы главного экрана
+主屏幕，第 {0} 屏，共 {1} 屏|Home screen, page {0} of {1}|主畫面，第 {0} 頁，共 {1} 頁|ホーム画面、{1} ページ中 {0} ページ|홈 화면, {1}페이지 중 {0}페이지|Startseite, Seite {0} von {1}|Accueil, écran {0} sur {1}|Главный экран, страница {0} из {1}
+第 {0} 屏|Screen {0}|第 {0} 頁|ページ {0}|화면 {0}|Seite {0}|Écran {0}|Экран {0}
+前往第 {0} 屏|Go to screen {0}|前往第 {0} 頁|ページ {0} に移動|화면 {0}(으)로 이동|Zu Seite {0}|Aller à l’écran {0}|Перейти к экрану {0}
+删除第 {0} 屏|Delete screen {0}|刪除第 {0} 頁|ページ {0} を削除|화면 {0} 삭제|Seite {0} löschen|Supprimer l’écran {0}|Удалить экран {0}
+上一屏|Previous screen|上一頁|前のページ|이전 화면|Vorherige Seite|Écran précédent|Предыдущий экран
+下一屏|Next screen|下一頁|次のページ|다음 화면|Nächste Seite|Écran suivant|Следующий экран
+添加一屏|Add screen|新增一頁|ページを追加|화면 추가|Seite hinzufügen|Ajouter un écran|Добавить экран
+删除屏幕|Delete screen|刪除螢幕|ページを削除|화면 삭제|Seite löschen|Supprimer l’écran|Удалить экран
+至少保留一屏|Keep at least one screen|至少保留一頁|1 ページ以上が必要です|화면을 하나 이상 유지하세요|Mindestens eine Seite beibehalten|Conserver au moins un écran|Оставьте хотя бы один экран
+删除所选项目|Delete selected items|刪除所選項目|選択した項目を削除|선택한 항목 삭제|Auswahl löschen|Supprimer la sélection|Удалить выбранное
+删除所选 {0} 项？|Delete {0} selected items?|刪除所選 {0} 個項目？|選択した {0} 件を削除しますか？|선택한 항목 {0}개를 삭제할까요?|{0} ausgewählte Elemente löschen?|Supprimer les {0} éléments sélectionnés ?|Удалить выбранные элементы ({0})?
+删除网站|Delete website|刪除網站|サイトを削除|사이트 삭제|Website löschen|Supprimer le site|Удалить сайт
+删除“{0}”？|Delete “{0}”?|刪除「{0}」？|「{0}」を削除しますか？|“{0}”을(를) 삭제할까요?|„{0}“ löschen?|Supprimer « {0} » ?|Удалить «{0}»?
+解散文件夹|Ungroup folder|解散資料夾|フォルダーを解除|폴더 해제|Ordner auflösen|Dissocier le dossier|Расформировать папку
+拖到这里移回桌面|Drop here to move to the desktop|拖至此處移回桌面|ここにドロップしてホーム画面へ移動|여기로 끌어 홈 화면으로 이동|Hier ablegen, um zum Desktop zu verschieben|Déposer ici pour déplacer vers l’accueil|Перетащите сюда для перемещения на главный экран
+松开取消|Release to cancel|放開以取消|離すとキャンセル|놓으면 취소|Loslassen zum Abbrechen|Relâcher pour annuler|Отпустите для отмены
+撤销|Undo|復原|元に戻す|실행 취소|Rückgängig|Annuler l’action|Отменить действие
+已删除|Deleted|已刪除|削除しました|삭제됨|Gelöscht|Supprimé|Удалено
+扩展|Extensions|擴充功能|拡張機能|확장 기능|Erweiterungen|Extensions|Расширения
+打开扩展|Open extensions|開啟擴充功能|拡張機能を開く|확장 기능 열기|Erweiterungen öffnen|Ouvrir les extensions|Открыть расширения
+打开设置|Open settings|開啟設定|設定を開く|설정 열기|Einstellungen öffnen|Ouvrir les réglages|Открыть настройки
+全部扩展|All extensions|所有擴充功能|すべての拡張機能|모든 확장 기능|Alle Erweiterungen|Toutes les extensions|Все расширения
+开发工具|Development|開發工具|開発ツール|개발 도구|Entwicklung|Développement|Разработка
+时间工具|Time|時間工具|時間|시간 도구|Zeit|Temps|Время
+记录与阅读|Notes & reading|記錄與閱讀|メモと読書|메모 및 읽기|Notizen & Lesen|Notes et lecture|Заметки и чтение
+浏览管理|Browsing|瀏覽管理|ブラウジング|브라우징 관리|Browser-Verwaltung|Navigation web|Управление вкладками
+数据同步|Data sync|資料同步|データ同期|데이터 동기화|Datensynchronisierung|Synchronisation|Синхронизация
+扩展分类|Extension categories|擴充功能分類|拡張機能の分類|확장 기능 분류|Erweiterungskategorien|Catégories d’extensions|Категории расширений
+扩展列表|Extensions|擴充功能清單|拡張機能一覧|확장 기능 목록|Erweiterungsliste|Liste des extensions|Список расширений
+搜索扩展|Search extensions|搜尋擴充功能|拡張機能を検索|확장 기능 검색|Erweiterungen suchen|Rechercher des extensions|Поиск расширений
+没有找到扩展|No extensions found|找不到擴充功能|拡張機能が見つかりません|확장 기능을 찾을 수 없습니다|Keine Erweiterungen gefunden|Aucune extension trouvée|Расширения не найдены
+返回扩展|Back to extensions|返回擴充功能|拡張機能に戻る|확장 기능으로 돌아가기|Zurück zu Erweiterungen|Retour aux extensions|Назад к расширениям
+分类|Category|分類|カテゴリ|분류|Kategorie|Catégorie|Категория
+类型|Type|類型|種類|유형|Typ|Type|Тип
+桌面组件|Desktop widget|桌面小工具|デスクトップウィジェット|데스크톱 위젯|Desktop-Widget|Widget de bureau|Виджет
+功能扩展|Utility extension|功能擴充|機能拡張|기능 확장|Funktionserweiterung|Extension utilitaire|Функциональное расширение
+配置|Configure|設定|設定|설정|Konfigurieren|Configurer|Настроить
+管理|Manage|管理|管理|관리|Verwalten|Gérer|Управлять
+使用|Use|使用|使用する|사용|Verwenden|Utiliser|Использовать
+尺寸|Size|尺寸|サイズ|크기|Größe|Taille|Размер
+尺寸（行 × 列）|Size (rows × columns)|尺寸（列 × 欄）|サイズ（行 × 列）|크기 (행 × 열)|Größe (Zeilen × Spalten)|Taille (lignes × colonnes)|Размер (строки × столбцы)
+迷你 · 1×1|Mini · 1×1|迷你 · 1×1|ミニ · 1×1|미니 · 1×1|Mini · 1×1|Mini · 1×1|Мини · 1×1
+小 · 2×2|Small · 2×2|小 · 2×2|小 · 2×2|소형 · 2×2|Klein · 2×2|Petit · 2×2|Маленький · 2×2
+中 · 2×4|Medium · 2×4|中 · 2×4|中 · 2×4|중형 · 2×4|Mittel · 2×4|Moyen · 2×4|Средний · 2×4
+大 · 4×4|Large · 4×4|大 · 4×4|大 · 4×4|대형 · 4×4|Groß · 4×4|Grand · 4×4|Большой · 4×4
+样式|Style|樣式|スタイル|스타일|Stil|Style|Стиль
+组件配置|Widget settings|小工具設定|ウィジェット設定|위젯 설정|Widget-Einstellungen|Réglages du widget|Настройки виджета
+配置组件|Configure widget|設定小工具|ウィジェットを設定|위젯 설정|Widget konfigurieren|Configurer le widget|Настроить виджет
+移除组件|Remove widget|移除小工具|ウィジェットを削除|위젯 제거|Widget entfernen|Retirer le widget|Убрать виджет
+组件预览|Widget preview|小工具預覽|ウィジェットのプレビュー|위젯 미리 보기|Widget-Vorschau|Aperçu du widget|Предпросмотр виджета
+{0}预览|{0} preview|{0}預覽|{0}のプレビュー|{0} 미리 보기|{0}-Vorschau|Aperçu : {0}|Предпросмотр: {0}
+搜索标签快照|Search tab snapshots|搜尋分頁快照|タブのスナップショットを検索|탭 스냅샷 검색|Tab-Snapshots suchen|Rechercher des instantanés d’onglets|Поиск снимков вкладок
+时钟|Clock|時鐘|時計|시계|Uhr|Horloge|Часы
+世界时钟|World clocks|世界時鐘|世界時計|세계 시계|Weltuhr|Horloges du monde|Мировое время
+时区对照|Time zone converter|時區對照|時差の比較|시간대 비교|Zeitzonenvergleich|Comparaison des fuseaux|Сравнение часовых поясов
+倒计时|Countdown|倒數計時|カウントダウン|카운트다운|Countdown|Minuteur|Обратный отсчёт
+计时|Stopwatch|碼錶|ストップウォッチ|스톱워치|Stoppuhr|Chronomètre|Секундомер
+时钟功能|Clock tools|時鐘功能|時計の機能|시계 기능|Uhrfunktionen|Fonctions de l’horloge|Функции часов
+世界时钟、时区对照、倒计时与计时。|World clocks, time zone comparison, countdown and stopwatch.|世界時鐘、時區對照、倒數計時與碼錶。|世界時計、時差比較、カウントダウン、ストップウォッチ。|세계 시계, 시간대 비교, 카운트다운, 스톱워치.|Weltuhren, Zeitzonenvergleich, Countdown und Stoppuhr.|Horloges mondiales, fuseaux horaires, minuteur et chronomètre.|Мировое время, сравнение часовых поясов, таймер и секундомер.
+指针|Analog|指針|アナログ|아날로그|Analog|Analogique|Аналоговые
+数字|Digital|數位|デジタル|디지털|Digital|Numérique|Цифровые
+数字时钟预览|Digital clock preview|數位時鐘預覽|デジタル時計のプレビュー|디지털 시계 미리 보기|Digitaluhr-Vorschau|Aperçu de l’horloge numérique|Предпросмотр цифровых часов
+桌面时区|Desktop time zone|桌面時區|デスクトップのタイムゾーン|데스크톱 시간대|Desktop-Zeitzone|Fuseau horaire du bureau|Часовой пояс виджета
+添加城市|Add city|新增城市|都市を追加|도시 추가|Stadt hinzufügen|Ajouter une ville|Добавить город
+选择城市|Choose city|選擇城市|都市を選択|도시 선택|Stadt wählen|Choisir une ville|Выбрать город
+其他时区|Other time zone|其他時區|その他のタイムゾーン|다른 시간대|Andere Zeitzone|Autre fuseau horaire|Другой часовой пояс
+例如 America/Vancouver|e.g. America/Vancouver|例如 America/Vancouver|例：America/Vancouver|예: America/Vancouver|z. B. America/Vancouver|Ex. : America/Vancouver|Например, America/Vancouver
+参考时区|Reference time zone|參考時區|基準のタイムゾーン|기준 시간대|Referenzzeitzone|Fuseau de référence|Исходный часовой пояс
+日期与时间|Date and time|日期與時間|日時|날짜 및 시간|Datum und Uhrzeit|Date et heure|Дата и время
+重复时间|Repeated time|重複時間|重複する時刻|중복 시간|Doppelte Uhrzeit|Heure répétée|Повторяющееся время
+第一次|First occurrence|第一次|1 回目|첫 번째|Erstes Vorkommen|Première occurrence|Первое вхождение
+第二次|Second occurrence|第二次|2 回目|두 번째|Zweites Vorkommen|Deuxième occurrence|Второе вхождение
+现在|Now|現在|現在|지금|Jetzt|Maintenant|Сейчас
+· 无时差|· no time difference|· 無時差|· 時差なし|· 시차 없음|· kein Zeitunterschied|· aucun décalage|· без разницы во времени
+· {0}{1} 小时|· {0}{1} h|· {0}{1} 小時|· {0}{1} 時間|· {0}{1}시간|· {0}{1} Std.|· {0}{1} h|· {0}{1} ч
+· {0}{1}天|· {0}{1} d|· {0}{1}天|· {0}{1} 日|· {0}{1}일|· {0}{1} Tage|· {0}{1} j|· {0}{1} дн.
+前|previous|前|前|이전|vorherige|précédent|ранее
+后|next|後|後|다음|nächste|suivant|позже
+时|h|時|時|시간|Std.|h|ч
+分|min|分|分|분|Min.|min|мин
+秒|s|秒|秒|초|Sek.|s|с
+天|days|天|日|일|Tage|jours|дней
+日|day|日|日|일|Tag|jour|день
+月|month|月|月|월|Monat|mois|месяц
+时间|Time|時間|時刻|시간|Zeit|Heure|Время
+时间到|Time’s up|時間到|時間です|시간 종료|Zeit abgelaufen|Temps écoulé|Время вышло
+开始倒计时|Start countdown|開始倒數|カウントダウンを開始|카운트다운 시작|Countdown starten|Démarrer le minuteur|Запустить отсчёт
+暂停倒计时|Pause countdown|暫停倒數|カウントダウンを一時停止|카운트다운 일시 정지|Countdown pausieren|Suspendre le minuteur|Приостановить отсчёт
+取消倒计时|Cancel countdown|取消倒數|カウントダウンをキャンセル|카운트다운 취소|Countdown abbrechen|Annuler le minuteur|Отменить отсчёт
+开始计时|Start stopwatch|開始計時|計測を開始|스톱워치 시작|Stoppuhr starten|Démarrer le chronomètre|Запустить секундомер
+暂停计时|Pause stopwatch|暫停計時|計測を一時停止|스톱워치 일시 정지|Stoppuhr pausieren|Suspendre le chronomètre|Приостановить секундомер
+重置计时|Reset stopwatch|重設計時|計測をリセット|스톱워치 초기화|Stoppuhr zurücksetzen|Réinitialiser le chronomètre|Сбросить секундомер
+已计时|Elapsed time|已計時|経過時間|경과 시간|Verstrichene Zeit|Temps écoulé|Прошедшее время
+剩余时间|Time remaining|剩餘時間|残り時間|남은 시간|Verbleibende Zeit|Temps restant|Оставшееся время
+倒计时{0}|Countdown {0}|倒數計時{0}|カウントダウン：{0}|카운트다운 {0}|Countdown {0}|Minuteur : {0}|Отсчёт: {0}
+倒计时通知|Countdown notification|倒數通知|カウントダウンの通知|카운트다운 알림|Countdown-Benachrichtigung|Notification du minuteur|Уведомление таймера
+倒计时页面提醒|In-page countdown alert|頁面倒數提醒|ページ内のカウントダウン通知|페이지 내 카운트다운 알림|Countdown-Hinweis auf der Seite|Alerte du minuteur dans la page|Оповещение таймера на странице
+浏览器运行时通知|Notify while the browser is running|瀏覽器執行時通知|ブラウザー起動中に通知|브라우저 실행 중 알림|Bei geöffnetem Browser benachrichtigen|Notifier lorsque le navigateur est ouvert|Уведомлять при работающем браузере
+页面打开时提醒|Alert while this page is open|頁面開啟時提醒|このページを開いている間に通知|페이지가 열려 있을 때 알림|Bei geöffneter Seite erinnern|Alerter lorsque cette page est ouverte|Оповещать, пока открыта страница
+{0}，{1}，打开时钟|{0}, {1}. Open clock|{0}，{1}，開啟時鐘|{0}、{1}。時計を開く|{0}, {1}. 시계 열기|{0}, {1}. Uhr öffnen|{0}, {1}. Ouvrir l’horloge|{0}, {1}. Открыть часы
+便笺|Notes|便箋|メモ|메모|Notizen|Notes|Заметки
+稍后读|Read later|稍後閱讀|あとで読む|나중에 읽기|Später lesen|À lire plus tard|Прочитать позже
+标签快照|Tab snapshots|分頁快照|タブのスナップショット|탭 스냅샷|Tab-Snapshots|Instantanés d’onglets|Снимки вкладок
+随手记录，支持 Markdown 预览与置顶。|Quick notes with Markdown preview and pinning.|隨手記錄，支援 Markdown 預覽與置頂。|Markdown プレビューとピン留めに対応したメモ。|Markdown 미리 보기와 고정을 지원하는 메모.|Schnelle Notizen mit Markdown-Vorschau und Anheften.|Notes rapides avec aperçu Markdown et épinglage.|Быстрые заметки с Markdown и закреплением.
+收藏链接，按未读、已读与归档整理。|Save links and organize them as unread, read or archived.|收藏連結，依未讀、已讀與封存整理。|リンクを未読・既読・アーカイブで整理。|링크를 미열람, 읽음, 보관함으로 정리하세요.|Links als ungelesen, gelesen oder archiviert organisieren.|Enregistrer et classer les liens : non lus, lus ou archivés.|Сохраняйте ссылки: непрочитанные, прочитанные и архив.
+保存当前窗口，按需重新打开所选标签。|Save this window and reopen selected tabs later.|儲存目前視窗，按需重新開啟所選分頁。|現在のウィンドウを保存し、選んだタブを再度開く。|현재 창을 저장하고 선택한 탭을 다시 여세요.|Aktuelles Fenster speichern und ausgewählte Tabs erneut öffnen.|Enregistrer la fenêtre et rouvrir les onglets choisis.|Сохраните окно и откройте выбранные вкладки позже.
+记下此刻的想法|Capture a thought|記下此刻的想法|思いついたことを記録|떠오른 생각을 기록하세요|Einen Gedanken festhalten|Noter une idée|Запишите свою мысль
+没有未读链接|No unread links|沒有未讀連結|未読のリンクはありません|읽지 않은 링크가 없습니다|Keine ungelesenen Links|Aucun lien non lu|Нет непрочитанных ссылок
+新便笺|New note|新增便箋|新しいメモ|새 메모|Neue Notiz|Nouvelle note|Новая заметка
+未命名便笺|Untitled note|未命名便箋|無題のメモ|제목 없는 메모|Unbenannte Notiz|Note sans titre|Заметка без названия
+空白便笺|Empty note|空白便箋|空のメモ|빈 메모|Leere Notiz|Note vide|Пустая заметка
+搜索便笺|Search notes|搜尋便箋|メモを検索|메모 검색|Notizen suchen|Rechercher des notes|Поиск заметок
+便笺列表|Notes list|便箋清單|メモ一覧|메모 목록|Notizenliste|Liste des notes|Список заметок
+便笺名称|Note title|便箋名稱|メモのタイトル|메모 제목|Notiztitel|Titre de la note|Название заметки
+便笺内容|Note content|便箋內容|メモの内容|메모 내용|Notizinhalt|Contenu de la note|Текст заметки
+开始记录…|Start writing…|開始記錄…|書き始める…|기록을 시작하세요…|Hier schreiben…|Commencer à écrire…|Начните писать…
+置顶|Pin|置頂|ピン留め|고정|Anheften|Épingler|Закрепить
+预览|Preview|預覽|プレビュー|미리 보기|Vorschau|Aperçu|Предпросмотр
+复制便笺|Copy note|複製便箋|メモをコピー|메모 복사|Notiz kopieren|Copier la note|Скопировать заметку
+删除便笺|Delete note|刪除便箋|メモを削除|메모 삭제|Notiz löschen|Supprimer la note|Удалить заметку
+字符|characters|字元|文字|자|Zeichen|caractères|символов
+暂无便笺|No notes yet|尚無便箋|メモはありません|메모가 없습니다|Noch keine Notizen|Aucune note|Заметок пока нет
+没有找到便笺|No notes found|找不到便箋|メモが見つかりません|메모를 찾을 수 없습니다|Keine Notizen gefunden|Aucune note trouvée|Заметки не найдены
+放弃未保存的便笺修改？|Discard unsaved note changes?|放棄尚未儲存的便箋變更？|保存していないメモの変更を破棄しますか？|저장하지 않은 메모 변경을 버릴까요?|Ungespeicherte Notizänderungen verwerfen?|Abandonner les modifications de la note ?|Отменить несохранённые изменения заметки?
+当前便笺尚未保存，放弃修改？|This note has unsaved changes. Discard them?|目前便箋尚未儲存，要放棄變更？|未保存の変更があります。破棄しますか？|저장하지 않은 변경 사항을 버릴까요?|Die Notiz enthält ungespeicherte Änderungen. Verwerfen?|Cette note a des modifications non enregistrées. Les abandonner ?|В заметке есть несохранённые изменения. Отменить их?
+放弃修改|Discard changes|放棄變更|変更を破棄|변경 취소|Änderungen verwerfen|Abandonner les modifications|Отменить изменения
+放弃修改并重新载入|Discard changes and reload|放棄變更並重新載入|変更を破棄して再読み込み|변경 취소 후 다시 불러오기|Änderungen verwerfen und neu laden|Abandonner et recharger|Отменить изменения и перезагрузить
+这条便笺已在其他页面更新。|This note changed in another page.|此便箋已在其他頁面更新。|このメモは別のページで更新されました。|다른 페이지에서 이 메모가 변경되었습니다.|Diese Notiz wurde auf einer anderen Seite geändert.|Cette note a changé dans une autre page.|Эта заметка изменена на другой странице.
+重新打开|Reopen|重新開啟|開き直す|다시 열기|Erneut öffnen|Rouvrir|Открыть заново
+无法复制，请手动选择文字。|Could not copy. Please select the text manually.|無法複製，請手動選取文字。|コピーできません。文字を手動で選択してください。|복사하지 못했습니다. 텍스트를 직접 선택하세요.|Kopieren fehlgeschlagen. Bitte Text manuell auswählen.|Copie impossible. Sélectionnez le texte manuellement.|Не удалось скопировать. Выделите текст вручную.
+预览仅显示前 1000 行，完整内容保留在编辑器中。|Preview shows the first 1,000 lines. The editor retains all content.|預覽顯示前 1000 行，完整內容保留於編輯器。|プレビューは先頭 1000 行です。全文はエディターに残ります。|미리 보기는 처음 1,000줄만 표시하며 전체 내용은 편집기에 유지됩니다.|Die Vorschau zeigt 1.000 Zeilen. Im Editor bleibt der vollständige Inhalt.|L’aperçu affiche les 1 000 premières lignes. Le contenu complet reste dans l’éditeur.|В предпросмотре первые 1000 строк. Полный текст остаётся в редакторе.
+工具数据|Tool data|工具資料|ツールのデータ|도구 데이터|Werkzeugdaten|Données des outils|Данные инструментов
+便笺、稍后读与标签快照仅保存在本机。导入会保留已有记录；这些内容不参与导航同步。|Notes, reading links and tab snapshots stay on this device. Import preserves existing records; navigation sync excludes this data.|便箋、稍後閱讀與分頁快照僅存於本機。匯入保留已有記錄，這些內容不參與導覽同步。|メモ、読書リスト、タブの保存はこの端末のみです。読み込み時は既存データを保持し、ナビゲーション同期には含めません。|메모, 읽기 목록, 탭 스냅샷은 이 기기에만 저장됩니다. 가져올 때 기존 기록을 유지하며 내비게이션 동기화에 포함하지 않습니다.|Notizen, Leselinks und Tab-Snapshots bleiben lokal. Import erhält vorhandene Einträge; Navigationssync schließt diese Daten aus.|Notes, liens et instantanés restent sur cet appareil. L’import conserve les éléments existants ; ces données ne sont pas synchronisées avec la navigation.|Заметки, ссылки и снимки вкладок хранятся на устройстве. Импорт сохраняет существующие записи; синхронизация навигации их не включает.
+内容保存在本机，移除桌面组件会保留内容。|Content stays on this device when the widget is removed.|內容儲存於本機，移除桌面小工具仍會保留。|ウィジェットを削除しても、この端末の内容は残ります。|위젯을 제거해도 이 기기의 내용은 유지됩니다.|Beim Entfernen des Widgets bleibt der Inhalt lokal erhalten.|Le contenu local est conservé lorsque le widget est retiré.|При удалении виджета содержимое остаётся на устройстве.
+未读|Unread|未讀|未読|읽지 않음|Ungelesen|Non lus|Непрочитанные
+已读|Read|已讀|既読|읽음|Gelesen|Lus|Прочитанные
+归档|Archive|封存|アーカイブ|보관|Archiv|Archives|Архив
+阅读状态|Reading status|閱讀狀態|読書の状態|읽기 상태|Lesestatus|État de lecture|Статус чтения
+标为未读|Mark unread|標為未讀|未読にする|읽지 않음으로 표시|Als ungelesen markieren|Marquer comme non lu|Отметить непрочитанным
+标为已读|Mark read|標為已讀|既読にする|읽음으로 표시|Als gelesen markieren|Marquer comme lu|Отметить прочитанным
+编辑链接|Edit link|編輯連結|リンクを編集|링크 편집|Link bearbeiten|Modifier le lien|Изменить ссылку
+删除链接|Delete link|刪除連結|リンクを削除|링크 삭제|Link löschen|Supprimer le lien|Удалить ссылку
+可留空|Optional|可留空|任意|선택 사항|Optional|Facultatif|Необязательно
+搜索稍后读|Search reading list|搜尋稍後閱讀|あとで読むを検索|읽기 목록 검색|Leseliste durchsuchen|Rechercher dans la liste de lecture|Поиск в списке чтения
+没有找到链接|No links found|找不到連結|リンクが見つかりません|링크를 찾을 수 없습니다|Keine Links gefunden|Aucun lien trouvé|Ссылки не найдены
+暂无链接|No links yet|尚無連結|リンクはありません|링크가 없습니다|Noch keine Links|Aucun lien|Ссылок пока нет
+从浏览器阅读清单导入|Import browser reading list|匯入瀏覽器閱讀清單|ブラウザーのリーディングリストを読み込む|브라우저 읽기 목록 가져오기|Browser-Leseliste importieren|Importer la liste de lecture du navigateur|Импортировать список чтения браузера
+添加到稍后读|Add to read later|新增至稍後閱讀|あとで読むに追加|나중에 읽기에 추가|Zu „Später lesen“ hinzufügen|Ajouter à la liste de lecture|Добавить в список чтения
+保存当前窗口|Save current window|儲存目前視窗|現在のウィンドウを保存|현재 창 저장|Aktuelles Fenster speichern|Enregistrer la fenêtre actuelle|Сохранить текущее окно
+快照名称|Snapshot name|快照名稱|スナップショット名|스냅샷 이름|Snapshot-Name|Nom de l’instantané|Имя снимка
+例如 工作资料|e.g. Work resources|例如 工作資料|例：仕事の資料|예: 업무 자료|z. B. Arbeitsmaterial|Ex. : Ressources de travail|Например, рабочие материалы
+例如：工作资料|e.g. Work resources|例如：工作資料|例：仕事の資料|예: 업무 자료|z. B. Arbeitsmaterial|Ex. : Ressources de travail|Например, рабочие материалы
+搜索快照|Search snapshots|搜尋快照|スナップショットを検索|스냅샷 검색|Snapshots suchen|Rechercher des instantanés|Поиск снимков
+快照列表|Snapshots|快照清單|スナップショット一覧|스냅샷 목록|Snapshots|Instantanés|Список снимков
+快照内容|Snapshot content|快照內容|スナップショットの内容|스냅샷 내용|Snapshot-Inhalt|Contenu de l’instantané|Содержимое снимка
+暂无快照|No snapshots yet|尚無快照|スナップショットはありません|스냅샷이 없습니다|Noch keine Snapshots|Aucun instantané|Снимков пока нет
+选择快照查看标签|Select a snapshot to view its tabs|選擇快照以查看分頁|スナップショットを選んでタブを表示|스냅샷을 선택하여 탭 보기|Snapshot wählen, um Tabs anzuzeigen|Sélectionner un instantané pour voir ses onglets|Выберите снимок для просмотра вкладок
+快照已在其他页面更新。|This snapshot changed in another page.|此快照已在其他頁面更新。|別のページでスナップショットが更新されました。|다른 페이지에서 스냅샷이 변경되었습니다.|Dieser Snapshot wurde auf einer anderen Seite geändert.|Cet instantané a changé dans une autre page.|Этот снимок изменён на другой странице.
+保存名称|Save name|儲存名稱|名前を保存|이름 저장|Namen speichern|Enregistrer le nom|Сохранить имя
+全选|Select all|全選|すべて選択|모두 선택|Alle auswählen|Tout sélectionner|Выбрать всё
+选择前 50 个|Select first 50|選取前 50 個|先頭 50 件を選択|처음 50개 선택|Erste 50 auswählen|Sélectionner les 50 premiers|Выбрать первые 50
+取消选择|Deselect|取消選取|選択を解除|선택 해제|Auswahl aufheben|Désélectionner|Снять выделение
+清除选择|Clear selection|清除選取|選択をクリア|선택 지우기|Auswahl löschen|Effacer la sélection|Очистить выбор
+打开所选标签|Open selected tabs|開啟所選分頁|選択したタブを開く|선택한 탭 열기|Ausgewählte Tabs öffnen|Ouvrir les onglets sélectionnés|Открыть выбранные вкладки
+删除快照|Delete snapshot|刪除快照|スナップショットを削除|스냅샷 삭제|Snapshot löschen|Supprimer l’instantané|Удалить снимок
+删除“{0}”？已打开的标签不受影响。|Delete “{0}”? Open tabs will remain.|刪除「{0}」？已開啟的分頁不受影響。|「{0}」を削除しますか？開いているタブはそのままです。|“{0}”을(를) 삭제할까요? 열린 탭은 유지됩니다.|„{0}“ löschen? Offene Tabs bleiben erhalten.|Supprimer « {0} » ? Les onglets ouverts sont conservés.|Удалить «{0}»? Открытые вкладки останутся.
+在新窗口打开所选 {0} 个标签？|Open {0} selected tabs in a new window?|在新視窗開啟所選 {0} 個分頁？|選択した {0} 個のタブを新しいウィンドウで開きますか？|선택한 탭 {0}개를 새 창에서 열까요?|{0} ausgewählte Tabs in einem neuen Fenster öffnen?|Ouvrir les {0} onglets sélectionnés dans une nouvelle fenêtre ?|Открыть выбранные вкладки ({0}) в новом окне?
+确认操作|Confirm action|確認操作|操作の確認|작업 확인|Aktion bestätigen|Confirmer l’action|Подтвердить действие
+提示|Notice|提示|お知らせ|알림|Hinweis|Information|Уведомление
+当前|Current|目前|現在|현재|Aktuell|Actuel|Текущее
+当前值|Current value|目前值|現在の値|현재 값|Aktueller Wert|Valeur actuelle|Текущее значение
+内容|Content|內容|内容|내용|Inhalt|Contenu|Содержимое
+不存在|Not present|不存在|存在しません|없음|Nicht vorhanden|Absent|Отсутствует
+导出|Export|匯出|書き出す|내보내기|Exportieren|Exporter|Экспорт
+导入|Import|匯入|読み込む|가져오기|Importieren|Importer|Импорт
+本机|This device|本機|この端末|이 기기|Dieses Gerät|Cet appareil|Это устройство
+此设备|This device|此裝置|この端末|이 기기|Dieses Gerät|Cet appareil|Это устройство
+设备|Device|裝置|端末|기기|Gerät|Appareil|Устройство
+设备 {0}|Device {0}|裝置 {0}|端末 {0}|기기 {0}|Gerät {0}|Appareil {0}|Устройство {0}
+修订|Revision|修訂|リビジョン|리비전|Revision|Révision|Ревизия
+版本历史|Version history|版本歷程|バージョン履歴|버전 기록|Versionsverlauf|Historique des versions|История версий
+云端版本历史|Cloud version history|雲端版本歷程|クラウドのバージョン履歴|클라우드 버전 기록|Cloud-Versionsverlauf|Historique des versions cloud|История облачных версий
+浏览版本|Browse versions|瀏覽版本|バージョンを表示|버전 보기|Versionen anzeigen|Parcourir les versions|Просмотреть версии
+版本差异|Version differences|版本差異|バージョンの差分|버전 차이|Versionsunterschiede|Différences de versions|Различия версий
+加密版本|Encrypted version|加密版本|暗号化されたバージョン|암호화된 버전|Verschlüsselte Version|Version chiffrée|Зашифрованная версия
+全部设备|All devices|所有裝置|すべての端末|모든 기기|Alle Geräte|Tous les appareils|Все устройства
+全部差异|All changes|所有差異|すべての変更|모든 변경|Alle Änderungen|Toutes les modifications|Все изменения
+导航与组件|Navigation & widgets|導覽與小工具|サイトとウィジェット|탐색 및 위젯|Navigation & Widgets|Navigation et widgets|Навигация и виджеты
+外观与布局|Appearance & layout|外觀與佈局|外観とレイアウト|모양 및 레이아웃|Darstellung & Layout|Apparence et disposition|Внешний вид и макет
+所选版本|Selected version|所選版本|選択したバージョン|선택한 버전|Ausgewählte Version|Version sélectionnée|Выбранная версия
+所选版本值|Selected version value|所選版本值|選択したバージョンの値|선택한 버전의 값|Wert der ausgewählten Version|Valeur de la version sélectionnée|Значение выбранной версии
+查看{0}差异|View changes to {0}|查看 {0} 差異|{0} の差分を表示|{0} 변경 보기|Änderungen an {0} anzeigen|Voir les différences : {0}|Посмотреть изменения: {0}
+选择此类全部|Select this category|選取此類全部|この分類をすべて選択|이 분류 모두 선택|Diese Kategorie auswählen|Sélectionner cette catégorie|Выбрать эту категорию
+显示更多版本|Show more versions|顯示更多版本|さらにバージョンを表示|버전 더 보기|Weitere Versionen anzeigen|Afficher plus de versions|Показать больше версий
+显示更多差异|Show more changes|顯示更多差異|さらに差分を表示|변경 더 보기|Weitere Änderungen anzeigen|Afficher plus de différences|Показать больше изменений
+暂无云端版本|No cloud versions yet|尚無雲端版本|クラウドのバージョンはありません|클라우드 버전이 없습니다|Noch keine Cloud-Versionen|Aucune version cloud|Облачных версий пока нет
+没有差异|No differences|沒有差異|差分はありません|차이가 없습니다|Keine Unterschiede|Aucune différence|Различий нет
+恢复所选项目|Restore selected items|還原所選項目|選択した項目を復元|선택한 항목 복원|Ausgewählte Elemente wiederherstellen|Restaurer la sélection|Восстановить выбранное
+恢复所选|Restore selection|還原所選|選択内容を復元|선택 항목 복원|Auswahl wiederherstellen|Restaurer la sélection|Восстановить выбранное
+确认恢复|Confirm restore|確認還原|復元を確認|복원 확인|Wiederherstellung bestätigen|Confirmer la restauration|Подтвердить восстановление
+已恢复所选项目|Selected items restored|已還原所選項目|選択した項目を復元しました|선택한 항목 복원됨|Auswahl wiederhergestellt|Sélection restaurée|Выбранное восстановлено
+旧修订仅包含此设备修改过的项目，未记录的项目会保留。|This older revision only records this device’s changes. Unrecorded items will be kept.|舊修訂僅含此裝置修改過的項目，未記錄的項目會保留。|この旧リビジョンはこの端末の変更のみです。未記録の項目は保持します。|이전 리비전에는 이 기기의 변경만 있습니다. 기록되지 않은 항목은 유지됩니다.|Diese alte Revision enthält nur Änderungen dieses Geräts. Andere Einträge bleiben erhalten.|Cette ancienne révision ne contient que les modifications de cet appareil. Les autres éléments sont conservés.|Старая ревизия содержит лишь изменения этого устройства. Остальные элементы сохранятся.
+自定义存储同步|Custom storage sync|自訂儲存同步|カスタムストレージ同期|사용자 저장소 동기화|Eigener Speichersync|Synchronisation vers votre stockage|Синхронизация со своим хранилищем
+加密同步导航和设置，浏览版本与选择性恢复。|Encrypt and sync navigation and settings, browse versions and restore selected items.|加密同步導覽與設定，瀏覽版本及選擇性還原。|サイトと設定を暗号化同期し、履歴の表示と選択復元に対応。|탐색과 설정을 암호화해 동기화하고 버전 확인 및 선택 복원을 지원합니다.|Navigation und Einstellungen verschlüsselt synchronisieren, Versionen ansehen und gezielt wiederherstellen.|Synchroniser navigation et réglages chiffrés, consulter les versions et restaurer une sélection.|Шифруйте навигацию и настройки, просматривайте версии и восстанавливайте выбранное.
+存储服务|Storage service|儲存服務|ストレージサービス|저장소 서비스|Speicherdienst|Service de stockage|Сервис хранения
+保存位置|Save to|儲存位置|保存先|저장 위치|Speicherort|Enregistrer dans|Место сохранения
+保存目录|Directory|儲存目錄|ディレクトリ|디렉터리|Verzeichnis|Répertoire|Каталог
+GitHub 等 5 项|GitHub and 4 others|GitHub 等 5 項|GitHub ほか計 5 種類|GitHub 등 5개|GitHub und 4 weitere|GitHub et 4 autres|GitHub и ещё 4 сервиса
+阿里云 OSS|Alibaba Cloud OSS|阿里雲 OSS|Alibaba Cloud OSS|Alibaba Cloud OSS|Alibaba Cloud OSS|Alibaba Cloud OSS|Alibaba Cloud OSS
+仓库所有者|Repository owner|儲存庫擁有者|リポジトリの所有者|저장소 소유자|Repository-Inhaber|Propriétaire du dépôt|Владелец репозитория
+仓库名称|Repository name|儲存庫名稱|リポジトリ名|저장소 이름|Repository-Name|Nom du dépôt|Имя репозитория
+分支|Branch|分支|ブランチ|브랜치|Branch|Branche|Ветка
+项目 ID 或完整路径|Project ID or full path|專案 ID 或完整路徑|プロジェクト ID またはフルパス|프로젝트 ID 또는 전체 경로|Projekt-ID oder vollständiger Pfad|ID du projet ou chemin complet|ID проекта или полный путь
+GitLab 服务地址|GitLab server URL|GitLab 服務網址|GitLab サーバー URL|GitLab 서버 URL|GitLab-Server-URL|URL du serveur GitLab|Адрес сервера GitLab
+账户 API 地址|Account API URL|帳戶 API 網址|アカウント API の URL|계정 API URL|Konto-API-URL|URL de l’API du compte|Адрес API аккаунта
+Bucket 名称|Bucket name|Bucket 名稱|バケット名|버킷 이름|Bucket-Name|Nom du bucket|Имя бакета
+Bucket 访问域名|Bucket endpoint|Bucket 存取網域|バケットのエンドポイント|버킷 엔드포인트|Bucket-Endpunkt|Point d’accès du bucket|Адрес бакета
+地域|Region|區域|リージョン|리전|Region|Région|Регион
+WebDAV 基目录地址|WebDAV base URL|WebDAV 基底目錄網址|WebDAV のベース URL|WebDAV 기본 URL|WebDAV-Basis-URL|URL de base WebDAV|Базовый адрес WebDAV
+WebDAV 用户名|WebDAV username|WebDAV 使用者名稱|WebDAV ユーザー名|WebDAV 사용자 이름|WebDAV-Benutzername|Identifiant WebDAV|Имя пользователя WebDAV
+WebDAV 应用密码|WebDAV app password|WebDAV 應用程式密碼|WebDAV アプリパスワード|WebDAV 앱 비밀번호|WebDAV-App-Passwort|Mot de passe d’application WebDAV|Пароль приложения WebDAV
+{0} 访问令牌|{0} access token|{0} 存取權杖|{0} アクセストークン|{0} 액세스 토큰|{0}-Zugriffstoken|Jeton d’accès {0}|Токен доступа {0}
+临时安全令牌|Session token|臨時安全權杖|セッショントークン|세션 토큰|Sitzungstoken|Jeton de session|Временный токен
+同步密码|Sync password|同步密碼|同期パスワード|동기화 비밀번호|Sync-Passwort|Mot de passe de synchronisation|Пароль синхронизации
+解锁|Unlock|解鎖|ロックを解除|잠금 해제|Entsperren|Déverrouiller|Разблокировать
+已解锁|Unlocked|已解鎖|ロック解除済み|잠금 해제됨|Entsperrt|Déverrouillé|Разблокировано
+需解锁|Locked|需要解鎖|ロック中|잠김|Gesperrt|Verrouillé|Заблокировано
+锁定|Lock|鎖定|ロック|잠그기|Sperren|Verrouiller|Заблокировать
+保存配置|Save configuration|儲存設定|設定を保存|설정 저장|Konfiguration speichern|Enregistrer la configuration|Сохранить конфигурацию
+修改配置|Edit configuration|修改設定|設定を編集|설정 편집|Konfiguration bearbeiten|Modifier la configuration|Изменить конфигурацию
+取消修改|Cancel changes|取消變更|変更をキャンセル|변경 취소|Änderungen abbrechen|Annuler les modifications|Отменить изменения
+配置已保存|Configuration saved|設定已儲存|設定を保存しました|설정 저장됨|Konfiguration gespeichert|Configuration enregistrée|Конфигурация сохранена
+配置读取失败|Could not load configuration|無法讀取設定|設定を読み込めません|설정을 불러오지 못했습니다|Konfiguration nicht geladen|Chargement de la configuration impossible|Не удалось загрузить конфигурацию
+解锁后自动同步|Auto-sync when unlocked|解鎖後自動同步|ロック解除後に自動同期|잠금 해제 후 자동 동기화|Nach Entsperren automatisch synchronisieren|Synchroniser automatiquement après déverrouillage|Автосинхронизация после разблокировки
+立即同步|Sync now|立即同步|今すぐ同期|지금 동기화|Jetzt synchronisieren|Synchroniser maintenant|Синхронизировать
+同步中|Syncing|同步中|同期中|동기화 중|Synchronisierung|Synchronisation|Синхронизация
+同步失败|Sync failed|同步失敗|同期に失敗|동기화 실패|Synchronisierung fehlgeschlagen|Échec de synchronisation|Ошибка синхронизации
+最近同步：|Last sync:|最近同步：|前回の同期：|마지막 동기화:|Letzte Synchronisierung:|Dernière synchronisation :|Последняя синхронизация:
+连接要求|Connection requirements|連線需求|接続の要件|연결 요구 사항|Verbindungsanforderungen|Conditions de connexion|Требования к подключению
+同步内容与隐私|Sync scope & privacy|同步內容與隱私|同期内容とプライバシー|동기화 범위 및 개인정보|Sync-Inhalt & Datenschutz|Contenu synchronisé et confidentialité|Состав синхронизации и приватность
+保留的冲突版本|Preserved conflicting versions|保留的衝突版本|保持された競合バージョン|보존된 충돌 버전|Aufbewahrte Konfliktversionen|Versions en conflit conservées|Сохранённые конфликтующие версии
+恢复此版本|Restore this version|還原此版本|このバージョンを復元|이 버전 복원|Diese Version wiederherstellen|Restaurer cette version|Восстановить эту версию
+已恢复冲突版本|Conflicting version restored|已還原衝突版本|競合バージョンを復元しました|충돌 버전 복원됨|Konfliktversion wiederhergestellt|Version en conflit restaurée|Конфликтующая версия восстановлена
+同步操作未完成，本机数据已保留。|Sync could not finish. Local data was kept.|同步未完成，本機資料已保留。|同期を完了できませんでした。ローカルデータは保持しました。|동기화를 완료하지 못했습니다. 로컬 데이터는 유지됩니다.|Synchronisierung nicht abgeschlossen. Lokale Daten bleiben erhalten.|La synchronisation n’a pas abouti. Les données locales sont conservées.|Синхронизация не завершена. Локальные данные сохранены.
+（可选）|(optional)|（選填）|（任意）|(선택 사항)|(optional)|(facultatif)|(необязательно)
+（删除版本）|(deleted version)|（刪除版本）|（削除されたバージョン）|(삭제된 버전)|(gelöschte Version)|(version supprimée)|(удалённая версия)
+（删除记录）|(deletion record)|（刪除記錄）|（削除の記録）|(삭제 기록)|(Löschvermerk)|(suppression)|(запись об удалении)
+GitHub 贡献|GitHub contributions|GitHub 貢獻|GitHub のコントリビューション|GitHub 기여|GitHub-Beiträge|Contributions GitHub|Вклад в GitHub
+GitHub 用户名|GitHub username|GitHub 使用者名稱|GitHub ユーザー名|GitHub 사용자 이름|GitHub-Benutzername|Identifiant GitHub|Имя пользователя GitHub
+在桌面查看 GitHub 贡献热力图。|View GitHub contribution activity on your desktop.|在桌面查看 GitHub 貢獻熱圖。|デスクトップで GitHub の活動を確認。|데스크톱에서 GitHub 기여 활동을 확인하세요.|GitHub-Aktivitäten auf dem Desktop anzeigen.|Afficher les contributions GitHub sur le bureau.|Просматривайте активность GitHub на главном экране.
+GitHub 贡献日历|GitHub contribution calendar|GitHub 貢獻日曆|GitHub コントリビューションカレンダー|GitHub 기여 달력|GitHub-Beitragskalender|Calendrier des contributions GitHub|Календарь активности GitHub
+贡献日历|Contribution calendar|貢獻日曆|コントリビューションカレンダー|기여 달력|Beitragskalender|Calendrier des contributions|Календарь активности
+次贡献|contributions|次貢獻|件のコントリビューション|회 기여|Beiträge|contributions|вкладов
+· 次贡献|· contributions|· 次貢獻|· コントリビューション|· 기여|· Beiträge|· contributions|· вкладов
+{0} 次贡献|{0} contributions|{0} 次貢獻|{0} 件のコントリビューション|기여 {0}회|{0} Beiträge|{0} contributions|Вкладов: {0}
+{0}，{1} 次贡献|{0}, {1} contributions|{0}，{1} 次貢獻|{0}、{1} 件のコントリビューション|{0}, 기여 {1}회|{0}, {1} Beiträge|{0}, {1} contributions|{0}, вкладов: {1}
+{0} · {1} 次贡献|{0} · {1} contributions|{0} · {1} 次貢獻|{0} · {1} 件のコントリビューション|{0} · 기여 {1}회|{0} · {1} Beiträge|{0} · {1} contributions|{0} · вкладов: {1}
+{0} · {1} {2} 次贡献|{0} · {1} · {2} contributions|{0} · {1} {2} 次貢獻|{0} · {1} · {2} 件のコントリビューション|{0} · {1} · 기여 {2}회|{0} · {1} · {2} Beiträge|{0} · {1} · {2} contributions|{0} · {1} · вкладов: {2}
+GitHub 贡献：{0}|GitHub contributions: {0}|GitHub 貢獻：{0}|GitHub コントリビューション：{0}|GitHub 기여: {0}|GitHub-Beiträge: {0}|Contributions GitHub : {0}|Вклад в GitHub: {0}
+GitHub 贡献：{0}，{1}，{2}|GitHub contributions: {0}, {1}, {2}|GitHub 貢獻：{0}，{1}，{2}|GitHub コントリビューション：{0}、{1}、{2}|GitHub 기여: {0}, {1}, {2}|GitHub-Beiträge: {0}, {1}, {2}|Contributions GitHub : {0}, {1}, {2}|Вклад в GitHub: {0}, {1}, {2}
+最近七天贡献|Contributions in the last 7 days|最近七天貢獻|直近 7 日間のコントリビューション|최근 7일 기여|Beiträge der letzten 7 Tage|Contributions des 7 derniers jours|Вклад за последние 7 дней
+活跃天数|Active days|活躍天數|活動日数|활동 일수|Aktive Tage|Jours actifs|Активных дней
+最长连续|Longest streak|最長連續|最長連続記録|최장 연속 기록|Längste Serie|Plus longue série|Самая длинная серия
+近一周|Last week|近一週|直近 1 週間|최근 1주|Letzte Woche|Dernière semaine|Последняя неделя
+近一月|Last month|近一個月|直近 1 か月|최근 1개월|Letzter Monat|Dernier mois|Последний месяц
+近半年|Last 6 months|近半年|直近 6 か月|최근 6개월|Letzte 6 Monate|6 derniers mois|Последние 6 месяцев
+近一年|Last year|近一年|直近 1 年|최근 1년|Letztes Jahr|Dernière année|Последний год
+颜色越深，贡献越多|Darker colors mean more contributions|顏色越深，貢獻越多|濃い色ほどコントリビューションが多い|색이 진할수록 기여가 많음|Dunkler bedeutet mehr Beiträge|Plus la couleur est foncée, plus les contributions sont nombreuses|Темнее цвет — больше вклад
+少|Less|少|少ない|적음|Weniger|Moins|Меньше
+多|More|多|多い|많음|Mehr|Plus|Больше
+刷新|Refresh|重新整理|更新|새로 고침|Aktualisieren|Actualiser|Обновить
+刷新 GitHub 贡献|Refresh GitHub contributions|重新整理 GitHub 貢獻|GitHub の活動を更新|GitHub 기여 새로 고침|GitHub-Beiträge aktualisieren|Actualiser les contributions GitHub|Обновить вклад в GitHub
+暂无贡献数据|No contribution data|尚無貢獻資料|活動データはありません|기여 데이터가 없습니다|Keine Beitragsdaten|Aucune donnée de contribution|Нет данных о вкладе
+暂无数据|No data yet|尚無資料|データはありません|데이터가 없습니다|Noch keine Daten|Aucune donnée|Данных пока нет
+公开日历预览 · @|Public calendar preview · @|公開日曆預覽 · @|公開カレンダーのプレビュー · @|공개 달력 미리 보기 · @|Öffentliche Kalendervorschau · @|Aperçu du calendrier public · @|Предпросмотр открытого календаря · @
+使用时需要访问 github.com，读取该用户公开展示的贡献日历。|Requires access to github.com to read this user’s public contribution calendar.|需存取 github.com，以讀取此使用者公開的貢獻日曆。|公開カレンダーを取得するため github.com へのアクセスが必要です。|공개 기여 달력을 읽으려면 github.com 접근이 필요합니다.|Benötigt Zugriff auf github.com für den öffentlichen Beitragskalender.|Un accès à github.com est nécessaire pour lire le calendrier public.|Нужен доступ к github.com для чтения открытого календаря пользователя.
+色相|Hue|色相|色相|색조|Farbton|Teinte|Оттенок
+饱和度与亮度，{0}%，{1}%|Saturation and brightness: {0}%, {1}%|飽和度與亮度，{0}%，{1}%|彩度と明度：{0}%、{1}%|채도와 밝기: {0}%, {1}%|Sättigung und Helligkeit: {0} %, {1} %|Saturation et luminosité : {0} %, {1} %|Насыщенность и яркость: {0}%, {1}%
+关闭颜色选择器|Close color picker|關閉選色器|カラーピッカーを閉じる|색상 선택기 닫기|Farbauswahl schließen|Fermer le sélecteur de couleur|Закрыть выбор цвета
+方向|Direction|方向|方向|방향|Richtung|Direction|Направление
+渐变方向|Gradient direction|漸層方向|グラデーションの方向|그라데이션 방향|Verlaufsrichtung|Direction du dégradé|Направление градиента
+渐变曲线|Gradient curve|漸層曲線|グラデーション曲線|그라데이션 곡선|Verlaufskurve|Courbe du dégradé|Кривая градиента
+渐变预览|Gradient preview|漸層預覽|グラデーションのプレビュー|그라데이션 미리 보기|Verlaufsvorschau|Aperçu du dégradé|Предпросмотр градиента
+线性|Linear|線性|リニア|선형|Linear|Linéaire|Линейная
+平滑|Smooth|平滑|スムーズ|부드럽게|Weich|Lisse|Плавная
+渐入|Ease in|漸入|イーズイン|서서히 시작|Langsam beginnen|Accélération|Плавное начало
+渐出|Ease out|漸出|イーズアウト|서서히 종료|Langsam auslaufen|Décélération|Плавное завершение
+曲线 {0}|Curve {0}|曲線 {0}|曲線 {0}|곡선 {0}|Kurve {0}|Courbe {0}|Кривая {0}
+曲线控制点 {0}，X {1}，Y {2}|Curve control {0}, X {1}, Y {2}|曲線控制點 {0}，X {1}，Y {2}|制御点 {0}、X {1}、Y {2}|곡선 제어점 {0}, X {1}, Y {2}|Kurvenpunkt {0}, X {1}, Y {2}|Point de contrôle {0}, X {1}, Y {2}|Точка кривой {0}, X {1}, Y {2}
+颜色 {0}，{1}|Color {0}, {1}|顏色 {0}，{1}|カラー {0}、{1}|색상 {0}, {1}|Farbe {0}, {1}|Couleur {0}, {1}|Цвет {0}, {1}
+添加颜色|Add color|新增顏色|色を追加|색상 추가|Farbe hinzufügen|Ajouter une couleur|Добавить цвет
+移除颜色 {0}|Remove color {0}|移除顏色 {0}|色 {0} を削除|색상 {0} 제거|Farbe {0} entfernen|Retirer la couleur {0}|Удалить цвет {0}
+左右方向键调整饱和度，上下方向键调整亮度，按住 Shift 加快调整。|Use left/right for saturation and up/down for brightness. Hold Shift for larger steps.|左右鍵調整飽和度，上下鍵調整亮度，按住 Shift 加快。|左右キーで彩度、上下キーで明度を調整。Shift で大きく変更。|좌우 키로 채도, 위아래 키로 밝기를 조절합니다. Shift를 누르면 빠르게 조절합니다.|Links/rechts ändert Sättigung, oben/unten Helligkeit. Shift für größere Schritte.|Gauche/droite : saturation ; haut/bas : luminosité. Maintenir Maj pour accélérer.|Влево/вправо — насыщенность, вверх/вниз — яркость. Shift увеличивает шаг.
+编辑{0}|Edit {0}|編輯 {0}|{0} を編集|{0} 편집|{0} bearbeiten|Modifier {0}|Изменить {0}
+删除{0}|Delete {0}|刪除 {0}|{0} を削除|{0} 삭제|{0} löschen|Supprimer {0}|Удалить {0}
+移除|Remove|移除|削除|제거|Entfernen|Retirer|Убрать
+移除{0}|Remove {0}|移除 {0}|{0} を削除|{0} 제거|{0} entfernen|Retirer {0}|Убрать {0}
+上移{0}|Move {0} up|將 {0} 上移|{0} を上へ移動|{0} 위로 이동|{0} nach oben|Monter {0}|Поднять {0}
+开启|On|開啟|オン|켜짐|Ein|Activé|Включено
+桌面|Desktop|桌面|デスクトップ|데스크톱|Desktop|Bureau|Главный экран
+桌面显示|Desktop visibility|桌面顯示|デスクトップに表示|데스크톱 표시|Desktop-Anzeige|Affichage sur le bureau|Показ на главном экране
+设置分类|Settings categories|設定分類|設定の分類|설정 분류|Einstellungskategorien|Catégories de réglages|Разделы настроек
+导入书签|Import bookmarks|匯入書籤|ブックマークを読み込む|북마크 가져오기|Lesezeichen importieren|Importer les favoris|Импорт закладок
+导入浏览器书签|Import browser bookmarks|匯入瀏覽器書籤|ブラウザーのブックマークを読み込む|브라우저 북마크 가져오기|Browser-Lesezeichen importieren|Importer les favoris du navigateur|Импортировать закладки браузера
+确认导入|Confirm import|確認匯入|読み込みを確認|가져오기 확인|Import bestätigen|Confirmer l’import|Подтвердить импорт
+书签已导入|Bookmarks imported|書籤已匯入|ブックマークを読み込みました|북마크 가져옴|Lesezeichen importiert|Favoris importés|Закладки импортированы
+导出完整备份|Export full backup|匯出完整備份|完全なバックアップを書き出す|전체 백업 내보내기|Vollständige Sicherung exportieren|Exporter une sauvegarde complète|Экспортировать полную копию
+恢复完整备份|Restore full backup|還原完整備份|完全なバックアップを復元|전체 백업 복원|Vollständige Sicherung wiederherstellen|Restaurer une sauvegarde complète|Восстановить полную копию
+替换并恢复|Replace and restore|取代並還原|置き換えて復元|교체 후 복원|Ersetzen und wiederherstellen|Remplacer et restaurer|Заменить и восстановить
+完整备份已导出|Full backup exported|完整備份已匯出|バックアップを書き出しました|전체 백업 내보냄|Vollständige Sicherung exportiert|Sauvegarde complète exportée|Полная копия экспортирована
+完整备份已恢复|Full backup restored|完整備份已還原|バックアップを復元しました|전체 백업 복원됨|Vollständige Sicherung wiederhergestellt|Sauvegarde complète restaurée|Полная копия восстановлена
+恢复上一份本地快照|Restore previous local snapshot|還原上一份本機快照|前のローカルスナップショットを復元|이전 로컬 스냅샷 복원|Vorherigen lokalen Snapshot wiederherstellen|Restaurer l’instantané local précédent|Восстановить предыдущий локальный снимок
+已恢复上一份本地快照|Previous local snapshot restored|已還原上一份本機快照|前のローカルスナップショットを復元しました|이전 로컬 스냅샷 복원됨|Vorherigen lokalen Snapshot wiederhergestellt|Instantané local précédent restauré|Предыдущий локальный снимок восстановлен
+恢复默认|Reset|還原預設|リセット|초기화|Zurücksetzen|Réinitialiser|Сбросить
+浏览器原生同步|Browser sync|瀏覽器原生同步|ブラウザーの同期|브라우저 동기화|Browsersynchronisierung|Synchronisation du navigateur|Синхронизация браузера
+启用浏览器同步|Enable browser sync|啟用瀏覽器同步|ブラウザーの同期を有効化|브라우저 동기화 사용|Browsersync aktivieren|Activer la synchronisation du navigateur|Включить синхронизацию браузера
+浏览器同步尚未开启。|Browser sync is off.|瀏覽器同步尚未啟用。|ブラウザーの同期はオフです。|브라우저 동기화가 꺼져 있습니다.|Browsersynchronisierung ist deaktiviert.|La synchronisation du navigateur est désactivée.|Синхронизация браузера выключена.
+隐私政策|Privacy policy|隱私權政策|プライバシーポリシー|개인정보처리방침|Datenschutz|Politique de confidentialité|Политика конфиденциальности
+关闭提示|Dismiss|關閉提示|通知を閉じる|알림 닫기|Hinweis schließen|Fermer le message|Закрыть уведомление
+重试|Retry|重試|再試行|다시 시도|Erneut versuchen|Réessayer|Повторить
+重新读取|Reload|重新讀取|再読み込み|다시 불러오기|Neu laden|Recharger|Загрузить снова
+重新同步|Sync again|重新同步|再度同期|다시 동기화|Erneut synchronisieren|Synchroniser à nouveau|Синхронизировать снова
+保存中…|Saving…|儲存中…|保存中…|저장 중…|Wird gespeichert…|Enregistrement…|Сохранение…
+正在保存…|Saving…|正在儲存…|保存中…|저장 중…|Wird gespeichert…|Enregistrement…|Сохранение…
+正在读取|Loading|正在讀取|読み込み中|불러오는 중|Wird geladen|Chargement|Загрузка
+正在读取…|Loading…|正在讀取…|読み込み中…|불러오는 중…|Wird geladen…|Chargement…|Загрузка…
+正在获取名称…|Fetching name…|正在取得名稱…|名前を取得中…|이름 가져오는 중…|Name wird abgerufen…|Récupération du nom…|Получение названия…
+正在解锁…|Unlocking…|正在解鎖…|ロック解除中…|잠금 해제 중…|Wird entsperrt…|Déverrouillage…|Разблокировка…
+正在同步…|Syncing…|正在同步…|同期中…|동기화 중…|Wird synchronisiert…|Synchronisation…|Синхронизация…
+正在处理本地文件…|Processing local file…|正在處理本機檔案…|ローカルファイルを処理中…|로컬 파일 처리 중…|Lokale Datei wird verarbeitet…|Traitement du fichier local…|Обработка локального файла…
+正在显示缓存。|Showing cached data.|正在顯示快取。|キャッシュを表示しています。|캐시를 표시하고 있습니다.|Zwischengespeicherte Daten werden angezeigt.|Affichage des données en cache.|Показаны сохранённые данные.
+· 缓存壁纸|· cached wallpaper|· 快取桌布|· キャッシュした壁紙|· 캐시된 배경|· gespeichertes Hintergrundbild|· fond d’écran en cache|· сохранённые обои
+· 文件夹|· folder|· 資料夾|· フォルダー|· 폴더|· Ordner|· dossier|· папка
+例如：GitHub|e.g. GitHub|例如：GitHub|例：GitHub|예: GitHub|z. B. GitHub|Ex. : GitHub|Например, GitHub
+例如：站点搜索|e.g. Site search|例如：網站搜尋|例：サイト内検索|예: 사이트 검색|z. B. Website-Suche|Ex. : Recherche sur le site|Например, поиск по сайту
+https://<账户ID>.r2.cloudflarestorage.com|https://<account-id>.r2.cloudflarestorage.com|https://<帳戶ID>.r2.cloudflarestorage.com|https://<アカウントID>.r2.cloudflarestorage.com|https://<계정ID>.r2.cloudflarestorage.com|https://<Konto-ID>.r2.cloudflarestorage.com|https://<identifiant>.r2.cloudflarestorage.com|https://<ID-аккаунта>.r2.cloudflarestorage.com
+北京|Beijing|北京|北京|베이징|Peking|Pékin|Пекин
+香港|Hong Kong|香港|香港|홍콩|Hongkong|Hong Kong|Гонконг
+东京|Tokyo|東京|東京|도쿄|Tokio|Tokyo|Токио
+新加坡|Singapore|新加坡|シンガポール|싱가포르|Singapur|Singapour|Сингапур
+新德里|New Delhi|新德里|ニューデリー|뉴델리|Neu-Delhi|New Delhi|Нью-Дели
+迪拜|Dubai|杜拜|ドバイ|두바이|Dubai|Dubaï|Дубай
+伦敦|London|倫敦|ロンドン|런던|London|Londres|Лондон
+巴黎|Paris|巴黎|パリ|파리|Paris|Paris|Париж
+柏林|Berlin|柏林|ベルリン|베를린|Berlin|Berlin|Берлин
+纽约|New York|紐約|ニューヨーク|뉴욕|New York|New York|Нью-Йорк
+芝加哥|Chicago|芝加哥|シカゴ|시카고|Chicago|Chicago|Чикаго
+洛杉矶|Los Angeles|洛杉磯|ロサンゼルス|로스앤젤레스|Los Angeles|Los Angeles|Лос-Анджелес
+悉尼|Sydney|雪梨|シドニー|시드니|Sydney|Sydney|Сидней
+奥克兰|Auckland|奧克蘭|オークランド|오클랜드|Auckland|Auckland|Окленд
+必应|Bing|Bing|Bing|Bing|Bing|Bing|Bing
+新文件夹|New folder|新增資料夾|新しいフォルダー|새 폴더|Neuer Ordner|Nouveau dossier|Новая папка
+{0} 条便笺|{0} notes|{0} 則便箋|{0} 件のメモ|메모 {0}개|{0} Notizen|{0} notes|Заметок: {0}
+{0} 条未读|{0} unread|{0} 則未讀|未読 {0} 件|읽지 않음 {0}개|{0} ungelesen|{0} non lus|Непрочитанных: {0}
+{0}，{1}，打开|{0}, {1}. Open|{0}，{1}，開啟|{0}、{1}。開く|{0}, {1}. 열기|{0}, {1}. Öffnen|{0}, {1}. Ouvrir|{0}, {1}. Открыть
+保存后将清除所选时钟的计时记录和倒计时提醒。|Saving will clear the selected clocks’ timers and countdown alerts.|儲存後將清除所選時鐘的計時與倒數提醒。|保存すると、選択した時計の計測と通知が消去されます。|저장하면 선택한 시계의 타이머와 알림이 지워집니다.|Beim Speichern werden Timer und Countdown-Hinweise der ausgewählten Uhren gelöscht.|L’enregistrement effacera les minuteurs et alertes des horloges sélectionnées.|Сохранение удалит таймеры и уведомления выбранных часов.
+保存时将请求访问所选存储地址。|Saving will request access to the selected storage address.|儲存時將要求存取所選儲存位址。|保存時に選択したストレージへのアクセスを求めます。|저장 시 선택한 저장소 접근 권한을 요청합니다.|Beim Speichern wird Zugriff auf den Speicherort angefragt.|L’enregistrement demandera l’accès au stockage choisi.|При сохранении будет запрошен доступ к хранилищу.
+浏览器重启后需重新输入凭据和同步密码。|Re-enter credentials and sync password after restarting the browser.|重新啟動瀏覽器後需輸入憑證與同步密碼。|ブラウザー再起動後、認証情報と同期パスワードが必要です。|브라우저를 다시 시작하면 인증 정보와 동기화 비밀번호를 다시 입력하세요.|Nach Browser-Neustart Zugangsdaten und Sync-Passwort erneut eingeben.|Ressaisir les identifiants et le mot de passe après redémarrage.|После перезапуска браузера повторно введите учётные данные и пароль.
+至少 12 个字符。密码无法找回，其他设备须使用相同密码。|At least 12 characters. The password cannot be recovered; use the same one on other devices.|至少 12 個字元。密碼無法找回，其他裝置須用相同密碼。|12 文字以上。パスワードは復旧できません。他の端末でも同じものを使用してください。|12자 이상. 비밀번호는 복구할 수 없으며 다른 기기에서도 동일한 비밀번호를 사용하세요.|Mindestens 12 Zeichen. Keine Passwort-Wiederherstellung; auf allen Geräten dasselbe verwenden.|Au moins 12 caractères. Mot de passe non récupérable ; utiliser le même sur les autres appareils.|Не менее 12 символов. Восстановление невозможно; используйте тот же пароль на других устройствах.
+自动同步仅在 Covelet 页面打开且已解锁时运行。|Auto-sync runs only while Covelet is open and unlocked.|自動同步僅於 Covelet 頁面開啟且已解鎖時執行。|自動同期は Covelet を開いてロック解除している間のみ動作します。|자동 동기화는 Covelet이 열려 있고 잠금 해제된 동안만 실행됩니다.|Automatischer Sync läuft nur bei geöffnetem und entsperrtem Covelet.|La synchronisation automatique nécessite Covelet ouvert et déverrouillé.|Автосинхронизация работает, пока Covelet открыт и разблокирован.
+自动同步已开启，仅在 Covelet 页面打开且已解锁时运行。|Auto-sync is on; it runs only while Covelet is open and unlocked.|已開啟自動同步，僅於頁面開啟且解鎖時執行。|自動同期は有効です。Covelet を開いてロック解除している間のみ動作します。|자동 동기화가 켜져 있으며 Covelet이 열려 있고 잠금 해제된 동안만 실행됩니다.|Automatischer Sync ist aktiviert und läuft nur bei geöffnetem, entsperrtem Covelet.|La synchronisation automatique est activée et nécessite Covelet ouvert et déverrouillé.|Автосинхронизация включена и работает при открытом и разблокированном Covelet.
+导航和设置加密后直接写入所选存储。图片、访问凭据和同步密码不参与同步，凭据和密码仅保留在当前浏览器会话。|Navigation and settings are encrypted and sent directly to your storage. Images and credentials are excluded. Credentials and passwords last only for this browser session.|導覽與設定加密後直存所選儲存。圖片、存取憑證與同步密碼不同步；憑證與密碼僅留於目前瀏覽器工作階段。|サイトと設定は暗号化して保存先へ直接送信。画像や認証情報は同期しません。認証情報とパスワードは現在のセッションのみ保持します。|탐색과 설정을 암호화하여 저장소에 직접 보냅니다. 이미지와 인증 정보는 동기화하지 않으며 인증 정보와 비밀번호는 현재 브라우저 세션에만 유지됩니다.|Navigation und Einstellungen werden verschlüsselt direkt gespeichert. Bilder und Zugangsdaten werden nicht synchronisiert. Passwörter gelten nur für die Browsersitzung.|Navigation et réglages sont chiffrés puis envoyés directement au stockage. Images et identifiants sont exclus ; identifiants et mots de passe restent dans la session.|Навигация и настройки шифруются и отправляются в ваше хранилище. Изображения и пароли не синхронизируются. Пароли хранятся только в текущем сеансе браузера.
+创建专用 Bucket，并使用仅限该 Bucket 对象读写的 API 凭据。|Use a dedicated bucket and API credentials limited to reading and writing its objects.|使用專用 Bucket 及僅限其物件讀寫的 API 憑證。|専用バケットと、そのオブジェクトの読み書きに限定した API 認証情報を使用してください。|전용 버킷과 해당 객체의 읽기 및 쓰기로 제한된 API 인증 정보를 사용하세요.|Eigenen Bucket und auf dessen Objekte beschränkte Lese-/Schreibrechte verwenden.|Utiliser un bucket dédié et des identifiants limités à la lecture/écriture de ses objets.|Используйте отдельный бакет и API-ключи с правами чтения и записи только его объектов.
+建议使用私有仓库及仅限该仓库 Contents 读写的令牌；同步会生成仓库提交。|Use a private repository and a token restricted to its Contents read/write access. Sync creates commits.|建議私有儲存庫及限其 Contents 讀寫的權杖；同步會產生提交。|非公開リポジトリと Contents の読み書きに限定したトークンを推奨。同期時にコミットを作成します。|비공개 저장소와 해당 Contents 읽기/쓰기 토큰을 권장합니다. 동기화 시 커밋이 생성됩니다.|Privates Repository mit darauf beschränktem Contents-Lese-/Schreibtoken empfohlen. Sync erstellt Commits.|Préférer un dépôt privé avec jeton Contents en lecture/écriture limité au dépôt. La synchronisation crée des commits.|Рекомендуется закрытый репозиторий и токен Contents только для него. Синхронизация создаёт коммиты.
+先创建私有项目和分支，使用具备 API 写权限的专用令牌；同步会生成仓库提交。|Create a private project and branch, then use a dedicated token with API write access. Sync creates commits.|先建私有專案與分支，使用具 API 寫入權限的專用權杖；同步會產生提交。|非公開プロジェクトとブランチを作成し、API 書き込み権限の専用トークンを使用。同期でコミットを作成します。|비공개 프로젝트와 브랜치를 만들고 API 쓰기 권한이 있는 전용 토큰을 사용하세요. 동기화 시 커밋이 생성됩니다.|Privates Projekt mit Branch anlegen und eigenen Token mit API-Schreibzugriff verwenden. Sync erstellt Commits.|Créer un projet privé et une branche, puis un jeton dédié avec accès API en écriture. La synchronisation crée des commits.|Создайте закрытый проект, ветку и отдельный токен с правом записи API. Синхронизация создаёт коммиты.
+使用专用 RAM 凭据或临时令牌；部分 OSS 账号需要自己的 HTTPS 域名。|Use dedicated RAM credentials or temporary tokens. Some OSS accounts require a custom HTTPS domain.|使用專用 RAM 憑證或臨時權杖；部分 OSS 帳戶需自備 HTTPS 網域。|専用 RAM 認証情報または一時トークンを使用。一部の OSS アカウントでは独自の HTTPS ドメインが必要です。|전용 RAM 인증 정보 또는 임시 토큰을 사용하세요. 일부 OSS 계정은 자체 HTTPS 도메인이 필요합니다.|Eigene RAM-Zugangsdaten oder temporäre Tokens verwenden. Manche OSS-Konten benötigen eine eigene HTTPS-Domain.|Utiliser des identifiants RAM dédiés ou temporaires. Certains comptes OSS nécessitent un domaine HTTPS personnalisé.|Используйте отдельные данные RAM или временный токен. Некоторым аккаунтам OSS нужен свой HTTPS-домен.
+支持坚果云、Nextcloud 等 HTTPS WebDAV。请先在基目录内建好保存目录，并使用应用密码。免费服务可能限制流量、请求频率和文件数量。|Supports HTTPS WebDAV, including Nutstore and Nextcloud. Create the destination directory first and use an app password. Free services may limit traffic, requests and file counts.|支援堅果雲、Nextcloud 等 HTTPS WebDAV。先建立儲存目錄，使用應用程式密碼。免費服務可能限制流量、請求與檔案數。|Nutstore や Nextcloud などの HTTPS WebDAV に対応。先に保存ディレクトリを作成し、アプリパスワードを使用。無料サービスには通信量・リクエスト・ファイル数の制限があります。|Nutstore, Nextcloud 등 HTTPS WebDAV를 지원합니다. 저장 폴더를 먼저 만들고 앱 비밀번호를 사용하세요. 무료 서비스는 트래픽, 요청, 파일 수를 제한할 수 있습니다.|HTTPS-WebDAV mit Nutstore, Nextcloud usw. Zielverzeichnis vorher anlegen und App-Passwort verwenden. Kostenlose Dienste können Datenverkehr, Anfragen und Dateianzahl begrenzen.|Compatible WebDAV HTTPS, dont Nutstore et Nextcloud. Créer le répertoire cible et utiliser un mot de passe d’application. Les offres gratuites peuvent limiter trafic, requêtes et fichiers.|Поддерживается HTTPS WebDAV, включая Nutstore и Nextcloud. Сначала создайте каталог и используйте пароль приложения. Возможны лимиты трафика, запросов и файлов.
+恢复会替换当前网址、搜索选项、外观和布局，并保留上一份本地快照。 开启浏览器同步时，恢复结果也会参与同步。|Restore replaces navigation, search settings, appearance and layout, keeping a local snapshot. If browser sync is on, restored data will also sync.|還原會取代目前網址、搜尋、外觀與佈局，並保留本機快照。已啟用瀏覽器同步時，還原資料亦會同步。|復元するとサイト・検索・外観・配置を置き換え、ローカルのスナップショットを保持します。ブラウザー同期が有効なら復元結果も同期します。|복원하면 탐색, 검색 설정, 모양과 배치를 교체하고 로컬 스냅샷을 보관합니다. 브라우저 동기화가 켜져 있으면 복원 결과도 동기화됩니다.|Wiederherstellung ersetzt Navigation, Suche, Darstellung und Layout; ein lokaler Snapshot bleibt erhalten. Bei aktiviertem Browsersync wird das Ergebnis synchronisiert.|La restauration remplace navigation, recherche, apparence et disposition, tout en conservant un instantané local. Si la synchronisation est active, le résultat sera synchronisé.|Восстановление заменит навигацию, поиск, внешний вид и макет, сохранив локальный снимок. При включённой синхронизации результат также будет синхронизирован.
+旧备份中的壁纸已完成校验，恢复时将改用 Bing 每日壁纸，不保存该壁纸图片；自定义图标会保留。|The legacy wallpaper was validated but will be replaced by Bing daily wallpaper. Its image is not imported; custom icons are retained.|舊桌布已驗證，還原改用 Bing 每日桌布，不匯入桌布圖片；自訂圖示保留。|旧壁紙は検証済みですが Bing の日替わり壁紙に切り替えます。壁紙画像は読み込まず、カスタムアイコンは保持します。|이전 배경을 확인했지만 Bing 배경으로 교체합니다. 배경 이미지는 가져오지 않으며 사용자 아이콘은 유지합니다.|Altes Hintergrundbild wurde geprüft, aber durch Bing ersetzt. Es wird nicht importiert; eigene Symbole bleiben erhalten.|L’ancien fond a été vérifié mais sera remplacé par Bing. Son image n’est pas importée ; les icônes sont conservées.|Старые обои проверены, но будут заменены обоями Bing. Их файл не импортируется, свои значки сохранятся.
+项？关联文件夹会一并恢复，其他子导航会保留在桌面；本机将保留恢复前的配置快照。|items? Required folders will be restored, other child links kept on the desktop, and a pre-restore local snapshot retained.|個項目？關聯資料夾會還原，其他子導覽留在桌面，並保留還原前快照。|件を復元しますか？必要なフォルダーも復元し、他の子項目と復元前のローカルスナップショットを保持します。|개 항목을 복원할까요? 관련 폴더를 복원하고 다른 링크와 복원 전 로컬 스냅샷은 유지합니다.|Elemente wiederherstellen? Benötigte Ordner werden wiederhergestellt, übrige Links und ein lokaler Snapshot bleiben erhalten.|éléments ? Les dossiers associés seront restaurés ; les autres liens et un instantané local seront conservés.|элементов? Связанные папки будут восстановлены, остальные ссылки и локальный снимок сохранены.
+请选择|Select|請選擇|選択してください|선택하세요|Auswählen|Sélectionner|Выбрать
+请选择 1 秒至 24 小时。|Choose a duration from 1 second to 24 hours.|請選擇 1 秒至 24 小時。|1 秒から 24 時間で指定してください。|1초부터 24시간 사이로 선택하세요.|Dauer von 1 Sekunde bis 24 Stunden wählen.|Choisir une durée entre 1 seconde et 24 heures.|Выберите длительность от 1 секунды до 24 часов.
+请选择 1 至 8 个世界时钟。|Choose 1 to 8 world clocks.|請選擇 1 至 8 個世界時鐘。|世界時計を 1〜8 個選択してください。|세계 시계를 1~8개 선택하세요.|1 bis 8 Weltuhren auswählen.|Choisir de 1 à 8 horloges mondiales.|Выберите от 1 до 8 мировых часов.
+请填写网站名称。|Enter a website name.|請填寫網站名稱。|サイト名を入力してください。|사이트 이름을 입력하세요.|Websitenamen eingeben.|Saisir le nom du site.|Введите название сайта.
+请填写引擎名称|Enter an engine name.|請填寫引擎名稱。|エンジン名を入力してください。|엔진 이름을 입력하세요.|Namen der Suchmaschine eingeben.|Saisir le nom du moteur.|Введите название поисковой системы.
+请填写 GitHub 用户名。|Enter a GitHub username.|請填寫 GitHub 使用者名稱。|GitHub ユーザー名を入力してください。|GitHub 사용자 이름을 입력하세요.|GitHub-Benutzernamen eingeben.|Saisir un identifiant GitHub.|Введите имя пользователя GitHub.
+请设置至少 12 个字符的同步密码。|Use a sync password with at least 12 characters.|請設定至少 12 個字元的同步密碼。|同期パスワードは 12 文字以上で設定してください。|동기화 비밀번호를 12자 이상으로 설정하세요.|Sync-Passwort mit mindestens 12 Zeichen verwenden.|Définir un mot de passe d’au moins 12 caractères.|Задайте пароль не менее 12 символов.
+请先选择要恢复的项目。|Select items to restore first.|請先選擇要還原的項目。|復元する項目を選択してください。|복원할 항목을 먼저 선택하세요.|Zuerst Elemente zur Wiederherstellung auswählen.|Sélectionner les éléments à restaurer.|Сначала выберите элементы для восстановления.
+名称不能为空。|Name cannot be empty.|名稱不能空白。|名前は必須です。|이름을 입력하세요.|Name darf nicht leer sein.|Le nom ne peut pas être vide.|Название не может быть пустым.
+名称最多 200 个字符。|Name is limited to 200 characters.|名稱最多 200 個字元。|名前は 200 文字以内です。|이름은 최대 200자입니다.|Name darf maximal 200 Zeichen enthalten.|Le nom est limité à 200 caractères.|В названии не более 200 символов.
+名称不能包含控制字符。|Name cannot contain control characters.|名稱不可含控制字元。|名前に制御文字は使用できません。|이름에 제어 문자를 사용할 수 없습니다.|Name darf keine Steuerzeichen enthalten.|Le nom ne peut pas contenir de caractères de contrôle.|В названии нельзя использовать управляющие символы.
+GitHub 用户名须为 1 至 39 位字母、数字或连字符。|GitHub usernames must be 1–39 letters, digits or hyphens.|GitHub 使用者名稱須為 1–39 個字母、數字或連字號。|ユーザー名は英数字とハイフンで 1〜39 文字です。|GitHub 이름은 영문자, 숫자, 하이픈 1~39자여야 합니다.|GitHub-Name: 1–39 Buchstaben, Ziffern oder Bindestriche.|L’identifiant GitHub doit contenir 1 à 39 lettres, chiffres ou tirets.|Имя GitHub: 1–39 букв, цифр или дефисов.
+这个时间不存在或日期无效，请调整时间。|This time does not exist or the date is invalid. Adjust it.|此時間不存在或日期無效，請調整。|この時刻は存在しないか、日付が無効です。変更してください。|존재하지 않는 시간이거나 잘못된 날짜입니다. 조정하세요.|Diese Uhrzeit existiert nicht oder das Datum ist ungültig. Bitte ändern.|Cette heure n’existe pas ou la date n’est pas valide. La modifier.|Такого времени нет или дата недопустима. Измените её.
+浏览器默认搜索需要在 Covelet 扩展中使用。预览中可临时选择其他引擎。|Browser default search requires the extension. Choose another engine in the preview.|瀏覽器預設搜尋需擴充功能；預覽可選其他引擎。|標準検索は拡張機能で使用できます。プレビューでは別のエンジンを選択してください。|브라우저 기본 검색은 확장 기능에서 사용하세요. 미리 보기에서는 다른 엔진을 선택할 수 있습니다.|Browsersuche benötigt die Erweiterung. In der Vorschau eine andere Suchmaschine wählen.|La recherche par défaut nécessite l’extension. Dans l’aperçu, choisir un autre moteur.|Поиск браузера работает в расширении. В предпросмотре выберите другую систему.
+每日壁纸暂不可用，正在使用内置背景。|Daily wallpaper is unavailable. Using the bundled background.|每日桌布暫不可用，使用內建背景。|日替わり壁紙を取得できません。内蔵の背景を使用します。|일일 배경을 사용할 수 없어 기본 배경을 사용합니다.|Tagesbild nicht verfügbar. Integrierter Hintergrund wird verwendet.|Fond du jour indisponible. Utilisation du fond intégré.|Обои дня недоступны. Используется встроенный фон.
+每日壁纸暂不可用，正在显示内置背景。|Daily wallpaper is unavailable. Showing the bundled background.|每日桌布暫不可用，顯示內建背景。|日替わり壁紙を取得できません。内蔵の背景を表示します。|일일 배경을 사용할 수 없어 기본 배경을 표시합니다.|Tagesbild nicht verfügbar. Integrierter Hintergrund wird angezeigt.|Fond du jour indisponible. Affichage du fond intégré.|Обои дня недоступны. Показан встроенный фон.
+壁纸暂未更新，正在使用上次壁纸。|Wallpaper could not update. Using the previous one.|桌布尚未更新，使用上次桌布。|壁紙を更新できません。前の壁紙を使用します。|배경을 업데이트하지 못해 이전 배경을 사용합니다.|Hintergrund nicht aktualisiert. Vorheriges Bild wird verwendet.|Fond non mis à jour. Utilisation du précédent.|Обои не обновлены. Используются предыдущие.
+请在扩展中保存和恢复标签快照。|Save and restore tab snapshots in the extension.|請在擴充功能中儲存與還原分頁快照。|タブの保存・復元は拡張機能で使用してください。|확장 기능에서 탭 스냅샷을 저장하고 복원하세요.|Tab-Snapshots in der Erweiterung speichern und wiederherstellen.|Enregistrer et restaurer les onglets dans l’extension.|Сохраняйте и восстанавливайте снимки в расширении.
+请在 Chrome 或 Edge 扩展中连接存储。|Connect storage in the Chrome or Edge extension.|請在 Chrome 或 Edge 擴充功能連接儲存。|Chrome または Edge の拡張機能で接続してください。|Chrome 또는 Edge 확장 기능에서 저장소를 연결하세요.|Speicher in der Chrome- oder Edge-Erweiterung verbinden.|Connecter le stockage dans l’extension Chrome ou Edge.|Подключите хранилище в расширении Chrome или Edge.
+演示模式不连接浏览器同步。|Browser sync is unavailable in demo mode.|示範模式不連接瀏覽器同步。|デモではブラウザー同期を使用しません。|데모 모드에서는 브라우저 동기화를 사용하지 않습니다.|Kein Browsersync im Demomodus.|Pas de synchronisation du navigateur en démo.|В деморежиме синхронизация браузера недоступна.
+演示模式无法连接存储。|Storage connections are unavailable in demo mode.|示範模式無法連接儲存。|デモではストレージに接続できません。|데모 모드에서는 저장소에 연결할 수 없습니다.|Keine Speicherverbindung im Demomodus.|Connexion au stockage indisponible en démo.|Подключение хранилища недоступно в деморежиме.
+请授权访问 GitHub 后重试。|Allow access to GitHub and retry.|請允許存取 GitHub 後重試。|GitHub へのアクセスを許可して再試行してください。|GitHub 접근을 허용한 후 다시 시도하세요.|GitHub-Zugriff erlauben und erneut versuchen.|Autoriser l’accès à GitHub puis réessayer.|Разрешите доступ к GitHub и повторите.
+未获得 GitHub 访问权限，组件尚未保存。|GitHub access was denied. The widget was not saved.|未取得 GitHub 權限，小工具未儲存。|GitHub へのアクセスが拒否され、保存していません。|GitHub 접근이 거부되어 위젯을 저장하지 않았습니다.|GitHub-Zugriff verweigert. Widget nicht gespeichert.|Accès GitHub refusé. Widget non enregistré.|Доступ к GitHub отклонён. Виджет не сохранён.
+未获得此存储地址的访问权限，连接未保存。|Storage access was denied. The connection was not saved.|未取得儲存位址權限，連線未儲存。|ストレージへのアクセスが拒否され、接続は未保存です。|저장소 접근이 거부되어 연결을 저장하지 않았습니다.|Speicherzugriff verweigert. Verbindung nicht gespeichert.|Accès au stockage refusé. Connexion non enregistrée.|Доступ к хранилищу отклонён. Подключение не сохранено.
+请允许读取此网站以获取名称。|Allow access to this website to get its name.|請允許讀取網站以取得名稱。|名前を取得するにはサイトへのアクセスを許可してください。|이름을 가져오려면 사이트 접근을 허용하세요.|Websitezugriff zum Abrufen des Namens erlauben.|Autoriser l’accès au site pour obtenir son nom.|Разрешите доступ к сайту для получения названия.
+获取名称时需允许读取此网站。|Getting the name requires access to this website.|取得名稱需允許讀取此網站。|名前の取得にはサイトへのアクセスが必要です。|이름을 가져오려면 사이트 접근 권한이 필요합니다.|Zum Abrufen des Namens ist Websitezugriff nötig.|L’accès au site est nécessaire pour obtenir son nom.|Для получения названия нужен доступ к сайту.
+未获得读取权限，请手动填写名称。|Access was denied. Enter the name manually.|未取得讀取權限，請手動填寫名稱。|アクセスが拒否されました。名前を入力してください。|접근이 거부되었습니다. 이름을 직접 입력하세요.|Zugriff verweigert. Namen manuell eingeben.|Accès refusé. Saisir le nom manuellement.|Доступ отклонён. Введите название вручную.
+未获得读取权限，已保留原图。|Access was denied. The original icon was kept.|未取得讀取權限，保留原圖。|アクセスが拒否されました。元のアイコンを保持します。|접근이 거부되어 기존 아이콘을 유지합니다.|Zugriff verweigert. Originalsymbol beibehalten.|Accès refusé. Icône d’origine conservée.|Доступ отклонён. Исходный значок сохранён.
+未获取到名称，请手动填写。|Name unavailable. Enter it manually.|無法取得名稱，請手動填寫。|名前を取得できません。入力してください。|이름을 가져오지 못했습니다. 직접 입력하세요.|Name nicht verfügbar. Manuell eingeben.|Nom indisponible. Le saisir manuellement.|Название недоступно. Введите вручную.
+获取名称失败，请重试或手动填写。|Could not get the name. Retry or enter it manually.|無法取得名稱，請重試或手動填寫。|名前を取得できません。再試行するか入力してください。|이름을 가져오지 못했습니다. 다시 시도하거나 직접 입력하세요.|Name konnte nicht abgerufen werden. Erneut versuchen oder manuell eingeben.|Nom introuvable. Réessayer ou le saisir.|Не удалось получить название. Повторите или введите вручную.
+请允许通知后再开启提醒。|Allow notifications before enabling alerts.|請先允許通知再啟用提醒。|通知を許可してからアラートを有効にしてください。|알림을 허용한 후 알림 기능을 켜세요.|Benachrichtigungen erlauben, bevor Erinnerungen aktiviert werden.|Autoriser les notifications avant d’activer les alertes.|Разрешите уведомления перед включением оповещений.
+设置未保存，请重试。|Settings were not saved. Please retry.|設定未儲存，請重試。|設定を保存できませんでした。再試行してください。|설정을 저장하지 못했습니다. 다시 시도하세요.|Einstellungen nicht gespeichert. Erneut versuchen.|Réglages non enregistrés. Réessayer.|Настройки не сохранены. Повторите.
+未能保存，请重试。|Could not save. Please retry.|無法儲存，請重試。|保存できません。再試行してください。|저장하지 못했습니다. 다시 시도하세요.|Speichern fehlgeschlagen. Erneut versuchen.|Enregistrement impossible. Réessayer.|Не удалось сохранить. Повторите.
+添加失败，请重试。|Could not add. Please retry.|新增失敗，請重試。|追加できません。再試行してください。|추가하지 못했습니다. 다시 시도하세요.|Hinzufügen fehlgeschlagen. Erneut versuchen.|Ajout impossible. Réessayer.|Не удалось добавить. Повторите.
+组件未保存，请重试。|Widget was not saved. Please retry.|小工具未儲存，請重試。|ウィジェットを保存できません。再試行してください。|위젯을 저장하지 못했습니다. 다시 시도하세요.|Widget nicht gespeichert. Erneut versuchen.|Widget non enregistré. Réessayer.|Виджет не сохранён. Повторите.
+组件已在其他页面添加，请重新打开扩展。|Widget was added in another page. Reopen extensions.|小工具已在其他頁面新增，請重新開啟擴充功能。|別のページで追加されました。拡張機能を開き直してください。|다른 페이지에서 위젯을 추가했습니다. 확장 기능을 다시 여세요.|Widget wurde auf anderer Seite hinzugefügt. Erweiterungen erneut öffnen.|Widget ajouté dans une autre page. Rouvrir les extensions.|Виджет добавлен на другой странице. Откройте расширения заново.
+组件已在其他页面修改或移除，请重新打开扩展。|Widget changed or was removed in another page. Reopen extensions.|小工具已在其他頁面修改或移除，請重新開啟。|別のページで変更・削除されました。拡張機能を開き直してください。|다른 페이지에서 위젯을 변경하거나 제거했습니다. 다시 여세요.|Widget wurde auf anderer Seite geändert oder entfernt. Erweiterungen erneut öffnen.|Widget modifié ou retiré dans une autre page. Rouvrir les extensions.|Виджет изменён или удалён на другой странице. Откройте расширения заново.
+文件夹名称已在其他页面更新，请重新编辑。|Folder name changed in another page. Edit it again.|資料夾名稱已於其他頁面更新，請重新編輯。|別のページでフォルダー名が変わりました。再編集してください。|다른 페이지에서 폴더 이름이 변경되었습니다. 다시 편집하세요.|Ordnername wurde auf anderer Seite geändert. Erneut bearbeiten.|Nom du dossier modifié dans une autre page. Le modifier à nouveau.|Имя папки изменено на другой странице. Отредактируйте заново.
+文件夹已被移除。|Folder was removed.|資料夾已移除。|フォルダーは削除されました。|폴더가 제거되었습니다.|Ordner wurde entfernt.|Dossier retiré.|Папка удалена.
+此导航已在其他页面修改，请重新打开扩展。|This shortcut changed in another page. Reopen the extension.|此導覽已於其他頁面修改，請重新開啟擴充功能。|別のページで変更されました。拡張機能を開き直してください。|다른 페이지에서 이 바로가기가 변경되었습니다. 확장 기능을 다시 여세요.|Verknüpfung wurde auf anderer Seite geändert. Erweiterung erneut öffnen.|Raccourci modifié dans une autre page. Rouvrir l’extension.|Ссылка изменена на другой странице. Откройте расширение заново.
+此页面无法添加，请填写网站地址。|This page cannot be added. Enter a website URL.|此頁面無法新增，請填寫網站網址。|このページは追加できません。サイトの URL を入力してください。|이 페이지는 추가할 수 없습니다. 사이트 URL을 입력하세요.|Seite kann nicht hinzugefügt werden. Website-URL eingeben.|Cette page ne peut pas être ajoutée. Saisir une URL.|Эту страницу нельзя добавить. Введите адрес сайта.
+这个网址已在导航中。|This URL is already in navigation.|此網址已在導覽中。|この URL はすでに登録されています。|이미 탐색에 있는 URL입니다.|Diese URL ist bereits vorhanden.|Cette URL est déjà dans la navigation.|Этот адрес уже в навигации.
+搜索引擎不存在，请重新选择。|Search engine unavailable. Select another.|搜尋引擎不存在，請重新選擇。|検索エンジンがありません。選び直してください。|검색 엔진이 없습니다. 다시 선택하세요.|Suchmaschine nicht vorhanden. Erneut auswählen.|Moteur indisponible. En choisir un autre.|Поисковая система недоступна. Выберите другую.
+暂时无法读取本地数据|Could not load local data|無法讀取本機資料|ローカルデータを読み込めません|로컬 데이터를 불러오지 못했습니다|Lokale Daten konnten nicht geladen werden|Chargement des données locales impossible|Не удалось загрузить локальные данные
+暂时无法读取同步连接设置。|Could not load sync connection settings.|無法讀取同步連線設定。|同期の接続設定を読み込めません。|동기화 연결 설정을 불러오지 못했습니다.|Sync-Verbindungseinstellungen nicht geladen.|Chargement des réglages de connexion impossible.|Не удалось загрузить параметры подключения.
+无法读取导航，请重新打开扩展。|Could not load navigation. Reopen the extension.|無法讀取導覽，請重新開啟擴充功能。|サイト一覧を読み込めません。拡張機能を開き直してください。|탐색을 불러오지 못했습니다. 확장 기능을 다시 여세요.|Navigation nicht geladen. Erweiterung erneut öffnen.|Navigation non chargée. Rouvrir l’extension.|Не удалось загрузить навигацию. Откройте расширение заново.
+所选差异已失效。|Selected changes are no longer valid.|所選差異已失效。|選択した差分は無効になりました。|선택한 변경이 더 이상 유효하지 않습니다.|Ausgewählte Änderungen sind nicht mehr gültig.|Les différences choisies ne sont plus valides.|Выбранные различия устарели.
+所选项目已发生变化，请重新选择。|Selected items changed. Select them again.|所選項目已變更，請重新選擇。|選択した項目が変わりました。選び直してください。|선택한 항목이 변경되었습니다. 다시 선택하세요.|Ausgewählte Elemente wurden geändert. Erneut auswählen.|Les éléments choisis ont changé. Les sélectionner à nouveau.|Выбранные элементы изменились. Выберите заново.
+不支持此组件。|This widget is not supported.|不支援此小工具。|このウィジェットには対応していません。|지원하지 않는 위젯입니다.|Dieses Widget wird nicht unterstützt.|Widget non pris en charge.|Этот виджет не поддерживается.
+不能移除必要的外观设置。|Required appearance settings cannot be removed.|無法移除必要的外觀設定。|必要な外観設定は削除できません。|필수 모양 설정은 제거할 수 없습니다.|Erforderliche Darstellungseinstellungen können nicht entfernt werden.|Les réglages d’apparence requis ne peuvent pas être supprimés.|Обязательные настройки оформления нельзя удалить.
+背景颜色无效|Invalid background color|背景顏色無效|背景色が無効です|잘못된 배경색|Ungültige Hintergrundfarbe|Couleur de fond non valide|Неверный цвет фона
+渐变方向无效|Invalid gradient direction|漸層方向無效|グラデーションの方向が無効です|잘못된 그라데이션 방향|Ungültige Verlaufsrichtung|Direction du dégradé non valide|Неверное направление градиента
+渐变曲线无效|Invalid gradient curve|漸層曲線無效|グラデーション曲線が無効です|잘못된 그라데이션 곡선|Ungültige Verlaufskurve|Courbe du dégradé non valide|Неверная кривая градиента
+渐变设置无效|Invalid gradient settings|漸層設定無效|グラデーション設定が無効です|잘못된 그라데이션 설정|Ungültige Verlaufseinstellungen|Réglages du dégradé non valides|Неверные настройки градиента
+渐变需要 2 至 8 个颜色|A gradient needs 2 to 8 colors|漸層需 2 至 8 個顏色|グラデーションには 2〜8 色が必要です|그라데이션에는 2~8개 색상이 필요합니다|Ein Verlauf benötigt 2 bis 8 Farben|Un dégradé nécessite de 2 à 8 couleurs|Градиенту нужно от 2 до 8 цветов
+组件尺寸无效。|Invalid widget size.|小工具尺寸無效。|ウィジェットサイズが無効です。|잘못된 위젯 크기입니다.|Ungültige Widgetgröße.|Taille du widget non valide.|Неверный размер виджета.
+组件配置无效。|Invalid widget settings.|小工具設定無效。|ウィジェット設定が無効です。|잘못된 위젯 설정입니다.|Ungültige Widget-Einstellungen.|Réglages du widget non valides.|Неверные настройки виджета.
+时钟配置无效。|Invalid clock settings.|時鐘設定無效。|時計の設定が無効です。|잘못된 시계 설정입니다.|Ungültige Uhreinstellungen.|Réglages de l’horloge non valides.|Неверные настройки часов.
+贡献时间范围无效。|Invalid contribution period.|貢獻時間範圍無效。|コントリビューション期間が無効です。|잘못된 기여 기간입니다.|Ungültiger Beitragszeitraum.|Période de contribution non valide.|Неверный период активности.
+书签文件不能超过 5 MB|Bookmark file must not exceed 5 MB|書籤檔案不可超過 5 MB|ブックマークファイルは 5 MB 以内です|북마크 파일은 5 MB 이하여야 합니다|Lesezeichendatei darf 5 MB nicht überschreiten|Le fichier de favoris ne doit pas dépasser 5 Mo|Файл закладок не более 5 МБ
+第|No.|第|第|제|Nr.|n°|№
+屏|screen|頁|ページ|화면|Seite|écran|экран
+个|items|個|個|개|Elemente|éléments|элементов
+个标签|tabs|個分頁|個のタブ|개 탭|Tabs|onglets|вкладок
+个已选|selected|個已選|個を選択|개 선택됨|ausgewählt|sélectionnés|выбрано
+项已选|selected|項已選|件を選択|개 선택됨|ausgewählt|sélectionnés|выбрано
+个网站和|websites and|個網站與|サイトと|개 사이트와|Websites und|sites et|сайтов и
+个网站也会删除。|websites will also be deleted.|個網站也會刪除。|件のサイトも削除されます。|개 사이트도 삭제됩니다.|Websites werden ebenfalls gelöscht.|sites seront aussi supprimés.|сайтов также будут удалены.
+个网址、|URLs,|個網址、|件の URL、|개 URL,|URLs,|URL,|адресов,
+个自定义图片。|custom images.|個自訂圖片。|件のカスタム画像。|개 사용자 이미지.|eigene Bilder.|images personnalisées.|своих изображений.
+个文件夹到桌面。 同位置重复网址会跳过，现有内容会保留。|folders to the desktop. Duplicate URLs in the same location are skipped; existing content is kept.|個資料夾至桌面。同位置重複網址略過，保留現有內容。|件のフォルダーを追加します。同じ場所の重複 URL はスキップし、既存内容は保持します。|개 폴더를 추가합니다. 같은 위치의 중복 URL은 건너뛰고 기존 내용은 유지합니다.|Ordner auf den Desktop. Doppelte URLs am selben Ort werden übersprungen; vorhandene Inhalte bleiben erhalten.|dossiers sur le bureau. Les URL en doublon au même emplacement sont ignorées ; le contenu existant reste.|папок на главный экран. Повторные адреса в том же месте пропускаются; содержимое сохраняется.
+条重复网址。|duplicate URLs.|條重複網址。|件の重複 URL。|개 중복 URL.|doppelte URLs.|URL en doublon.|повторных адресов.
+项无效地址。|invalid URLs.|項無效網址。|件の無効な URL。|개 잘못된 URL.|ungültige URLs.|URL non valides.|неверных адресов.
+将添加|Will add|將新增|追加予定|추가 예정|Hinzufügen:|À ajouter :|Будет добавлено:
+将跳过|Will skip|將略過|スキップ予定|건너뛸 항목|Überspringen:|À ignorer :|Будет пропущено:
+已跳过|Skipped|已略過|スキップ済み|건너뜀|Übersprungen|Ignorés|Пропущено
+已校验备份，包含|Backup inspected. Contains|備份已驗證，包含|バックアップの確認済み。内容：|백업 확인 완료. 포함:|Sicherung geprüft. Enthält|Sauvegarde vérifiée. Contient|Копия проверена. Содержит
+文件夹内的|The folder’s|資料夾內的|フォルダー内の|폴더 내|Im Ordner enthaltene|Dans le dossier, les|В папке
+删除“|Delete “|刪除「|削除：「|삭제: “|Löschen: „|Supprimer «|Удалить «
+保留的冲突版本（|Preserved conflicts (|保留的衝突版本（|保持された競合（|보존된 충돌 (|Aufbewahrte Konflikte (|Conflits conservés (|Сохранённые конфликты (
+{0} 个标签|Tabs: {0}|分頁：{0}|タブ：{0}|탭: {0}|Tabs: {0}|Onglets : {0}|Вкладок: {0}
+{0} 个已选|Selected: {0}|已選取：{0}|選択：{0}|선택: {0}|Ausgewählt: {0}|Sélectionnés : {0}|Выбрано: {0}
+{0} 字符|Characters: {0}|字元：{0}|文字数：{0}|글자 수: {0}|Zeichen: {0}|Caractères : {0}|Символов: {0}
+{0} 项已选|Selected: {0}|已選取：{0}|選択：{0}|선택: {0}|Ausgewählt: {0}|Sélectionnés : {0}|Выбрано: {0}
+修订 {0}|Revision {0}|修訂 {0}|リビジョン {0}|리비전 {0}|Revision {0}|Révision {0}|Ревизия {0}
+恢复所选 {0} 项？关联文件夹会一并恢复，其他子导航会保留在桌面；本机将保留恢复前的配置快照。|Restore {0} items? Required folders will be restored. Other links and a pre-restore local snapshot will be kept.|還原所選 {0} 項？關聯資料夾會還原，保留其他導覽與還原前快照。|{0} 件を復元しますか？必要なフォルダーを復元し、他のサイトと復元前のスナップショットを保持します。|{0}개 항목을 복원할까요? 관련 폴더를 복원하고 다른 링크와 복원 전 스냅샷을 유지합니다.|{0} Elemente wiederherstellen? Benötigte Ordner werden wiederhergestellt, andere Links und ein lokaler Snapshot bleiben erhalten.|Restaurer {0} éléments ? Les dossiers seront restaurés, les autres liens et un instantané seront conservés.|Восстановить {0} элементов? Связанные папки будут восстановлены, остальные ссылки и локальный снимок сохранены.
+文件夹内的 {0} 个网站也会删除。|The folder’s {0} websites will also be deleted.|資料夾內的 {0} 個網站也會刪除。|フォルダー内の {0} 件のサイトも削除されます。|폴더 내 사이트 {0}개도 삭제됩니다.|Die {0} Websites im Ordner werden ebenfalls gelöscht.|Les {0} sites du dossier seront aussi supprimés.|Сайты в папке ({0}) также будут удалены.
+删除“{0}”？此操作可以撤销。|Delete “{0}”? You can undo this action.|刪除「{0}」？此操作可復原。|「{0}」を削除しますか？元に戻せます。|“{0}”을(를) 삭제할까요? 실행 취소할 수 있습니다.|„{0}“ löschen? Diese Aktion lässt sich rückgängig machen.|Supprimer « {0} » ? Cette action peut être annulée.|Удалить «{0}»? Действие можно отменить.
+语言|Language|語言|言語|언어|Sprache|Langue|Язык
+跟随浏览器|Browser language|跟隨瀏覽器|ブラウザーの言語|브라우저 언어|Browsersprache|Langue du navigateur|Язык браузера
+语言设置无效。|Invalid language setting.|語言設定無效。|言語設定が無効です。|언어 설정이 잘못되었습니다.|Ungültige Spracheinstellung.|Langue non valide.|Недопустимый язык.
+语言设置未保存，请重试。|Could not save the language. Please retry.|語言設定未儲存，請重試。|言語を保存できません。再試行してください。|언어를 저장하지 못했습니다. 다시 시도하세요.|Sprache nicht gespeichert. Bitte erneut versuchen.|Langue non enregistrée. Réessayer.|Язык не сохранён. Повторите.
+Covelet 新标签页|Covelet New Tab|Covelet 新分頁|Covelet 新しいタブ|Covelet 새 탭|Covelet – Neuer Tab|Covelet – Nouvel onglet|Covelet — Новая вкладка
+添加到 Covelet|Add to Covelet|新增至 Covelet|Covelet に追加|Covelet에 추가|Zu Covelet hinzufügen|Ajouter à Covelet|Добавить в Covelet
+扩展简介|A private new tab for navigation, search, appearance and widgets, with browser sync and Bing daily wallpapers.|私密新分頁，提供導覽、搜尋、外觀、小工具、瀏覽器同步與 Bing 每日桌布。|サイト一覧、検索、外観、ウィジェット、ブラウザー同期、Bing 壁紙を備えた新しいタブ。|탐색, 검색, 모양, 위젯, 브라우저 동기화 및 Bing 배경을 제공하는 새 탭.|Privater neuer Tab mit Navigation, Suche, Widgets, Browsersync und täglichen Bing-Hintergrundbildern.|Nouvel onglet privé : navigation, recherche, widgets, synchronisation et fonds Bing quotidiens.|Приватная новая вкладка: навигация, поиск, виджеты, синхронизация браузера и ежедневные обои Bing.
+将添加 {0} 个网址和 {1} 个文件夹。相同位置的重复网址将跳过，保留现有内容。|Add {0} links and {1} folders. Duplicate URLs in the same location are skipped; existing content is kept.|將新增 {0} 個網址及 {1} 個資料夾。同位置的重複網址會略過，保留現有內容。|サイト {0} 件とフォルダー {1} 件を追加します。同じ場所の重複 URL はスキップし、既存内容を保持します。|링크 {0}개와 폴더 {1}개를 추가합니다. 같은 위치의 중복 URL은 건너뛰고 기존 내용은 유지합니다.|{0} Links und {1} Ordner hinzufügen. Doppelte URLs am selben Ort werden übersprungen; vorhandene Inhalte bleiben erhalten.|Ajouter {0} liens et {1} dossiers. Les URL en doublon au même emplacement sont ignorées ; le contenu existant est conservé.|Добавить ссылки ({0}) и папки ({1}). Повторные адреса в том же месте пропускаются; содержимое сохраняется.
+将跳过 {0} 条重复网址。|Duplicate URLs to skip: {0}.|將略過 {0} 條重複網址。|重複 URL {0} 件をスキップします。|중복 URL {0}개를 건너뜁니다.|Doppelte URLs zum Überspringen: {0}.|URL en doublon à ignorer : {0}.|Повторных адресов к пропуску: {0}.
+已跳过 {0} 项无效地址。|Invalid URLs skipped: {0}.|已略過 {0} 項無效網址。|無効な URL {0} 件をスキップしました。|잘못된 URL {0}개를 건너뛰었습니다.|Ungültige URLs übersprungen: {0}.|URL non valides ignorées : {0}.|Пропущено неверных адресов: {0}.
+备份包含 {0} 个网站和 {1} 个自定义图片。|Backup contents: {0} websites and {1} custom images.|備份包含 {0} 個網站與 {1} 個自訂圖片。|バックアップ内容：サイト {0} 件、カスタム画像 {1} 件。|백업 내용: 사이트 {0}개 및 사용자 이미지 {1}개.|Sicherungsinhalt: {0} Websites und {1} eigene Bilder.|Contenu de la sauvegarde : {0} sites et {1} images personnalisées.|В копии: сайтов — {0}, своих изображений — {1}.
+导航已在其他页面更新，请重新拖动。|Navigation changed in another tab. Drag the item again.|導覽已在其他分頁更新，請重新拖曳。|別のタブで更新されました。もう一度ドラッグしてください。|다른 탭에서 탐색이 변경되었습니다. 다시 드래그하세요.|Navigation in anderem Tab geändert. Bitte erneut ziehen.|La navigation a changé dans un autre onglet. Recommencez le déplacement.|Навигация изменена в другой вкладке. Перетащите снова.
+调整顺序|Reorder|調整順序|並べ替え|순서 변경|Neu anordnen|Réorganiser|Изменить порядок
+放到末尾|Move to end|移至末尾|末尾に移動|맨 끝으로 이동|Ans Ende verschieben|Déplacer à la fin|Переместить в конец
+放入「{0}」|Move into “{0}”|放入「{0}」|「{0}」に移動|“{0}”에 넣기|In „{0}“ verschieben|Déplacer dans « {0} »|Переместить в «{0}»
+放置到这里|Place here|放置於此|ここに配置|여기에 놓기|Hier platzieren|Placer ici|Поместить сюда
+合并为文件夹|Create folder|合併為資料夾|フォルダーを作成|폴더 만들기|Ordner erstellen|Créer un dossier|Создать папку
+松开删除|Release to delete|放開以刪除|離して削除|놓아서 삭제|Zum Löschen loslassen|Relâcher pour supprimer|Отпустите для удаления
+无法更新布局。|Could not update the layout.|無法更新版面配置。|レイアウトを更新できません。|레이아웃을 변경하지 못했습니다.|Layout konnte nicht aktualisiert werden.|Impossible de modifier la disposition.|Не удалось обновить расположение.
+移到另一屏|Move to another screen|移至其他頁面|別のページに移動|다른 화면으로 이동|Auf andere Seite verschieben|Déplacer vers un autre écran|На другой экран
+移到桌面|Move to home screen|移至主畫面|ホーム画面に移動|홈 화면으로 이동|Auf den Startbildschirm|Déplacer vers l’accueil|На главный экран
+倒计时结束|Timer finished|倒數計時結束|タイマー終了|타이머 종료|Timer abgelaufen|Minuteur terminé|Таймер завершён
+设定的时间已到。|The timer has finished.|設定的時間已到。|設定した時間になりました。|설정한 시간이 되었습니다.|Die eingestellte Zeit ist abgelaufen.|Le temps défini est écoulé.|Заданное время истекло.
+内置背景|Built-in background|內建背景|内蔵背景|기본 배경|Integrierter Hintergrund|Fond intégré|Встроенный фон
+Bing 每日背景需要加载浏览器扩展后获取，网页预览使用内置背景。|Bing daily wallpapers are available in the browser extension. The web preview uses a built-in background.|Bing 每日桌布需載入瀏覽器擴充功能，網頁預覽使用內建背景。|Bing の日替わり壁紙は拡張機能で取得します。ウェブプレビューには内蔵背景を表示します。|Bing 일일 배경은 브라우저 확장에서 사용할 수 있습니다. 웹 미리보기에서는 기본 배경을 사용합니다.|Tägliche Bing-Hintergründe sind in der Erweiterung verfügbar. Die Webvorschau nutzt einen integrierten Hintergrund.|Les fonds Bing quotidiens sont disponibles dans l’extension. L’aperçu web utilise un fond intégré.|Ежедневные обои Bing доступны в расширении. В веб-просмотре используется встроенный фон.
+请稍后再刷新。|Please wait before refreshing again.|請稍後再重新整理。|しばらく待ってから再読み込みしてください。|잠시 후 새로고침하세요.|Bitte vor dem nächsten Aktualisieren kurz warten.|Patientez avant d’actualiser à nouveau.|Подождите перед следующим обновлением.
+未找到该 GitHub 用户。|GitHub user not found.|找不到此 GitHub 使用者。|GitHub ユーザーが見つかりません。|GitHub 사용자를 찾을 수 없습니다.|GitHub-Benutzer nicht gefunden.|Utilisateur GitHub introuvable.|Пользователь GitHub не найден.
+暂时无法读取 GitHub 贡献，请检查网络后重试。|Could not load GitHub contributions. Check your connection and retry.|暫時無法讀取 GitHub 貢獻，請檢查網路後重試。|GitHub の貢献を読み込めません。接続を確認して再試行してください。|GitHub 기여를 불러올 수 없습니다. 연결을 확인하고 다시 시도하세요.|GitHub-Beiträge konnten nicht geladen werden. Verbindung prüfen und erneut versuchen.|Impossible de charger les contributions GitHub. Vérifiez la connexion et réessayez.|Не удалось загрузить активность GitHub. Проверьте подключение и повторите.
+暂时无法读取 GitHub 贡献。|GitHub contributions are temporarily unavailable.|暫時無法讀取 GitHub 貢獻。|GitHub の貢献を一時的に読み込めません。|GitHub 기여를 일시적으로 불러올 수 없습니다.|GitHub-Beiträge sind vorübergehend nicht verfügbar.|Les contributions GitHub sont temporairement indisponibles.|Активность GitHub временно недоступна.
+GitHub 请求过于频繁，请稍后重试。|Too many GitHub requests. Try again later.|GitHub 請求過於頻繁，請稍後重試。|GitHub への要求が多すぎます。後でもう一度お試しください。|GitHub 요청이 너무 많습니다. 나중에 다시 시도하세요.|Zu viele GitHub-Anfragen. Bitte später erneut versuchen.|Trop de requêtes GitHub. Réessayez plus tard.|Слишком много запросов к GitHub. Повторите позже.
+GitHub 响应超时，请稍后重试。|GitHub timed out. Try again later.|GitHub 回應逾時，請稍後重試。|GitHub の応答がタイムアウトしました。後で再試行してください。|GitHub 응답 시간이 초과되었습니다. 나중에 다시 시도하세요.|Zeitüberschreitung bei GitHub. Bitte später erneut versuchen.|Délai GitHub dépassé. Réessayez plus tard.|Время ожидания GitHub истекло. Повторите позже.
+无法连接云存储，请检查网络、站点授权和跨域配置。|Could not connect to cloud storage. Check the network, site access and CORS configuration.|無法連線雲端儲存，請檢查網路、網站授權及跨來源設定。|クラウドストレージに接続できません。ネットワーク、サイト権限、CORS 設定を確認してください。|클라우드 저장소에 연결할 수 없습니다. 네트워크, 사이트 권한 및 CORS 설정을 확인하세요.|Keine Verbindung zum Cloudspeicher. Netzwerk, Website-Zugriff und CORS prüfen.|Connexion au stockage impossible. Vérifiez le réseau, les autorisations et CORS.|Нет подключения к хранилищу. Проверьте сеть, разрешения сайта и CORS.
+无法连接 WebDAV，请检查网络、站点授权和跨域配置。|Could not connect to WebDAV. Check the network, site access and CORS configuration.|無法連線 WebDAV，請檢查網路、網站授權及跨來源設定。|WebDAV に接続できません。ネットワーク、サイト権限、CORS 設定を確認してください。|WebDAV에 연결할 수 없습니다. 네트워크, 사이트 권한 및 CORS 설정을 확인하세요.|Keine Verbindung zu WebDAV. Netzwerk, Website-Zugriff und CORS prüfen.|Connexion WebDAV impossible. Vérifiez le réseau, les autorisations et CORS.|Нет подключения к WebDAV. Проверьте сеть, разрешения сайта и CORS.
+云存储连接超时。|Cloud storage timed out.|雲端儲存連線逾時。|クラウドストレージへの接続がタイムアウトしました。|클라우드 저장소 연결 시간이 초과되었습니다.|Zeitüberschreitung beim Cloudspeicher.|Délai de connexion au stockage dépassé.|Время ожидания хранилища истекло.
+云存储请求过于频繁，请稍后再试。|Too many cloud storage requests. Try again later.|雲端儲存請求過於頻繁，請稍後再試。|クラウドへの要求が多すぎます。後で再試行してください。|클라우드 저장소 요청이 너무 많습니다. 나중에 다시 시도하세요.|Zu viele Cloudspeicher-Anfragen. Bitte später erneut versuchen.|Trop de requêtes au stockage. Réessayez plus tard.|Слишком много запросов к хранилищу. Повторите позже.
+自定义同步已锁定，已停止网络请求。|Custom sync is locked. Network requests stopped.|自訂同步已鎖定，已停止網路請求。|カスタム同期がロックされました。通信を停止しました。|사용자 동기화가 잠겼습니다. 네트워크 요청을 중지했습니다.|Eigene Synchronisierung gesperrt. Netzwerkanfragen gestoppt.|Synchronisation personnalisée verrouillée. Requêtes arrêtées.|Своя синхронизация заблокирована. Запросы остановлены.
+已取消|Canceled|已取消|キャンセル済み|취소됨|Abgebrochen|Annulé|Отменено
+最大化|Maximize|最大化|最大化|최대화|Maximieren|Agrandir|Развернуть
+还原窗口|Restore window|還原視窗|ウィンドウを元に戻す|창 크기 복원|Fenster wiederherstellen|Rétablir la fenêtre|Восстановить размер окна
+便笺文档无效或超出大小限制。|The note document is invalid or exceeds the size limit.|便笺文件無效或超過大小限制。|メモが無効か、サイズ制限を超えています。|메모 문서가 잘못되었거나 크기 제한을 초과했습니다.|Die Notiz ist ungültig oder zu groß.|La note est non valide ou dépasse la taille limite.|Заметка повреждена или превышает допустимый размер.
+便笺正文与文档不一致。|The note text does not match its document.|便笺文字與文件內容不一致。|メモの本文とドキュメントが一致しません。|메모 본문과 문서가 일치하지 않습니다.|Notiztext und Dokument stimmen nicht überein.|Le texte de la note ne correspond pas au document.|Текст заметки не соответствует документу.
+请使用富文本编辑器修改此便笺。|Use the rich text editor to edit this note.|請使用富文字編輯器修改此便笺。|このメモはリッチテキストエディターで編集してください。|서식 있는 편집기로 이 메모를 수정하세요.|Diese Notiz im Rich-Text-Editor bearbeiten.|Modifiez cette note avec l’éditeur de texte enrichi.|Изменяйте эту заметку в редакторе форматированного текста.

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="280" viewBox="0 0 440 280">
+    <rect width="440" height="280" fill="#F3F7F6"/>
+    <path d="M0 243.6C132 159.6 242.00000000000003 316.4 440 204.4V280H0Z" fill="#E2EFEB"/>
+    <svg x="42" y="96" width="84" height="84" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="sea" x1="24" y1="16" x2="228" y2="244" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#164E72"/>
+      <stop offset="1" stop-color="#149D98"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="60" fill="url(#sea)"/>
+  <path d="M183 77C169 64 151 57 132 57C91 57 58 90 58 131C58 172 91 205 132 205C158 205 181 192 194 171C175 179 156 177 141 168C124 158 107 156 89 163C81 154 76 143 76 131C76 100 101 75 132 75C146 75 159 80 169 89C174 93 181 92 185 87C188 84 187 80 183 77Z" fill="#F7FCFA"/>
+</svg>
+
+    <text x="146" y="135" font-family="Arial,sans-serif" font-size="42" font-weight="600" letter-spacing="-1.6" fill="#183A4A">Covelet</text>
+    <text x="148" y="164" font-family="Arial,sans-serif" font-size="14" fill="#577078">A quiet place to start.</text>
+  </svg>

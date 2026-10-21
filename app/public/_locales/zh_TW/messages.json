@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Covelet"
+  },
+  "extensionDescription": {
+    "message": "私密新分頁，提供導覽、搜尋、外觀、小工具、瀏覽器同步與 Bing 每日桌布。"
+  },
+  "actionTitle": {
+    "message": "新增至 Covelet"
+  }
+}

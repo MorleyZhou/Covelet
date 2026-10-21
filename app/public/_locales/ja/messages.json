@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Covelet"
+  },
+  "extensionDescription": {
+    "message": "サイト一覧、検索、外観、ウィジェット、ブラウザー同期、Bing 壁紙を備えた新しいタブ。"
+  },
+  "actionTitle": {
+    "message": "Covelet に追加"
+  }
+}

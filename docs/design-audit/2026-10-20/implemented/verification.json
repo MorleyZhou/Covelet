@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-20",
+  "product": "Covelet",
+  "scope": "User-approved UX writing, settings hierarchy and saving behavior changes",
+  "preview": "http://127.0.0.1:4177/newtab.html",
+  "runtime": "Production extension files served locally with the manifest CSP; in-app browser, not an installed extension",
+  "changes": [
+    "Remove routine icon fallback, enabled-state, add/edit/drag success and roadmap narration",
+    "Compact visual enhancement rows with optional palette preview",
+    "Move cloud configuration into its own form and view with a fixed title, back control and action area",
+    "Use Save Configuration, Unlock or Sync Now according to actual connection/session state",
+    "Autosave appearance, layout and visual switches; explicitly commit search-engine Add/Save",
+    "Coalesce preference edits, serialize writes, preserve unrelated newer data and block same-field external edits",
+    "Flush preferences before closing settings or exporting/restoring data; expose retry and explicit draft discard after errors",
+    "Move HEX and reset controls into an accessible icon background popover",
+    "Keep website Add/Save explicit, retain manual-name and stale-recognition guards",
+    "Preserve deletion Undo, restore/password/permission consequences and genuine failure feedback",
+    "Restore focus when dialogs close and support arrow-key settings tabs"
+  ],
+  "automated": {
+    "npm test": { "passed": 205, "failed": 0, "newPreferenceSavingTests": 6 },
+    "npm run test:sites": { "passed": 4, "failed": 0 },
+    "npm run build": "passed",
+    "npm run build:extension": "passed; 17 packaged files, two bundled WASM modules and manifest/network static gate",
+    "finalExtensionEntry": "chunks/newtab-D6PZKY6t.js"
+  },
+  "browserChecks": [
+    "Changing columns, immediately closing settings and reloading preserves the new value; restored the fixture to eight columns",
+    "Visual switch changes save without a second Save Settings action",
+    "Enter adds a custom search engine, survives reload and emits no normal icon fallback warning; removed the temporary engine",
+    "Adding and editing a website preserves the manual name and saved icon background color without normal success toasts",
+    "Escape dismisses only the color popover and returns focus to its trigger",
+    "Deletion offers Undo; Undo restores the temporary site and clears the deleted notice; temporary sites removed afterwards",
+    "Closing settings returns keyboard focus to the settings entry",
+    "Arrow keys switch settings tabs and focus the selected tab",
+    "Two real tabs editing the same preference produce a visible conflict instead of overwriting; reload recovers and permits another save",
+    "Cloud configuration is a separate form; no nested forms or outer Save Settings button",
+    "Cloud configuration provider switches and cancel/back work; preview Save/Unlock are disabled rather than implying a real connection",
+    "390 x 844 CSS viewport: no dialog horizontal overflow, long cloud body scrolls, header and action footer stay inside the viewport",
+    "No captured browser console errors on the checked website flow"
+  ],
+  "screenshots": [
+    "01-enhancements.png",
+    "02-sync-settings.png",
+    "03-add-site.png",
+    "04-concurrent-edit.png"
+  ],
+  "fixtures": "Existing private preview-origin navigation and nonsecret covelet-qa/sync-fixture profile, not new-install defaults; no real credentials entered or cloud configuration submitted",
+  "limits": [
+    "No live cloud-provider authentication, network delivery or cross-device synchronization was exercised in this UI pass",
+    "Installed Chrome/Edge native favicon, search and permission APIs require their own extension-runtime verification",
+    "No store submission or public privacy-page update was performed",
+    "The responsive check used browser viewport emulation, not a physical mobile device"
+  ],
+  "frozenRelease": {
+    "path": "releases/v0.1.0/covelet-0.1.0.zip",
+    "sha256": "da1b1012dcc71c4bf49db193417659673da1fec7c6e1126f77d966c496fbc334",
+    "changed": false
+  }
+}

@@ -1,0 +1,279 @@
+{
+  "date": "2026-10-20",
+  "measurements": [
+    {
+      "card": {
+        "bottom": 634.2749938964844,
+        "height": 234,
+        "left": 80,
+        "right": 342,
+        "top": 400.2749938964844,
+        "width": 262,
+        "x": 80,
+        "y": 400.2749938964844
+      },
+      "days": 367,
+      "entry": "widget-20c42f60-0c53-47ea-a8ae-a8e2bb45e970",
+      "overflow": [
+        0,
+        0
+      ],
+      "periodCopy": false,
+      "size": "small",
+      "span": [
+        "span 2",
+        "span 2"
+      ],
+      "tile": {
+        "bottom": 662.2749938964844,
+        "height": 262,
+        "left": 80,
+        "right": 342,
+        "top": 400.2749938964844,
+        "width": 262,
+        "x": 80,
+        "y": 400.2749938964844
+      },
+      "total": "3,762\n次贡献",
+      "viewport": [
+        1280,
+        720
+      ]
+    },
+    {
+      "days": 367,
+      "entry": "widget-20c42f60-0c53-47ea-a8ae-a8e2bb45e970",
+      "overflow": [
+        0,
+        0
+      ],
+      "periodCopy": false,
+      "selected": "2026-01-23 · 17 次贡献\n少\n多",
+      "size": "medium",
+      "span": [
+        "span 4",
+        "span 2"
+      ],
+      "tile": {
+        "bottom": 655.875,
+        "height": 262,
+        "left": 80,
+        "right": 628,
+        "top": 393.875,
+        "width": 548,
+        "x": 80,
+        "y": 393.875
+      },
+      "total": "3,762\n次贡献",
+      "viewport": [
+        1280,
+        720
+      ]
+    },
+    {
+      "days": 367,
+      "entry": "widget-20c42f60-0c53-47ea-a8ae-a8e2bb45e970",
+      "overflow": [
+        0,
+        0
+      ],
+      "periodCopy": false,
+      "selected": "2026-04-26 · 3 次贡献\n少\n多",
+      "size": "large",
+      "span": [
+        "span 4",
+        "span 4"
+      ],
+      "tile": {
+        "bottom": 941.875,
+        "height": 548,
+        "left": 80,
+        "right": 628,
+        "top": 393.875,
+        "width": 548,
+        "x": 80,
+        "y": 393.875
+      },
+      "total": "3,762\n次贡献",
+      "viewport": [
+        1280,
+        720
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "size": "large-narrow",
+      "span": [
+        "span 3",
+        "span 4"
+      ],
+      "tile": {
+        "bottom": 796.6125183105469,
+        "height": 473.3000183105469,
+        "left": 20,
+        "right": 370.3999938964844,
+        "top": 323.3125,
+        "width": 350.3999938964844,
+        "x": 20,
+        "y": 323.3125
+      },
+      "total": "3,762\n次贡献",
+      "viewport": [
+        390,
+        844
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "size": "medium-narrow",
+      "span": [
+        "span 3",
+        "span 2"
+      ],
+      "tile": {
+        "bottom": 556.3625030517578,
+        "height": 226.65000915527344,
+        "left": 20,
+        "right": 370.3999938964844,
+        "top": 329.7124938964844,
+        "width": 350.3999938964844,
+        "x": 20,
+        "y": 329.7124938964844
+      },
+      "total": "3,762\n次贡献",
+      "viewport": [
+        390,
+        844
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "size": "small-narrow",
+      "span": [
+        "span 2",
+        "span 2"
+      ],
+      "tile": {
+        "bottom": 556.3625030517578,
+        "height": 226.65000915527344,
+        "left": 20,
+        "right": 246.9250030517578,
+        "top": 329.7124938964844,
+        "width": 226.9250030517578,
+        "x": 20,
+        "y": 329.7124938964844
+      },
+      "total": "3,762\n次贡献",
+      "viewport": [
+        390,
+        844
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        8
+      ],
+      "size": "small-320",
+      "span": [
+        "span 2",
+        "span 2"
+      ],
+      "tile": {
+        "bottom": 539.0750122070312,
+        "height": 212,
+        "left": 20,
+        "right": 200,
+        "top": 327.07501220703125,
+        "width": 180,
+        "x": 20,
+        "y": 327.07501220703125
+      },
+      "total": "3,762\n次贡献",
+      "viewport": [
+        320,
+        740
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "size": "small-320-final",
+      "total": "3,762\n次贡献",
+      "viewport": [
+        320,
+        740
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "size": "large-320",
+      "viewport": [
+        320,
+        740
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        13
+      ],
+      "size": "medium-320",
+      "viewport": [
+        320,
+        740
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "size": "medium-320-final",
+      "total": "3,762\n次贡献",
+      "viewport": [
+        320,
+        740
+      ]
+    }
+  ],
+  "keyboardBoundary": {
+    "from": "2026-04-19",
+    "key": "ArrowRight",
+    "to": "2026-04-26"
+  },
+  "initialSmall320Overflow": 8,
+  "initialMedium320Overflow": 13,
+  "finalSmall320Overflow": 0,
+  "finalMedium320Overflow": 0
+}

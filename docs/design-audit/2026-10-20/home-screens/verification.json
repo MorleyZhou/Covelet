@@ -1,0 +1,280 @@
+{
+  "date": "2026-10-20",
+  "measurements": [
+    {
+      "caption": {
+        "bottom": 644.3375244140625,
+        "height": 18,
+        "left": 396.8625183105469,
+        "right": 467.1250228881836,
+        "top": 626.3375244140625,
+        "width": 70.26250457763672,
+        "x": 396.8625183105469,
+        "y": 626.3375244140625
+      },
+      "controls": {
+        "bottom": 692,
+        "height": 30,
+        "left": 558,
+        "right": 722,
+        "top": 662,
+        "width": 164,
+        "x": 558,
+        "y": 662
+      },
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "size": "large",
+      "tile": {
+        "bottom": 644.3375091552734,
+        "height": 392,
+        "left": 236,
+        "right": 628,
+        "top": 252.33750915527344,
+        "width": 392,
+        "x": 236,
+        "y": 252.33750915527344
+      },
+      "viewport": [
+        1280,
+        720
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        1
+      ],
+      "page": "主屏幕，第 1 屏，共 1 屏",
+      "placement": "grid-area: 1 / 7 / span 2 / span 2;",
+      "size": "small",
+      "tile": {
+        "bottom": 436.33750915527344,
+        "height": 184,
+        "left": 860,
+        "right": 1044,
+        "top": 252.33750915527344,
+        "width": 184,
+        "x": 860,
+        "y": 252.33750915527344
+      },
+      "total": "3,762\n次贡献",
+      "viewport": [
+        1280,
+        720
+      ]
+    },
+    {
+      "controls": {
+        "bottom": 814,
+        "height": 30,
+        "left": 120.70000457763672,
+        "right": 269.7000045776367,
+        "top": 784,
+        "width": 149,
+        "x": 120.70000457763672,
+        "y": 784
+      },
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "page": "主屏幕，第 2 屏，共 2 屏",
+      "size": "small-390",
+      "tile": {
+        "bottom": 713.3374938964844,
+        "height": 224,
+        "left": -327.8000183105469,
+        "right": -103.80001831054688,
+        "top": 489.3374938964844,
+        "width": 224,
+        "x": -327.8000183105469,
+        "y": 489.3374938964844
+      },
+      "viewport": [
+        390,
+        844
+      ]
+    },
+    {
+      "controls": {
+        "bottom": 710,
+        "height": 30,
+        "left": 73.5,
+        "right": 246.5,
+        "top": 680,
+        "width": 173,
+        "x": 73.5,
+        "y": 680
+      },
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "page": "主屏幕，第 2 屏，共 3 屏",
+      "size": "small-320",
+      "tile": {
+        "bottom": 444.6625061035156,
+        "height": 199.3249969482422,
+        "left": 60.337501525878906,
+        "right": 259.6624984741211,
+        "top": 245.33750915527344,
+        "width": 199.3249969482422,
+        "x": 60.337501525878906,
+        "y": 245.33750915527344
+      },
+      "viewport": [
+        320,
+        740
+      ]
+    },
+    {
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "page": "主屏幕，第 1 屏，共 2 屏",
+      "placement": "grid-area: 3 / 1 / span 2 / span 3;",
+      "size": "medium-390",
+      "tile": {
+        "bottom": 713.3374938964844,
+        "height": 224,
+        "left": 22.200000762939453,
+        "right": 368.20000076293945,
+        "top": 489.3374938964844,
+        "width": 346,
+        "x": 22.200000762939453,
+        "y": 489.3374938964844
+      },
+      "viewport": [
+        390,
+        844
+      ]
+    },
+    {
+      "controls": {
+        "bottom": 814,
+        "height": 30,
+        "left": 108.70000457763672,
+        "right": 281.7000045776367,
+        "top": 784,
+        "width": 173,
+        "x": 108.70000457763672,
+        "y": 784
+      },
+      "days": 367,
+      "overflow": [
+        0,
+        0,
+        0
+      ],
+      "page": "主屏幕，第 2 屏，共 3 屏",
+      "placement": "grid-area: 1 / 1 / span 4 / span 3;",
+      "size": "large-390",
+      "tile": {
+        "bottom": 713.3375091552734,
+        "height": 468,
+        "left": 372.2000122070313,
+        "right": 718.2000122070312,
+        "top": 245.33750915527344,
+        "width": 346,
+        "x": 372.2000122070313,
+        "y": 245.33750915527344
+      },
+      "viewport": [
+        390,
+        844
+      ]
+    }
+  ],
+  "interactions": {
+    "topRightAdd": true,
+    "addOnSecondPage": true,
+    "dotSwitch": true,
+    "edgeDrop": true,
+    "dotDrop": true,
+    "keyboardPaging": true,
+    "folderCreateAndMoveOutOnSecondPage": true,
+    "defaultDeleteAndUndo": true,
+    "responsiveOverflow": true
+  },
+  "notes": [
+    "Touch swipes and edge-hover timing have code paths but were not tested on a physical touchscreen.",
+    "The native horizontal-scroll test did not trigger paging; no touch or trackpad acceptance is claimed."
+  ],
+  "defaults": {
+    "controls": {
+      "bottom": 692,
+      "height": 30,
+      "left": 570,
+      "right": 710,
+      "top": 662,
+      "width": 140,
+      "x": 570,
+      "y": 662
+    },
+    "gridAddTiles": 0,
+    "links": [
+      {
+        "name": "GO\nGoogle",
+        "url": "https://www.google.com/"
+      },
+      {
+        "name": "YO\nYouTube",
+        "url": "https://www.youtube.com/"
+      },
+      {
+        "name": "GI\nGitHub",
+        "url": "https://github.com/"
+      },
+      {
+        "name": "X\nX",
+        "url": "https://x.com/"
+      },
+      {
+        "name": "CH\nChatGPT",
+        "url": "https://chatgpt.com/"
+      },
+      {
+        "name": "GR\nGrok",
+        "url": "https://grok.com/"
+      }
+    ],
+    "overflow": 0,
+    "page": {
+      "bottom": 646.3375091552734,
+      "height": 396,
+      "left": 234,
+      "right": 1046,
+      "top": 250.33750915527344,
+      "width": 812,
+      "x": 234,
+      "y": 250.33750915527344
+    },
+    "viewport": [
+      1280,
+      720
+    ],
+    "widgets": 0
+  },
+  "checks": {
+    "core": 225,
+    "corePassed": 225,
+    "sites": 4,
+    "sitesPassed": 4,
+    "webBuild": true,
+    "chromeBuild": true,
+    "extensionFiles": 18,
+    "finalQaConsoleErrors": 0
+  }
+}

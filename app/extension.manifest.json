@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Covelet",
+  "default_locale": "en",
+  "version": "0.1.0",
+  "minimum_chrome_version": "120",
+  "description": "__MSG_extensionDescription__",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "action": { "default_title": "__MSG_actionTitle__", "default_popup": "popup.html" },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "permissions": ["storage", "search", "favicon", "activeTab", "scripting", "alarms"],
+  "optional_permissions": ["notifications", "tabs", "readingList"],
+  "host_permissions": ["https://www.bing.com/*"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; object-src 'none'; connect-src 'self' blob: http: https:; img-src 'self' blob: data: http: https:; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'none'; frame-src 'none'; media-src 'none'; form-action 'none';"
+  }
+}

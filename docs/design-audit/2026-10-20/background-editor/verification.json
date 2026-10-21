@@ -1,0 +1,278 @@
+{
+  "date": "2026-10-20",
+  "scope": "Settings save status and unified color/gradient background editor",
+  "options": {
+    "labels": [
+      "Bing 每日壁纸",
+      "纯色"
+    ],
+    "obsoleteChoices": false,
+    "savingFooter": null,
+    "tiles": [
+      {
+        "bottom": 423.3999938964844,
+        "height": 99,
+        "left": 388.6000061035156,
+        "right": 514.6000061035156,
+        "top": 324.3999938964844,
+        "width": 126,
+        "x": 388.6000061035156,
+        "y": 324.3999938964844
+      },
+      {
+        "bottom": 423.3999938964844,
+        "height": 99,
+        "left": 526.6000366210938,
+        "right": 652.6000366210938,
+        "top": 324.3999938964844,
+        "width": 126,
+        "x": 526.6000366210938,
+        "y": 324.3999938964844
+      }
+    ],
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  "gradient": {
+    "angle": "135",
+    "colorCss": "linear-gradient(135deg, rgb(166, 190, 202) 0%, rgb(167, 191, 202) 6.25%, rgb(171, 193, 203) 12.5%, rgb(177, 198, 205) 18.75%, rgb(184, 203, 206) 25%, rgb(192, 208, 208) 31.25%, rgb(198, 213, 210) 37.5%, rgb(202, 215, 211) 43.75%, rgb(203, 216, 211) 50%, rgb(204, 216, 210) 56.25%, rgb(207, 216, 208) 62.5%, rgb(213, 215, 203) 68.75%, rgb(219, 215, 198) 75%, rgb(226, 214, 192) 81.25%, rgb(232, 213, 187) 87.5%, rgb(235, 213, 185) 93.75%, rgb(236, 213, 184) 100%)",
+    "colors": [
+      "颜色 1，#a6beca",
+      "颜色 2，#cbd8d3",
+      "颜色 3，#ecd5b8"
+    ],
+    "curve": [
+      "0.42",
+      "0",
+      "0.58",
+      "1"
+    ],
+    "panel": {
+      "bottom": 707.5,
+      "height": 634.5,
+      "left": 664.6000366210938,
+      "right": 1024.6000366210938,
+      "top": 73,
+      "width": 360,
+      "x": 664.6000366210938,
+      "y": 73
+    },
+    "savingFooter": null,
+    "settings": {
+      "bottom": 684,
+      "height": 648,
+      "left": 345,
+      "right": 935,
+      "top": 36,
+      "width": 590,
+      "x": 345,
+      "y": 36
+    },
+    "viewport": [
+      1280,
+      720
+    ],
+    "wallpaperCss": "linear-gradient(135deg, rgb(166, 190, 202) 0%, rgb(167, 191, 202) 6.25%, rgb(171, 193, 203) 12.5%, rgb(177, 198, 205) 18.75%, rgb(184, 203, 206) 25%, rgb(192, 208, 208) 31.25%, rgb(198, 213, 210) 37.5%, rgb(202, 215, 211) 43.75%, rgb(203, 216, 211) 50%, rgb(204, 216, 210) 56.25%, rgb(207, 216, 208) 62.5%, rgb(213, 215, 203) 68.75%, rgb(219, 215, 198) 75%, rgb(226, 214, 192) 81.25%, rgb(232, 213, 187) 87.5%, rgb(235, 213, 185) 93.75%, rgb(236, 213, 184) 100%)"
+  },
+  "heightMeasurements": [
+    {
+      "curve": "linear-gradient(136deg, rgb(166, 190, 202) 0%, rgb(169, 193, 207) 6.25%, rgb(173, 196, 214) 12.5%, rgb(178, 200, 222) 18.75%, rgb(182, 204, 229) 25%, rgb(186, 207, 235) 31.25%, rgb(189, 210, 240) 37.5%, rgb(190, 211, 243) 43.75%, rgb(191, 212, 244) 50%, rgb(196, 212, 237) 56.25%, rgb(204, 212, 227) 62.5%, rgb(212, 212, 216) 68.75%, rgb(220, 213, 205) 75%, rgb(227, 213, 197) 81.25%, rgb(232, 213, 190) 87.5%, rgb(235, 213, 185) 93.75%, rgb(236, 213, 184) 100%)",
+      "savingText": false,
+      "settings": {
+        "bottom": 684,
+        "height": 648,
+        "left": 345,
+        "right": 935,
+        "top": 36,
+        "width": 590,
+        "x": 345,
+        "y": 36
+      },
+      "stage": "custom-curve"
+    },
+    {
+      "active": "纯色",
+      "savingText": false,
+      "settings": {
+        "bottom": 684,
+        "height": 648,
+        "left": 345,
+        "right": 935,
+        "top": 36,
+        "width": 590,
+        "x": 345,
+        "y": 36
+      },
+      "stage": "editor-dismissed"
+    },
+    {
+      "savingText": false,
+      "settings": {
+        "bottom": 684,
+        "height": 648,
+        "left": 345,
+        "right": 935,
+        "top": 36,
+        "width": 590,
+        "x": 345,
+        "y": 36
+      },
+      "stage": "shade-changed"
+    },
+    {
+      "savingText": false,
+      "settings": {
+        "bottom": 684,
+        "height": 648,
+        "left": 345,
+        "right": 935,
+        "top": 36,
+        "width": 590,
+        "x": 345,
+        "y": 36
+      },
+      "stage": "before-preference-edits"
+    },
+    {
+      "savingText": false,
+      "settings": {
+        "bottom": 684,
+        "height": 648,
+        "left": 345,
+        "right": 935,
+        "top": 36,
+        "width": 590,
+        "x": 345,
+        "y": 36
+      },
+      "stage": "theme-and-clock-changed"
+    }
+  ],
+  "mobile320": {
+    "bodyOverflow": 0,
+    "horizontalOverflow": 0,
+    "panel": {
+      "bottom": 727.5,
+      "height": 634.5,
+      "left": 12,
+      "right": 308,
+      "top": 93,
+      "width": 296,
+      "x": 12,
+      "y": 93
+    },
+    "settings": {
+      "bottom": 703,
+      "height": 666,
+      "left": 19,
+      "right": 301,
+      "top": 37,
+      "width": 282,
+      "x": 19,
+      "y": 37
+    },
+    "settingsOverflow": 0,
+    "tiles": [
+      {
+        "bottom": 454,
+        "height": 99,
+        "left": 62.60000228881836,
+        "right": 154.0000038146973,
+        "text": "Bing 每日壁纸",
+        "top": 355,
+        "width": 91.4000015258789,
+        "x": 62.60000228881836,
+        "y": 355
+      },
+      {
+        "bottom": 454,
+        "height": 99,
+        "left": 166,
+        "right": 257.4000015258789,
+        "text": "纯色",
+        "top": 355,
+        "width": 91.4000015258789,
+        "x": 166,
+        "y": 355
+      }
+    ],
+    "viewport": [
+      320,
+      740
+    ]
+  },
+  "shortWindow": {
+    "body": {
+      "bottom": 588,
+      "clientHeight": 522,
+      "clientWidth": 360,
+      "height": 522,
+      "left": 18.387500762939453,
+      "right": 378.38750076293945,
+      "scrollHeight": 581,
+      "scrollWidth": 360,
+      "top": 66,
+      "width": 360,
+      "x": 18.387500762939453,
+      "y": 66
+    },
+    "header": {
+      "bottom": 66,
+      "height": 54,
+      "left": 18.387500762939453,
+      "right": 378.38750076293945,
+      "top": 12,
+      "width": 360,
+      "x": 18.387500762939453,
+      "y": 12
+    },
+    "panel": {
+      "bottom": 588,
+      "height": 576,
+      "left": 18.387500762939453,
+      "right": 378.38750076293945,
+      "top": 12,
+      "width": 360,
+      "x": 18.387500762939453,
+      "y": 12
+    },
+    "viewport": [
+      390,
+      600
+    ]
+  },
+  "checks": {
+    "backgroundOptionsOnlyTwo": true,
+    "equalTileSizes": true,
+    "noRoutineSavingFooter": true,
+    "maxEightColors": true,
+    "removeToSingleColor": true,
+    "pickerKeyboard": true,
+    "curveDrag": true,
+    "curveKeyboard": true,
+    "escapeClosesMenuThenPicker": true,
+    "focusRestored": true,
+    "closeReopenRestoresGradient": true,
+    "shortWindowBodyScroll": true
+  },
+  "validation": {
+    "coreTests": 233,
+    "corePassed": 233,
+    "sitesTests": 4,
+    "sitesPassed": 4,
+    "webBuild": true,
+    "chromeMv3Build": true,
+    "extensionStaticFiles": 18,
+    "webJsKB": 539.47,
+    "extensionJsKB": 563.29
+  },
+  "limits": [
+    "Browser preview is not an installed extension acceptance test.",
+    "No physical touch device or screen reader tested.",
+    "No forced save error in UI; saver retry/conflict tests retained.",
+    "Existing build chunk size warning remains.",
+    "Legacy built-in wallpaper remains readable and bundled image remains offline fallback."
+  ]
+}

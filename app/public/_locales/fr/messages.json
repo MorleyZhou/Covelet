@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Covelet"
+  },
+  "extensionDescription": {
+    "message": "Nouvel onglet privé : navigation, recherche, widgets, synchronisation et fonds Bing quotidiens."
+  },
+  "actionTitle": {
+    "message": "Ajouter à Covelet"
+  }
+}

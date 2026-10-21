@@ -1,0 +1,7074 @@
+[
+  {
+    "key": "· {0}{1} 小时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "· {0}{1}天",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "· 次贡献",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "· 缓存壁纸",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "· 文件夹",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "· 无时差",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "（可选）",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "（删除版本）",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "（删除记录）",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "{0} · {1} {2} 次贡献",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "{0} · {1} 次贡献",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "{0} 次贡献",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "{0} 访问令牌",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "{0} 条便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "{0} 条未读",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "{0}，{1} 次贡献",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "{0}，{1}，打开",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "{0}，{1}，打开时钟",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "{0}预览",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "阿里云 OSS",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "版本差异",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "版本历史",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "饱和度与亮度，{0}%，{1}%",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "保存",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/ClockWidget.jsx",
+      "src/components/DesktopEditControls.jsx",
+      "src/components/GitHubWidget.jsx",
+      "src/components/PersonalTools.jsx",
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "保存布局",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "保存当前窗口",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "保存当前窗口，按需重新打开所选标签。",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "保存后将清除所选时钟的计时记录和倒计时提醒。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "保存名称",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "保存目录",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "保存配置",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "保存时将请求访问所选存储地址。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "保存位置",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx",
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "保存引擎",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "保存中…",
+    "ui": true,
+    "files": [
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "保留的冲突版本",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "保留的冲突版本（",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "背景",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx",
+      "src/lib/model.js",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "背景明暗",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "背景模糊",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/model.js",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "背景色",
+    "ui": true,
+    "files": [
+      "src/components/IconBackground.jsx"
+    ]
+  },
+  {
+    "key": "背景颜色",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "背景颜色 HEX",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "背景颜色无效",
+    "ui": true,
+    "files": [
+      "src/lib/background-colors.js",
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "背景遮罩",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "本机",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "壁纸暂未更新，正在使用上次壁纸。",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "编辑",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "编辑{0}",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "编辑布局",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "编辑链接",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "编辑网站",
+    "ui": true,
+    "files": [
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx",
+      "src/lib/extensions.js",
+      "src/lib/personal-tools.js",
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "便笺、稍后读与标签快照仅保存在本机。导入会保留已有记录；这些内容不参与导航同步。",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "便笺列表",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "便笺名称",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "便笺内容",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "标签快照",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "标为未读",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "标为已读",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "不存在",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "不能移除必要的外观设置。",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "不支持此组件。",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "布局",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "布局操作",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "参考时区",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "仓库名称",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "仓库所有者",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "查看{0}差异",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "撤销",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "尺寸",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx",
+      "src/components/GitHubWidget.jsx",
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "尺寸（行 × 列）",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "创建专用 Bucket，并使用仅限该 Bucket 对象读写的 API 凭据。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "此导航已在其他页面修改，请重新打开扩展。",
+    "ui": true,
+    "files": [
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "此设备",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "此页面无法添加，请填写网站地址。",
+    "ui": true,
+    "files": [
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "次贡献",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "从浏览器阅读清单导入",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "存储服务",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx",
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "打开",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx",
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "打开扩展",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "打开设置",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "打开所选标签",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "大 · 4×4",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "当前",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "当前便笺尚未保存，放弃修改？",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "当前值",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "导出",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "导出完整备份",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "导航和设置加密后直接写入所选存储。图片、访问凭据和同步密码不参与同步，凭据和密码仅保留在当前浏览器会话。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "导航名称",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "导航已在其他页面更新，请退出编辑后重试。",
+    "ui": true,
+    "files": [
+      "src/lib/use-layout-edit.js"
+    ]
+  },
+  {
+    "key": "导航已在其他页面更新，请重新拖动。",
+    "ui": true,
+    "files": [
+      "src/lib/use-icon-drag.js"
+    ]
+  },
+  {
+    "key": "导航与组件",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "导入",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "导入浏览器书签",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "导入书签",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "倒计时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "倒计时{0}",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "倒计时通知",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "倒计时页面提醒",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "地域",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "第",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "第 {0} 屏",
+    "ui": true,
+    "files": [
+      "src/components/DesktopPages.jsx"
+    ]
+  },
+  {
+    "key": "第二次",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "第一次",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "点击多选",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "调整顺序",
+    "ui": true,
+    "files": [
+      "src/lib/use-icon-drag.js"
+    ]
+  },
+  {
+    "key": "多",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "返回",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "返回扩展",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "方向",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "放到末尾",
+    "ui": true,
+    "files": [
+      "src/lib/use-icon-drag.js"
+    ]
+  },
+  {
+    "key": "放弃未保存的便笺修改？",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "放弃修改",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "放弃修改并重新载入",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "放入「{0}」",
+    "ui": true,
+    "files": [
+      "src/lib/use-icon-drag.js"
+    ]
+  },
+  {
+    "key": "放置到这里",
+    "ui": true,
+    "files": [
+      "src/lib/use-icon-drag.js"
+    ]
+  },
+  {
+    "key": "分",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "分类",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "分支",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "复制便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "个",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "个标签",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "个网站和",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "个网站也会删除。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "个网址、",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "个文件夹到桌面。 同位置重复网址会跳过，现有内容会保留。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "个已选",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "个自定义图片。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "跟随系统",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "工具数据",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "公开日历预览 · @",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "功能扩展",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx",
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "贡献日历",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "贡献时间范围无效。",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "关闭",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "关闭提示",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "关闭颜色选择器",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "管理",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "归档",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "合并为文件夹",
+    "ui": true,
+    "files": [
+      "src/lib/use-icon-drag.js"
+    ]
+  },
+  {
+    "key": "后",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "恢复此版本",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "恢复会替换当前网址、搜索选项、外观和布局，并保留上一份本地快照。 开启浏览器同步时，恢复结果也会参与同步。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "恢复默认",
+    "ui": true,
+    "files": [
+      "src/components/IconBackground.jsx"
+    ]
+  },
+  {
+    "key": "恢复上一份本地快照",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "恢复所选",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "恢复所选项目",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "恢复完整备份",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "活跃天数",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "获取高清图标",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "获取名称",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "获取名称失败，请重试或手动填写。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "获取名称时需允许读取此网站。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "计时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "记录与阅读",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "记下此刻的想法",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "加密版本",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "加密同步导航和设置，浏览版本与选择性恢复。",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "建议使用私有仓库及仅限该仓库 Contents 读写的令牌；同步会生成仓库提交。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "渐变方向",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "渐变方向无效",
+    "ui": true,
+    "files": [
+      "src/lib/background-colors.js"
+    ]
+  },
+  {
+    "key": "渐变曲线",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "渐变曲线无效",
+    "ui": true,
+    "files": [
+      "src/lib/background-colors.js"
+    ]
+  },
+  {
+    "key": "渐变设置无效",
+    "ui": true,
+    "files": [
+      "src/lib/background-colors.js"
+    ]
+  },
+  {
+    "key": "渐变需要 2 至 8 个颜色",
+    "ui": true,
+    "files": [
+      "src/lib/background-colors.js"
+    ]
+  },
+  {
+    "key": "渐变预览",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "渐出",
+    "ui": true,
+    "files": [
+      "src/lib/background-colors.js"
+    ]
+  },
+  {
+    "key": "渐入",
+    "ui": true,
+    "files": [
+      "src/lib/background-colors.js"
+    ]
+  },
+  {
+    "key": "将添加",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "将跳过",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "解散文件夹",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "解锁",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "解锁后自动同步",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "近半年",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "近一年",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "近一月",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "近一周",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "旧备份中的壁纸已完成校验，恢复时将改用 Bing 每日壁纸，不保存该壁纸图片；自定义图标会保留。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "旧修订仅包含此设备修改过的项目，未记录的项目会保留。",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "开发工具",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "开启",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "开始倒计时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "开始计时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "开始记录…",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "可留空",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "空白便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "快照列表",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "快照名称",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "快照内容",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "快照已在其他页面更新。",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "扩展",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/ExtensionCenter.jsx",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "扩展分类",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "扩展列表",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "类型",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "立即同步",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "例如 工作资料",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "例如 America/Vancouver",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "例如：工作资料",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "例如：站点搜索",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "例如：GitHub",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "连接要求",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "临时安全令牌",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "浏览版本",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "浏览管理",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "浏览器默认搜索",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "浏览器默认搜索需要在 Covelet 扩展中使用。预览中可临时选择其他引擎。",
+    "ui": true,
+    "files": [
+      "src/lib/search.js"
+    ]
+  },
+  {
+    "key": "浏览器同步尚未开启。",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "浏览器原生同步",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "浏览器运行时通知",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "浏览器重启后需重新输入凭据和同步密码。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "没有差异",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "没有未读链接",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "没有找到便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "没有找到扩展",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "没有找到链接",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "每日壁纸暂不可用，正在使用内置背景。",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "每日壁纸暂不可用，正在显示内置背景。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "每行数量",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "每行图标数量",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "迷你 · 1×1",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "秒",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "名称",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/PersonalTools.jsx",
+      "src/lib/model.js",
+      "src/lib/personal-tools.js",
+      "src/lib/revision-diff.js",
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "名称不能包含控制字符。",
+    "ui": true,
+    "files": [
+      "src/components/FolderName.jsx"
+    ]
+  },
+  {
+    "key": "名称不能为空。",
+    "ui": true,
+    "files": [
+      "src/components/FolderName.jsx"
+    ]
+  },
+  {
+    "key": "名称最多 200 个字符。",
+    "ui": true,
+    "files": [
+      "src/components/FolderName.jsx"
+    ]
+  },
+  {
+    "key": "默认",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "内容",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "内容保存在本机，移除桌面组件会保留内容。",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "内容宽度",
+    "ui": true,
+    "files": [
+      "src/lib/model.js",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "内容最大宽度",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "配置",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx",
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "配置读取失败",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "配置已保存",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "配置组件",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "平滑",
+    "ui": true,
+    "files": [
+      "src/lib/background-colors.js"
+    ]
+  },
+  {
+    "key": "屏",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "屏幕",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "屏幕管理",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "其他时区",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "启用浏览器同步",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "前",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "前往第 {0} 屏",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "浅色",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "清除搜索",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "清除选择",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "请设置至少 12 个字符的同步密码。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "请填写 GitHub 用户名。",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "请填写网站名称。",
+    "ui": true,
+    "files": [
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "请填写引擎名称",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "请先选择要恢复的项目。",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "请选择",
+    "ui": true,
+    "files": [
+      "src/components/Select.jsx"
+    ]
+  },
+  {
+    "key": "请选择 1 秒至 24 小时。",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "请选择 1 至 8 个世界时钟。",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "请允许读取此网站以获取名称。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "请允许通知后再开启提醒。",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "请在 Chrome 或 Edge 扩展中连接存储。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "请在扩展中保存和恢复标签快照。",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "曲线 {0}",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "曲线控制点 {0}，X {1}，Y {2}",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "取消",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/CloudHistory.jsx",
+      "src/components/DesktopEditControls.jsx",
+      "src/components/PersonalTools.jsx",
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "取消倒计时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "取消修改",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "取消选择",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "全部差异",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "全部扩展",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "全部设备",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "全选",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "确认操作",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "确认导入",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "确认恢复",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "日",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "日期与时间",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "色相",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "删除",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "删除“",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "删除“{0}”？",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "删除“{0}”？已打开的标签不受影响。",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "删除{0}",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "删除便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "删除第 {0} 屏",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "删除快照",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "删除链接",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "删除屏幕",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "删除所选 {0} 项？",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "删除所选项目",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "删除网站",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "上一屏",
+    "ui": true,
+    "files": [
+      "src/components/DesktopPages.jsx"
+    ]
+  },
+  {
+    "key": "上移{0}",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "稍后读",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js",
+      "src/lib/widget-model.js",
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "少",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "设备",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "设备 {0}",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "设置",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "设置分类",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "设置未保存，请重试。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "深色",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "剩余时间",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "时间",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "时间到",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "时间工具",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "时区对照",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "时钟",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx",
+      "src/lib/extensions.js",
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "时钟功能",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "时钟配置无效。",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "使用",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx",
+      "src/components/ExtensionCenter.jsx",
+      "src/components/GitHubWidget.jsx",
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "使用时需要访问 github.com，读取该用户公开展示的贡献日历。",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "使用专用 RAM 凭据或临时令牌；部分 OSS 账号需要自己的 HTTPS 域名。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "世界时钟",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "世界时钟、时区对照、倒计时与计时。",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "视觉增强",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "收藏链接，按未读、已读与归档整理。",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "书签文件不能超过 5 MB",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "书签已导入",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "数据",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "数据同步",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "数字",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "数字时钟预览",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "刷新",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx",
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "刷新 GitHub 贡献",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "顺序",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "松开取消",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "松开删除",
+    "ui": true,
+    "files": [
+      "src/lib/use-icon-drag.js"
+    ]
+  },
+  {
+    "key": "搜索",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "搜索便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "搜索标签快照",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "搜索地址，使用 {query} 表示关键词",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "搜索地址模板",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "搜索或输入网址",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "搜索快照",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "搜索扩展",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "搜索模板",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "搜索稍后读",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "搜索引擎",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx",
+      "src/components/ProviderIcon.jsx",
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索引擎不存在，请重新选择。",
+    "ui": true,
+    "files": [
+      "src/lib/search.js"
+    ]
+  },
+  {
+    "key": "随手记录，支持 Markdown 预览与置顶。",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "所选版本",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "所选版本值",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "所选差异已失效。",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "所选项目已发生变化，请重新选择。",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/desktop-edit.js"
+    ]
+  },
+  {
+    "key": "锁定",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "替换并恢复",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "天",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "添加",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/ClockWidget.jsx",
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "添加城市",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "添加到稍后读",
+    "ui": true,
+    "files": [
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "添加失败，请重试。",
+    "ui": true,
+    "files": [
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "添加网站",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "添加颜色",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "添加一屏",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx",
+      "src/components/DesktopPages.jsx"
+    ]
+  },
+  {
+    "key": "添加引擎",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "条重复网址。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "同步操作未完成，本机数据已保留。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "同步密码",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "同步内容与隐私",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "同步失败",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "同步中",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "图标",
+    "ui": true,
+    "files": [
+      "src/components/IconBackground.jsx",
+      "src/lib/model.js",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "图标背景",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "图标背景色",
+    "ui": true,
+    "files": [
+      "src/components/IconBackground.jsx"
+    ]
+  },
+  {
+    "key": "图标背景色 HEX",
+    "ui": true,
+    "files": [
+      "src/components/IconBackground.jsx"
+    ]
+  },
+  {
+    "key": "图标尺寸",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "图标大小",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "图标地址",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/revision-diff.js",
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "图标间距",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/model.js",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "图标适配",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "图标预览",
+    "ui": true,
+    "files": [
+      "src/components/IconBackground.jsx"
+    ]
+  },
+  {
+    "key": "退出编辑",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "拖到这里移回桌面",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "外观",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "外观与布局",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "完成",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "完整备份已导出",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "完整备份已恢复",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "网站",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "网站操作",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/ContextMenu.jsx"
+    ]
+  },
+  {
+    "key": "网站导航",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "网址",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/PersonalTools.jsx",
+      "src/lib/revision-diff.js",
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "未读",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "未获得 GitHub 访问权限，组件尚未保存。",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "未获得此存储地址的访问权限，连接未保存。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "未获得读取权限，请手动填写名称。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "未获得读取权限，已保留原图。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "未获取到名称，请手动填写。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "未命名便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx",
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "未能保存，请重试。",
+    "ui": true,
+    "files": [
+      "src/components/FolderName.jsx"
+    ]
+  },
+  {
+    "key": "位置",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "文件夹",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "文件夹名称",
+    "ui": true,
+    "files": [
+      "src/components/FolderName.jsx",
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "文件夹名称已在其他页面更新，请重新编辑。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "文件夹内的",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "文件夹已被移除。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "无法读取导航，请重新打开扩展。",
+    "ui": true,
+    "files": [
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "无法复制，请手动选择文字。",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "无法更新布局。",
+    "ui": true,
+    "files": [
+      "src/lib/use-layout-edit.js"
+    ]
+  },
+  {
+    "key": "下一屏",
+    "ui": true,
+    "files": [
+      "src/components/DesktopPages.jsx"
+    ]
+  },
+  {
+    "key": "先创建私有项目和分支，使用具备 API 写权限的专用令牌；同步会生成仓库提交。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "显示更多版本",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "显示更多差异",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "显示网站名称",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "现在",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "线性",
+    "ui": true,
+    "files": [
+      "src/lib/background-colors.js"
+    ]
+  },
+  {
+    "key": "项？关联文件夹会一并恢复，其他子导航会保留在桌面；本机将保留恢复前的配置快照。",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "项目 ID 或完整路径",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "项无效地址。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "项已选",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "小 · 2×2",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "新便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "新标签打开",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "新标签页默认使用浏览器搜索引擎。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "新增",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "修订",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "修改",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "修改配置",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "需解锁",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "选择城市",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "选择此类全部",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "选择快照查看标签",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "选择前 50 个",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "选择搜索引擎，当前为{0}",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "选择图标背景色",
+    "ui": true,
+    "files": [
+      "src/components/IconBackground.jsx"
+    ]
+  },
+  {
+    "key": "颜色",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "颜色 {0}，{1}",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "颜色越深，贡献越多",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "演示模式不连接浏览器同步。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "演示模式无法连接存储。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "样式",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "页面打开时提醒",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "移除",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "移除{0}",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "移除颜色 {0}",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "移除组件",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "移到另一屏",
+    "ui": true,
+    "files": [
+      "src/lib/use-icon-drag.js"
+    ]
+  },
+  {
+    "key": "移到桌面",
+    "ui": true,
+    "files": [
+      "src/lib/use-icon-drag.js"
+    ]
+  },
+  {
+    "key": "已读",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "已恢复冲突版本",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "已恢复上一份本地快照",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "已恢复所选项目",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "已计时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "已解锁",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "已删除",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "已跳过",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "已校验备份，包含",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "引擎名称",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "隐私政策",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "预览",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "预览仅显示前 1000 行，完整内容保留在编辑器中。",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "月",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "阅读状态",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "云端版本历史",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "在新标签页打开网站和搜索结果",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "在新窗口打开所选 {0} 个标签？",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "在桌面查看 GitHub 贡献热力图。",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "暂时无法读取本地数据",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "暂时无法读取同步连接设置。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "暂停倒计时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "暂停计时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "暂无便笺",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "暂无贡献数据",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "暂无快照",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "暂无链接",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "暂无数据",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "暂无云端版本",
+    "ui": true,
+    "files": [
+      "src/components/CloudHistory.jsx"
+    ]
+  },
+  {
+    "key": "增强",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "账户 API 地址",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "这个时间不存在或日期无效，请调整时间。",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "这个网址已在导航中。",
+    "ui": true,
+    "files": [
+      "src/popup.jsx"
+    ]
+  },
+  {
+    "key": "这条便笺已在其他页面更新。",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "正在保存…",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx",
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "正在处理本地文件…",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "正在读取",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "正在读取…",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "正在获取名称…",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "正在解锁…",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "正在同步…",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "正在显示缓存。",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "支持坚果云、Nextcloud 等 HTTPS WebDAV。请先在基目录内建好保存目录，并使用应用密码。免费服务可能限制流量、请求频率和文件数量。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "指针",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "至少 12 个字符。密码无法找回，其他设备须使用相同密码。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "至少保留一屏",
+    "ui": true,
+    "files": [
+      "src/components/DesktopEditControls.jsx"
+    ]
+  },
+  {
+    "key": "置顶",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "中 · 2×4",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "重复时间",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "重试",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "重新打开",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "重新读取",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "重新同步",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "重置计时",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "主屏幕",
+    "ui": true,
+    "files": [
+      "src/lib/model.js",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "主屏幕，第 {0} 屏，共 {1} 屏",
+    "ui": true,
+    "files": [
+      "src/components/DesktopPages.jsx"
+    ]
+  },
+  {
+    "key": "主屏幕分页",
+    "ui": true,
+    "files": [
+      "src/components/DesktopPages.jsx"
+    ]
+  },
+  {
+    "key": "主题",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "桌面",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "桌面时区",
+    "ui": true,
+    "files": [
+      "src/components/ClockWidget.jsx"
+    ]
+  },
+  {
+    "key": "桌面显示",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "桌面组件",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx",
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "字符",
+    "ui": true,
+    "files": [
+      "src/components/PersonalTools.jsx"
+    ]
+  },
+  {
+    "key": "自定",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "自定义存储同步",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js"
+    ]
+  },
+  {
+    "key": "自动",
+    "ui": true,
+    "files": [
+      "src/components/IconBackground.jsx"
+    ]
+  },
+  {
+    "key": "自动适配文字颜色、图标和组件背景。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "自动同步仅在 Covelet 页面打开且已解锁时运行。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "自动同步已开启，仅在 Covelet 页面打开且已解锁时运行。",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "组件操作",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "组件尺寸无效。",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "组件配置",
+    "ui": true,
+    "files": [
+      "src/lib/revision-diff.js"
+    ]
+  },
+  {
+    "key": "组件配置无效。",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "组件未保存，请重试。",
+    "ui": true,
+    "files": [
+      "src/App.jsx",
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "组件已在其他页面添加，请重新打开扩展。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "组件已在其他页面修改或移除，请重新打开扩展。",
+    "ui": true,
+    "files": [
+      "src/App.jsx"
+    ]
+  },
+  {
+    "key": "组件预览",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "最近七天贡献",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "最近同步：",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "最长连续",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "左右方向键调整饱和度，上下方向键调整亮度，按住 Shift 加快调整。",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "Bing 每日壁纸",
+    "ui": true,
+    "files": [
+      "src/components/BackgroundPicker.jsx"
+    ]
+  },
+  {
+    "key": "Bucket 访问域名",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "Bucket 名称",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "GitHub 等 5 项",
+    "ui": true,
+    "files": [
+      "src/components/ExtensionCenter.jsx"
+    ]
+  },
+  {
+    "key": "GitHub 贡献",
+    "ui": true,
+    "files": [
+      "src/lib/extensions.js",
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "GitHub 贡献：{0}",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "GitHub 贡献：{0}，{1}，{2}",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "GitHub 贡献日历",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "GitHub 用户名",
+    "ui": true,
+    "files": [
+      "src/components/GitHubWidget.jsx"
+    ]
+  },
+  {
+    "key": "GitHub 用户名须为 1 至 39 位字母、数字或连字符。",
+    "ui": true,
+    "files": [
+      "src/lib/widget-model.js"
+    ]
+  },
+  {
+    "key": "GitLab 服务地址",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "https://<账户ID>.r2.cloudflarestorage.com",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "WebDAV 基目录地址",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "WebDAV 应用密码",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "WebDAV 用户名",
+    "ui": true,
+    "files": [
+      "src/components/CloudSyncSettings.jsx"
+    ]
+  },
+  {
+    "key": "{0} 本地数据仍然保留。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "{0} 必须是 Uint8Array 或 ArrayBuffer。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "{0} 超过 {1} 字节上限。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "{0}包含未知字段",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "{0}格式无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "{0}无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "{0}无效或过长。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "{0}须为 1 至 {1} 个字符",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "{0}须为开关值",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "{0}须在 {1} 至 {2} 之间",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "版本预览已失效，或本机导航已更新，请重新查看差异。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "保存时缺少有效的数据版本。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份 ZIP 目录损坏。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份包含不支持的 ZIP 条目。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份包含未知、重复或不安全的文件路径。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份格式或版本不受支持。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份解压大小与声明不一致。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份解压后超过 80 MiB。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份清单或资源超出限制。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份缺少清单或数据文件。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份缺少图片资源：{0}",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份实际解压大小超出声明或限制。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份条目超出大小限制。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份图片缺失、大小或哈希校验不一致。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份图片引用不完整。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份未完整包含所有图片资源。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份文件必须在 30 MiB 以内。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份文件区域重叠。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份文件校验失败。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份中的 JSON 文件无效。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份资源清单无效。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "备份资源数量超出限制。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "背景类型无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "背景类型与渐变设置不符",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "背景值无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "本地或特殊地址请明确填写 HTTP 或 HTTPS 协议",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "本地配置版本无效；请先导出数据后再处理。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "本地数据已保存，等待写入浏览器同步区。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "本地数据已保存；浏览器同步写入已排队，正在等待写入间隔。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "本地同步元数据无效。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "本地图标缓存不可用。",
+    "ui": false,
+    "files": [
+      "src/lib/provider-icons.js"
+    ]
+  },
+  {
+    "key": "本地图标缓存暂不可用。",
+    "ui": false,
+    "files": [
+      "src/lib/provider-icons.js"
+    ]
+  },
+  {
+    "key": "本地图片不存在，请重新选择图片或恢复完整备份。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "本地图片存储不可用。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "本机存储不足，请先导出并清理旧记录。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "本机待上传版本无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "本机工具存储已满，请先导出并清理旧记录。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "本机工具数据无效。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "本机时间无效，请校准系统时间。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "本机同步计算模块返回无效结果。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js",
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "本机同步计算模块尚未准备好。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js",
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "本机云同步设备版本无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "本机云同步文档无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "壁纸缓存写入中断。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "壁纸缓存暂时不可用。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "便笺格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "标签快照格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "标签快照链接无效。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "标签名称",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "标识",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "不能将条目拖到自身",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "不支持的数据版本",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "不支持的云端加密格式。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js"
+    ]
+  },
+  {
+    "key": "不支持分卷、ZIP64 或超出限制的备份。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "部分视觉增强暂不可用，已使用原始外观。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-processing.js"
+    ]
+  },
+  {
+    "key": "部分同步分片尚未到齐；已保留本地完整数据，等待浏览器传入剩余分片或稍后手动重试。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "差异内容无效。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "此并发版本尚未恢复：{0}",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "此并发版本已处理，请刷新冲突列表。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "此并发版本已处理。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "此设置已在其他页面修改，请重新载入设置。",
+    "ui": false,
+    "files": [
+      "src/lib/preference-saving.js"
+    ]
+  },
+  {
+    "key": "待处理图标较多，暂时使用原始图标。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-processing.js"
+    ]
+  },
+  {
+    "key": "待上传快照的内容与文件名不一致。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "待上传快照内容与文件名不一致。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "单次最多保存 1000 个标签。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "当前窗口没有可保存的普通网页。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "当前环境不能解析书签 HTML",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "当前环境无法处理图片。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "当前环境无法处理网站图标。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "当前环境无法解码图片。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "当前环境无法解码网站图标。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "当前扩展的原生图标接口不可用，可重新加载更新后的扩展或使用文字图标。",
+    "ui": false,
+    "files": [
+      "src/lib/site-recognition.js"
+    ]
+  },
+  {
+    "key": "当前浏览器无法使用云同步，已停止请求。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "当前网站响应无法安全读取。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "当前云端还有可恢复的并发版本，请先恢复并完成同步，再切换存储位置。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "导入计划",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "导入计划无效或条目过多",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "导入计划中的文件夹名称重复",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "导入目标桌面不存在",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "导入条目不能超过 {0}",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "导入网址",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "导入网址引用了未知文件夹",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "导入文件夹",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "倒计时结束",
+    "ui": false,
+    "files": [
+      "src/lib/clock-runtime.js"
+    ]
+  },
+  {
+    "key": "多选仅支持主屏幕条目。",
+    "ui": false,
+    "files": [
+      "src/lib/desktop-edit.js"
+    ]
+  },
+  {
+    "key": "额外搜索引擎数量须为 0 至 30",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "分组",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "分组标识",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "分组标识重复",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "分组名称",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "分组数量须为 1 至 {0}",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "工具备份格式不支持。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "工具备份文件过大。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "工具备份无法读取。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "工具模块版本无效。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "工具模块包含外部依赖。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "工具模块大小无效。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "贡献日历内容无效。",
+    "ui": false,
+    "files": [
+      "src/lib/github-wasm.js"
+    ]
+  },
+  {
+    "key": "贡献日历日期或数值无效。",
+    "ui": false,
+    "files": [
+      "src/lib/github-wasm.js"
+    ]
+  },
+  {
+    "key": "贡献日历数量无效。",
+    "ui": false,
+    "files": [
+      "src/lib/github-wasm.js"
+    ]
+  },
+  {
+    "key": "还没有可恢复的本地快照。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "还有尚未上传的同步版本，请先完成当前云端同步，再切换存储位置。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "恢复前的图片校验失败。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "计时数据无效。",
+    "ui": false,
+    "files": [
+      "src/lib/clock-runtime.js"
+    ]
+  },
+  {
+    "key": "记录版本无效。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "记录标识无效。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "记录标识重复。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "记录类型无效。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "加密口令至少需要 12 个字符，且不能超过 1024 字节。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js"
+    ]
+  },
+  {
+    "key": "加密口令至少需要 12 个字符。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "加密同步文档超过大小限制。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js"
+    ]
+  },
+  {
+    "key": "渐变背景无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "渐变背景与颜色设置不符",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "今日背景暂不可用，继续显示上次缓存。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "今日背景暂不可用，已使用内置背景。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "今日背景暂不可用；15 分钟后打开或返回页面时重试。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "今日壁纸已更新。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "仅支持 HTTP 和 HTTPS 网址",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "旧视觉设置无效。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "局部视觉分析失败。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "局部视觉结果无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "快照依赖的图片不存在，未改变当前数据。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "扩展本地存储不可用，未切换到预览存储。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "链接过长。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "链接列表无效。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "浏览器不支持这个时区。",
+    "ui": false,
+    "files": [
+      "src/lib/time-zones.js"
+    ]
+  },
+  {
+    "key": "浏览器默认搜索由浏览器提供，不能保存为额外搜索引擎",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "浏览器事务锁不可用，未保存以免覆盖其他标签页。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "浏览器事务锁不可用，未开始同步。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "浏览器同步版本信息不一致。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "浏览器同步存储不可用；本地数据已保留。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "浏览器同步分片校验失败，未覆盖本地数据。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "浏览器同步区容量不足（总计 100 KiB、单项 8 KiB）；完整数据已保留本机，请减少导航或继续使用 ZIP 备份。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "浏览器同步尚未开启；数据仅保存在本机。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "浏览器同步数据格式无效，未覆盖本地数据。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "浏览器同步提交信息无效，未覆盖本地数据。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "浏览器同步已关闭；本地数据和已有同步区数据均保留。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "浏览器无法锁定本机数据，请关闭其他 Covelet 页面后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "浏览器阅读清单超过 500 条，请先整理后再导入。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "浏览器暂无此网站图标，将使用文字图标。",
+    "ui": false,
+    "files": [
+      "src/lib/site-recognition.js"
+    ]
+  },
+  {
+    "key": "路径搜索不能使用路径跳转符",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "没有可移动的导航。",
+    "ui": false,
+    "files": [
+      "src/lib/desktop-edit.js"
+    ]
+  },
+  {
+    "key": "每个容器的条目顺序须连续且不重复",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "每日背景来源无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "目标位置",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "目标文件夹无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "目标桌面不存在",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "闹钟数据无效。",
+    "ui": false,
+    "files": [
+      "src/lib/clock-runtime.js"
+    ]
+  },
+  {
+    "key": "内容超过工具处理上限。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "内置背景无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "内置视觉模块版本无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "内置视觉模块大小无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "内置视觉模块加载失败。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "内置视觉模块暂不可用，已使用原始外观。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "配置及同步历史超过浏览器同步容量；完整数据已保留本机。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "配置数据超过 2 MiB。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "普通条目不能包含组件配置",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "签名密钥",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "签名数据",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "请关闭旧版本 Covelet 标签页后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "请加载 Chrome 或 Edge 扩展，再授权使用云同步。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "请稍后再刷新。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "请授权访问 GitHub 后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "请输入有效的 WebDAV 用户名和应用密码。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "请输入有效的云存储访问凭据。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "请填写完整的 HTTP 或 HTTPS 图标地址。",
+    "ui": false,
+    "files": [
+      "src/lib/site-icons.js"
+    ]
+  },
+  {
+    "key": "请填写有效的 IANA 时区。",
+    "ui": false,
+    "files": [
+      "src/lib/time-zones.js"
+    ]
+  },
+  {
+    "key": "请填写有效的图标地址。",
+    "ui": false,
+    "files": [
+      "src/lib/site-icons.js"
+    ]
+  },
+  {
+    "key": "请先保存云同步配置。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "请先检查备份文件。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "请先将网址移到同一个容器",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "请先开启同步，再恢复并发版本。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "请先完成待上传版本的同步，再恢复历史项目。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "请先允许读取此网站的名称和图标。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "请允许读取这个网站的图标信息。",
+    "ui": false,
+    "files": [
+      "src/lib/site-icon-discovery.js"
+    ]
+  },
+  {
+    "key": "请在 Chrome 或 Edge 扩展中开启浏览器同步。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "请在扩展中允许读取标签页。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "请在扩展中允许访问阅读清单。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "请在浏览器扩展中恢复标签快照。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "尚未配置自定义云同步。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "尚未授权访问这个云服务，请先在设置中授权。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "尚未授权访问这个云服务，已停止请求。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "稍后读格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "设定的时间已到。",
+    "ui": false,
+    "files": [
+      "src/lib/clock-runtime.js"
+    ]
+  },
+  {
+    "key": "时间无效",
+    "ui": false,
+    "files": [
+      "src/lib/clock.js"
+    ]
+  },
+  {
+    "key": "时钟内核包含不支持的导入。",
+    "ui": false,
+    "files": [
+      "src/lib/clock-core.js"
+    ]
+  },
+  {
+    "key": "时钟内核大小无效。",
+    "ui": false,
+    "files": [
+      "src/lib/clock-core.js"
+    ]
+  },
+  {
+    "key": "时钟内核接口无效。",
+    "ui": false,
+    "files": [
+      "src/lib/clock-core.js"
+    ]
+  },
+  {
+    "key": "时钟数据无效。",
+    "ui": false,
+    "files": [
+      "src/lib/clock-runtime.js"
+    ]
+  },
+  {
+    "key": "视觉处理已取消。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-processing.js"
+    ]
+  },
+  {
+    "key": "视觉处理暂不可用，已使用原始外观。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-processing.js"
+    ]
+  },
+  {
+    "key": "视觉模块版本不兼容。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "视觉模块处理失败。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "视觉模块结果无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "视觉模块内存无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "视觉模块输入无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "视觉区域无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "书签文件无效或超过 5 MB",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "数据修订号",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "数据已在另一个标签页更新，本次未覆盖；请重新同步。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "数据已在另一个标签页更新，请重新加载后再试。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "数据已在另一个标签页更新。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "搜索词过长。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "搜索模板包含无效占位符",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索模板格式无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索模板须包含且仅包含一个 {query}",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索文字无效或过长",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索引擎标识",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索引擎标识重复",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索引擎的协议和域名必须固定",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索引擎名称",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索引擎已在其他页面修改，请重新载入设置。",
+    "ui": false,
+    "files": [
+      "src/lib/preference-saving.js"
+    ]
+  },
+  {
+    "key": "搜索引擎域名必须固定",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索占位符不能放在片段中",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索占位符只能放在查询参数值中",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "搜索占位符只能放在路径或查询参数值中",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "所选项目不能恢复，请重新查看差异并选择关联的文件夹。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "条目标识",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "条目标识重复",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "条目类型无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "条目顺序",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "条目引用了不存在的分组",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "同步 WASM",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同步 WASM 版本或内存限制不匹配。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同步 WASM 不允许宿主导入。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同步 WASM 缓冲区无效。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同步 WASM 接口不完整。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同步操作格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "同步记录无法生成。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "同步开关值无效。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "同步历史超出限制，已保留本地数据；请使用 ZIP 备份。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "同步签名计算失败。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同步设备标识无效。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "同步设备数量过多。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "同步设备文档格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "同步设置包含未知字段。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "同步数据",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同步条目标识与内容不一致。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "同步文档超过加密大小限制。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js"
+    ]
+  },
+  {
+    "key": "同步已暂停：{0} 本地修改已保存，可导出 ZIP 备份。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "同步因果版本无效。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "同步摘要必须是完整的 SHA-256 十六进制字符串。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同步摘要计算失败。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同步状态计算失败。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "同一设备出现不一致的同步版本，已保留本地数据。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "同一同步设备出现不一致版本，已保留本地数据。",
+    "ui": false,
+    "files": [
+      "src/lib/sync.js"
+    ]
+  },
+  {
+    "key": "图标背景色须为六位十六进制颜色",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "图标不可用。",
+    "ui": false,
+    "files": [
+      "src/lib/site-icon-discovery.js"
+    ]
+  },
+  {
+    "key": "图标分辨率不合适。",
+    "ui": false,
+    "files": [
+      "src/lib/site-icon-discovery.js"
+    ]
+  },
+  {
+    "key": "图标类型无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "图标配置过大。",
+    "ui": false,
+    "files": [
+      "src/lib/site-icon-discovery.js"
+    ]
+  },
+  {
+    "key": "图标所在列",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "图标所在行",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "图标位置",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "图标显示方式无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "图标只支持 HTTP 或 HTTPS 地址。",
+    "ui": false,
+    "files": [
+      "src/lib/site-icons.js"
+    ]
+  },
+  {
+    "key": "图片保存失败。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "图片必须使用本地资源标识",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "图片必须为 10 MiB 以内的 PNG、JPEG 或 WebP。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "图片标识",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "图片不属于当前扩展。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-processing.js"
+    ]
+  },
+  {
+    "key": "图片尺寸超出限制。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "图片尺寸信息不一致。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "图片存储已取消。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "图片格式或尺寸无效；仅支持 PNG、JPEG、WebP，最多 4000 万像素。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "图片来源无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-processing.js"
+    ]
+  },
+  {
+    "key": "图片没有可显示的内容。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "完整备份超过 30 MiB，请减少自定义图片。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "网页预览不支持浏览器同步，请加载扩展后使用。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "网页预览使用文字图标。",
+    "ui": false,
+    "files": [
+      "src/lib/site-recognition.js"
+    ]
+  },
+  {
+    "key": "网页预览无法读取站点信息，请加载浏览器扩展后识别，或手动填写。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网页预览无法申请站点访问权限，请加载浏览器扩展后识别，或手动填写。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网站返回了无法识别的内容类型。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网站请求失败或发生重定向，请手动填写，或输入最终网址后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网站识别超时，请重试或手动填写。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网站首页内容超过识别限制。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网站图标尺寸超出限制。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网站图标格式或大小无效。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网站图标与声明格式不符。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网站图标转换失败。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网站未提供可用的高清图标，已保留原图。",
+    "ui": false,
+    "files": [
+      "src/lib/site-icon-discovery.js"
+    ]
+  },
+  {
+    "key": "网站响应超过识别大小限制。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "网址不能包含用户名或密码",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "网址的文件夹引用无效或不在同一分组",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "网址格式无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "网址规范化不能移除搜索占位符",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "网址过长",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "网址和文件夹总数不能超过 {0}",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "网址条目",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "网址须为文字",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "网址域名格式无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "未获取到网站名称和图标，将使用域名和文字图标，可手动修改。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "未命名",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "未找到该 GitHub 用户。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "文件夹标识",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "文件夹不能包含网址字段",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "文件夹不能嵌套",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "文件夹不能移入其他文件夹",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "文字对比度结果无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "文字格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "文字区域无效。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-worker.js"
+    ]
+  },
+  {
+    "key": "文字图标",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "无法保存本地图标缓存。",
+    "ui": false,
+    "files": [
+      "src/lib/provider-icons.js"
+    ]
+  },
+  {
+    "key": "无法保存本机工具数据，请重试。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "无法保存本机云同步设置。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "无法保存本机云同步状态，未上传新版本。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "无法保存本机云同步状态。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "无法打开本地图标缓存。",
+    "ui": false,
+    "files": [
+      "src/lib/provider-icons.js"
+    ]
+  },
+  {
+    "key": "无法读取本地图标缓存。",
+    "ui": false,
+    "files": [
+      "src/lib/provider-icons.js"
+    ]
+  },
+  {
+    "key": "无法读取本机工具数据。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "无法读取本机时钟数据。",
+    "ui": false,
+    "files": [
+      "src/lib/clock-runtime.js"
+    ]
+  },
+  {
+    "key": "无法读取本机云同步设置。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "无法读取网站图标信息。",
+    "ui": false,
+    "files": [
+      "src/lib/site-icon-discovery.js"
+    ]
+  },
+  {
+    "key": "无法分析文字背景。",
+    "ui": false,
+    "files": [
+      "src/lib/navigation-contrast.js"
+    ]
+  },
+  {
+    "key": "无法加载 GitHub 组件内核。",
+    "ui": false,
+    "files": [
+      "src/lib/github-wasm.js"
+    ]
+  },
+  {
+    "key": "无法加载包内同步计算内核。",
+    "ui": false,
+    "files": [
+      "src/lib/sync-wasm.js"
+    ]
+  },
+  {
+    "key": "无法加载工具模块。",
+    "ui": false,
+    "files": [
+      "src/lib/tools-core.js"
+    ]
+  },
+  {
+    "key": "无法加载时钟内核。",
+    "ui": false,
+    "files": [
+      "src/lib/clock-core.js"
+    ]
+  },
+  {
+    "key": "无法解密同步数据：请检查加密口令，或确认云端文档未损坏。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js",
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "无法连接 WebDAV，请检查网络、站点授权和跨域配置。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "无法连接云存储，请检查网络、站点授权和跨域配置。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "无效书签不能超过 {0}",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "新建文件夹",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "新文件夹标识",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "新文件夹标识已存在",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "一次请选择 1 至 50 个标签。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "已从浏览器获取图标，可继续修改名称。",
+    "ui": false,
+    "files": [
+      "src/lib/site-recognition.js"
+    ]
+  },
+  {
+    "key": "已打开 {0} 个标签，其余标签未打开。快照仍然保留。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "已恢复所选并发版本，等待同步。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "已恢复所选项目，等待同步。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "已获取网站图标；名称暂用域名，可手动修改。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "已解锁，凭据仅保留在当前浏览器会话。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "已取消",
+    "ui": false,
+    "files": [
+      "src/lib/site-icon-discovery.js"
+    ]
+  },
+  {
+    "key": "已识别网站名称；未获取到可用图标，将使用文字图标。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "已识别网站名称和图标。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "已停用用户壁纸上传；请使用 Bing 每日壁纸或内置背景。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "已完成加密配置同步。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "已写入浏览器同步区，跨设备传输由浏览器管理。{0}",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "有 {0} 个并发版本可在冲突列表恢复。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "预设图标无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "云存储返回的数据格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云存储返回了不允许的跳转，已停止请求。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云存储连接超时，未完成的操作会在下次同步时核对。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云存储连接超时。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云存储配置无效，请检查填写内容。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云存储请求过于频繁，请稍后再试。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云存储请求未成功，请检查服务配置后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云存储身份验证失败，请检查凭据和访问权限。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云端仓库、分支或存储目录不可访问，请检查配置和权限。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云端存在同名但内容不同的快照，已停止写入并保留本地数据。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js",
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "云端加密文档编码无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js"
+    ]
+  },
+  {
+    "key": "云端加密文档大小无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js"
+    ]
+  },
+  {
+    "key": "云端加密文档格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js"
+    ]
+  },
+  {
+    "key": "云端加密文档无法解析。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js"
+    ]
+  },
+  {
+    "key": "云端快照数量或大小超出安全限制，请使用单独的存储目录。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云端快照数量或大小超出限制，请使用单独的存储目录。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云端快照文件名无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js",
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "云端快照校验失败，已保留本地数据。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js",
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "云端同步对象过大或无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-crypto.js"
+    ]
+  },
+  {
+    "key": "云端同步数据校验失败，未用部分数据覆盖本机。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云端文件、仓库或分支不可访问，请检查存储配置和权限。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云服务返回了无效的数据，本地数据未被覆盖。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云服务请求过于频繁，请稍后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云服务请求失败，请检查授权、凭据、网络及服务权限；本地数据仍然保留。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云服务请求未成功，请检查配置和网络后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云同步本机设置无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云同步配置或文档无效，已保留本地数据。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云同步尚未解锁，请重新填写凭据和加密口令。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云同步数据或历史超出限制，已保留全部本地数据；请使用 ZIP 备份。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "云同步已锁定或目标已更改，已停止请求。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-providers.js"
+    ]
+  },
+  {
+    "key": "云同步状态存储失败。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "暂不支持动画 WebP 图片。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "暂时无法读取 GitHub 贡献，请检查网络后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "暂时无法读取 GitHub 贡献。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "找不到要合并的条目",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "找不到要删除的条目",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "找不到要移动的条目",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "这个链接已在稍后读中。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "这条记录已在其他页面修改，请重新打开后再保存。",
+    "ui": false,
+    "files": [
+      "src/lib/personal-tools.js"
+    ]
+  },
+  {
+    "key": "这一屏已发生变化，请重新打开屏幕管理。",
+    "ui": false,
+    "files": [
+      "src/lib/desktop-edit.js"
+    ]
+  },
+  {
+    "key": "正在读取并合并加密配置。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "正在合并并写入浏览器同步区。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "正在使用今日缓存。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "只能处理已加载的本地图片。",
+    "ui": false,
+    "files": [
+      "src/lib/visual-processing.js"
+    ]
+  },
+  {
+    "key": "只能在桌面放置图标和组件。",
+    "ui": false,
+    "files": [
+      "src/lib/desktop-layout.js"
+    ]
+  },
+  {
+    "key": "只有网站可以合并到文件夹。",
+    "ui": false,
+    "files": [
+      "src/lib/desktop-edit.js"
+    ]
+  },
+  {
+    "key": "只有网站可以设置图标地址",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "只有网站可以移入文件夹",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "至少保留一屏。",
+    "ui": false,
+    "files": [
+      "src/lib/desktop-edit.js"
+    ]
+  },
+  {
+    "key": "主屏幕列表无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "主屏幕数量已达上限。",
+    "ui": false,
+    "files": [
+      "src/lib/desktop-edit.js",
+      "src/lib/desktop-layout.js"
+    ]
+  },
+  {
+    "key": "主屏幕位置",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "主屏幕位置无效。",
+    "ui": false,
+    "files": [
+      "src/lib/desktop-layout.js"
+    ]
+  },
+  {
+    "key": "主题无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "桌面列数无效。",
+    "ui": false,
+    "files": [
+      "src/lib/desktop-layout.js"
+    ]
+  },
+  {
+    "key": "自定义同步已锁定，已停止网络请求。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "自动同步设置无效。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-sync.js"
+    ]
+  },
+  {
+    "key": "组件不能合并为文件夹",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "组件放置状态无效",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "组件内核不允许宿主导入。",
+    "ui": false,
+    "files": [
+      "src/lib/github-wasm.js"
+    ]
+  },
+  {
+    "key": "组件内核超过大小限制。",
+    "ui": false,
+    "files": [
+      "src/lib/github-wasm.js"
+    ]
+  },
+  {
+    "key": "组件内核格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/github-wasm.js"
+    ]
+  },
+  {
+    "key": "组件内核缓冲区无效。",
+    "ui": false,
+    "files": [
+      "src/lib/github-wasm.js"
+    ]
+  },
+  {
+    "key": "组件内核接口无效。",
+    "ui": false,
+    "files": [
+      "src/lib/github-wasm.js"
+    ]
+  },
+  {
+    "key": "组件已在其他页面移除，请重新打开扩展",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "组件只能放在桌面上",
+    "ui": false,
+    "files": [
+      "src/lib/model.js"
+    ]
+  },
+  {
+    "key": "Bing 每日图片数据无效。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 请求失败或发生重定向。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片标识无效。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片不能使用动画 WebP。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片参数无效。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片尺寸超出限制。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片地址超出允许范围。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片地址无效。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片格式或尺寸超出限制。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片请求超时。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片日期无效。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片说明链接无效。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 图片说明无效。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 响应超过大小限制。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "Bing 响应类型无效。",
+    "ui": false,
+    "files": [
+      "src/lib/wallpaper.js"
+    ]
+  },
+  {
+    "key": "GitHub 贡献日历超过大小限制。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 贡献日历存在缺失或重复日期。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 请求过于频繁，请稍后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 日历包含重复记录。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 日历地址发生变化。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 日历格式已变化，请稍后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 日历格式已变化。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 日历内容无效。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 日历日期无效。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 日历响应不可读取。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 日历响应超过大小限制。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 日历响应无效或超过大小限制。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 未返回完整的贡献日历。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "GitHub 响应超时，请稍后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/github-contributions.js"
+    ]
+  },
+  {
+    "key": "ICO 图标格式无效。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "ICO 图标目录无效。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "ICO 图标内容无效。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "ICO 图标位图无效。",
+    "ui": false,
+    "files": [
+      "src/lib/site-info.js"
+    ]
+  },
+  {
+    "key": "WebDAV 返回的数据不完整或格式无效，已停止同步。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 返回了不允许的跳转，已停止请求。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 连接超时，未完成的操作会在下次同步时核对。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 目录数量或数据大小超出安全限制，请使用独立的同步目录。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 配置无效，请检查服务器地址和目录。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 请求过于频繁，请稍后再试。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 请求未成功，请检查服务配置后重试。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 请求已停止，请重新解锁并检查站点权限。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 身份验证失败，请检查应用密码和目录权限。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 同步目录或文件不可访问，请先创建指定目录并检查权限。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "WebDAV 站点访问权限不可用，请重新授权。",
+    "ui": false,
+    "files": [
+      "src/lib/cloud-webdav.js"
+    ]
+  },
+  {
+    "key": "ZIP 本地文件头无效。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "ZIP 条目目录损坏。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "ZIP 条目越界。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "ZIP 文件大小声明不一致。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  },
+  {
+    "key": "ZIP 文件内容越界或名称不一致。",
+    "ui": false,
+    "files": [
+      "src/lib/storage.js"
+    ]
+  }
+]

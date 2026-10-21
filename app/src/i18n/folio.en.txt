@@ -1,0 +1,131 @@
+# Folio 0.2.0 UI fallback, derived from MIT-licensed Folio locale sources.
+开始写作...|Start writing...
+目录|Table of contents
+添加标题后将在此显示目录。|Add a heading to build the table of contents.
+另有 {count} 个标题|{count} more headings
+斜杠菜单|Slash commands
+基础|Basic
+列表|Lists
+媒体|Media
+高级|Advanced
+插入块|Insert block
+在下方添加块|Add block below
+拖拽块|Drag block
+文本格式|Text formatting
+链接 URL|Link URL
+加粗|Bold
+斜体|Italic
+下划线|Underline
+删除线|Strike
+代码|Code
+链接|Link
+高亮|Highlight
+添加表格列|Add table column
+添加列|Add column
+添加表格行|Add table row
+添加行|Add row
+文本|Text
+从普通文本开始|Start with plain text
+一级标题|Heading 1
+大型章节标题|Large section heading
+二级标题|Heading 2
+中型章节标题|Medium section heading
+三级标题|Heading 3
+小型章节标题|Small section heading
+项目符号列表|Bulleted list
+创建项目符号列表|Create a bulleted list
+编号列表|Numbered list
+创建编号列表|Create a numbered list
+待办列表|Task list
+用复选框跟踪任务|Track tasks with checkboxes
+引用|Quote
+记录引用或摘录|Capture a quote or excerpt
+提示框|Callout
+突出重要信息|Highlight information in a callout
+提示|Callout
+分割线|Divider
+添加水平分割线|Add a horizontal divider
+代码块|Code block
+编写带格式的代码|Write code with formatting
+表格|Table
+插入简单表格|Insert a simple table
+图片|Image
+通过 URL 嵌入图片|Embed an image by URL
+书签|Bookmark
+保存富链接书签|Save a rich link bookmark
+提及|Mention
+提及人物或引用对象|Mention a person or reference
+折叠块|Toggle
+创建可折叠章节|Create a collapsible section
+插入目录|Insert a table of contents
+文档操作|Document actions
+编辑选中的媒体|Edit selected media
+上移块|Move block up
+下移块|Move block down
+撤销|Undo
+重做|Redo
+地址|URL
+替代文本|Alternative text
+图片说明|Caption
+标题|Title
+描述|Description
+上传图片|Upload image
+正在上传图片…|Uploading image…
+重试上传|Retry upload
+保存|Save
+取消|Cancel
+移除链接|Remove link
+请输入安全地址。链接支持 HTTP、HTTPS、mailto、tel 和相对路径；图片支持 HTTP、HTTPS 和相对路径。|Enter a safe URL. Links support HTTP, HTTPS, mailto, tel, and relative paths; images support HTTP, HTTPS, and relative paths.
+未能完成此操作。|This action could not be completed.
+没有匹配的提及对象|No matching mentions
+搜索提及对象|Search mentions
+表格操作|Table actions
+删除行|Delete row
+删除列|Delete column
+切换表头行|Toggle header row
+切换表头列|Toggle header column
+合并选中单元格|Merge selected cells
+拆分单元格|Split cell
+删除表格|Delete table
+块操作|Block actions
+复制块|Copy blocks
+创建块副本|Duplicate blocks
+删除块|Delete blocks
+复制块链接|Copy block link
+转换为|Turn into
+文字颜色|Text color
+背景颜色|Background color
+默认|Default
+正文|Text
+无序列表|Bulleted list
+有序列表|Numbered list
+提示块|Callout
+灰色|Gray
+红色|Red
+橙色|Orange
+绿色|Green
+蓝色|Blue
+紫色|Purple
+个块已选中|blocks selected
+查找替换|Find and replace
+查找内容|Find in document
+替换为|Replace with
+区分大小写|Match case
+全词匹配|Whole word
+上一处|Previous match
+下一处|Next match
+替换|Replace
+全部替换|Replace all
+关闭查找|Close search
+无匹配|No matches
+第 {current} / {total} 处|{current} of {total}
+超过 {count} 处，请缩小查找范围|{count}+ matches. Refine your search to replace all.
+分栏|Columns
+拆分栏|Remove columns
+列宽|Column widths
+评论|Comments
+版本历史|Version history
+添加评论|Add comment
+评论内容|Comment text
+关闭|Close
+文档浏览|Document browsing

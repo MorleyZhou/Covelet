@@ -1,0 +1,46 @@
+.cloud-sync-form { min-height: 0; overflow: hidden; gap: 0; }
+.cloud-connection-summary { display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.cloud-connection-summary > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.connection-state { font-size: 12px; color: var(--muted); }
+.cloud-sync-fields { display: flex; flex-direction: column; gap: 15px; }
+.cloud-sync-fields > label:not(.check-label) { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.cloud-sync-fields .hint { margin: 0; font-size: 12px; }
+.cloud-sync-fields input { min-width: 0; width: 100%; }
+.cloud-sync-fields input[type=checkbox] { width: 36px; }
+.cloud-sync-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.cloud-sync-actions .button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.cloud-sync-target { font-size: 12px; line-height: 1.7; color: var(--muted); overflow-wrap: anywhere; margin: 0; }
+.cloud-sync-conflicts { display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+.cloud-sync-conflicts > div { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.cloud-history { display: flex; flex-direction: column; gap: 14px; padding-top: 20px; border-top: 1px solid var(--line); }
+.cloud-history-heading, .cloud-history-preview-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cloud-history-heading > strong { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; }
+.cloud-history-list { display: flex; flex-direction: column; max-height: 230px; overflow: auto; overscroll-behavior: contain; gap: 3px; }
+.cloud-history-list > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; padding: 10px 12px; border-radius: 10px; }
+.cloud-history-list > button:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.cloud-history-list > button[aria-pressed=true] { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.cloud-history-list > button > span { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 10px; }
+.cloud-history-list strong { color: var(--ink); font-size: 13px; font-weight: 500; }
+.cloud-history-list small { color: var(--muted); font-size: 11px; }
+.cloud-history-preview { display: flex; flex-direction: column; gap: 13px; min-width: 0; }
+.cloud-history-preview-heading strong { font-size: 14px; font-weight: 600; }
+.cloud-history-preview-heading time { font-size: 10px; color: var(--muted); }
+.cloud-history-selection { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cloud-history-selection > span { margin-left: auto; font-size: 11px; color: var(--muted); }
+.revision-column-labels, .revision-field-values { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.revision-column-labels { color: var(--muted); font-size: 11px; }
+.revision-changes { max-height: 430px; overflow: auto; overscroll-behavior: contain; }
+.revision-change { border-bottom: 1px solid var(--line); padding-block: 10px; min-width: 0; }
+.revision-change-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.revision-change-heading > label { display: flex; align-items: center; gap: 9px; flex: 1; min-width: 0; cursor: pointer; }
+.revision-change-heading input { width: 15px; height: 15px; flex-shrink: 0; accent-color: var(--accent); }
+.revision-change-heading strong { color: var(--ink); font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.revision-change-heading small { flex-shrink: 0; margin-left: auto; font-size: 10px; color: var(--muted); }
+.revision-change-heading small.revision-action-remove { color: #bf5959; }
+.revision-change-heading > button { padding: 6px; border-radius: 5px; }
+.revision-change-heading > button[aria-expanded=true] svg { transform: rotate(180deg); }
+.revision-change-detail { padding-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+.revision-field > strong { display: block; margin-bottom: 6px; font-size: 10px; color: var(--muted); font-weight: 400; }
+.revision-field-values pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.7 ui-monospace, monospace; margin: 0; max-height: 140px; overflow: auto; color: var(--muted); }
+.revision-field-values del { text-decoration: none; color: #b54545; background: #bb55551a; }
+.revision-field-values ins { text-decoration: none; color: #27824d; background: #3b99551a; }

@@ -1,0 +1,76 @@
+.clock-widget { container: clock-widget / size; --clock-accent: #f79822; --clock-face: transparent; display: flex; flex-direction: column; gap: 10px; width: 100%; height: 100%; min-width: 0; padding: 14px; border-radius: 24px; background: var(--widget-surface, var(--panel)); color: var(--ink); overflow: hidden; text-align: center; cursor: pointer; touch-action: none; }
+.clock-tools-modal[open] { display: flex; flex-direction: column; width: min(520px, calc(100vw - 32px)); height: min(580px, calc(100dvh - 32px)); max-height: calc(100dvh - 32px); padding: 22px; overflow: hidden; }
+.clock-tools-modal > .modal-title { flex-shrink: 0; margin-bottom: 16px; }
+.clock-tools { container: clock-widget / size; --clock-accent: #f79822; display: flex; flex-direction: column; flex: 1; gap: 18px; width: 100%; min-width: 0; min-height: 0; color: var(--ink); }
+.clock-modes { flex-shrink: 0; display: flex; justify-content: space-between; gap: 3px; }
+.clock-modes button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex: 1; min-width: 0; min-height: 66px; padding: 6px 3px; border-radius: 12px; color: var(--muted); font-size: 12px; line-height: 1.3; overflow-wrap: anywhere; hyphens: auto; }
+.clock-modes button > svg { flex-shrink: 0; }
+.clock-modes button > span { max-width: 100%; }
+.clock-modes button[aria-selected=true] { color: var(--clock-accent); background: color-mix(in srgb, var(--clock-accent) 10%, transparent); }
+.clock-widget-content { display: flex; flex-direction: column; flex: 1; min-height: 0; outline: none; overflow: auto; overscroll-behavior: contain; padding: 4px 2px; }
+.clock-home { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; flex: 1; min-height: 0; }
+.analog-clock { width: auto; height: min(100% - 24px, 230px); max-width: 100%; flex-shrink: 1; min-height: 35px; aspect-ratio: 1; }
+.clock-face { fill: var(--clock-face, color-mix(in srgb, var(--ink) 3%, var(--panel))); }
+.clock-tick { stroke: currentColor; stroke-width: 1.2; }
+.clock-tick-minor { stroke-width: .55; opacity: .6; }
+.clock-numerals { fill: currentColor; font: 500 9px system-ui, sans-serif; }
+.clock-hand { stroke: currentColor; stroke-linecap: round; }
+.clock-hour { stroke-width: 4; }.clock-minute { stroke-width: 2.8; }
+.clock-second { stroke: var(--clock-accent); stroke-width: 1.2; }.clock-pin { fill: var(--clock-accent); }
+.clock-digital { font-size: clamp(26px, 14cqw, 64px); letter-spacing: -.035em; font-weight: 300; font-variant-numeric: tabular-nums; }
+.clock-local-date { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.clock-measure { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; flex: 1; min-height: 0; }
+.clock-digits { font-size: clamp(22px, 12cqw, 54px); font-weight: 300; line-height: 1.3; letter-spacing: -.025em; font-variant-numeric: tabular-nums; }
+.clock-actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-shrink: 0; }
+.clock-actions > button { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: var(--muted); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.clock-actions button.clock-primary { color: var(--clock-accent); background: color-mix(in srgb, var(--clock-accent) 14%, transparent); }
+.clock-duration { display: flex; justify-content: center; gap: 7px; width: 100%; }
+.clock-duration label { display: flex; align-items: baseline; gap: 3px; font-size: 10px; color: var(--muted); min-width: 0; }
+.clock-duration input { width: 36px; min-width: 0; padding: 4px 0; background: transparent; border: 0; color: var(--ink); font-size: 23px; text-align: center; font-variant-numeric: tabular-nums; appearance: textfield; }
+.clock-duration input::-webkit-inner-spin-button { appearance: none; }
+.clock-notify { display: flex; align-items: center; gap: 3px; color: var(--muted); }
+.clock-notify input { width: 13px; height: 13px; accent-color: var(--clock-accent); }
+.countdown-display { position: relative; display: grid; place-items: center; width: min(100%, 155px); max-height: calc(100% - 45px); aspect-ratio: 1; }
+.countdown-display svg { width: 100%; height: 100%; min-height: 0; }
+.countdown-display circle { fill: none; stroke: color-mix(in srgb, var(--ink) 8%, transparent); stroke-width: 3; }
+.countdown-display .countdown-progress { stroke: var(--clock-accent); stroke-linecap: round; }
+.countdown-display .clock-digits { position: absolute; font-size: clamp(20px, 8.5cqw, 37px); }
+.clock-finished { font-size: 11px; color: var(--clock-accent); }
+.clock-error { flex-shrink: 0; margin: 0; max-height: 3em; overflow: auto; color: #bc6248; font-size: 10px; line-height: 1.5; }
+.clock-widget-small { padding: 10px; gap: 7px; }
+.clock-widget-large { padding: 24px; gap: 16px; }
+.clock-widget-mini { padding: 4px; gap: 0; border-radius: 24%; }
+.clock-widget-mini .clock-home { gap: 0; width: 100%; height: 100%; }
+.clock-widget-mini .analog-clock { width: 100%; height: 100%; max-height: 100%; min-height: 0; }
+.clock-widget-mini .clock-digital { font-size: clamp(11px, 34cqw, 26px); font-weight: 500; line-height: 1.1; letter-spacing: -.04em; }
+.clock-tools .clock-actions > button { width: 44px; height: 44px; }
+.clock-tools .clock-duration { gap: 14px; }
+.clock-tools .clock-duration input { width: 58px; font-size: 34px; }
+.clock-tools .countdown-display { width: min(100%, 220px); max-height: calc(100% - 64px); }
+.clock-tools .clock-error { font-size: 12px; max-height: 4.5em; }
+.clock-widget-preview { padding: 30px; border-radius: 22px; margin: 0; background: #f5f5f7; color: #1d1d1f; text-align: center; font-size: 12px; }
+.clock-preview-digits { display: block; font-size: 56px; font-weight: 300; }
+.world-zone-settings { display: flex; flex-direction: column; gap: 15px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.world-zone-settings legend { margin-bottom: 12px; color: var(--muted); font-size: 12px; }
+.world-zone-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+.world-zone-chips button { display: inline-flex; gap: 7px; align-items: center; border-radius: 14px; padding: 6px 10px; background: color-mix(in srgb, var(--ink) 5%, transparent); font-size: 12px; }
+.world-zone-custom { display: flex; align-items: flex-end; gap: 10px; }
+.world-zone-custom > label { flex: 1; min-width: 0; }
+.world-clocks { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.time-comparison-fields { display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px; align-items: end; }
+.time-comparison-fields > label { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 12px; color: var(--muted); }
+.time-comparison-fields input { width: 100%; min-width: 0; padding: 10px; border: 0; border-radius: 9px; color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, transparent); font: inherit; font-size: 12px; color-scheme: light dark; }
+.time-comparison-fields .form-error { grid-column: 1 / -1; margin: 0; }
+.world-clock-list { display: flex; flex-direction: column; }
+.world-clock-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 16px 4px; border-bottom: 1px solid var(--line); }
+.world-clock-row > span { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.world-clock-row strong { font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
+.world-clock-row small { color: var(--muted); font-size: 11px; }
+.world-clock-time { align-items: flex-end; flex-shrink: 0; }
+.world-clock-time time { font-size: 32px; font-variant-numeric: tabular-nums; font-weight: 300; letter-spacing: -.5px; }
+@media (max-width: 430px) { .time-comparison-fields { grid-template-columns: 1fr; }.clock-modes button { font-size: 11px; }.world-clock-time time { font-size: 28px; } }
+@container clock-widget (height < 210px) {
+  .clock-modes button { height: 25px; }.clock-local-date { font-size: 10px; }
+  .clock-measure { gap: 7px; }.clock-actions > button { width: 28px; height: 28px; }
+  .countdown-display { max-height: calc(100% - 35px); }
+}

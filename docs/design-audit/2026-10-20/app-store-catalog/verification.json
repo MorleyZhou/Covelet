@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-20",
+  "coreTests": 216,
+  "sitesTests": 4,
+  "webBuild": "passed",
+  "extensionBuild": "passed",
+  "catalogFilterChecks": "passed",
+  "browserChecks": [
+    "purpose categories",
+    "keyword search",
+    "no results",
+    "Escape clear then dismiss",
+    "keyboard Home End and arrows",
+    "preserved query and return focus",
+    "collapsed detail preview",
+    "one result retains column width",
+    "390px and 320px no horizontal overflow"
+  ],
+  "qaConsoleErrors": [],
+  "temporaryDesktopEntries": 0,
+  "final": {
+    "categories": [
+      "全部扩展",
+      "开发工具",
+      "数据同步"
+    ],
+    "items": [
+      {
+        "height": 104,
+        "name": "GitHub 贡献",
+        "width": 397.2000122070313
+      },
+      {
+        "height": 104,
+        "name": "自定义存储同步",
+        "width": 397.2000122070313
+      }
+    ],
+    "largePreviews": 0,
+    "overflow": false,
+    "viewport": [
+      1218,
+      1084
+    ]
+  }
+}
