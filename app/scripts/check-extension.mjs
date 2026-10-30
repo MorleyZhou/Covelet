@@ -16,7 +16,7 @@ const manifest = JSON.parse(readFileSync(builtManifest, "utf8"));
 assert.deepEqual(manifest, JSON.parse(readFileSync(sourceManifest, "utf8")), "Built manifest differs from the reviewed extension.manifest.json baseline.");
 assert.equal(manifest.manifest_version, 3);
 assert.equal(manifest.name, "Covelet");
-assert.equal(manifest.version, "0.1.0");
+assert.match(manifest.version, /^\d+\.\d+\.\d+$/, 'Extension version must use the package release version.');
 assert.equal(manifest.minimum_chrome_version, "120");
 assert.equal(manifest.default_locale, "en");
 assert.equal(manifest.description, "__MSG_extensionDescription__");
@@ -65,7 +65,7 @@ const expectedCsp = {
   "font-src": ["'self'"],
   "base-uri": ["'none'"],
   "frame-src": ["'none'"],
-  "media-src": ["'none'"],
+  "media-src": ["'self'", "blob:"],
   "form-action": ["'none'"],
 };
 assert.equal(csp.size, Object.keys(expectedCsp).length, "Unexpected CSP directive.");
@@ -141,7 +141,7 @@ for (const file of files) {
   if (/\.html$/i.test(file)) {
     htmlCount++;
     if (file === path.join(extensionRoot, manifest.chrome_url_overrides.newtab)) {
-      assert.match(source, /<title>\s*Covelet 新标签页\s*<\/title>/u, "New tab title must use Covelet branding.");
+      assert.match(source, /<title>\s*Covelet (?:New Tab|新标签页)\s*<\/title>/u, "New tab title must use Covelet branding.");
     }
     for (const tag of source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
       assert(/\bsrc\s*=/.test(tag[1]), `Inline script in ${file}`);
@@ -158,8 +158,8 @@ for (const file of files) {
     assert(!/\b(?:XMLHttpRequest|WebSocket|EventSource)\b/.test(source), `Unexpected network API pattern in ${file}`);
     // Vite keeps this member access readable. All shipped fetch bridges are
     // checked against their source below; this is a static gate, not a sandbox.
-    const fetchCalls = [...source.matchAll(/(?:\bfetch\s*\(|\bglobalThis\s*\.\s*fetch\s*\()/g)];
-    assert(fetchCalls.length <= 12 && fetchCalls.every((match) => /^globalThis\s*\.\s*fetch/.test(match[0])), `Unexpected fetch bridge in ${file}`);
+    const fetchCalls = [...source.matchAll(/(?:(?<![\w$.])fetch\s*\(|\bglobalThis\s*\.\s*fetch\s*\()/g)];
+    assert(fetchCalls.length <= 14 && fetchCalls.every((match) => /^globalThis\s*\.\s*fetch/.test(match[0])), `Unexpected fetch bridge in ${file}`);
     assert(!/(?:\bimport\s*\(\s*|\bfrom\s*)(["'])(?:https?:)?\/\//i.test(source), `Remote JavaScript import in ${file}`);
     assert(!/(?:\.\s*src\s*=|\bsrc\s*:)\s*(["'])(?:https?:)?\/\//i.test(source), `External source resource in ${file}`);
   } else {
@@ -173,6 +173,15 @@ for (const file of files) {
 
 // Inspect the readable execution bridge, rather than relying on Vite's minified
 // variable names. Custom provider templates belong in configuration, not here.
+const appNetworkBridge = path.join(appRoot, 'src', 'lib', 'app-network.js');
+const appNetworkSource = readFileSync(appNetworkBridge, 'utf8');
+assert.match(appNetworkSource, /permissions\s*\.\s*contains/, 'App network requests require an exact-origin grant.');
+assert.match(appNetworkSource, /permissions\s*\.\s*request/, 'App access must be requested explicitly.');
+assert.match(appNetworkSource, /credentials:\s*'omit'/, 'App requests must omit cookies.');
+assert.match(appNetworkSource, /referrerPolicy:\s*'no-referrer'/, 'App requests must omit referrers.');
+assert.match(appNetworkSource, /redirect:\s*'error'/, 'App requests must reject redirects.');
+assert.match(appNetworkSource, /AbortSignal\.timeout/, 'App requests must have a deadline.');
+assert.match(appNetworkSource, /size > maxBytes/, 'App responses must have a byte limit.');
 const searchBridge = path.join(appRoot, "src", "lib", "search.js");
 assert(existsSync(searchBridge), "Missing readable search execution bridge: src/lib/search.js");
 const searchSource = readFileSync(searchBridge, "utf8");
@@ -224,6 +233,34 @@ const githubSource = readFileSync(githubBridge, 'utf8');
 const githubWasmSource = readFileSync(githubWasmBridge, 'utf8');
 const clockWasmBridge = path.join(appRoot, 'src', 'lib', 'clock-core.js');
 const hdIconBridge = path.join(appRoot, 'src', 'lib', 'site-icon-discovery.js');
+const navigationIconBridge = path.join(appRoot, 'src', 'lib', 'navigation-icon-cache.js');
+const toolsWasmBridge = path.join(appRoot, 'src', 'lib', 'tools-core.js');
+const navigationIconSource = readFileSync(navigationIconBridge, 'utf8'), toolsWasmSource = readFileSync(toolsWasmBridge, 'utf8');
+assert.match(toolsWasmSource, /import binaryUrl from '\.\.\/wasm\/tools-core\.wasm\?url'/, 'Tools WASM must use only the packaged binary.');
+assert(!/https?:\/\//.test(toolsWasmSource), 'Tools WASM loader must not accept remote origins.');
+for (const [name, source] of [['navigation image', navigationIconSource], ['tools WASM', toolsWasmSource]]) {
+  assert.match(source, /credentials:\s*'omit'/, `${name} reads must omit cookies.`);
+  assert.match(source, /referrerPolicy:\s*'no-referrer'/, `${name} reads must omit referrers.`);
+  if (name === 'navigation image') {
+    assert.match(source, /redirect:\s*'follow'/, 'Explicit image acquisition must support ordinary redirects.');
+    assert.match(source, /normalizeIconAddress\(response\.url\)/, 'The final image address must still be validated.');
+  } else assert.match(source, /redirect:\s*'error'/, `${name} reads must reject redirects.`);
+}
+assert.match(navigationIconSource, /normalizeIconAddress\(/, 'Navigation cache inputs must validate HTTP(S) image addresses.');
+assert.match(navigationIconSource, /if \(!force\) return readCachedNavigationIcon\(url\)/, 'Normal icon lookups must be strictly cache-only.');
+const bundledIconSource = readFileSync(path.join(appRoot, 'src', 'lib', 'bundled-navigation-icons.js'), 'utf8');
+assert.match(bundledIconSource, /url\.protocol === 'chrome-extension:'/u, 'Default icon seeds must use the extension scheme.');
+assert.match(bundledIconSource, /url\.host === api\.runtime\.id/u, 'Default icon seeds must belong to the current extension.');
+assert.match(bundledIconSource, /assets\/default-sites\//u, 'Default icon seeds must use their fixed packaged directory.');
+for (const file of ['google.png', 'youtube.png', 'github.png', 'x.png', 'chatgpt.webp', 'grok.png']) {
+  const relative = path.join('assets', 'default-sites', file);
+  assert.deepEqual(readFileSync(path.join(extensionRoot, relative)), readFileSync(path.join(appRoot, 'public', relative)), `Missing or changed packaged default icon: ${file}`);
+}
+const iconHookSource = readFileSync(path.join(appRoot, 'src', 'lib', 'use-navigation-icon.js'), 'utf8');
+assert(!/\bnavigationIcon\s*\(/u.test(iconHookSource), 'Rendering an icon must not call the remote acquisition API.');
+const artworkSource = readFileSync(path.join(appRoot, 'src', 'components', 'IconArtwork.jsx'), 'utf8');
+assert.match(artworkSource, /if \(!src\.startsWith\('blob:'\)\)/u, 'Navigation artwork must reject direct remote image sources.');
+assert(!/permissions\s*\.\s*request/.test(navigationIconSource), 'Display cache must not request new site permissions.');
 assert(githubSource.includes("'https://github.com'"), 'GitHub calendar requests must use their fixed origin.');
 assert.match(githubSource, /if \(!await canRead\(\)\)/, 'GitHub calendar requests must check exact-origin access.');
 assert(!/DOMParser|innerHTML|createElement\(/.test(githubSource), 'GitHub calendar HTML must remain inert text.');
@@ -254,9 +291,9 @@ function checkSourceNetworking(directory) {
     else if (/\.[cm]?jsx?$/.test(entry.name) && !/\.test\./.test(entry.name)) {
       const source = readFileSync(absolute, "utf8");
       assert(!/\b(?:XMLHttpRequest|WebSocket|EventSource)\b/.test(source), `Unexpected source network API in ${absolute}`);
-      const calls = [...source.matchAll(/(?:\bfetch\s*\(|\bglobalThis\s*\.\s*fetch\s*\()/g)];
+      const calls = [...source.matchAll(/(?:(?<![\w$.])fetch\s*\(|\bglobalThis\s*\.\s*fetch\s*\()/g)];
       if (calls.length) {
-        assert([wallpaperBridge, siteInfoBridge, visualImageBridge, visualWasmBridge, cloudBridge, webdavBridge, syncWasmBridge, faviconBridge, githubBridge, githubWasmBridge, clockWasmBridge, hdIconBridge].includes(absolute), `Fetch must remain in reviewed network or fixed local-resource bridges: ${absolute}`);
+        assert([wallpaperBridge, siteInfoBridge, visualImageBridge, visualWasmBridge, cloudBridge, webdavBridge, syncWasmBridge, faviconBridge, githubBridge, githubWasmBridge, clockWasmBridge, hdIconBridge, navigationIconBridge, toolsWasmBridge, appNetworkBridge].includes(absolute), `Fetch must remain in reviewed network or fixed local-resource bridges: ${absolute}`);
         assert(calls.every((match) => /^globalThis\s*\.\s*fetch/.test(match[0])), "Only the reviewed globalThis.fetch bridge is allowed.");
         sourceFetchCalls += calls.length;
       }
@@ -264,7 +301,7 @@ function checkSourceNetworking(directory) {
   }
 }
 checkSourceNetworking(path.join(appRoot, "src"));
-assert.equal(sourceFetchCalls, 12, "Expected six network and six local-resource fetch bridges.");
+assert.equal(sourceFetchCalls, 16, 'Expected sixteen reviewed fetch call sites, including the permission-gated app provider bridge.');
 
 console.log(`Extension static checks passed: ${files.length} files, ${htmlCount} HTML, ${jsCount} JS, ${cssCount} CSS.`);
 console.log("Checked Covelet branding/version, four PNG icon sizes, manifest scope, fixed Bing host, optional per-site access/CSP, packaged resources, common remote-code/network patterns and source search/wallpaper/site metadata bridges.");

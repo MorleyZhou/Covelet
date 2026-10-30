@@ -1,6 +1,7 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { normalizeUrl } from './model.js';
 import { normalizeIconAddress } from './site-icons.js';
+import { normalizeIconBlob } from './icon-image-format.js';
 
 // Fetch only the single site being added. No favicon proxy, browsing data or
 // page scripts are involved. Host access is optional and requested per origin.
@@ -214,11 +215,12 @@ function rasterDimensions(bytes) {
 }
 
 function checkDimensions(width, height) {
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > EDGE_LIMIT || height > EDGE_LIMIT || width * height > PIXEL_LIMIT) fail(tr("网站图标尺寸超出限制。"));
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > EDGE_LIMIT || height > EDGE_LIMIT || width * height > PIXEL_LIMIT) fail(tr("网站图标尺寸超出限制。"), 'LIMIT');
 }
 
 export function validateIconBytes(bytes, mime) {
-  if (!(bytes instanceof Uint8Array) || !bytes.length || bytes.length > ICON_LIMIT || !RASTER_MIMES.has(mime)) fail(tr("网站图标格式或大小无效。"));
+  if (bytes instanceof Uint8Array && bytes.length > ICON_LIMIT) fail(tr("网站图标格式或大小无效。"), 'LIMIT');
+  if (!(bytes instanceof Uint8Array) || !bytes.length || !RASTER_MIMES.has(mime)) fail(tr("网站图标格式或大小无效。"));
   if (mime === 'image/x-icon' || mime === 'image/vnd.microsoft.icon') {
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     if (bytes.length < 22 || view.getUint16(0, true) !== 0 || view.getUint16(2, true) !== 1) fail(tr("ICO 图标格式无效。"));
@@ -244,6 +246,7 @@ export function validateIconBytes(bytes, mime) {
 }
 
 export async function convertIcon(blob) {
+  blob = await normalizeIconBlob(blob);
   let image;
   if (globalThis.createImageBitmap) image = await globalThis.createImageBitmap(blob);
   else {
@@ -284,16 +287,18 @@ export async function readSiteInfo(input, {
     metadata = parseSiteMetadata(html, origin);
   } catch { /* Keep the hostname and independently try the same-origin icon. */ }
   const hasName = metadata.title !== hostname;
-  if (metadataOnly) return { title: metadata.title, icon: null, origin, iconUrl: '', iconLinks: metadata.links || [], message: '' };
+  if (metadataOnly) return { title: metadata.title, nameFound: hasName, icon: null, origin, iconUrl: '', iconLinks: metadata.links || [], message: '' };
   for (const url of metadata.icons) {
     try {
-      const image = await request(fetcher, url, ICON_LIMIT, timeoutMs, (mime) => RASTER_MIMES.has(mime));
-      validateIconBytes(image.bytes, image.mime);
-      const icon = await convert(new Blob([image.bytes], { type: image.mime }));
+      const image = await request(fetcher, url, ICON_LIMIT, timeoutMs, () => true);
+      const original = await normalizeIconBlob(new Blob([image.bytes], { type: image.mime }));
+      if (original.type === 'image/svg+xml') continue;
+      validateIconBytes(image.bytes, original.type);
+      const icon = await convert(original);
       if (!(icon instanceof Blob) || !['image/png', 'image/jpeg', 'image/webp'].includes(icon.type)) fail(tr("网站图标转换失败。"));
       validateIconBytes(new Uint8Array(await icon.arrayBuffer()), icon.type);
-      return { title: metadata.title, icon, origin, iconUrl: url, iconLinks: metadata.links, message: hasName ? tr("已识别网站名称和图标。") : tr("已获取网站图标；名称暂用域名，可手动修改。") };
+      return { title: metadata.title, nameFound: hasName, icon, origin, iconUrl: url, iconLinks: metadata.links, message: hasName ? tr("已识别网站名称和图标。") : tr("已获取网站图标；名称暂用域名，可手动修改。") };
     } catch { /* Continue to the next same-origin icon, then retain the name. */ }
   }
-  return { title: metadata.title, icon: null, origin, iconUrl: '', iconLinks: metadata.links, message: hasName ? tr("已识别网站名称；未获取到可用图标，将使用文字图标。") : tr("未获取到网站名称和图标，将使用域名和文字图标，可手动修改。") };
+  return { title: metadata.title, nameFound: hasName, icon: null, origin, iconUrl: '', iconLinks: metadata.links, message: hasName ? tr("已识别网站名称；未获取到可用图标，将使用文字图标。") : tr("未获取到网站名称和图标，将使用域名和文字图标，可手动修改。") };
 }

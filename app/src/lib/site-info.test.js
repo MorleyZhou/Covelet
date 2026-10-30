@@ -238,7 +238,7 @@ test('ICO bytes are bounded and converted to a stored raster blob rather than a 
     fetcher: async (url) => url.endsWith('/') ? html('<title>ICO</title>') : new Response(ico, { headers: { 'content-type': 'image/x-icon' } }),
     convert: async (blob) => { convertedMime = blob.type; return new Blob([PNG], { type: 'image/png' }); },
   });
-  assert.equal(convertedMime, 'image/x-icon');
+  assert.equal(convertedMime, 'image/vnd.microsoft.icon');
   assert.equal(result.icon.type, 'image/png');
   assert.equal(result.iconUrl, 'https://example.com/favicon.ico');
   const broken = ico.slice();

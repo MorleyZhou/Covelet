@@ -1,6 +1,6 @@
 import { tr, getLocale } from "../i18n/index.js";
-import { migrateNavigationState, combineEntries, moveEntry } from './model.js';
-import { DESKTOP_ROWS, MAX_DESKTOP_PAGE, desktopFootprint, layoutDesktop, freezeDesktopPositions, placeDesktopEntry, nextDesktopPage } from './desktop-layout.js';
+import { migrateNavigationState, combineSelectedEntries, moveEntry } from './model.js';
+import { DESKTOP_ROWS, MAX_DESKTOP_PAGE, desktopFootprint, layoutDesktop, freezeDesktopPositions, placeDesktopEntries, nextDesktopPage } from './desktop-layout.js';
 
 const visibleRoot = (entry) => entry.parentId === null && !entry.detached;
 const copy = (value) => structuredClone(value);
@@ -105,26 +105,7 @@ export function removeDesktopScreen(input, key, columns) {
 }
 
 function placeGroup(state, ids, target, columns) {
-  const byId = new Map(state.entries.map((entry) => [entry.id, entry]));
-  let page = target.page, cursor = target.row * columns + target.column;
-  let last = Math.max(...state.settings.pages, ...state.entries.filter(visibleRoot).map((entry) => entry.page ?? 0));
-  const destinations = new Map(), selectedCells = new Set();
-  for (const [index, id] of ids.entries()) {
-    const entry = byId.get(id), size = desktopFootprint(entry, columns);
-    let anchor = index === 0 ? { row: Math.min(DESKTOP_ROWS - size.rows, target.row), column: Math.min(columns - size.columns, target.column) }
-      : seat(size, selectedCells, columns, cursor);
-    if (!anchor) {
-      if (last >= MAX_DESKTOP_PAGE) throw Error(tr("主屏幕数量已达上限。"));
-      page = ++last; cursor = 0; selectedCells.clear(); anchor = { row: 0, column: 0 };
-    }
-    entry.page = page; entry.position = anchor;
-    cellsFor(anchor, size, columns).forEach((slot) => selectedCells.add(slot));
-    cursor = anchor.row * columns + anchor.column + size.columns;
-    if (!destinations.has(page)) destinations.set(page, entry.id);
-  }
-  // Reserve every selected footprint before moving any colliding neighbor.
-  for (const [destination, firstId] of destinations) state.entries = placeDesktopEntry(state.entries, firstId, destination,
-    state.entries.find((entry) => entry.id === firstId).position, columns, { lockedIds: ids });
+  state.entries = placeDesktopEntries(state.entries, ids, target.page, target, columns, { pageIds: state.settings.pages });
   return state;
 }
 
@@ -142,12 +123,16 @@ export function applyDesktopDrop(input, ids, target, columns, makeId) {
   if (target.kind === 'combine') {
     if (selected.includes(target.id) || selected.some((id) => state.entries.find((entry) => entry.id === id)?.type !== 'site')) throw Error(tr("只有网站可以合并到文件夹。"));
     const folderId = destination?.type === 'folder' ? destination.id : makeId();
-    state = combineEntries(state, selected[0], target.id, { folderId });
-    for (const id of selected.slice(1)) state = moveEntry(state, id, { parentId: folderId });
+    state = combineSelectedEntries(state, selected, target.id, { folderId });
     revealId = folderId;
   } else if (selected.length === 1) {
-    state = moveEntry(state, source.id, { parentId: target.parentId, index: target.index, page });
-    if (target.kind === 'place') state.entries = placeDesktopEntry(state.entries, source.id, page, target, columns);
+    if (target.kind === 'place') {
+      // A root's original seat is needed for insertion/rotation. moveEntry
+      // deliberately removes it, so use that container transition only when
+      // taking a site out of a folder.
+      if (source.parentId !== null) state = moveEntry(state, source.id, { parentId: null, page });
+      state.entries = placeDesktopEntries(state.entries, selected, page, target, columns, { pageIds: state.settings.pages });
+    } else state = moveEntry(state, source.id, { parentId: target.parentId, index: target.index, page });
   } else if (target.parentId) {
     for (const id of selected) state = moveEntry(state, id, { parentId: target.parentId });
   } else {

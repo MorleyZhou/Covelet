@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "date": "2026-10-22",
+  "package": "covelet-0.2.0.zip",
+  "bytes": 3618387,
+  "sha256": "6183f843a9acc710549a201e3314dfa804f8e7537a6ad9d2742add680442931d",
+  "screenshots": [
+    "01-home.png",
+    "02-folders.png",
+    "03-notes.png",
+    "04-extensions.png",
+    "05-world-clocks.png"
+  ],
+  "testStatus": "Not run at user request",
+  "chromeSubmission": "Not yet observed"
+}

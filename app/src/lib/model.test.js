@@ -70,13 +70,13 @@ test('每日背景只保存来源选项，旧用户壁纸迁移且保留本地�
   }
 });
 
-test('视觉增强默认关闭，旧配置只补齐开关并完整保留手动外观和原图引用', () => {
+test('视觉增强默认开启，严格迁移旧开关且保留明确选择、手动外观和原图引用', () => {
   const empty = createEmptyState();
-  assert.equal(empty.settings.adaptiveWallpaper, false);
-  assert.equal(empty.settings.adaptIcons, false);
+  assert.equal(empty.settings.visualEnhancement, true);
+  assert.equal(Object.hasOwn(empty.settings, 'adaptiveWallpaper'), false);
+  assert.equal(Object.hasOwn(empty.settings, 'adaptIcons'), false);
   const legacy = createDemoState();
-  delete legacy.settings.adaptiveWallpaper;
-  delete legacy.settings.adaptIcons;
+  delete legacy.settings.visualEnhancement;
   legacy.settings.theme = 'dark';
   legacy.settings.shade = 47;
   legacy.settings.background = { kind: 'gradient', value: 'linear-gradient(120deg, #123456, #abcdef)' };
@@ -84,14 +84,19 @@ test('视觉增强默认关闭，旧配置只补齐开关并完整保留手动�
   legacy.entries[0].iconBackground = '#1234aB';
   const before = structuredClone(legacy);
   const migrated = migrateNavigationState(legacy);
-  assert.deepEqual(migrated, { ...before, settings: { ...before.settings, adaptiveWallpaper: false, adaptIcons: false } });
+  assert.deepEqual(migrated, { ...before, settings: { ...before.settings, visualEnhancement: true } });
   assert.deepEqual(legacy, before, 'filling new switches must not mutate the source configuration');
   assert.deepEqual(migrateNavigationState(migrated), migrated);
   for (const adaptiveWallpaper of [false, true]) for (const adaptIcons of [false, true]) {
-    const expected = { ...migrated, settings: { ...migrated.settings, adaptiveWallpaper, adaptIcons } };
-    assert.deepEqual(validateState(expected), expected);
+    const input = { ...before, settings: { ...before.settings, adaptiveWallpaper, adaptIcons } };
+    assert.deepEqual(validateState(input), { ...before, settings: { ...before.settings, visualEnhancement: adaptiveWallpaper || adaptIcons } });
+    for (const visualEnhancement of [false, true]) {
+      const explicit = { ...input, settings: { ...input.settings, visualEnhancement } };
+      assert.deepEqual(validateState(explicit), { ...before, settings: { ...before.settings, visualEnhancement } },
+        'an explicit unified choice wins over both legacy flags');
+    }
   }
-  for (const key of ['adaptiveWallpaper', 'adaptIcons']) {
+  for (const key of ['visualEnhancement', 'adaptiveWallpaper', 'adaptIcons']) {
     for (const value of ['true', 'false', 0, 1, null, undefined, {}, []]) {
       assert.throws(() => validateState({ ...migrated, settings: { ...migrated.settings, [key]: value } }), new RegExp(`${key}须为开关值`, 'u'));
     }

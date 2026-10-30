@@ -1,0 +1,2414 @@
+{
+  "Base64 编码": {
+    "en": "Encode Base64",
+    "zh-TW": "Base64 編碼",
+    "ja": "Base64 エンコード",
+    "ko": "Base64 인코딩",
+    "de": "Base64 kodieren",
+    "fr": "Encoder en Base64",
+    "ru": "Кодировать Base64"
+  },
+  "Base64 解码": {
+    "en": "Decode Base64",
+    "zh-TW": "Base64 解碼",
+    "ja": "Base64 デコード",
+    "ko": "Base64 디코딩",
+    "de": "Base64 dekodieren",
+    "fr": "Décoder le Base64",
+    "ru": "Декодировать Base64"
+  },
+  "CSS 格式化": {
+    "en": "Format CSS",
+    "zh-TW": "CSS 格式化",
+    "ja": "CSS を整形",
+    "ko": "CSS 서식 정리",
+    "de": "CSS formatieren",
+    "fr": "Formater le CSS",
+    "ru": "Форматировать CSS"
+  },
+  "HTML 格式化": {
+    "en": "Format HTML",
+    "zh-TW": "HTML 格式化",
+    "ja": "HTML を整形",
+    "ko": "HTML 서식 정리",
+    "de": "HTML formatieren",
+    "fr": "Formater le HTML",
+    "ru": "Форматировать HTML"
+  },
+  "JSON 与结构化数据": {
+    "en": "JSON and structured data",
+    "zh-TW": "JSON 與結構化資料",
+    "ja": "JSON と構造化データ",
+    "ko": "JSON 및 구조화된 데이터",
+    "de": "JSON und strukturierte Daten",
+    "fr": "JSON et données structurées",
+    "ru": "JSON и структурированные данные"
+  },
+  "JSON 对比": {
+    "en": "Compare JSON",
+    "zh-TW": "JSON 比對",
+    "ja": "JSON を比較",
+    "ko": "JSON 비교",
+    "de": "JSON vergleichen",
+    "fr": "Comparer le JSON",
+    "ru": "Сравнить JSON"
+  },
+  "JWT 应包含三段内容。": {
+    "en": "A JWT must contain three sections.",
+    "zh-TW": "JWT 應包含三段內容。",
+    "ja": "JWT は3つの部分で構成されます。",
+    "ko": "JWT는 세 부분으로 구성되어야 합니다.",
+    "de": "Ein JWT muss aus drei Abschnitten bestehen.",
+    "fr": "Un JWT doit comporter trois parties.",
+    "ru": "JWT должен состоять из трёх частей."
+  },
+  "JWT 解析": {
+    "en": "Inspect JWT",
+    "zh-TW": "JWT 解析",
+    "ja": "JWT を解析",
+    "ko": "JWT 분석",
+    "de": "JWT analysieren",
+    "fr": "Analyser un JWT",
+    "ru": "Разобрать JWT"
+  },
+  "JWT 解析仅展示内容，不验证签名。": {
+    "en": "JWT inspection displays the contents without verifying the signature.",
+    "zh-TW": "JWT 解析僅顯示內容，不驗證簽章。",
+    "ja": "JWT 解析は内容を表示するだけで、署名は検証しません。",
+    "ko": "JWT 분석은 내용만 표시하며 서명은 검증하지 않습니다.",
+    "de": "Die JWT-Analyse zeigt den Inhalt an, ohne die Signatur zu prüfen.",
+    "fr": "L’analyse JWT affiche le contenu sans vérifier la signature.",
+    "ru": "Разбор JWT показывает содержимое, но не проверяет подпись."
+  },
+  "JavaScript 格式化": {
+    "en": "Format JavaScript",
+    "zh-TW": "JavaScript 格式化",
+    "ja": "JavaScript を整形",
+    "ko": "JavaScript 서식 정리",
+    "de": "JavaScript formatieren",
+    "fr": "Formater le JavaScript",
+    "ru": "Форматировать JavaScript"
+  },
+  "SQL 格式化": {
+    "en": "Format SQL",
+    "zh-TW": "SQL 格式化",
+    "ja": "SQL を整形",
+    "ko": "SQL 서식 정리",
+    "de": "SQL formatieren",
+    "fr": "Formater le SQL",
+    "ru": "Форматировать SQL"
+  },
+  "URL 编码": {
+    "en": "Encode URL",
+    "zh-TW": "URL 編碼",
+    "ja": "URL エンコード",
+    "ko": "URL 인코딩",
+    "de": "URL kodieren",
+    "fr": "Encoder une URL",
+    "ru": "Кодировать URL"
+  },
+  "URL 解码": {
+    "en": "Decode URL",
+    "zh-TW": "URL 解碼",
+    "ja": "URL デコード",
+    "ko": "URL 디코딩",
+    "de": "URL dekodieren",
+    "fr": "Décoder une URL",
+    "ru": "Декодировать URL"
+  },
+  "XML 格式无效。": {
+    "en": "Invalid XML format.",
+    "zh-TW": "XML 格式無效。",
+    "ja": "XML の形式が無効です。",
+    "ko": "XML 형식이 올바르지 않습니다.",
+    "de": "Ungültiges XML-Format.",
+    "fr": "Format XML invalide.",
+    "ru": "Неверный формат XML."
+  },
+  "YAML 转 JSON": {
+    "en": "YAML to JSON",
+    "zh-TW": "YAML 轉 JSON",
+    "ja": "YAML から JSON",
+    "ko": "YAML을 JSON으로",
+    "de": "YAML zu JSON",
+    "fr": "YAML vers JSON",
+    "ru": "YAML в JSON"
+  },
+  "一个画板最多包含 300 个节点。": {
+    "en": "A board can contain up to 300 nodes.",
+    "zh-TW": "一個畫板最多包含 300 個節點。",
+    "ja": "ボードには最大300個のノードを追加できます。",
+    "ko": "보드에는 최대 300개의 노드를 추가할 수 있습니다.",
+    "de": "Ein Board kann bis zu 300 Knoten enthalten.",
+    "fr": "Un tableau peut contenir jusqu’à 300 nœuds.",
+    "ru": "На доске может быть не более 300 узлов."
+  },
+  "一次最多处理 2000 页。": {
+    "en": "Process up to 2,000 pages at a time.",
+    "zh-TW": "一次最多處理 2000 頁。",
+    "ja": "一度に処理できるのは最大2000ページです。",
+    "ko": "한 번에 최대 2,000페이지를 처리할 수 있습니다.",
+    "de": "Es können höchstens 2.000 Seiten gleichzeitig verarbeitet werden.",
+    "fr": "Vous pouvez traiter jusqu’à 2 000 pages à la fois.",
+    "ru": "За один раз можно обработать до 2000 страниц."
+  },
+  "上移": {
+    "en": "Move up",
+    "zh-TW": "上移",
+    "ja": "上へ移動",
+    "ko": "위로 이동",
+    "de": "Nach oben",
+    "fr": "Monter",
+    "ru": "Переместить вверх"
+  },
+  "下移": {
+    "en": "Move down",
+    "zh-TW": "下移",
+    "ja": "下へ移動",
+    "ko": "아래로 이동",
+    "de": "Nach unten",
+    "fr": "Descendre",
+    "ru": "Переместить вниз"
+  },
+  "下载": {
+    "en": "Download",
+    "zh-TW": "下載",
+    "ja": "ダウンロード",
+    "ko": "다운로드",
+    "de": "Herunterladen",
+    "fr": "Télécharger",
+    "ru": "Скачать"
+  },
+  "下载结果": {
+    "en": "Download result",
+    "zh-TW": "下載結果",
+    "ja": "結果をダウンロード",
+    "ko": "결과 다운로드",
+    "de": "Ergebnis herunterladen",
+    "fr": "Télécharger le résultat",
+    "ru": "Скачать результат"
+  },
+  "不支持带外部声明的 XML。": {
+    "en": "XML with external declarations is not supported.",
+    "zh-TW": "不支援含外部宣告的 XML。",
+    "ja": "外部宣言を含む XML はサポートされていません。",
+    "ko": "외부 선언이 포함된 XML은 지원하지 않습니다.",
+    "de": "XML mit externen Deklarationen wird nicht unterstützt.",
+    "fr": "Le XML avec des déclarations externes n’est pas pris en charge.",
+    "ru": "XML с внешними объявлениями не поддерживается."
+  },
+  "仅提取音轨": {
+    "en": "Extract audio only",
+    "zh-TW": "僅擷取音軌",
+    "ja": "音声のみ抽出",
+    "ko": "오디오만 추출",
+    "de": "Nur Audio extrahieren",
+    "fr": "Extraire uniquement l’audio",
+    "ru": "Извлечь только звук"
+  },
+  "代码格式化": {
+    "en": "Code formatting",
+    "zh-TW": "程式碼格式化",
+    "ja": "コード整形",
+    "ko": "코드 서식 정리",
+    "de": "Codeformatierung",
+    "fr": "Formatage de code",
+    "ru": "Форматирование кода"
+  },
+  "保存的草稿": {
+    "en": "Saved drafts",
+    "zh-TW": "已儲存的草稿",
+    "ja": "保存した下書き",
+    "ko": "저장된 초안",
+    "de": "Gespeicherte Entwürfe",
+    "fr": "Brouillons enregistrés",
+    "ru": "Сохранённые черновики"
+  },
+  "保存草稿": {
+    "en": "Save draft",
+    "zh-TW": "儲存草稿",
+    "ja": "下書きを保存",
+    "ko": "초안 저장",
+    "de": "Entwurf speichern",
+    "fr": "Enregistrer le brouillon",
+    "ru": "Сохранить черновик"
+  },
+  "保持原尺寸": {
+    "en": "Keep original size",
+    "zh-TW": "保持原尺寸",
+    "ja": "元のサイズを維持",
+    "ko": "원본 크기 유지",
+    "de": "Originalgröße beibehalten",
+    "fr": "Conserver la taille d’origine",
+    "ru": "Сохранить исходный размер"
+  },
+  "保持比例": {
+    "en": "Keep proportions",
+    "zh-TW": "保持比例",
+    "ja": "縦横比を維持",
+    "ko": "비율 유지",
+    "de": "Seitenverhältnis beibehalten",
+    "fr": "Conserver les proportions",
+    "ru": "Сохранить пропорции"
+  },
+  "修改后内容": {
+    "en": "Modified content",
+    "zh-TW": "修改後內容",
+    "ja": "変更後の内容",
+    "ko": "변경된 내용",
+    "de": "Geänderter Inhalt",
+    "fr": "Contenu modifié",
+    "ru": "Изменённое содержимое"
+  },
+  "停止录音": {
+    "en": "Stop recording",
+    "zh-TW": "停止錄音",
+    "ja": "録音を停止",
+    "ko": "녹음 중지",
+    "de": "Aufnahme stoppen",
+    "fr": "Arrêter l’enregistrement",
+    "ru": "Остановить запись"
+  },
+  "全部页面": {
+    "en": "All pages",
+    "zh-TW": "全部頁面",
+    "ja": "すべてのページ",
+    "ko": "모든 페이지",
+    "de": "Alle Seiten",
+    "fr": "Toutes les pages",
+    "ru": "Все страницы"
+  },
+  "内容对比": {
+    "en": "Content comparison",
+    "zh-TW": "內容比對",
+    "ja": "内容比較",
+    "ko": "내용 비교",
+    "de": "Inhaltsvergleich",
+    "fr": "Comparaison de contenu",
+    "ru": "Сравнение содержимого"
+  },
+  "内容未能载入，请重新打开此扩展。": {
+    "en": "Could not load the content. Reopen this extension.",
+    "zh-TW": "無法載入內容，請重新開啟此擴充功能。",
+    "ja": "内容を読み込めませんでした。この拡張機能を開き直してください。",
+    "ko": "내용을 불러오지 못했습니다. 이 확장 기능을 다시 여세요.",
+    "de": "Der Inhalt konnte nicht geladen werden. Öffnen Sie diese Erweiterung erneut.",
+    "fr": "Impossible de charger le contenu. Rouvrez cette extension.",
+    "ru": "Не удалось загрузить содержимое. Откройте расширение заново."
+  },
+  "内容过长或包含无效字符。": {
+    "en": "The content is too long or contains invalid characters.",
+    "zh-TW": "內容過長或包含無效字元。",
+    "ja": "内容が長すぎるか、無効な文字が含まれています。",
+    "ko": "내용이 너무 길거나 잘못된 문자가 포함되어 있습니다.",
+    "de": "Der Inhalt ist zu lang oder enthält ungültige Zeichen.",
+    "fr": "Le contenu est trop long ou contient des caractères invalides.",
+    "ru": "Содержимое слишком длинное или содержит недопустимые символы."
+  },
+  "删除所选节点": {
+    "en": "Delete selected nodes",
+    "zh-TW": "刪除所選節點",
+    "ja": "選択したノードを削除",
+    "ko": "선택한 노드 삭제",
+    "de": "Ausgewählte Knoten löschen",
+    "fr": "Supprimer les nœuds sélectionnés",
+    "ru": "Удалить выбранные узлы"
+  },
+  "删除所选节点和相连的连线？": {
+    "en": "Delete the selected nodes and their connections?",
+    "zh-TW": "刪除所選節點和相連的連線？",
+    "ja": "選択したノードと接続線を削除しますか？",
+    "ko": "선택한 노드와 연결선을 삭제할까요?",
+    "de": "Ausgewählte Knoten und ihre Verbindungen löschen?",
+    "fr": "Supprimer les nœuds sélectionnés et leurs connexions ?",
+    "ru": "Удалить выбранные узлы и их связи?"
+  },
+  "删除画板": {
+    "en": "Delete board",
+    "zh-TW": "刪除畫板",
+    "ja": "ボードを削除",
+    "ko": "보드 삭제",
+    "de": "Board löschen",
+    "fr": "Supprimer le tableau",
+    "ru": "Удалить доску"
+  },
+  "匹配与替换": {
+    "en": "Match and replace",
+    "zh-TW": "比對與取代",
+    "ja": "一致と置換",
+    "ko": "일치 및 바꾸기",
+    "de": "Suchen und Ersetzen",
+    "fr": "Rechercher et remplacer",
+    "ru": "Найти и заменить"
+  },
+  "匹配结果过多，请缩小文本范围。": {
+    "en": "Too many matches. Use a smaller text selection.",
+    "zh-TW": "比對結果過多，請縮小文字範圍。",
+    "ja": "一致が多すぎます。テキストの範囲を狭めてください。",
+    "ko": "일치 항목이 너무 많습니다. 텍스트 범위를 줄이세요.",
+    "de": "Zu viele Treffer. Begrenzen Sie den Textbereich.",
+    "fr": "Trop de correspondances. Réduisez le texte à analyser.",
+    "ru": "Слишком много совпадений. Уменьшите объём текста."
+  },
+  "匹配结果过多，请缩小路径范围。": {
+    "en": "Too many matches. Use a more specific path.",
+    "zh-TW": "比對結果過多，請縮小路徑範圍。",
+    "ja": "一致が多すぎます。より具体的なパスを指定してください。",
+    "ko": "일치 항목이 너무 많습니다. 더 구체적인 경로를 사용하세요.",
+    "de": "Zu viele Treffer. Verwenden Sie einen genaueren Pfad.",
+    "fr": "Trop de correspondances. Utilisez un chemin plus précis.",
+    "ru": "Слишком много совпадений. Уточните путь."
+  },
+  "压缩": {
+    "en": "Minify",
+    "zh-TW": "壓縮",
+    "ja": "圧縮",
+    "ko": "압축",
+    "de": "Minimieren",
+    "fr": "Compacter",
+    "ru": "Сжать"
+  },
+  "原始内容": {
+    "en": "Original content",
+    "zh-TW": "原始內容",
+    "ja": "元の内容",
+    "ko": "원본 내용",
+    "de": "Ursprünglicher Inhalt",
+    "fr": "Contenu d’origine",
+    "ru": "Исходное содержимое"
+  },
+  "合并与提取页面": {
+    "en": "Merge and extract pages",
+    "zh-TW": "合併與擷取頁面",
+    "ja": "ページの結合と抽出",
+    "ko": "페이지 병합 및 추출",
+    "de": "Seiten zusammenführen und extrahieren",
+    "fr": "Fusionner et extraire des pages",
+    "ru": "Объединение и извлечение страниц"
+  },
+  "图片尺寸过大或无效。": {
+    "en": "The image dimensions are invalid or too large.",
+    "zh-TW": "圖片尺寸過大或無效。",
+    "ja": "画像サイズが無効か、大きすぎます。",
+    "ko": "이미지 크기가 잘못되었거나 너무 큽니다.",
+    "de": "Die Bildabmessungen sind ungültig oder zu groß.",
+    "fr": "Les dimensions de l’image sont invalides ou trop grandes.",
+    "ru": "Размеры изображения неверны или слишком велики."
+  },
+  "图片格式不支持或文件过大。": {
+    "en": "The image format is unsupported or the file is too large.",
+    "zh-TW": "圖片格式不支援或檔案過大。",
+    "ja": "画像形式が未対応か、ファイルが大きすぎます。",
+    "ko": "지원하지 않는 이미지 형식이거나 파일이 너무 큽니다.",
+    "de": "Das Bildformat wird nicht unterstützt oder die Datei ist zu groß.",
+    "fr": "Le format d’image n’est pas pris en charge ou le fichier est trop volumineux.",
+    "ru": "Формат изображения не поддерживается или файл слишком велик."
+  },
+  "图片转 PDF": {
+    "en": "Images to PDF",
+    "zh-TW": "圖片轉 PDF",
+    "ja": "画像から PDF",
+    "ko": "이미지를 PDF로",
+    "de": "Bilder zu PDF",
+    "fr": "Images vers PDF",
+    "ru": "Изображения в PDF"
+  },
+  "图片转换失败。": {
+    "en": "Image conversion failed.",
+    "zh-TW": "圖片轉換失敗。",
+    "ja": "画像の変換に失敗しました。",
+    "ko": "이미지 변환에 실패했습니다.",
+    "de": "Die Bildkonvertierung ist fehlgeschlagen.",
+    "fr": "La conversion de l’image a échoué.",
+    "ru": "Не удалось преобразовать изображение."
+  },
+  "处理 {0} 张图片": {
+    "en": "Process {0} images",
+    "zh-TW": "處理 {0} 張圖片",
+    "ja": "{0} 枚の画像を処理",
+    "ko": "이미지 {0}개 처리",
+    "de": "{0} Bilder verarbeiten",
+    "fr": "Traiter {0} images",
+    "ru": "Обработать изображения: {0}"
+  },
+  "处理结果过多，请先下载并移除旧文件。": {
+    "en": "Too many results. Download and remove older files first.",
+    "zh-TW": "處理結果過多，請先下載並移除舊檔案。",
+    "ja": "結果が多すぎます。古いファイルをダウンロードして削除してください。",
+    "ko": "처리 결과가 너무 많습니다. 이전 파일을 다운로드한 후 제거하세요.",
+    "de": "Zu viele Ergebnisse. Laden Sie zuerst ältere Dateien herunter und entfernen Sie diese.",
+    "fr": "Trop de résultats. Téléchargez et retirez d’abord les anciens fichiers.",
+    "ru": "Слишком много результатов. Сначала скачайте и удалите старые файлы."
+  },
+  "复制结果": {
+    "en": "Copy result",
+    "zh-TW": "複製結果",
+    "ja": "結果をコピー",
+    "ko": "결과 복사",
+    "de": "Ergebnis kopieren",
+    "fr": "Copier le résultat",
+    "ru": "Копировать результат"
+  },
+  "媒体导出失败。": {
+    "en": "Media export failed.",
+    "zh-TW": "媒體匯出失敗。",
+    "ja": "メディアの書き出しに失敗しました。",
+    "ko": "미디어 내보내기에 실패했습니다.",
+    "de": "Der Medienexport ist fehlgeschlagen.",
+    "fr": "L’export du média a échoué.",
+    "ru": "Не удалось экспортировать медиафайл."
+  },
+  "媒体导出超时，请缩短片段或重试。": {
+    "en": "Media export timed out. Use a shorter clip or try again.",
+    "zh-TW": "媒體匯出逾時，請縮短片段或重試。",
+    "ja": "書き出しがタイムアウトしました。区間を短くするか、再試行してください。",
+    "ko": "미디어 내보내기 시간이 초과되었습니다. 구간을 줄이거나 다시 시도하세요.",
+    "de": "Zeitüberschreitung beim Medienexport. Kürzen Sie den Ausschnitt oder versuchen Sie es erneut.",
+    "fr": "L’export a expiré. Raccourcissez l’extrait ou réessayez.",
+    "ru": "Время экспорта истекло. Сократите фрагмент или повторите попытку."
+  },
+  "媒体时长无效。": {
+    "en": "Invalid media duration.",
+    "zh-TW": "媒體長度無效。",
+    "ja": "メディアの長さが無効です。",
+    "ko": "미디어 재생 시간이 올바르지 않습니다.",
+    "de": "Ungültige Mediendauer.",
+    "fr": "Durée du média invalide.",
+    "ru": "Неверная длительность медиафайла."
+  },
+  "媒体类型": {
+    "en": "Media type",
+    "zh-TW": "媒體類型",
+    "ja": "メディアの種類",
+    "ko": "미디어 유형",
+    "de": "Medientyp",
+    "fr": "Type de média",
+    "ru": "Тип медиафайла"
+  },
+  "对比内容过多，请将文件拆成较小片段。": {
+    "en": "Too much content to compare. Split the file into smaller sections.",
+    "zh-TW": "比對內容過多，請將檔案拆成較小片段。",
+    "ja": "比較内容が多すぎます。ファイルを小さな部分に分けてください。",
+    "ko": "비교할 내용이 너무 많습니다. 파일을 작은 구간으로 나누세요.",
+    "de": "Zu viel Inhalt zum Vergleichen. Teilen Sie die Datei in kleinere Abschnitte auf.",
+    "fr": "Trop de contenu à comparer. Divisez le fichier en sections plus petites.",
+    "ru": "Слишком много данных для сравнения. Разделите файл на меньшие части."
+  },
+  "对比度": {
+    "en": "Contrast ratio",
+    "zh-TW": "對比度",
+    "ja": "コントラスト比",
+    "ko": "명암비",
+    "de": "Kontrastverhältnis",
+    "fr": "Rapport de contraste",
+    "ru": "Контрастность"
+  },
+  "对比度检查": {
+    "en": "Contrast check",
+    "zh-TW": "對比度檢查",
+    "ja": "コントラストチェック",
+    "ko": "명암비 확인",
+    "de": "Kontrastprüfung",
+    "fr": "Vérification du contraste",
+    "ru": "Проверка контрастности"
+  },
+  "对比结果": {
+    "en": "Comparison result",
+    "zh-TW": "比對結果",
+    "ja": "比較結果",
+    "ko": "비교 결과",
+    "de": "Vergleichsergebnis",
+    "fr": "Résultat de comparaison",
+    "ru": "Результат сравнения"
+  },
+  "导入画板": {
+    "en": "Import board",
+    "zh-TW": "匯入畫板",
+    "ja": "ボードを読み込む",
+    "ko": "보드 가져오기",
+    "de": "Board importieren",
+    "fr": "Importer un tableau",
+    "ru": "Импортировать доску"
+  },
+  "导出 SVG": {
+    "en": "Export SVG",
+    "zh-TW": "匯出 SVG",
+    "ja": "SVG を書き出す",
+    "ko": "SVG 내보내기",
+    "de": "SVG exportieren",
+    "fr": "Exporter en SVG",
+    "ru": "Экспортировать SVG"
+  },
+  "导出文件": {
+    "en": "Export file",
+    "zh-TW": "匯出檔案",
+    "ja": "ファイルを書き出す",
+    "ko": "파일 내보내기",
+    "de": "Datei exportieren",
+    "fr": "Exporter le fichier",
+    "ru": "Экспортировать файл"
+  },
+  "导出片段": {
+    "en": "Export clip",
+    "zh-TW": "匯出片段",
+    "ja": "区間を書き出す",
+    "ko": "구간 내보내기",
+    "de": "Ausschnitt exportieren",
+    "fr": "Exporter l’extrait",
+    "ru": "Экспортировать фрагмент"
+  },
+  "居中裁剪至指定尺寸": {
+    "en": "Center-crop to the specified size",
+    "zh-TW": "置中裁切至指定尺寸",
+    "ja": "中央を指定サイズに切り抜く",
+    "ko": "중앙을 지정 크기로 자르기",
+    "de": "Mittig auf die angegebene Größe zuschneiden",
+    "fr": "Recadrer au centre aux dimensions choisies",
+    "ru": "Обрезать по центру до заданного размера"
+  },
+  "工具": {
+    "en": "Tool",
+    "zh-TW": "工具",
+    "ja": "ツール",
+    "ko": "도구",
+    "de": "Werkzeug",
+    "fr": "Outil",
+    "ru": "Инструмент"
+  },
+  "开始时间（秒）": {
+    "en": "Start time (seconds)",
+    "zh-TW": "開始時間（秒）",
+    "ja": "開始時間（秒）",
+    "ko": "시작 시간(초)",
+    "de": "Startzeit (Sekunden)",
+    "fr": "Début (secondes)",
+    "ru": "Начало (секунды)"
+  },
+  "当前浏览器不支持录音。": {
+    "en": "This browser does not support recording.",
+    "zh-TW": "目前瀏覽器不支援錄音。",
+    "ja": "このブラウザーは録音に対応していません。",
+    "ko": "현재 브라우저는 녹음을 지원하지 않습니다.",
+    "de": "Dieser Browser unterstützt keine Aufnahme.",
+    "fr": "Ce navigateur ne prend pas en charge l’enregistrement.",
+    "ru": "Этот браузер не поддерживает запись звука."
+  },
+  "当前浏览器不支持所选输出格式。": {
+    "en": "This browser does not support the selected output format.",
+    "zh-TW": "目前瀏覽器不支援所選輸出格式。",
+    "ja": "このブラウザーは選択した出力形式に対応していません。",
+    "ko": "현재 브라우저는 선택한 출력 형식을 지원하지 않습니다.",
+    "de": "Dieser Browser unterstützt das gewählte Ausgabeformat nicht.",
+    "fr": "Ce navigateur ne prend pas en charge le format de sortie choisi.",
+    "ru": "Этот браузер не поддерживает выбранный формат вывода."
+  },
+  "当前浏览器不支持视频片段导出。": {
+    "en": "This browser does not support video clip export.",
+    "zh-TW": "目前瀏覽器不支援影片片段匯出。",
+    "ja": "このブラウザーは動画区間の書き出しに対応していません。",
+    "ko": "현재 브라우저는 동영상 구간 내보내기를 지원하지 않습니다.",
+    "de": "Dieser Browser unterstützt keinen Export von Videoausschnitten.",
+    "fr": "Ce navigateur ne prend pas en charge l’export d’extraits vidéo.",
+    "ru": "Этот браузер не поддерживает экспорт видеофрагментов."
+  },
+  "当前浏览器不支持音频处理。": {
+    "en": "This browser does not support audio processing.",
+    "zh-TW": "目前瀏覽器不支援音訊處理。",
+    "ja": "このブラウザーは音声処理に対応していません。",
+    "ko": "현재 브라우저는 오디오 처리를 지원하지 않습니다.",
+    "de": "Dieser Browser unterstützt keine Audioverarbeitung.",
+    "fr": "Ce navigateur ne prend pas en charge le traitement audio.",
+    "ru": "Этот браузер не поддерживает обработку звука."
+  },
+  "当前画板尚未保存，放弃修改？": {
+    "en": "This board has unsaved changes. Discard them?",
+    "zh-TW": "目前畫板尚未儲存，放棄修改？",
+    "ja": "ボードに未保存の変更があります。破棄しますか？",
+    "ko": "보드에 저장하지 않은 변경 사항이 있습니다. 버릴까요?",
+    "de": "Dieses Board hat ungespeicherte Änderungen. Verwerfen?",
+    "fr": "Ce tableau contient des modifications non enregistrées. Les abandonner ?",
+    "ru": "На доске есть несохранённые изменения. Отменить их?"
+  },
+  "录音": {
+    "en": "Record",
+    "zh-TW": "錄音",
+    "ja": "録音",
+    "ko": "녹음",
+    "de": "Aufnehmen",
+    "fr": "Enregistrer",
+    "ru": "Записать звук"
+  },
+  "录音失败，请检查麦克风权限。": {
+    "en": "Recording failed. Check microphone access.",
+    "zh-TW": "錄音失敗，請檢查麥克風權限。",
+    "ja": "録音に失敗しました。マイクの権限を確認してください。",
+    "ko": "녹음에 실패했습니다. 마이크 권한을 확인하세요.",
+    "de": "Die Aufnahme ist fehlgeschlagen. Prüfen Sie den Mikrofonzugriff.",
+    "fr": "L’enregistrement a échoué. Vérifiez l’accès au microphone.",
+    "ru": "Не удалось записать звук. Проверьте доступ к микрофону."
+  },
+  "忽略空白": {
+    "en": "Ignore whitespace",
+    "zh-TW": "忽略空白",
+    "ja": "空白を無視",
+    "ko": "공백 무시",
+    "de": "Leerraum ignorieren",
+    "fr": "Ignorer les espaces",
+    "ru": "Игнорировать пробелы"
+  },
+  "思维画板": {
+    "en": "Idea board",
+    "zh-TW": "思維畫板",
+    "ja": "アイデアボード",
+    "ko": "아이디어 보드",
+    "de": "Ideenboard",
+    "fr": "Tableau d’idées",
+    "ru": "Доска идей"
+  },
+  "总时长：{0} 秒": {
+    "en": "Duration: {0} seconds",
+    "zh-TW": "總長度：{0} 秒",
+    "ja": "合計時間：{0} 秒",
+    "ko": "총 길이: {0}초",
+    "de": "Dauer: {0} Sekunden",
+    "fr": "Durée : {0} secondes",
+    "ru": "Длительность: {0} с"
+  },
+  "打包下载": {
+    "en": "Download ZIP",
+    "zh-TW": "打包下載",
+    "ja": "ZIP でダウンロード",
+    "ko": "ZIP으로 다운로드",
+    "de": "Als ZIP herunterladen",
+    "fr": "Télécharger en ZIP",
+    "ru": "Скачать ZIP"
+  },
+  "打开文本文件": {
+    "en": "Open text file",
+    "zh-TW": "開啟文字檔案",
+    "ja": "テキストファイルを開く",
+    "ko": "텍스트 파일 열기",
+    "de": "Textdatei öffnen",
+    "fr": "Ouvrir un fichier texte",
+    "ru": "Открыть текстовый файл"
+  },
+  "扩展内容格式无效，原有数据已保留。": {
+    "en": "Invalid extension content. Existing data has been preserved.",
+    "zh-TW": "擴充內容格式無效，原有資料已保留。",
+    "ja": "拡張機能の内容が無効です。既存のデータは保持されています。",
+    "ko": "확장 기능 내용 형식이 잘못되었습니다. 기존 데이터는 보존되었습니다.",
+    "de": "Ungültiger Erweiterungsinhalt. Vorhandene Daten wurden beibehalten.",
+    "fr": "Le contenu de l’extension est invalide. Les données existantes ont été conservées.",
+    "ru": "Неверный формат данных расширения. Существующие данные сохранены."
+  },
+  "拆分为单页": {
+    "en": "Split into individual pages",
+    "zh-TW": "拆分為單頁",
+    "ja": "1ページずつ分割",
+    "ko": "개별 페이지로 분할",
+    "de": "In einzelne Seiten aufteilen",
+    "fr": "Séparer en pages individuelles",
+    "ru": "Разделить на отдельные страницы"
+  },
+  "拆分结果超过 100 个文件，请缩小页码范围。": {
+    "en": "Splitting would create over 100 files. Select fewer pages.",
+    "zh-TW": "拆分結果超過 100 個檔案，請縮小頁碼範圍。",
+    "ja": "分割結果が100ファイルを超えます。ページ範囲を狭めてください。",
+    "ko": "분할 결과가 100개 파일을 넘습니다. 페이지 범위를 줄이세요.",
+    "de": "Die Aufteilung ergibt mehr als 100 Dateien. Wählen Sie weniger Seiten.",
+    "fr": "La séparation créerait plus de 100 fichiers. Sélectionnez moins de pages.",
+    "ru": "После разделения получится более 100 файлов. Выберите меньше страниц."
+  },
+  "按列表顺序处理；页码可填写 1,3-5，倒序填写可调整页面顺序。": {
+    "en": "Files follow the list order. Enter pages such as 1,3-5; reverse ranges to reorder pages.",
+    "zh-TW": "按清單順序處理；頁碼可填寫 1,3-5，倒序填寫可調整頁面順序。",
+    "ja": "一覧の順に処理します。ページは 1,3-5 のように指定し、逆順の範囲で並べ替えられます。",
+    "ko": "목록 순서대로 처리합니다. 페이지는 1,3-5처럼 입력하고, 범위를 역순으로 입력하면 순서가 바뀝니다.",
+    "de": "Dateien folgen der Listenreihenfolge. Geben Sie Seiten wie 1,3-5 an; umgekehrte Bereiche ändern die Seitenfolge.",
+    "fr": "Les fichiers suivent l’ordre de la liste. Indiquez des pages comme 1,3-5 ; inversez une plage pour réordonner les pages.",
+    "ru": "Файлы обрабатываются по порядку списка. Укажите страницы, например 1,3-5; обратный диапазон меняет их порядок."
+  },
+  "按行去重": {
+    "en": "Remove duplicate lines",
+    "zh-TW": "按行去除重複",
+    "ja": "重複行を削除",
+    "ko": "중복 행 제거",
+    "de": "Doppelte Zeilen entfernen",
+    "fr": "Supprimer les lignes en double",
+    "ru": "Удалить повторяющиеся строки"
+  },
+  "按行排序": {
+    "en": "Sort lines",
+    "zh-TW": "按行排序",
+    "ja": "行を並べ替え",
+    "ko": "행 정렬",
+    "de": "Zeilen sortieren",
+    "fr": "Trier les lignes",
+    "ru": "Сортировать строки"
+  },
+  "提取配色": {
+    "en": "Extract palette",
+    "zh-TW": "擷取配色",
+    "ja": "配色を抽出",
+    "ko": "색상 팔레트 추출",
+    "de": "Farbpalette extrahieren",
+    "fr": "Extraire la palette",
+    "ru": "Извлечь палитру"
+  },
+  "操作": {
+    "en": "Operation",
+    "zh-TW": "操作",
+    "ja": "操作",
+    "ko": "작업",
+    "de": "Vorgang",
+    "fr": "Opération",
+    "ru": "Операция"
+  },
+  "操作已取消。": {
+    "en": "Operation cancelled.",
+    "zh-TW": "操作已取消。",
+    "ja": "操作をキャンセルしました。",
+    "ko": "작업이 취소되었습니다.",
+    "de": "Vorgang abgebrochen.",
+    "fr": "Opération annulée.",
+    "ru": "Операция отменена."
+  },
+  "数字超出精确范围，请将长编号写为字符串。": {
+    "en": "The number exceeds the exact range. Write long identifiers as strings.",
+    "zh-TW": "數字超出精確範圍，請將長編號寫為字串。",
+    "ja": "数値が正確に扱える範囲を超えています。長い識別番号は文字列にしてください。",
+    "ko": "숫자가 정확하게 표현할 수 있는 범위를 넘습니다. 긴 식별자는 문자열로 입력하세요.",
+    "de": "Die Zahl überschreitet den exakten Bereich. Schreiben Sie lange Kennungen als Zeichenketten.",
+    "fr": "Le nombre dépasse la plage exacte. Écrivez les identifiants longs sous forme de chaînes.",
+    "ru": "Число выходит за пределы точного диапазона. Запишите длинные идентификаторы как строки."
+  },
+  "整理空白": {
+    "en": "Clean up whitespace",
+    "zh-TW": "整理空白",
+    "ja": "空白を整理",
+    "ko": "공백 정리",
+    "de": "Leerraum bereinigen",
+    "fr": "Nettoyer les espaces",
+    "ru": "Убрать лишние пробелы"
+  },
+  "文件为空、格式不支持或超出大小限制。": {
+    "en": "A file is empty, unsupported or exceeds the size limit.",
+    "zh-TW": "檔案為空、格式不支援或超出大小限制。",
+    "ja": "ファイルが空、未対応の形式、またはサイズ上限を超えています。",
+    "ko": "파일이 비어 있거나 지원하지 않는 형식이거나 크기 제한을 넘었습니다.",
+    "de": "Eine Datei ist leer, nicht unterstützt oder überschreitet die Größenbegrenzung.",
+    "fr": "Un fichier est vide, non pris en charge ou dépasse la taille limite.",
+    "ru": "Файл пуст, имеет неподдерживаемый формат или превышает ограничение размера."
+  },
+  "文本对比": {
+    "en": "Compare text",
+    "zh-TW": "文字比對",
+    "ja": "テキストを比較",
+    "ko": "텍스트 비교",
+    "de": "Text vergleichen",
+    "fr": "Comparer du texte",
+    "ru": "Сравнить текст"
+  },
+  "文本整理": {
+    "en": "Text cleanup",
+    "zh-TW": "文字整理",
+    "ja": "テキスト整理",
+    "ko": "텍스트 정리",
+    "de": "Textbereinigung",
+    "fr": "Nettoyage du texte",
+    "ru": "Обработка текста"
+  },
+  "文档页数无效或超出限制。": {
+    "en": "The page count is invalid or exceeds the limit.",
+    "zh-TW": "文件頁數無效或超出限制。",
+    "ja": "ページ数が無効か、上限を超えています。",
+    "ko": "문서 페이지 수가 잘못되었거나 제한을 넘었습니다.",
+    "de": "Die Seitenzahl ist ungültig oder überschreitet die Begrenzung.",
+    "fr": "Le nombre de pages est invalide ou dépasse la limite.",
+    "ru": "Число страниц неверно или превышает ограничение."
+  },
+  "新建画板": {
+    "en": "New board",
+    "zh-TW": "新增畫板",
+    "ja": "新しいボード",
+    "ko": "새 보드",
+    "de": "Neues Board",
+    "fr": "Nouveau tableau",
+    "ru": "Новая доска"
+  },
+  "新节点": {
+    "en": "New node",
+    "zh-TW": "新節點",
+    "ja": "新しいノード",
+    "ko": "새 노드",
+    "de": "Neuer Knoten",
+    "fr": "Nouveau nœud",
+    "ru": "Новый узел"
+  },
+  "旋转 180°": {
+    "en": "Rotate 180°",
+    "zh-TW": "旋轉 180°",
+    "ja": "180° 回転",
+    "ko": "180° 회전",
+    "de": "Um 180° drehen",
+    "fr": "Pivoter de 180°",
+    "ru": "Повернуть на 180°"
+  },
+  "旋转角度": {
+    "en": "Rotation angle",
+    "zh-TW": "旋轉角度",
+    "ja": "回転角度",
+    "ko": "회전 각도",
+    "de": "Drehwinkel",
+    "fr": "Angle de rotation",
+    "ru": "Угол поворота"
+  },
+  "旋转页面": {
+    "en": "Rotate pages",
+    "zh-TW": "旋轉頁面",
+    "ja": "ページを回転",
+    "ko": "페이지 회전",
+    "de": "Seiten drehen",
+    "fr": "Faire pivoter les pages",
+    "ru": "Повернуть страницы"
+  },
+  "无法读取媒体信息。": {
+    "en": "Could not read the media information.",
+    "zh-TW": "無法讀取媒體資訊。",
+    "ja": "メディア情報を読み取れませんでした。",
+    "ko": "미디어 정보를 읽을 수 없습니다.",
+    "de": "Die Medieninformationen konnten nicht gelesen werden.",
+    "fr": "Impossible de lire les informations du média.",
+    "ru": "Не удалось прочитать сведения о медиафайле."
+  },
+  "无法运行正则，请重试。": {
+    "en": "Could not run the regular expression. Try again.",
+    "zh-TW": "無法執行正規表示式，請重試。",
+    "ja": "正規表現を実行できませんでした。再試行してください。",
+    "ko": "정규식을 실행할 수 없습니다. 다시 시도하세요.",
+    "de": "Der reguläre Ausdruck konnte nicht ausgeführt werden. Versuchen Sie es erneut.",
+    "fr": "Impossible d’exécuter l’expression régulière. Réessayez.",
+    "ru": "Не удалось выполнить регулярное выражение. Повторите попытку."
+  },
+  "时间与标识": {
+    "en": "Time and identifiers",
+    "zh-TW": "時間與識別碼",
+    "ja": "時刻と識別子",
+    "ko": "시간 및 식별자",
+    "de": "Zeit und Kennungen",
+    "fr": "Dates et identifiants",
+    "ru": "Время и идентификаторы"
+  },
+  "时间格式无效。": {
+    "en": "Invalid date or time format.",
+    "zh-TW": "時間格式無效。",
+    "ja": "日時の形式が無効です。",
+    "ko": "날짜 또는 시간 형식이 올바르지 않습니다.",
+    "de": "Ungültiges Datums- oder Zeitformat.",
+    "fr": "Format de date ou d’heure invalide.",
+    "ru": "Неверный формат даты или времени."
+  },
+  "时间转换": {
+    "en": "Convert time",
+    "zh-TW": "時間轉換",
+    "ja": "時刻を変換",
+    "ko": "시간 변환",
+    "de": "Zeit umwandeln",
+    "fr": "Convertir la date",
+    "ru": "Преобразовать время"
+  },
+  "显示更多": {
+    "en": "Show more",
+    "zh-TW": "顯示更多",
+    "ja": "さらに表示",
+    "ko": "더 보기",
+    "de": "Mehr anzeigen",
+    "fr": "Afficher plus",
+    "ru": "Показать ещё"
+  },
+  "替换内容": {
+    "en": "Replacement",
+    "zh-TW": "取代內容",
+    "ja": "置換内容",
+    "ko": "바꿀 내용",
+    "de": "Ersetzung",
+    "fr": "Remplacement",
+    "ru": "Замена"
+  },
+  "最多保存 30 个画板。": {
+    "en": "Save up to 30 boards.",
+    "zh-TW": "最多儲存 30 個畫板。",
+    "ja": "保存できるボードは最大30個です。",
+    "ko": "보드는 최대 30개까지 저장할 수 있습니다.",
+    "de": "Es können bis zu 30 Boards gespeichert werden.",
+    "fr": "Vous pouvez enregistrer jusqu’à 30 tableaux.",
+    "ru": "Можно сохранить не более 30 досок."
+  },
+  "最大宽度": {
+    "en": "Maximum width",
+    "zh-TW": "最大寬度",
+    "ja": "最大幅",
+    "ko": "최대 너비",
+    "de": "Maximale Breite",
+    "fr": "Largeur maximale",
+    "ru": "Максимальная ширина"
+  },
+  "最大高度": {
+    "en": "Maximum height",
+    "zh-TW": "最大高度",
+    "ja": "最大高さ",
+    "ko": "최대 높이",
+    "de": "Maximale Höhe",
+    "fr": "Hauteur maximale",
+    "ru": "Максимальная высота"
+  },
+  "未命名画板": {
+    "en": "Untitled board",
+    "zh-TW": "未命名畫板",
+    "ja": "無題のボード",
+    "ko": "제목 없는 보드",
+    "de": "Unbenanntes Board",
+    "fr": "Tableau sans titre",
+    "ru": "Доска без названия"
+  },
+  "查询": {
+    "en": "Query",
+    "zh-TW": "查詢",
+    "ja": "検索",
+    "ko": "조회",
+    "de": "Abfragen",
+    "fr": "Interroger",
+    "ru": "Выполнить запрос"
+  },
+  "查询路径": {
+    "en": "Query path",
+    "zh-TW": "查詢路徑",
+    "ja": "検索パス",
+    "ko": "조회 경로",
+    "de": "Abfragepfad",
+    "fr": "Chemin de requête",
+    "ru": "Путь запроса"
+  },
+  "标记": {
+    "en": "Flags",
+    "zh-TW": "旗標",
+    "ja": "フラグ",
+    "ko": "플래그",
+    "de": "Flags",
+    "fr": "Indicateurs",
+    "ru": "Флаги"
+  },
+  "树形查看": {
+    "en": "Tree view",
+    "zh-TW": "樹狀檢視",
+    "ja": "ツリー表示",
+    "ko": "트리 보기",
+    "de": "Baumansicht",
+    "fr": "Vue arborescente",
+    "ru": "Дерево"
+  },
+  "校验 XML": {
+    "en": "Validate XML",
+    "zh-TW": "驗證 XML",
+    "ja": "XML を検証",
+    "ko": "XML 검증",
+    "de": "XML prüfen",
+    "fr": "Valider le XML",
+    "ru": "Проверить XML"
+  },
+  "格式化": {
+    "en": "Format",
+    "zh-TW": "格式化",
+    "ja": "整形",
+    "ko": "서식 정리",
+    "de": "Formatieren",
+    "fr": "Formater",
+    "ru": "Форматировать"
+  },
+  "正则": {
+    "en": "Regular expressions",
+    "zh-TW": "正規表示式",
+    "ja": "正規表現",
+    "ko": "정규식",
+    "de": "Reguläre Ausdrücke",
+    "fr": "Expressions régulières",
+    "ru": "Регулярные выражения"
+  },
+  "正则标记无效。": {
+    "en": "Invalid regular expression flags.",
+    "zh-TW": "正規表示式旗標無效。",
+    "ja": "正規表現のフラグが無効です。",
+    "ko": "정규식 플래그가 올바르지 않습니다.",
+    "de": "Ungültige Flags für den regulären Ausdruck.",
+    "fr": "Les indicateurs de l’expression régulière sont invalides.",
+    "ru": "Неверные флаги регулярного выражения."
+  },
+  "正则运行超时，请简化表达式。": {
+    "en": "The regular expression timed out. Simplify the pattern.",
+    "zh-TW": "正規表示式執行逾時，請簡化表示式。",
+    "ja": "正規表現がタイムアウトしました。式を簡単にしてください。",
+    "ko": "정규식 실행 시간이 초과되었습니다. 표현식을 단순화하세요.",
+    "de": "Zeitüberschreitung beim regulären Ausdruck. Vereinfachen Sie das Muster.",
+    "fr": "L’expression régulière a expiré. Simplifiez le motif.",
+    "ru": "Время выполнения регулярного выражения истекло. Упростите шаблон."
+  },
+  "正在处理 {0}/{1}": {
+    "en": "Processing {0}/{1}",
+    "zh-TW": "正在處理 {0}/{1}",
+    "ja": "処理中 {0}/{1}",
+    "ko": "처리 중 {0}/{1}",
+    "de": "Verarbeitung {0}/{1}",
+    "fr": "Traitement {0}/{1}",
+    "ru": "Обработка {0}/{1}"
+  },
+  "正在处理…": {
+    "en": "Processing…",
+    "zh-TW": "正在處理…",
+    "ja": "処理中…",
+    "ko": "처리 중…",
+    "de": "Wird verarbeitet…",
+    "fr": "Traitement…",
+    "ru": "Обработка…"
+  },
+  "正在导出 {0}%": {
+    "en": "Exporting {0}%",
+    "zh-TW": "正在匯出 {0}%",
+    "ja": "書き出し中 {0}%",
+    "ko": "내보내는 중 {0}%",
+    "de": "Export {0}%",
+    "fr": "Export {0} %",
+    "ru": "Экспорт {0}%"
+  },
+  "正在录音…": {
+    "en": "Recording…",
+    "zh-TW": "正在錄音…",
+    "ja": "録音中…",
+    "ko": "녹음 중…",
+    "de": "Aufnahme läuft…",
+    "fr": "Enregistrement…",
+    "ru": "Идёт запись…"
+  },
+  "正在载入…": {
+    "en": "Loading…",
+    "zh-TW": "正在載入…",
+    "ja": "読み込み中…",
+    "ko": "불러오는 중…",
+    "de": "Wird geladen…",
+    "fr": "Chargement…",
+    "ru": "Загрузка…"
+  },
+  "水印文字": {
+    "en": "Watermark text",
+    "zh-TW": "浮水印文字",
+    "ja": "透かしの文字",
+    "ko": "워터마크 텍스트",
+    "de": "Wasserzeichentext",
+    "fr": "Texte du filigrane",
+    "ru": "Текст водяного знака"
+  },
+  "没有生成媒体内容。": {
+    "en": "No media content was generated.",
+    "zh-TW": "未產生媒體內容。",
+    "ja": "メディア内容が生成されませんでした。",
+    "ko": "미디어 내용이 생성되지 않았습니다.",
+    "de": "Es wurden keine Medieninhalte erzeugt.",
+    "fr": "Aucun contenu multimédia n’a été généré.",
+    "ru": "Медиаданные не были созданы."
+  },
+  "浏览器无法解码这个文件。": {
+    "en": "The browser cannot decode this file.",
+    "zh-TW": "瀏覽器無法解碼此檔案。",
+    "ja": "ブラウザーでこのファイルをデコードできません。",
+    "ko": "브라우저가 이 파일을 디코딩할 수 없습니다.",
+    "de": "Der Browser kann diese Datei nicht dekodieren.",
+    "fr": "Le navigateur ne peut pas décoder ce fichier.",
+    "ru": "Браузер не может декодировать этот файл."
+  },
+  "淡入淡出（秒）": {
+    "en": "Fade in/out (seconds)",
+    "zh-TW": "淡入淡出（秒）",
+    "ja": "フェードイン・アウト（秒）",
+    "ko": "페이드 인/아웃(초)",
+    "de": "Ein-/Ausblenden (Sekunden)",
+    "fr": "Fondu d’entrée/sortie (secondes)",
+    "ru": "Нарастание и затухание (секунды)"
+  },
+  "添加节点": {
+    "en": "Add node",
+    "zh-TW": "新增節點",
+    "ja": "ノードを追加",
+    "ko": "노드 추가",
+    "de": "Knoten hinzufügen",
+    "fr": "Ajouter un nœud",
+    "ru": "Добавить узел"
+  },
+  "源文件预览": {
+    "en": "Source preview",
+    "zh-TW": "來源檔案預覽",
+    "ja": "元ファイルのプレビュー",
+    "ko": "원본 미리보기",
+    "de": "Vorschau der Quelldatei",
+    "fr": "Aperçu du fichier source",
+    "ru": "Просмотр исходного файла"
+  },
+  "生成 PDF": {
+    "en": "Create PDF",
+    "zh-TW": "產生 PDF",
+    "ja": "PDF を作成",
+    "ko": "PDF 만들기",
+    "de": "PDF erstellen",
+    "fr": "Créer le PDF",
+    "ru": "Создать PDF"
+  },
+  "生成 UUID": {
+    "en": "Generate UUIDs",
+    "zh-TW": "產生 UUID",
+    "ja": "UUID を生成",
+    "ko": "UUID 생성",
+    "de": "UUIDs erzeugen",
+    "fr": "Générer des UUID",
+    "ru": "Создать UUID"
+  },
+  "用作输入": {
+    "en": "Use as input",
+    "zh-TW": "用作輸入",
+    "ja": "入力として使用",
+    "ko": "입력으로 사용",
+    "de": "Als Eingabe verwenden",
+    "fr": "Utiliser comme entrée",
+    "ru": "Использовать как ввод"
+  },
+  "画板": {
+    "en": "Board",
+    "zh-TW": "畫板",
+    "ja": "ボード",
+    "ko": "보드",
+    "de": "Board",
+    "fr": "Tableau",
+    "ru": "Доска"
+  },
+  "画板内容无效或过大。": {
+    "en": "The board content is invalid or too large.",
+    "zh-TW": "畫板內容無效或過大。",
+    "ja": "ボードの内容が無効か、大きすぎます。",
+    "ko": "보드 내용이 잘못되었거나 너무 큽니다.",
+    "de": "Der Board-Inhalt ist ungültig oder zu groß.",
+    "fr": "Le contenu du tableau est invalide ou trop volumineux.",
+    "ru": "Содержимое доски неверно или слишком велико."
+  },
+  "画板名称": {
+    "en": "Board name",
+    "zh-TW": "畫板名稱",
+    "ja": "ボード名",
+    "ko": "보드 이름",
+    "de": "Board-Name",
+    "fr": "Nom du tableau",
+    "ru": "Название доски"
+  },
+  "画板节点无效。": {
+    "en": "Invalid board node.",
+    "zh-TW": "畫板節點無效。",
+    "ja": "ボードのノードが無効です。",
+    "ko": "보드 노드가 올바르지 않습니다.",
+    "de": "Ungültiger Board-Knoten.",
+    "fr": "Nœud du tableau invalide.",
+    "ru": "Неверный узел доски."
+  },
+  "画板连线无效。": {
+    "en": "Invalid board connection.",
+    "zh-TW": "畫板連線無效。",
+    "ja": "ボードの接続が無効です。",
+    "ko": "보드 연결선이 올바르지 않습니다.",
+    "de": "Ungültige Board-Verbindung.",
+    "fr": "Connexion du tableau invalide.",
+    "ru": "Неверная связь на доске."
+  },
+  "画板连线过多。": {
+    "en": "The board has too many connections.",
+    "zh-TW": "畫板連線過多。",
+    "ja": "ボードの接続が多すぎます。",
+    "ko": "보드 연결선이 너무 많습니다.",
+    "de": "Das Board hat zu viele Verbindungen.",
+    "fr": "Le tableau contient trop de connexions.",
+    "ru": "На доске слишком много связей."
+  },
+  "示例文字": {
+    "en": "Sample text",
+    "zh-TW": "範例文字",
+    "ja": "サンプルテキスト",
+    "ko": "예시 텍스트",
+    "de": "Beispieltext",
+    "fr": "Texte d’exemple",
+    "ru": "Пример текста"
+  },
+  "移除“{0}”？尚未下载的文件将从此处删除。": {
+    "en": "Remove “{0}”? Files you have not downloaded will be deleted from here.",
+    "zh-TW": "移除「{0}」？尚未下載的檔案將從此處刪除。",
+    "ja": "「{0}」を削除しますか？まだダウンロードしていないファイルもここから削除されます。",
+    "ko": "“{0}”을(를) 제거할까요? 아직 다운로드하지 않은 파일도 여기에서 삭제됩니다.",
+    "de": "„{0}“ entfernen? Noch nicht heruntergeladene Dateien werden hier gelöscht.",
+    "fr": "Retirer « {0} » ? Les fichiers non téléchargés seront supprimés d’ici.",
+    "ru": "Удалить «{0}»? Ещё не скачанные файлы будут удалены из этого раздела."
+  },
+  "移除连线": {
+    "en": "Remove connection",
+    "zh-TW": "移除連線",
+    "ja": "接続を削除",
+    "ko": "연결선 제거",
+    "de": "Verbindung entfernen",
+    "fr": "Retirer la connexion",
+    "ru": "Удалить связь"
+  },
+  "空白节点": {
+    "en": "Empty node",
+    "zh-TW": "空白節點",
+    "ja": "空のノード",
+    "ko": "빈 노드",
+    "de": "Leerer Knoten",
+    "fr": "Nœud vide",
+    "ru": "Пустой узел"
+  },
+  "结束时间（秒）": {
+    "en": "End time (seconds)",
+    "zh-TW": "結束時間（秒）",
+    "ja": "終了時間（秒）",
+    "ko": "종료 시간(초)",
+    "de": "Endzeit (Sekunden)",
+    "fr": "Fin (secondes)",
+    "ru": "Конец (секунды)"
+  },
+  "结构过于复杂，请缩小对比范围。": {
+    "en": "The structure is too complex. Compare a smaller section.",
+    "zh-TW": "結構過於複雜，請縮小比對範圍。",
+    "ja": "構造が複雑すぎます。比較範囲を狭めてください。",
+    "ko": "구조가 너무 복잡합니다. 비교 범위를 줄이세요.",
+    "de": "Die Struktur ist zu komplex. Vergleichen Sie einen kleineren Abschnitt.",
+    "fr": "La structure est trop complexe. Réduisez la partie à comparer.",
+    "ru": "Структура слишком сложная. Уменьшите область сравнения."
+  },
+  "结果": {
+    "en": "Result",
+    "zh-TW": "結果",
+    "ja": "結果",
+    "ko": "결과",
+    "de": "Ergebnis",
+    "fr": "Résultat",
+    "ru": "Результат"
+  },
+  "编码与解析": {
+    "en": "Encoding and inspection",
+    "zh-TW": "編碼與解析",
+    "ja": "エンコードと解析",
+    "ko": "인코딩 및 분석",
+    "de": "Kodierung und Analyse",
+    "fr": "Encodage et analyse",
+    "ru": "Кодирование и разбор"
+  },
+  "缩放": {
+    "en": "Zoom",
+    "zh-TW": "縮放",
+    "ja": "ズーム",
+    "ko": "확대/축소",
+    "de": "Zoom",
+    "fr": "Zoom",
+    "ru": "Масштаб"
+  },
+  "节点文字": {
+    "en": "Node text",
+    "zh-TW": "節點文字",
+    "ja": "ノードの文字",
+    "ko": "노드 텍스트",
+    "de": "Knotentext",
+    "fr": "Texte du nœud",
+    "ru": "Текст узла"
+  },
+  "节点颜色": {
+    "en": "Node color",
+    "zh-TW": "節點顏色",
+    "ja": "ノードの色",
+    "ko": "노드 색상",
+    "de": "Knotenfarbe",
+    "fr": "Couleur du nœud",
+    "ru": "Цвет узла"
+  },
+  "表达式": {
+    "en": "Expression",
+    "zh-TW": "表示式",
+    "ja": "式",
+    "ko": "표현식",
+    "de": "Ausdruck",
+    "fr": "Expression",
+    "ru": "Выражение"
+  },
+  "视频": {
+    "en": "Video",
+    "zh-TW": "影片",
+    "ja": "動画",
+    "ko": "동영상",
+    "de": "Video",
+    "fr": "Vidéo",
+    "ru": "Видео"
+  },
+  "视频按播放速度导出为 WebM，请保持此页面打开。": {
+    "en": "Video exports to WebM at playback speed. Keep this page open.",
+    "zh-TW": "影片依播放速度匯出為 WebM，請保持此頁面開啟。",
+    "ja": "動画は再生速度で WebM に書き出されます。このページを開いたままにしてください。",
+    "ko": "동영상은 재생 속도로 WebM으로 내보냅니다. 이 페이지를 열어 두세요.",
+    "de": "Das Video wird mit Wiedergabegeschwindigkeit als WebM exportiert. Lassen Sie diese Seite geöffnet.",
+    "fr": "La vidéo est exportée en WebM à la vitesse de lecture. Gardez cette page ouverte.",
+    "ru": "Видео экспортируется в WebM со скоростью воспроизведения. Не закрывайте страницу."
+  },
+  "视频片段须在文件范围内，且不超过 10 分钟。": {
+    "en": "The clip must be within the file and no longer than 10 minutes.",
+    "zh-TW": "影片片段須在檔案範圍內，且不超過 10 分鐘。",
+    "ja": "区間はファイルの範囲内で、10分以内にしてください。",
+    "ko": "구간은 파일 범위 내에 있어야 하며 10분을 넘을 수 없습니다.",
+    "de": "Der Ausschnitt muss innerhalb der Datei liegen und darf höchstens 10 Minuten lang sein.",
+    "fr": "L’extrait doit être compris dans le fichier et ne pas dépasser 10 minutes.",
+    "ru": "Фрагмент должен быть в пределах файла и длиться не более 10 минут."
+  },
+  "解除分组": {
+    "en": "Ungroup",
+    "zh-TW": "取消群組",
+    "ja": "グループ解除",
+    "ko": "그룹 해제",
+    "de": "Gruppierung aufheben",
+    "fr": "Dissocier",
+    "ru": "Разгруппировать"
+  },
+  "请先选择可解码的音频文件。": {
+    "en": "First select an audio file the browser can decode.",
+    "zh-TW": "請先選擇可解碼的音訊檔案。",
+    "ja": "ブラウザーでデコードできる音声ファイルを選択してください。",
+    "ko": "브라우저가 디코딩할 수 있는 오디오 파일을 먼저 선택하세요.",
+    "de": "Wählen Sie zuerst eine Audiodatei, die der Browser dekodieren kann.",
+    "fr": "Choisissez d’abord un fichier audio que le navigateur peut décoder.",
+    "ru": "Сначала выберите аудиофайл, который браузер может декодировать."
+  },
+  "请输入六位颜色值。": {
+    "en": "Enter a six-digit color value.",
+    "zh-TW": "請輸入六位色碼。",
+    "ja": "6桁のカラーコードを入力してください。",
+    "ko": "6자리 색상 값을 입력하세요.",
+    "de": "Geben Sie einen sechsstelligen Farbwert ein.",
+    "fr": "Saisissez un code couleur à six chiffres.",
+    "ru": "Введите шестизначный код цвета."
+  },
+  "请选择有效的起止时间。": {
+    "en": "Choose valid start and end times.",
+    "zh-TW": "請選擇有效的起訖時間。",
+    "ja": "有効な開始時刻と終了時刻を指定してください。",
+    "ko": "올바른 시작 및 종료 시간을 선택하세요.",
+    "de": "Wählen Sie gültige Start- und Endzeiten.",
+    "fr": "Choisissez des heures de début et de fin valides.",
+    "ru": "Укажите допустимое время начала и конца."
+  },
+  "请选择目标节点。": {
+    "en": "Select the target node.",
+    "zh-TW": "請選擇目標節點。",
+    "ja": "接続先のノードを選択してください。",
+    "ko": "대상 노드를 선택하세요.",
+    "de": "Wählen Sie den Zielknoten.",
+    "fr": "Sélectionnez le nœud cible.",
+    "ru": "Выберите конечный узел."
+  },
+  "请选择视频文件。": {
+    "en": "Select a video file.",
+    "zh-TW": "請選擇影片檔案。",
+    "ja": "動画ファイルを選択してください。",
+    "ko": "동영상 파일을 선택하세요.",
+    "de": "Wählen Sie eine Videodatei.",
+    "fr": "Sélectionnez un fichier vidéo.",
+    "ru": "Выберите видеофайл."
+  },
+  "请选择起始节点。": {
+    "en": "Select the starting node.",
+    "zh-TW": "請選擇起始節點。",
+    "ja": "接続元のノードを選択してください。",
+    "ko": "시작 노드를 선택하세요.",
+    "de": "Wählen Sie den Startknoten.",
+    "fr": "Sélectionnez le nœud de départ.",
+    "ru": "Выберите начальный узел."
+  },
+  "质量": {
+    "en": "Quality",
+    "zh-TW": "品質",
+    "ja": "品質",
+    "ko": "품질",
+    "de": "Qualität",
+    "fr": "Qualité",
+    "ru": "Качество"
+  },
+  "质量须在 0.1 至 1 之间。": {
+    "en": "Quality must be between 0.1 and 1.",
+    "zh-TW": "品質須在 0.1 至 1 之間。",
+    "ja": "品質は0.1から1の間で指定してください。",
+    "ko": "품질은 0.1에서 1 사이여야 합니다.",
+    "de": "Die Qualität muss zwischen 0,1 und 1 liegen.",
+    "fr": "La qualité doit être comprise entre 0,1 et 1.",
+    "ru": "Качество должно быть от 0,1 до 1."
+  },
+  "路径应以 $ 开头。": {
+    "en": "The path must begin with $.",
+    "zh-TW": "路徑應以 $ 開頭。",
+    "ja": "パスは $ で始めてください。",
+    "ko": "경로는 $로 시작해야 합니다.",
+    "de": "Der Pfad muss mit $ beginnen.",
+    "fr": "Le chemin doit commencer par $.",
+    "ru": "Путь должен начинаться с $."
+  },
+  "路径支持属性名、数组下标和 [*]。": {
+    "en": "Paths support property names, array indices and [*].",
+    "zh-TW": "路徑支援屬性名稱、陣列索引和 [*]。",
+    "ja": "パスにはプロパティ名、配列の添字、[*] を使用できます。",
+    "ko": "경로는 속성 이름, 배열 인덱스 및 [*]를 지원합니다.",
+    "de": "Pfade unterstützen Eigenschaftsnamen, Array-Indizes und [*].",
+    "fr": "Les chemins acceptent les propriétés, les indices de tableau et [*].",
+    "ru": "Пути поддерживают имена свойств, индексы массивов и [*]."
+  },
+  "转为 YAML": {
+    "en": "Convert to YAML",
+    "zh-TW": "轉為 YAML",
+    "ja": "YAML に変換",
+    "ko": "YAML로 변환",
+    "de": "In YAML umwandeln",
+    "fr": "Convertir en YAML",
+    "ru": "Преобразовать в YAML"
+  },
+  "转为大写": {
+    "en": "Uppercase",
+    "zh-TW": "轉為大寫",
+    "ja": "大文字に変換",
+    "ko": "대문자로 변환",
+    "de": "Großschreibung",
+    "fr": "En majuscules",
+    "ru": "В верхний регистр"
+  },
+  "转为小写": {
+    "en": "Lowercase",
+    "zh-TW": "轉為小寫",
+    "ja": "小文字に変換",
+    "ko": "소문자로 변환",
+    "de": "Kleinschreibung",
+    "fr": "En minuscules",
+    "ru": "В нижний регистр"
+  },
+  "输入内容": {
+    "en": "Input",
+    "zh-TW": "輸入內容",
+    "ja": "入力内容",
+    "ko": "입력 내용",
+    "de": "Eingabe",
+    "fr": "Entrée",
+    "ru": "Ввод"
+  },
+  "输出图片尺寸过大。": {
+    "en": "The output image dimensions are too large.",
+    "zh-TW": "輸出圖片尺寸過大。",
+    "ja": "出力画像のサイズが大きすぎます。",
+    "ko": "출력 이미지 크기가 너무 큽니다.",
+    "de": "Die Abmessungen des Ausgabebildes sind zu groß.",
+    "fr": "Les dimensions de l’image de sortie sont trop grandes.",
+    "ru": "Размеры выходного изображения слишком велики."
+  },
+  "输出尺寸须在 1 至 8192 之间。": {
+    "en": "Output dimensions must be between 1 and 8,192.",
+    "zh-TW": "輸出尺寸須在 1 至 8192 之間。",
+    "ja": "出力サイズは1から8192の間で指定してください。",
+    "ko": "출력 크기는 1에서 8,192 사이여야 합니다.",
+    "de": "Ausgabeabmessungen müssen zwischen 1 und 8.192 liegen.",
+    "fr": "Les dimensions de sortie doivent être comprises entre 1 et 8 192.",
+    "ru": "Размеры вывода должны быть от 1 до 8192."
+  },
+  "输出文件过大，请减少图片或缩小尺寸。": {
+    "en": "The output is too large. Use fewer images or smaller dimensions.",
+    "zh-TW": "輸出檔案過大，請減少圖片或縮小尺寸。",
+    "ja": "出力が大きすぎます。画像数を減らすか、サイズを小さくしてください。",
+    "ko": "출력 파일이 너무 큽니다. 이미지 수나 크기를 줄이세요.",
+    "de": "Die Ausgabe ist zu groß. Verwenden Sie weniger Bilder oder kleinere Abmessungen.",
+    "fr": "La sortie est trop volumineuse. Réduisez le nombre ou les dimensions des images.",
+    "ru": "Результат слишком велик. Уменьшите число или размеры изображений."
+  },
+  "输出文件过大，请缩短片段。": {
+    "en": "The output file is too large. Shorten the clip.",
+    "zh-TW": "輸出檔案過大，請縮短片段。",
+    "ja": "出力ファイルが大きすぎます。区間を短くしてください。",
+    "ko": "출력 파일이 너무 큽니다. 구간을 줄이세요.",
+    "de": "Die Ausgabedatei ist zu groß. Kürzen Sie den Ausschnitt.",
+    "fr": "Le fichier de sortie est trop volumineux. Raccourcissez l’extrait.",
+    "ru": "Выходной файл слишком велик. Сократите фрагмент."
+  },
+  "输出格式": {
+    "en": "Output format",
+    "zh-TW": "輸出格式",
+    "ja": "出力形式",
+    "ko": "출력 형식",
+    "de": "Ausgabeformat",
+    "fr": "Format de sortie",
+    "ru": "Формат вывода"
+  },
+  "这个文件没有可导出的音轨。": {
+    "en": "This file has no audio track to export.",
+    "zh-TW": "此檔案沒有可匯出的音軌。",
+    "ja": "このファイルには書き出せる音声トラックがありません。",
+    "ko": "이 파일에는 내보낼 오디오 트랙이 없습니다.",
+    "de": "Diese Datei enthält keine exportierbare Audiospur.",
+    "fr": "Ce fichier ne contient aucune piste audio à exporter.",
+    "ru": "В этом файле нет звуковой дорожки для экспорта."
+  },
+  "连接节点": {
+    "en": "Connect nodes",
+    "zh-TW": "連接節點",
+    "ja": "ノードを接続",
+    "ko": "노드 연결",
+    "de": "Knoten verbinden",
+    "fr": "Relier les nœuds",
+    "ru": "Соединить узлы"
+  },
+  "逆时针 90°": {
+    "en": "90° counterclockwise",
+    "zh-TW": "逆時針 90°",
+    "ja": "反時計回りに90°",
+    "ko": "반시계 방향 90°",
+    "de": "90° gegen den Uhrzeigersinn",
+    "fr": "90° dans le sens antihoraire",
+    "ru": "90° против часовой стрелки"
+  },
+  "选择图片": {
+    "en": "Choose images",
+    "zh-TW": "選擇圖片",
+    "ja": "画像を選択",
+    "ko": "이미지 선택",
+    "de": "Bilder auswählen",
+    "fr": "Choisir des images",
+    "ru": "Выбрать изображения"
+  },
+  "选择文件": {
+    "en": "Choose files",
+    "zh-TW": "選擇檔案",
+    "ja": "ファイルを選択",
+    "ko": "파일 선택",
+    "de": "Dateien auswählen",
+    "fr": "Choisir des fichiers",
+    "ru": "Выбрать файлы"
+  },
+  "选择节点以编辑；按住 Shift 可选择多个节点。": {
+    "en": "Select a node to edit. Hold Shift to select multiple nodes.",
+    "zh-TW": "選擇節點以編輯；按住 Shift 可選擇多個節點。",
+    "ja": "ノードを選択して編集します。Shift キーで複数選択できます。",
+    "ko": "편집할 노드를 선택하세요. Shift 키를 누르면 여러 노드를 선택할 수 있습니다.",
+    "de": "Wählen Sie einen Knoten zum Bearbeiten. Halten Sie Umschalt für eine Mehrfachauswahl gedrückt.",
+    "fr": "Sélectionnez un nœud pour le modifier. Maintenez Maj pour en sélectionner plusieurs.",
+    "ru": "Выберите узел для редактирования. Удерживайте Shift для выбора нескольких узлов."
+  },
+  "音量倍数": {
+    "en": "Volume multiplier",
+    "zh-TW": "音量倍數",
+    "ja": "音量倍率",
+    "ko": "음량 배율",
+    "de": "Lautstärkefaktor",
+    "fr": "Multiplicateur de volume",
+    "ru": "Множитель громкости"
+  },
+  "音频": {
+    "en": "Audio",
+    "zh-TW": "音訊",
+    "ja": "音声",
+    "ko": "오디오",
+    "de": "Audio",
+    "fr": "Audio",
+    "ru": "Аудио"
+  },
+  "音频参数无效。": {
+    "en": "Invalid audio settings.",
+    "zh-TW": "音訊參數無效。",
+    "ja": "音声設定が無効です。",
+    "ko": "오디오 설정이 올바르지 않습니다.",
+    "de": "Ungültige Audioeinstellungen.",
+    "fr": "Paramètres audio invalides.",
+    "ru": "Неверные параметры звука."
+  },
+  "音频总时长不能超过 10 分钟。": {
+    "en": "The total audio duration cannot exceed 10 minutes.",
+    "zh-TW": "音訊總長度不能超過 10 分鐘。",
+    "ja": "音声の合計時間は10分以内にしてください。",
+    "ko": "전체 오디오 길이는 10분을 넘을 수 없습니다.",
+    "de": "Die gesamte Audiodauer darf 10 Minuten nicht überschreiten.",
+    "fr": "La durée audio totale ne peut pas dépasser 10 minutes.",
+    "ru": "Общая длительность звука не должна превышать 10 минут."
+  },
+  "音频波形": {
+    "en": "Audio waveform",
+    "zh-TW": "音訊波形",
+    "ja": "音声波形",
+    "ko": "오디오 파형",
+    "de": "Audiowellenform",
+    "fr": "Forme d’onde audio",
+    "ru": "Форма звуковой волны"
+  },
+  "音频片段为空或过大。": {
+    "en": "The audio clip is empty or too large.",
+    "zh-TW": "音訊片段為空或過大。",
+    "ja": "音声区間が空か、大きすぎます。",
+    "ko": "오디오 구간이 비어 있거나 너무 큽니다.",
+    "de": "Der Audioausschnitt ist leer oder zu groß.",
+    "fr": "L’extrait audio est vide ou trop volumineux.",
+    "ru": "Аудиофрагмент пуст или слишком велик."
+  },
+  "音频解码后过大，请缩短文件。": {
+    "en": "The decoded audio is too large. Use a shorter file.",
+    "zh-TW": "音訊解碼後過大，請縮短檔案。",
+    "ja": "デコード後の音声が大きすぎます。短いファイルを使用してください。",
+    "ko": "디코딩된 오디오가 너무 큽니다. 더 짧은 파일을 사용하세요.",
+    "de": "Die dekodierten Audiodaten sind zu groß. Verwenden Sie eine kürzere Datei.",
+    "fr": "L’audio décodé est trop volumineux. Utilisez un fichier plus court.",
+    "ru": "Декодированный звук слишком велик. Используйте более короткий файл."
+  },
+  "页码": {
+    "en": "Pages",
+    "zh-TW": "頁碼",
+    "ja": "ページ番号",
+    "ko": "페이지 번호",
+    "de": "Seiten",
+    "fr": "Pages",
+    "ru": "Страницы"
+  },
+  "页码请填写为 1,3-5。": {
+    "en": "Enter pages in the form 1,3-5.",
+    "zh-TW": "頁碼請填寫為 1,3-5。",
+    "ja": "ページは 1,3-5 の形式で入力してください。",
+    "ko": "페이지를 1,3-5 형식으로 입력하세요.",
+    "de": "Geben Sie Seiten im Format 1,3-5 an.",
+    "fr": "Indiquez les pages au format 1,3-5.",
+    "ru": "Укажите страницы в формате 1,3-5."
+  },
+  "页码超出文档范围。": {
+    "en": "A page number is outside the document.",
+    "zh-TW": "頁碼超出文件範圍。",
+    "ja": "ページ番号が文書の範囲外です。",
+    "ko": "페이지 번호가 문서 범위를 벗어났습니다.",
+    "de": "Eine Seitenzahl liegt außerhalb des Dokuments.",
+    "fr": "Un numéro de page dépasse les limites du document.",
+    "ru": "Номер страницы выходит за пределы документа."
+  },
+  "页面选择过长。": {
+    "en": "The page selection is too long.",
+    "zh-TW": "頁面選擇過長。",
+    "ja": "ページの選択指定が長すぎます。",
+    "ko": "페이지 선택 내용이 너무 깁니다.",
+    "de": "Die Seitenauswahl ist zu lang.",
+    "fr": "La sélection de pages est trop longue.",
+    "ru": "Список выбранных страниц слишком длинный."
+  },
+  "顺时针 90°": {
+    "en": "90° clockwise",
+    "zh-TW": "順時針 90°",
+    "ja": "時計回りに90°",
+    "ko": "시계 방향 90°",
+    "de": "90° im Uhrzeigersinn",
+    "fr": "90° dans le sens horaire",
+    "ru": "90° по часовой стрелке"
+  },
+  "替换结果过长，请缩小文本或替换内容。": {
+    "en": "The replacement result is too long. Reduce the text or replacement.",
+    "zh-TW": "取代結果過長，請縮小文字或取代內容。",
+    "ja": "置換結果が長すぎます。テキストまたは置換内容を減らしてください。",
+    "ko": "바꾼 결과가 너무 깁니다. 텍스트나 바꿀 내용을 줄이세요.",
+    "de": "Das Ersetzungsergebnis ist zu lang. Kürzen Sie den Text oder die Ersetzung.",
+    "fr": "Le résultat du remplacement est trop long. Réduisez le texte ou le remplacement.",
+    "ru": "Результат замены слишком длинный. Сократите текст или замену."
+  },
+  "暂无保存的草稿": {
+    "en": "No saved drafts",
+    "zh-TW": "暫無儲存的草稿",
+    "ja": "保存した下書きはありません",
+    "ko": "저장된 초안이 없습니다",
+    "de": "Keine gespeicherten Entwürfe",
+    "fr": "Aucun brouillon enregistré",
+    "ru": "Нет сохранённых черновиков"
+  },
+  "内容相同": {
+    "en": "Contents are identical",
+    "zh-TW": "內容相同",
+    "ja": "内容は同じです",
+    "ko": "내용이 같습니다",
+    "de": "Inhalte sind identisch",
+    "fr": "Les contenus sont identiques",
+    "ru": "Содержимое одинаково"
+  },
+  "{0} 处匹配": {
+    "en": "{0} matches",
+    "zh-TW": "{0} 處符合",
+    "ja": "{0} 件一致",
+    "ko": "일치 {0}개",
+    "de": "{0} Treffer",
+    "fr": "{0} correspondances",
+    "ru": "Совпадений: {0}"
+  },
+  "替换预览": {
+    "en": "Replacement preview",
+    "zh-TW": "取代預覽",
+    "ja": "置換プレビュー",
+    "ko": "바꾸기 미리보기",
+    "de": "Ersetzungsvorschau",
+    "fr": "Aperçu du remplacement",
+    "ru": "Предпросмотр замены"
+  },
+  "选择操作后在这里查看结果": {
+    "en": "Choose an operation to see its result",
+    "zh-TW": "選擇操作後在此檢視結果",
+    "ja": "操作を選ぶと結果が表示されます",
+    "ko": "작업을 선택하면 결과가 표시됩니다",
+    "de": "Wählen Sie eine Aktion, um das Ergebnis zu sehen",
+    "fr": "Choisissez une opération pour afficher le résultat",
+    "ru": "Выберите действие, чтобы увидеть результат"
+  },
+  "图片预览": {
+    "en": "Image preview",
+    "zh-TW": "圖片預覽",
+    "ja": "画像プレビュー",
+    "ko": "이미지 미리보기",
+    "de": "Bildvorschau",
+    "fr": "Aperçu de l’image",
+    "ru": "Предпросмотр изображения"
+  },
+  "添加图片": {
+    "en": "Add images",
+    "zh-TW": "新增圖片",
+    "ja": "画像を追加",
+    "ko": "이미지 추가",
+    "de": "Bilder hinzufügen",
+    "fr": "Ajouter des images",
+    "ru": "Добавить изображения"
+  },
+  "源文件": {
+    "en": "Source files",
+    "zh-TW": "來源檔案",
+    "ja": "元のファイル",
+    "ko": "원본 파일",
+    "de": "Quelldateien",
+    "fr": "Fichiers sources",
+    "ru": "Исходные файлы"
+  },
+  "处理结果": {
+    "en": "Processed files",
+    "zh-TW": "處理結果",
+    "ja": "処理結果",
+    "ko": "처리 결과",
+    "de": "Verarbeitete Dateien",
+    "fr": "Fichiers traités",
+    "ru": "Обработанные файлы"
+  },
+  "拖动图片调整裁剪位置": {
+    "en": "Drag the image to position the crop",
+    "zh-TW": "拖曳圖片調整裁切位置",
+    "ja": "画像をドラッグして切り抜き位置を調整",
+    "ko": "이미지를 드래그하여 자르기 위치 조정",
+    "de": "Bild ziehen, um den Ausschnitt zu verschieben",
+    "fr": "Faites glisser l’image pour ajuster le cadrage",
+    "ru": "Перетащите изображение, чтобы выбрать область обрезки"
+  },
+  "点击或拖动设置水印位置": {
+    "en": "Click or drag to position the watermark",
+    "zh-TW": "點擊或拖曳設定浮水印位置",
+    "ja": "クリックまたはドラッグで透かしの位置を設定",
+    "ko": "클릭하거나 드래그하여 워터마크 위치 설정",
+    "de": "Klicken oder ziehen, um das Wasserzeichen zu positionieren",
+    "fr": "Cliquez ou faites glisser pour placer le filigrane",
+    "ru": "Нажмите или перетащите, чтобы разместить водяной знак"
+  },
+  "把图片拖到这里": {
+    "en": "Drop images here",
+    "zh-TW": "將圖片拖曳至此",
+    "ja": "ここに画像をドロップ",
+    "ko": "여기에 이미지 놓기",
+    "de": "Bilder hier ablegen",
+    "fr": "Déposez des images ici",
+    "ru": "Перетащите изображения сюда"
+  },
+  "输出设置": {
+    "en": "Output settings",
+    "zh-TW": "輸出設定",
+    "ja": "出力設定",
+    "ko": "출력 설정",
+    "de": "Ausgabeeinstellungen",
+    "fr": "Paramètres de sortie",
+    "ru": "Параметры вывода"
+  },
+  "裁剪至指定尺寸": {
+    "en": "Crop to the specified size",
+    "zh-TW": "裁切至指定尺寸",
+    "ja": "指定サイズに切り抜く",
+    "ko": "지정한 크기로 자르기",
+    "de": "Auf die angegebene Größe zuschneiden",
+    "fr": "Recadrer aux dimensions indiquées",
+    "ru": "Обрезать до заданного размера"
+  },
+  "调整裁剪位置": {
+    "en": "Position crop",
+    "zh-TW": "調整裁切位置",
+    "ja": "切り抜き位置を調整",
+    "ko": "자르기 위치 조정",
+    "de": "Ausschnitt verschieben",
+    "fr": "Ajuster le cadrage",
+    "ru": "Выбрать область обрезки"
+  },
+  "调整水印位置": {
+    "en": "Position watermark",
+    "zh-TW": "調整浮水印位置",
+    "ja": "透かしの位置を調整",
+    "ko": "워터마크 위치 조정",
+    "de": "Wasserzeichen positionieren",
+    "fr": "Placer le filigrane",
+    "ru": "Разместить водяной знак"
+  },
+  "{0} 张图片": {
+    "en": "{0} images",
+    "zh-TW": "{0} 張圖片",
+    "ja": "画像 {0} 枚",
+    "ko": "이미지 {0}개",
+    "de": "{0} Bilder",
+    "fr": "{0} images",
+    "ru": "Изображений: {0}"
+  },
+  "时间选区": {
+    "en": "Time selection",
+    "zh-TW": "時間選區",
+    "ja": "時間範囲",
+    "ko": "시간 선택 영역",
+    "de": "Zeitbereich",
+    "fr": "Plage temporelle",
+    "ru": "Выбранный интервал"
+  },
+  "播放位置": {
+    "en": "Playhead",
+    "zh-TW": "播放位置",
+    "ja": "再生位置",
+    "ko": "재생 위치",
+    "de": "Abspielposition",
+    "fr": "Position de lecture",
+    "ru": "Позиция воспроизведения"
+  },
+  "开始与结束时间无效。": {
+    "en": "The start and end times are invalid.",
+    "zh-TW": "開始與結束時間無效。",
+    "ja": "開始時刻と終了時刻が無効です。",
+    "ko": "시작 및 종료 시간이 유효하지 않습니다.",
+    "de": "Start- und Endzeit sind ungültig.",
+    "fr": "Les heures de début et de fin sont invalides.",
+    "ru": "Недопустимые начальное и конечное время."
+  },
+  "音量或淡入淡出参数无效。": {
+    "en": "The volume or fade settings are invalid.",
+    "zh-TW": "音量或淡入淡出參數無效。",
+    "ja": "音量またはフェードの設定が無効です。",
+    "ko": "볼륨 또는 페이드 설정이 유효하지 않습니다.",
+    "de": "Lautstärke- oder Überblendeinstellungen sind ungültig.",
+    "fr": "Les paramètres de volume ou de fondu sont invalides.",
+    "ru": "Недопустимые параметры громкости или плавного перехода."
+  },
+  "添加文件": {
+    "en": "Add files",
+    "zh-TW": "新增檔案",
+    "ja": "ファイルを追加",
+    "ko": "파일 추가",
+    "de": "Dateien hinzufügen",
+    "fr": "Ajouter des fichiers",
+    "ru": "Добавить файлы"
+  },
+  "导出记录": {
+    "en": "Export history",
+    "zh-TW": "匯出紀錄",
+    "ja": "書き出し履歴",
+    "ko": "내보내기 기록",
+    "de": "Exportverlauf",
+    "fr": "Historique des exports",
+    "ru": "История экспорта"
+  },
+  "暂无导出文件": {
+    "en": "No exported files",
+    "zh-TW": "暫無匯出檔案",
+    "ja": "書き出したファイルはありません",
+    "ko": "내보낸 파일이 없습니다",
+    "de": "Keine exportierten Dateien",
+    "fr": "Aucun fichier exporté",
+    "ru": "Нет экспортированных файлов"
+  },
+  "把音频拖到这里": {
+    "en": "Drop audio here",
+    "zh-TW": "將音訊拖曳至此",
+    "ja": "ここに音声をドロップ",
+    "ko": "여기에 오디오 놓기",
+    "de": "Audio hier ablegen",
+    "fr": "Déposez des fichiers audio ici",
+    "ru": "Перетащите аудио сюда"
+  },
+  "把视频拖到这里": {
+    "en": "Drop a video here",
+    "zh-TW": "將影片拖曳至此",
+    "ja": "ここに動画をドロップ",
+    "ko": "여기에 동영상 놓기",
+    "de": "Video hier ablegen",
+    "fr": "Déposez une vidéo ici",
+    "ru": "Перетащите видео сюда"
+  },
+  "{0} 个音频片段": {
+    "en": "{0} audio clips",
+    "zh-TW": "{0} 個音訊片段",
+    "ja": "音声クリップ {0} 件",
+    "ko": "오디오 클립 {0}개",
+    "de": "{0} Audioclips",
+    "fr": "{0} extraits audio",
+    "ru": "Аудиофрагментов: {0}"
+  },
+  "拖动两端选择导出范围": {
+    "en": "Drag the handles to select the export range",
+    "zh-TW": "拖曳兩端選擇匯出範圍",
+    "ja": "両端をドラッグして書き出す範囲を選択",
+    "ko": "양 끝을 드래그하여 내보낼 범위 선택",
+    "de": "Griffe ziehen, um den Exportbereich auszuwählen",
+    "fr": "Faites glisser les poignées pour choisir la plage à exporter",
+    "ru": "Перетащите границы, чтобы выбрать интервал экспорта"
+  },
+  "暂停": {
+    "en": "Pause",
+    "zh-TW": "暫停",
+    "ja": "一時停止",
+    "ko": "일시 정지",
+    "de": "Pause",
+    "fr": "Pause",
+    "ru": "Пауза"
+  },
+  "播放": {
+    "en": "Play",
+    "zh-TW": "播放",
+    "ja": "再生",
+    "ko": "재생",
+    "de": "Wiedergabe",
+    "fr": "Lire",
+    "ru": "Воспроизвести"
+  },
+  "跳到起点": {
+    "en": "Go to start",
+    "zh-TW": "跳至起點",
+    "ja": "開始位置へ",
+    "ko": "시작점으로 이동",
+    "de": "Zum Anfang",
+    "fr": "Aller au début",
+    "ru": "Перейти к началу"
+  },
+  "跳到终点": {
+    "en": "Go to end",
+    "zh-TW": "跳至終點",
+    "ja": "終了位置へ",
+    "ko": "종료점으로 이동",
+    "de": "Zum Ende",
+    "fr": "Aller à la fin",
+    "ru": "Перейти к концу"
+  },
+  "片段设置": {
+    "en": "Clip settings",
+    "zh-TW": "片段設定",
+    "ja": "クリップ設定",
+    "ko": "클립 설정",
+    "de": "Clip-Einstellungen",
+    "fr": "Paramètres de l’extrait",
+    "ru": "Параметры фрагмента"
+  },
+  "选区：{0} 秒": {
+    "en": "Selection: {0} seconds",
+    "zh-TW": "選區：{0} 秒",
+    "ja": "選択範囲：{0} 秒",
+    "ko": "선택 영역: {0}초",
+    "de": "Auswahl: {0} Sekunden",
+    "fr": "Sélection : {0} secondes",
+    "ru": "Интервал: {0} секунд"
+  },
+  "未命名导图": {
+    "en": "Untitled mind map",
+    "zh-TW": "未命名心智圖",
+    "ja": "無題のマインドマップ",
+    "ko": "제목 없는 마인드맵",
+    "de": "Unbenannte Mindmap",
+    "fr": "Carte mentale sans titre",
+    "ru": "Безымянная интеллект-карта"
+  },
+  "中心主题": {
+    "en": "Central topic",
+    "zh-TW": "中心主題",
+    "ja": "中心トピック",
+    "ko": "중심 주제",
+    "de": "Zentrales Thema",
+    "fr": "Sujet central",
+    "ru": "Центральная тема"
+  },
+  "新主题": {
+    "en": "New topic",
+    "zh-TW": "新主題",
+    "ja": "新しいトピック",
+    "ko": "새 주제",
+    "de": "Neues Thema",
+    "fr": "Nouveau sujet",
+    "ru": "Новая тема"
+  },
+  "中心主题需要保留。": {
+    "en": "The central topic must be kept.",
+    "zh-TW": "必須保留中心主題。",
+    "ja": "中心トピックは削除できません。",
+    "ko": "중심 주제는 유지해야 합니다.",
+    "de": "Das zentrale Thema muss erhalten bleiben.",
+    "fr": "Le sujet central doit être conservé.",
+    "ru": "Центральную тему необходимо сохранить."
+  },
+  "画板库": {
+    "en": "Boards",
+    "zh-TW": "畫板庫",
+    "ja": "ボード一覧",
+    "ko": "보드 목록",
+    "de": "Zeichenflächen",
+    "fr": "Tableaux",
+    "ru": "Доски"
+  },
+  "思维导图": {
+    "en": "Mind map",
+    "zh-TW": "心智圖",
+    "ja": "マインドマップ",
+    "ko": "마인드맵",
+    "de": "Mindmap",
+    "fr": "Carte mentale",
+    "ru": "Интеллект-карта"
+  },
+  "自由画板": {
+    "en": "Freeform board",
+    "zh-TW": "自由畫板",
+    "ja": "自由形式ボード",
+    "ko": "자유 보드",
+    "de": "Freie Zeichenfläche",
+    "fr": "Tableau libre",
+    "ru": "Свободная доска"
+  },
+  "节点属性": {
+    "en": "Node properties",
+    "zh-TW": "節點屬性",
+    "ja": "ノードのプロパティ",
+    "ko": "노드 속성",
+    "de": "Knoteneigenschaften",
+    "fr": "Propriétés du nœud",
+    "ru": "Свойства узла"
+  },
+  "新建导图": {
+    "en": "New mind map",
+    "zh-TW": "新增心智圖",
+    "ja": "マインドマップを作成",
+    "ko": "새 마인드맵",
+    "de": "Neue Mindmap",
+    "fr": "Nouvelle carte mentale",
+    "ru": "Новая интеллект-карта"
+  },
+  "新建自由画板": {
+    "en": "New freeform board",
+    "zh-TW": "新增自由畫板",
+    "ja": "自由形式ボードを作成",
+    "ko": "새 자유 보드",
+    "de": "Neue freie Zeichenfläche",
+    "fr": "Nouveau tableau libre",
+    "ru": "Новая свободная доска"
+  },
+  "导图画布": {
+    "en": "Mind map canvas",
+    "zh-TW": "心智圖畫布",
+    "ja": "マインドマップのキャンバス",
+    "ko": "마인드맵 캔버스",
+    "de": "Mindmap-Zeichenfläche",
+    "fr": "Zone de la carte mentale",
+    "ru": "Холст интеллект-карты"
+  },
+  "展开主题": {
+    "en": "Expand topic",
+    "zh-TW": "展開主題",
+    "ja": "トピックを展開",
+    "ko": "주제 펼치기",
+    "de": "Thema aufklappen",
+    "fr": "Développer le sujet",
+    "ru": "Развернуть тему"
+  },
+  "折叠主题": {
+    "en": "Collapse topic",
+    "zh-TW": "摺疊主題",
+    "ja": "トピックを折りたたむ",
+    "ko": "주제 접기",
+    "de": "Thema zuklappen",
+    "fr": "Réduire le sujet",
+    "ru": "Свернуть тему"
+  },
+  "主题文字": {
+    "en": "Topic text",
+    "zh-TW": "主題文字",
+    "ja": "トピックのテキスト",
+    "ko": "주제 텍스트",
+    "de": "Thementext",
+    "fr": "Texte du sujet",
+    "ru": "Текст темы"
+  },
+  "子主题": {
+    "en": "Child topic",
+    "zh-TW": "子主題",
+    "ja": "子トピック",
+    "ko": "하위 주제",
+    "de": "Unterthema",
+    "fr": "Sous-sujet",
+    "ru": "Дочерняя тема"
+  },
+  "同级主题": {
+    "en": "Sibling topic",
+    "zh-TW": "同層主題",
+    "ja": "同階層のトピック",
+    "ko": "같은 수준의 주제",
+    "de": "Gleichrangiges Thema",
+    "fr": "Sujet de même niveau",
+    "ru": "Тема того же уровня"
+  },
+  "缩小": {
+    "en": "Zoom out",
+    "zh-TW": "縮小",
+    "ja": "縮小",
+    "ko": "축소",
+    "de": "Verkleinern",
+    "fr": "Réduire",
+    "ru": "Уменьшить"
+  },
+  "放大": {
+    "en": "Zoom in",
+    "zh-TW": "放大",
+    "ja": "拡大",
+    "ko": "확대",
+    "de": "Vergrößern",
+    "fr": "Agrandir",
+    "ru": "Увеличить"
+  },
+  "适应画布": {
+    "en": "Fit to canvas",
+    "zh-TW": "符合畫布",
+    "ja": "全体を表示",
+    "ko": "캔버스에 맞추기",
+    "de": "An Zeichenfläche anpassen",
+    "fr": "Ajuster à la zone",
+    "ru": "Вписать в холст"
+  },
+  "编辑主题": {
+    "en": "Edit topic",
+    "zh-TW": "編輯主題",
+    "ja": "トピックを編集",
+    "ko": "주제 편집",
+    "de": "Thema bearbeiten",
+    "fr": "Modifier le sujet",
+    "ru": "Редактировать тему"
+  },
+  "选择主题后可调整样式。": {
+    "en": "Select a topic to adjust its style.",
+    "zh-TW": "選取主題後可調整樣式。",
+    "ja": "トピックを選択してスタイルを変更できます。",
+    "ko": "주제를 선택하여 스타일을 조정하세요.",
+    "de": "Wählen Sie ein Thema, um den Stil anzupassen.",
+    "fr": "Sélectionnez un sujet pour modifier son style.",
+    "ru": "Выберите тему, чтобы изменить её стиль."
+  },
+  "删除所选主题及其全部子主题？": {
+    "en": "Delete the selected topics and all their descendants?",
+    "zh-TW": "刪除選取的主題及其所有子主題？",
+    "ja": "選択したトピックとそのすべての子トピックを削除しますか？",
+    "ko": "선택한 주제와 모든 하위 주제를 삭제할까요?",
+    "de": "Ausgewählte Themen und alle Unterthemen löschen?",
+    "fr": "Supprimer les sujets sélectionnés et tous leurs descendants ?",
+    "ru": "Удалить выбранные темы и все их дочерние темы?"
+  },
+  "此页无法预览，请检查原文件。": {
+    "en": "This page cannot be previewed. Check the original file.",
+    "zh-TW": "無法預覽此頁，請檢查原始檔案。",
+    "ja": "このページをプレビューできません。元のファイルを確認してください。",
+    "ko": "이 페이지를 미리 볼 수 없습니다. 원본 파일을 확인하세요.",
+    "de": "Diese Seite kann nicht angezeigt werden. Prüfen Sie die Originaldatei.",
+    "fr": "Aperçu indisponible pour cette page. Vérifiez le fichier d’origine.",
+    "ru": "Не удалось показать страницу. Проверьте исходный файл."
+  },
+  "第 {0} 页预览": {
+    "en": "Page {0} preview",
+    "zh-TW": "第 {0} 頁預覽",
+    "ja": "{0} ページのプレビュー",
+    "ko": "{0}페이지 미리보기",
+    "de": "Vorschau von Seite {0}",
+    "fr": "Aperçu de la page {0}",
+    "ru": "Предпросмотр страницы {0}"
+  },
+  "{0} 页": {
+    "en": "{0} pages",
+    "zh-TW": "{0} 頁",
+    "ja": "{0} ページ",
+    "ko": "{0}페이지",
+    "de": "{0} Seiten",
+    "fr": "{0} pages",
+    "ru": "Страниц: {0}"
+  },
+  "文件列表": {
+    "en": "File list",
+    "zh-TW": "檔案清單",
+    "ja": "ファイル一覧",
+    "ko": "파일 목록",
+    "de": "Dateiliste",
+    "fr": "Liste des fichiers",
+    "ru": "Список файлов"
+  },
+  "全选页面": {
+    "en": "Select all pages",
+    "zh-TW": "選取所有頁面",
+    "ja": "すべてのページを選択",
+    "ko": "모든 페이지 선택",
+    "de": "Alle Seiten auswählen",
+    "fr": "Sélectionner toutes les pages",
+    "ru": "Выбрать все страницы"
+  },
+  "旋转": {
+    "en": "Rotate",
+    "zh-TW": "旋轉",
+    "ja": "回転",
+    "ko": "회전",
+    "de": "Drehen",
+    "fr": "Pivoter",
+    "ru": "Повернуть"
+  },
+  "文件": {
+    "en": "Files",
+    "zh-TW": "檔案",
+    "ja": "ファイル",
+    "ko": "파일",
+    "de": "Dateien",
+    "fr": "Fichiers",
+    "ru": "Файлы"
+  },
+  "选择此文件的页面": {
+    "en": "Select pages from this file",
+    "zh-TW": "選取此檔案的頁面",
+    "ja": "このファイルのページを選択",
+    "ko": "이 파일의 페이지 선택",
+    "de": "Seiten dieser Datei auswählen",
+    "fr": "Sélectionner les pages de ce fichier",
+    "ru": "Выбрать страницы этого файла"
+  },
+  "添加 PDF 或图片后开始整理。": {
+    "en": "Add PDFs or images to begin.",
+    "zh-TW": "新增 PDF 或圖片後開始整理。",
+    "ja": "PDF または画像を追加して開始します。",
+    "ko": "PDF 또는 이미지를 추가하여 시작하세요.",
+    "de": "Fügen Sie PDFs oder Bilder hinzu, um zu beginnen.",
+    "fr": "Ajoutez des PDF ou des images pour commencer.",
+    "ru": "Добавьте PDF или изображения, чтобы начать."
+  },
+  "返回页面": {
+    "en": "Back to pages",
+    "zh-TW": "返回頁面",
+    "ja": "ページに戻る",
+    "ko": "페이지로 돌아가기",
+    "de": "Zurück zu den Seiten",
+    "fr": "Revenir aux pages",
+    "ru": "Вернуться к страницам"
+  },
+  "文档页面": {
+    "en": "Document pages",
+    "zh-TW": "文件頁面",
+    "ja": "文書のページ",
+    "ko": "문서 페이지",
+    "de": "Dokumentseiten",
+    "fr": "Pages du document",
+    "ru": "Страницы документа"
+  },
+  "选择第 {0} 页": {
+    "en": "Select page {0}",
+    "zh-TW": "選取第 {0} 頁",
+    "ja": "{0} ページを選択",
+    "ko": "{0}페이지 선택",
+    "de": "Seite {0} auswählen",
+    "fr": "Sélectionner la page {0}",
+    "ru": "Выбрать страницу {0}"
+  },
+  "把 PDF 或图片拖到这里": {
+    "en": "Drop PDFs or images here",
+    "zh-TW": "將 PDF 或圖片拖曳至此",
+    "ja": "ここに PDF または画像をドロップ",
+    "ko": "여기에 PDF 또는 이미지 놓기",
+    "de": "PDFs oder Bilder hier ablegen",
+    "fr": "Déposez des PDF ou des images ici",
+    "ru": "Перетащите PDF или изображения сюда"
+  },
+  "页面预览": {
+    "en": "Page preview",
+    "zh-TW": "頁面預覽",
+    "ja": "ページプレビュー",
+    "ko": "페이지 미리보기",
+    "de": "Seitenvorschau",
+    "fr": "Aperçu de la page",
+    "ru": "Предпросмотр страницы"
+  },
+  "关闭预览": {
+    "en": "Close preview",
+    "zh-TW": "關閉預覽",
+    "ja": "プレビューを閉じる",
+    "ko": "미리보기 닫기",
+    "de": "Vorschau schließen",
+    "fr": "Fermer l’aperçu",
+    "ru": "Закрыть предпросмотр"
+  },
+  "已选 {0}/{1} 页": {
+    "en": "{0}/{1} pages selected",
+    "zh-TW": "已選取 {0}/{1} 頁",
+    "ja": "{0}/{1} ページを選択",
+    "ko": "{0}/{1}페이지 선택됨",
+    "de": "{0}/{1} Seiten ausgewählt",
+    "fr": "{0}/{1} pages sélectionnées",
+    "ru": "Выбрано страниц: {0}/{1}"
+  },
+  "合并为一个 PDF": {
+    "en": "Merge into one PDF",
+    "zh-TW": "合併為一個 PDF",
+    "ja": "1つの PDF に結合",
+    "ko": "하나의 PDF로 병합",
+    "de": "In eine PDF zusammenführen",
+    "fr": "Fusionner en un PDF",
+    "ru": "Объединить в один PDF"
+  },
+  "导出 {0} 页": {
+    "en": "Export {0} pages",
+    "zh-TW": "匯出 {0} 頁",
+    "ja": "{0} ページを書き出す",
+    "ko": "{0}페이지 내보내기",
+    "de": "{0} Seiten exportieren",
+    "fr": "Exporter {0} pages",
+    "ru": "Экспортировать страниц: {0}"
+  },
+  "导图层级无效。": {
+    "en": "The mind map hierarchy is invalid.",
+    "zh-TW": "心智圖階層無效。",
+    "ja": "マインドマップの階層が無効です。",
+    "ko": "마인드맵 계층이 유효하지 않습니다.",
+    "de": "Die Mindmap-Hierarchie ist ungültig.",
+    "fr": "La hiérarchie de la carte mentale est invalide.",
+    "ru": "Недопустимая иерархия интеллект-карты."
+  },
+  "导图需要且只能有一个中心主题。": {
+    "en": "A mind map must have exactly one central topic.",
+    "zh-TW": "心智圖必須且只能有一個中心主題。",
+    "ja": "マインドマップには中心トピックが1つ必要です。",
+    "ko": "마인드맵에는 중심 주제가 하나만 있어야 합니다.",
+    "de": "Eine Mindmap muss genau ein zentrales Thema haben.",
+    "fr": "Une carte mentale doit avoir un seul sujet central.",
+    "ru": "Интеллект-карта должна иметь ровно одну центральную тему."
+  },
+  "不能把主题移入自己的分支。": {
+    "en": "A topic cannot be moved into its own branch.",
+    "zh-TW": "無法將主題移入自己的分支。",
+    "ja": "トピックをその子孫に移動できません。",
+    "ko": "주제를 자신의 하위 분기로 이동할 수 없습니다.",
+    "de": "Ein Thema kann nicht in seinen eigenen Zweig verschoben werden.",
+    "fr": "Un sujet ne peut pas être déplacé dans sa propre branche.",
+    "ru": "Тему нельзя переместить в её собственную ветвь."
+  }
+}

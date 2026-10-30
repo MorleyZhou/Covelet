@@ -2,6 +2,10 @@ OwnTab third-party notices
 
 The application uses the following packaged dependencies and icon assets. Product names and marks belong to their respective owners; their appearance identifies user-managed shortcuts, not endorsement.
 
+The application interface also includes modified shadcn/ui source components and
+their Radix UI, class-variance-authority and clsx dependencies. Their copyright
+and license texts are included in UI_LICENSES.txt alongside this file.
+
 
 react 19.2.0
 MIT License
@@ -133,3 +137,27 @@ Google: https://www.google.com/images/branding/googleg/1x/googleg_standard_color
 DuckDuckGo: https://duckduckgo.com/favicon.ico
 The Bing and DuckDuckGo ICO resources were decoded to PNG without changing the
 brand graphic; no remote image is loaded for these built-in selector marks.
+
+Default navigation brand images
+
+Google, YouTube, GitHub, X, ChatGPT and Grok artwork belongs to its respective
+owner. It identifies the six editable default website links and does not imply
+endorsement or affiliation. These images are not under dependency MIT licenses.
+Unmodified packaged sources (assets/default-sites/):
+Google: https://www.google.com/images/branding/googleg/2x/googleg_standard_color_128dp.png
+YouTube: https://www.youtube.com/s/desktop/2fe123f7/img/favicon_144x144.png
+GitHub: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+X: https://abs.twimg.com/responsive-web/client-web/icon-default-large.9ab12c3ecc9e8133a.png
+ChatGPT: https://cdn.oaistatic.com/assets/apple-touch-icon-mz9nytnj.webp
+Grok: https://grok.com/images/android-chrome-monochrome-512x512.png
+Only these exact icon addresses may seed a missing encrypted image cache from
+the package. Existing cached images and user-selected custom URLs are retained.
+
+Packaged app tools (2026-10-30)
+
+The PDF, formatting, structured-data and Markdown tools additionally use pdf-lib,
+yaml, prettier, sql-formatter, react-markdown and remark-gfm. Their exact installed
+versions, reachable production dependencies and original license/notice texts are
+included in APP_TOOL_LICENSES.txt alongside this file. That file also preserves
+Prettier's bundled THIRD-PARTY-NOTICES.md and installed upstream copyright notices.
+Regenerate it with node scripts/generate-app-notices.mjs after dependency changes.

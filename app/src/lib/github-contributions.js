@@ -1,9 +1,12 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { normalizeGitHubUsername } from './widget-model.js';
 import { canReadSite, requestSiteAccess } from './site-info.js';
+import { createEncryptedStore, localData } from './local-data.js';
+import { subscribeSyncedData } from './use-synced-data.js';
 
 export const GITHUB_ORIGIN = 'https://github.com';
 const CACHE_KEY = 'covelet.github.calendar.v1';
+const calendarCache = createEncryptedStore('preferences');
 const MAX_BYTES = 512 * 1024;
 const TTL = 60 * 60 * 1000;
 const RETRY = 60 * 1000;
@@ -63,33 +66,23 @@ export function parseContributionCalendar(html) {
 }
 
 function cacheStore() {
-  async function call(method, value) {
-    return new Promise((resolve, reject) => {
-      globalThis.chrome.storage.local[method](value, (result) => {
-        if (globalThis.chrome.runtime.lastError) reject(new Error('cache unavailable'));
-        else resolve(result);
-      });
-    });
-  }
   return {
-    async read() {
-      if (globalThis.chrome?.runtime?.id && globalThis.chrome.storage?.local) return (await call('get', CACHE_KEY))[CACHE_KEY] || {};
-      try { return JSON.parse(globalThis.localStorage?.getItem(CACHE_KEY) || '{}'); } catch { return {}; }
-    },
-    async write(value) {
-      if (globalThis.chrome?.runtime?.id && globalThis.chrome.storage?.local) return call('set', { [CACHE_KEY]: value });
-      globalThis.localStorage?.setItem(CACHE_KEY, JSON.stringify(value));
-    },
+    async read() { return (await localData.get(CACHE_KEY))[CACHE_KEY] || {}; },
+    async write(value, options) { await calendarCache.set(CACHE_KEY, value, options); },
   };
 }
+
+export function migrateGitHubCalendarCache() { return localData.get(CACHE_KEY); }
 
 export function createGitHubProvider({ request = (...args) => globalThis.fetch(...args), store = cacheStore(), now = () => Date.now(),
   canRead = () => preview ? Promise.resolve(true) : canReadSite(GITHUB_ORIGIN), isPreview = preview, timeout = 12000 } = {}) {
   const flights = new Map();
-  async function read(username, force) {
+  let revision = 0;
+  async function read(username, force, started) {
     const time = now();
     let records;
     try { records = await store.read(); } catch { records = {}; }
+    if (started !== revision) throw fault(tr("请稍后再刷新。"), 'GITHUB_STALE');
     if (!records || typeof records !== 'object' || Array.isArray(records)) records = {};
     let cached = records[username];
     try {
@@ -104,9 +97,11 @@ export function createGitHubProvider({ request = (...args) => globalThis.fetch(.
     }
     try {
       if (!await canRead()) throw fault(tr("请授权访问 GitHub 后重试。"), 'GITHUB_PERMISSION');
+      if (started !== revision) throw fault(tr("请稍后再刷新。"), 'GITHUB_STALE');
       records[username] = { ...(cached || {}), attemptedAt: time };
       const recent = () => Object.fromEntries(Object.entries(records).sort((a, b) => (b[1]?.attemptedAt || 0) - (a[1]?.attemptedAt || 0)).slice(0, 8));
-      await store.write(recent()).catch(() => {});
+      await store.write(recent(), { shouldWrite: () => started === revision }).catch(() => {});
+      if (started !== revision) throw fault(tr("请稍后再刷新。"), 'GITHUB_STALE');
       const controller = new AbortController();
       let timer;
       const expected = isPreview ? new URL(`/__github/users/${username}/contributions`, globalThis.location?.origin || 'http://localhost').href
@@ -138,8 +133,10 @@ export function createGitHubProvider({ request = (...args) => globalThis.fetch(.
         controller.abort(); reject(fault(tr("GitHub 响应超时，请稍后重试。")));
       }, timeout); })]); } finally { clearTimeout(timer); controller.abort(); }
       const result = { days, fetchedAt: time, attemptedAt: time };
+      if (started !== revision) throw fault(tr("请稍后再刷新。"), 'GITHUB_STALE');
       records[username] = result;
-      await store.write(recent()).catch(() => {});
+      await store.write(recent(), { shouldWrite: () => started === revision }).catch(() => {});
+      if (started !== revision) throw fault(tr("请稍后再刷新。"), 'GITHUB_STALE');
       return { ...result, stale: false };
     } catch (error) {
       const safe = error?.code?.startsWith('GITHUB_') ? error : fault(tr("暂时无法读取 GitHub 贡献，请检查网络后重试。"));
@@ -147,11 +144,15 @@ export function createGitHubProvider({ request = (...args) => globalThis.fetch(.
       throw safe;
     }
   }
-  return { load(input, { force = false } = {}) {
+  return { invalidate() { revision++; flights.clear(); }, load(input, { force = false } = {}) {
     const username = normalizeGitHubUsername(input);
-    if (!flights.has(username)) flights.set(username, read(username, force).finally(() => flights.delete(username)));
+    if (!flights.has(username)) {
+      const work = read(username, force, revision).finally(() => { if (flights.get(username) === work) flights.delete(username); });
+      flights.set(username, work);
+    }
     return flights.get(username);
   } };
 }
 
 export const githubContributions = createGitHubProvider();
+subscribeSyncedData(() => githubContributions.invalidate());

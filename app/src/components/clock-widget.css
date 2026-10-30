@@ -1,9 +1,10 @@
 .clock-widget { container: clock-widget / size; --clock-accent: #f79822; --clock-face: transparent; display: flex; flex-direction: column; gap: 10px; width: 100%; height: 100%; min-width: 0; padding: 14px; border-radius: 24px; background: var(--widget-surface, var(--panel)); color: var(--ink); overflow: hidden; text-align: center; cursor: pointer; touch-action: none; }
-.clock-tools-modal[open] { display: flex; flex-direction: column; width: min(520px, calc(100vw - 32px)); height: min(580px, calc(100dvh - 32px)); max-height: calc(100dvh - 32px); padding: 22px; overflow: hidden; }
+.clock-tools-modal[data-state=open] { display: flex; flex-direction: column; width: min(520px, calc(100vw - 32px)); height: min(580px, calc(100dvh - 32px)); max-height: calc(100dvh - 32px); padding: 22px; overflow: hidden; }
 .clock-tools-modal > .modal-title { flex-shrink: 0; margin-bottom: 16px; }
 .clock-tools { container: clock-widget / size; --clock-accent: #f79822; display: flex; flex-direction: column; flex: 1; gap: 18px; width: 100%; min-width: 0; min-height: 0; color: var(--ink); }
+.clock-tools > .ui-tabs { display: flex; flex-direction: column; flex: 1; gap: 18px; min-height: 0; }
 .clock-modes { flex-shrink: 0; display: flex; justify-content: space-between; gap: 3px; }
-.clock-modes button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex: 1; min-width: 0; min-height: 66px; padding: 6px 3px; border-radius: 12px; color: var(--muted); font-size: 12px; line-height: 1.3; overflow-wrap: anywhere; hyphens: auto; }
+.clock-modes button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex: 1; min-width: 0; min-height: 66px; padding: 6px 3px; border-radius: 12px; color: var(--muted); font-size: 12px; line-height: 1.3; white-space: normal; overflow-wrap: anywhere; hyphens: auto; }
 .clock-modes button > svg { flex-shrink: 0; }
 .clock-modes button > span { max-width: 100%; }
 .clock-modes button[aria-selected=true] { color: var(--clock-accent); background: color-mix(in srgb, var(--clock-accent) 10%, transparent); }
@@ -29,7 +30,7 @@
 .clock-duration input { width: 36px; min-width: 0; padding: 4px 0; background: transparent; border: 0; color: var(--ink); font-size: 23px; text-align: center; font-variant-numeric: tabular-nums; appearance: textfield; }
 .clock-duration input::-webkit-inner-spin-button { appearance: none; }
 .clock-notify { display: flex; align-items: center; gap: 3px; color: var(--muted); }
-.clock-notify input { width: 13px; height: 13px; accent-color: var(--clock-accent); }
+.clock-notify .ui-switch { --accent: var(--clock-accent); }
 .countdown-display { position: relative; display: grid; place-items: center; width: min(100%, 155px); max-height: calc(100% - 45px); aspect-ratio: 1; }
 .countdown-display svg { width: 100%; height: 100%; min-height: 0; }
 .countdown-display circle { fill: none; stroke: color-mix(in srgb, var(--ink) 8%, transparent); stroke-width: 3; }
@@ -74,3 +75,8 @@
   .clock-measure { gap: 7px; }.clock-actions > button { width: 28px; height: 28px; }
   .countdown-display { max-height: calc(100% - 35px); }
 }
+.clock-window-settings { display:flex; justify-content:flex-end; flex-shrink:0; }
+.clock-tools:has(.clock-window-settings) { gap:10px; }
+.clock-tools>.widget-config-form { flex:1; overflow:auto; }
+.clock-tools .widget-config-form>.settings-scroll { overflow:auto; padding:4px 8px; }
+.clock-tools .widget-config-form>.settings-footer { margin-top:20px; padding:0 8px 6px; }

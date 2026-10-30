@@ -38,6 +38,23 @@ function queue(results) {
 }
 const provider = (transport, options = {}, config = profile, credentials = secrets) => createWebdavProvider(config, credentials, { signer, fetcher: transport.fetcher, ...options });
 
+test('统一同步只创建固定协议子目录，父目录仍由用户选择并预先建立', async () => {
+  for (const suffix of ['all-data-v1', 'all-data-v1/blobs']) {
+    const config = { ...profile, prefix: `${profile.prefix}/${suffix}` }, transport = queue([response('', 201)]);
+    await provider(transport, {}, config).ensureToolDirectory();
+    assert.equal(transport.calls[0].method, 'MKCOL');
+    assert.equal(transport.calls[0].url, `${profile.endpoint}${config.prefix}/`);
+  }
+  for (const prefix of ['covelet', 'covelet/arbitrary-child', 'covelet/all-data-v1/other']) {
+    const transport = queue([]);
+    assert.throws(() => provider(transport, {}, { ...profile, prefix }).ensureToolDirectory(), codeIs('CLOUD_INVALID_CONFIG'));
+    assert.equal(transport.calls.length, 0);
+  }
+  const transport = queue([response('', 409)]);
+  await assert.rejects(provider(transport, {}, { ...profile, prefix: 'missing/all-data-v1' }).ensureToolDirectory(), codeIs('CLOUD_NOT_FOUND'));
+  assert.equal(transport.calls.length, 1, 'No recursive parent creation');
+});
+
 test('WebDAV 规范化有路径的 HTTPS endpoint，仅返回公开字段与精确 origin', () => {
   const input = { ...profile, endpoint: 'https://CLOUD.example.test:443/remote.php/dav/files/%E5%BC%A0%E4%B8%89', prefix: '/Cove 保存/', username: secrets.username, appPassword: secrets.appPassword };
   assert.deepEqual(validateWebdavConfig(input), { provider: 'webdav', endpoint: 'https://cloud.example.test/remote.php/dav/files/%E5%BC%A0%E4%B8%89/', prefix: 'Cove 保存' });
@@ -88,6 +105,22 @@ test('空目录必须包含自身 collection；不自动创建目录或把 404 �
   assert.deepEqual(missing.calls.map(call => call.method), ['PROPFIND']);
   const incomplete = queue([response(listing([], { self: false }), 207)]);
   await assert.rejects(provider(incomplete).list(), codeIs('CLOUD_INVALID_RESPONSE'));
+});
+
+test('工具同步可显式创建严格限定的 tools-v1 子目录，不创建父目录且每次请求核对访问', async () => {
+  const toolsProfile = { ...profile, prefix: 'covelet/tools-v1' }, toolsDirectory = `${directory}tools-v1/`;
+  const transport = queue([response('', 201)]); let guards = 0;
+  await provider(transport, { beforeRequest: () => { guards++; } }, toolsProfile).ensureToolDirectory();
+  assert.equal(guards, 1); assert.equal(transport.calls.length, 1); assert.equal(transport.calls[0].method, 'MKCOL'); assert.equal(transport.calls[0].url, toolsDirectory);
+  const missingParent = queue([response('', 409)]);
+  await assert.rejects(provider(missingParent, {}, toolsProfile).ensureToolDirectory(), codeIs('CLOUD_NOT_FOUND'));
+  assert.equal(missingParent.calls.length, 1, 'never create a parent or broaden the selected directory');
+  const ordinary = queue([]); assert.throws(() => provider(ordinary).ensureToolDirectory(), codeIs('CLOUD_INVALID_CONFIG')); assert.equal(ordinary.calls.length, 0);
+  const existing = queue([response('', 405), response(listing([], { base: toolsDirectory }), 207)]);
+  await provider(existing, {}, toolsProfile).ensureToolDirectory(); assert.deepEqual(existing.calls.map((call) => call.method), ['MKCOL', 'PROPFIND']); assert.equal(existing.calls[1].headers.depth, '0');
+  const denied = queue([]);
+  await assert.rejects(provider(denied, { beforeRequest: () => { throw { code: 'CLOUD_LOCKED' }; } }, toolsProfile).ensureToolDirectory(), codeIs('CLOUD_LOCKED'));
+  assert.equal(denied.calls.length, 0);
 });
 
 test('XML 拒绝 DOCTYPE、实体声明、CDATA、未知实体、无效字符和不完整结构', async () => {

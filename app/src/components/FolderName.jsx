@@ -1,5 +1,6 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { useEffect, useId, useRef, useState } from "react";
+import { Input } from './ui/input.jsx';
 
 /** An inline folder title. The caller owns persistence and conflict checks. */
 export default function FolderName({ name, onSave }) {
@@ -76,7 +77,7 @@ export default function FolderName({ name, onSave }) {
 
   return (
     <div className="folder-name-editor">
-      <input
+      <Input unstyled
         ref={inputRef}
         className="folder-name-input"
         aria-label={tr("文件夹名称")}

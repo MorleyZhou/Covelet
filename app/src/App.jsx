@@ -1,7 +1,13 @@
 import { tr, getLocale, builtinName, providerName, formatNumber } from "./i18n/index.js";
 import { useLanguage } from './i18n/react.js';
 import LanguageSettings from './components/LanguageSettings.jsx';
-import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import AppWidget, { AppToolWindow } from './components/apps/AppTools.jsx';
+import { isAppId } from './lib/app-catalog.js';
+import { createContext, useContext, useEffect, useLayoutEffect, useCallback, useMemo, useRef, useState } from "react";
+import { Dialog as UIDialog, DialogContent, DialogTitle } from './components/ui/dialog.jsx';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs.jsx';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator } from './components/ui/dropdown-menu.jsx';
+import './components/ui/ui.css';
 import {
   MagnifyingGlass,
   Globe,
@@ -23,18 +29,22 @@ import {
   PuzzlePiece,
   CornersOut,
   CornersIn,
+  NotePencil,
+  BookOpen,
+  Eye,
+  EyeSlash,
+  LockSimple,
+  CircleNotch,
 } from "@phosphor-icons/react";
 import {
   createEmptyState,
   createInitialState,
   normalizeUrl,
   validateProviderTemplate,
-  searchEntries,
   moveEntry,
   deleteEntry,
   migrateNavigationState,
   parseBookmarks,
-  applyBookmarkImport,
   letterIcon,
   DEFAULT_ICON_BACKGROUND,
   configureWidget,
@@ -49,17 +59,11 @@ import {
   inspectBackup,
   restoreBackup,
   restoreSnapshot,
-  getSyncStatus,
-  subscribeSyncStatus,
-  setSyncEnabled,
-  syncNow,
-  getSyncConflicts,
-  restoreSyncConflict,
 } from "./lib/storage.js";
 import { submitWebSearch } from "./lib/search.js";
 import { createWallpaperProvider } from "./lib/wallpaper.js";
 import { useIconDrag } from "./lib/use-icon-drag.js";
-import { supportsSiteInfo, requestSiteAccess } from "./lib/site-info.js";
+import { canReadSite, supportsSiteInfo } from "./lib/site-info.js";
 import { recognizeSite } from "./lib/site-recognition.js";
 import Select from "./components/Select.jsx";
 import ContextMenu from "./components/ContextMenu.jsx";
@@ -69,34 +73,53 @@ import FolderName from "./components/FolderName.jsx";
 import ProviderIcon from "./components/ProviderIcon.jsx";
 import { readCachedProviderIcon, fetchProviderIconForSave } from "./lib/provider-icons.js";
 import { fallbackSiteName, applyRecognizedSite, iconTextColor } from "./lib/site-form.js";
-import { useWallpaperAppearance, useAdaptedIcon, useVisualRuntimeStatus } from "./lib/use-visual-enhancements.js";
+import { useWallpaperAppearance, useAdaptedIcon } from "./lib/use-visual-enhancements.js";
 import { createAdaptiveAppearance } from "./lib/adaptive-appearance.js";
 import { useNavigationContrast } from "./lib/use-navigation-contrast.js";
 import { VISUAL_SHADE_BACKGROUND } from "./lib/navigation-contrast.js";
 import { colorBackgroundCss } from "./lib/background-colors.js";
 import { startCloudSync } from "./lib/cloud-sync.js";
 import ExtensionCenter from "./components/ExtensionCenter.jsx";
+import CloudSyncSettings from './components/CloudSyncSettings.jsx';
 import GitHubWidget from "./components/GitHubWidget.jsx";
 import DesktopPages from "./components/DesktopPages.jsx";
 import { layoutDesktop } from "./lib/desktop-layout.js";
 import { applyDesktopDrop, deleteDesktopEntries } from "./lib/desktop-edit.js";
 import { useLayoutEdit } from "./lib/use-layout-edit.js";
 import { DesktopEditBar, DesktopScreenManager } from "./components/DesktopEditControls.jsx";
-import { readBrowserFavicon } from "./lib/browser-favicon.js";
 import { createPreferenceSaver } from "./lib/preference-saving.js";
-import { preferredIconAddress, normalizeIconAddress, siteIconAddress, guessIconFit, withDiscoveredIcon } from "./lib/site-icons.js";
+import { preferredIconAddress, normalizeIconAddress, siteIconAddress, guessIconFit, withDiscoveredIcon, navigationIconDisplaySources } from "./lib/site-icons.js";
 import { useIconScheme } from './lib/use-icon-scheme.js';
 import { useNavigationIcon } from './lib/use-navigation-icon.js';
+import { useSyncedDataRevision, subscribeSyncedData } from './lib/use-synced-data.js';
+import { prepareSavedNavigationIcon, retainNavigationIconResources, navigationIcon, getNavigationIconFailure } from './lib/navigation-icon-cache.js';
+import { prepareNavigationIconCache } from './lib/navigation-icon-startup.js';
+import { prepareImportedNavigationIcons, requestNavigationIconAccess } from './lib/navigation-icon-intake.js';
+import { iconFailureMessage } from './lib/icon-feedback.js';
+import NavigationIconStatus from './components/NavigationIconStatus.jsx';
 import IconArtwork from './components/IconArtwork.jsx';
-import { discoverHighResolutionIcon } from "./lib/site-icon-discovery.js";
 import ClockWidget from "./components/ClockWidget.jsx";
-import PersonalWidget from "./components/PersonalTools.jsx";
+import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashDialog } from "./components/PersonalTools.jsx";
+import usePersonalTools from './lib/use-personal-tools.js';
+import { searchCoveletContent } from './lib/content-search.js';
+import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode } from './lib/content-preferences.js';
+import { PresentationContext, privateContentKeys } from './lib/presentation.js';
+import ContentPreferences from './components/ContentPreferences.jsx';
+import PrivacyPasswordDialog, { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
+import BookmarkImport from './components/BookmarkImport.jsx';
+import DesktopTemplates from './components/DesktopTemplates.jsx';
+import RecoveryCenter, { downloadRecoveryFile } from './components/RecoveryCenter.jsx';
+import { recoveryCenter } from './lib/recovery-center.js';
 import { focusDesktopNeighbor } from "./lib/desktop-focus.js";
 import { CLOCK_WIDGET_ID, GITHUB_WIDGET_ID } from "./lib/widget-model.js";
 import { removeClockState } from "./lib/clock-runtime.js";
 import "./owntab.css";
 import { DialogSurface } from './components/DialogSurface.jsx';
 import { MessageDialog } from './components/PromptDialog.jsx';
+import { Button } from './components/ui/button.jsx';
+import { Input } from './components/ui/input.jsx';
+import { Switch } from './components/ui/switch.jsx';
+import { Slider } from './components/ui/slider.jsx';
 
 const uid = () => crypto.randomUUID();
 const DialogError = createContext("");
@@ -104,29 +127,10 @@ const AdaptIcons = createContext(false);
 const demo =
   import.meta.env.DEV && new URLSearchParams(location.search).has("demo");
 const dailyWallpaper = createWallpaperProvider();
-const defaultFaviconWork = new Map();
-
-function useSiteFavicon(entry, enabled = true) {
-  const [cached, setCached] = useState(null);
-  let origin = '';
-  try { if (enabled && entry.type === 'site') origin = new URL(normalizeUrl(entry.url)).origin; } catch { /* An unfinished form has no icon yet. */ }
-  useEffect(() => {
-    if (!origin) return;
-    let active = true, url;
-    if (!defaultFaviconWork.has(origin)) {
-      defaultFaviconWork.set(origin, readBrowserFavicon(origin));
-      if (defaultFaviconWork.size > 128) defaultFaviconWork.delete(defaultFaviconWork.keys().next().value);
-    }
-    defaultFaviconWork.get(origin).then((blob) => {
-      if (!active || !blob) return;
-      url = URL.createObjectURL(blob); setCached({ source: origin, url });
-    }).catch(() => {});
-    return () => { active = false; if (url) URL.revokeObjectURL(url); };
-  }, [origin]);
-  return origin && cached?.source === origin ? cached.url : '';
-}
+subscribeSyncedData(() => dailyWallpaper.invalidate());
 
 function SearchProviderIcon({ provider, epoch, fallback = "globe" }) {
+  const syncRevision = useSyncedDataRevision();
   const [cached, setCached] = useState(null);
   const template = provider?.template;
   useEffect(() => {
@@ -135,43 +139,50 @@ function SearchProviderIcon({ provider, epoch, fallback = "globe" }) {
     if (template) readCachedProviderIcon(template).then((blob) => {
       if (!active || !blob) return;
       url = URL.createObjectURL(blob);
-      setCached({ template, url });
+      setCached({ template, syncRevision, url });
     }).catch(() => {});
     return () => { active = false; if (url) URL.revokeObjectURL(url); };
-  }, [template, epoch]);
-  return <ProviderIcon key={template} provider={provider} src={cached?.template === template ? cached.url : undefined} fallback={fallback} />;
+  }, [template, epoch, syncRevision]);
+  return <ProviderIcon key={template} provider={provider} src={cached?.template === template && cached.syncRevision === syncRevision ? cached.url : undefined} fallback={fallback} />;
 }
 
-function WidgetTile({ item, editing, className, children, ...props }) {
-  return <div {...props} className={`${className} widget-tile widget-size-${item.config.size}`}>
-    <div className="widget-live-content" inert={editing || undefined}>{children}</div><span className="site-name widget-caption">{builtinName(item.extensionId, item.name)}</span>
+function WidgetTile({ item, editing, className, children, presentationHidden = false, ...props }) {
+  const { requestUnlock } = useContext(PresentationContext);
+  return <div {...props} className={`${className} widget-tile widget-size-${item.config.size} ${presentationHidden ? 'presentation-private-widget' : ''}`}>
+    <div key="live" className="widget-live-content" style={presentationHidden ? { display: 'none' } : undefined} aria-hidden={presentationHidden || undefined} inert={editing || presentationHidden || undefined}>{children}</div>
+    {presentationHidden && <Button key="shield" variant="unstyled" size="unstyled" type="button" className="presentation-widget-lock" data-widget-launcher onClick={requestUnlock} aria-haspopup="dialog" aria-label={tr('输入密码查看隐藏内容')} title={tr('输入密码查看隐藏内容')}>
+      <span className="presentation-private-icon" aria-hidden="true"><LockSimple size={26} /></span>
+    </Button>}
+    {(presentationHidden || item.config.size === 'mini' || !(isAppId(item.extensionId) || ['notes', 'read-later'].includes(item.extensionId))) && <span className="site-name widget-caption">{presentationHidden ? tr('已隐藏') : builtinName(item.extensionId, item.name)}</span>}
   </div>;
 }
 
 
 function useAsset(id) {
-  const [asset, setAsset] = useState({ id: null, url: "" });
+  const syncRevision = useSyncedDataRevision();
+  const [asset, setAsset] = useState({ id: null, url: "", phase: 'missing' });
   useEffect(() => {
     let cancelled = false,
       objectUrl;
-    setAsset({ id, url: "" });
+    setAsset({ id, url: "", phase: id ? 'loading' : 'missing' });
     if (id)
       getAssetUrl(id)
         .then((value) => {
           objectUrl = value;
-          if (!cancelled) setAsset({ id, url: value });
+          if (!cancelled) setAsset({ id, url: value, phase: 'ready' });
           else URL.revokeObjectURL(value);
         })
-        .catch(() => {});
+        .catch(() => { if (!cancelled) setAsset({ id, url: '', phase: 'missing' }); });
     return () => {
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [id]);
-  return asset.id === id ? asset.url : "";
+  }, [id, syncRevision]);
+  return asset.id === id ? asset : { id, url: '', phase: id ? 'loading' : 'missing' };
 }
 
 function useDailyWallpaper(enabled) {
+  const syncRevision = useSyncedDataRevision();
   const [result, setResult] = useState(null);
   useEffect(() => {
     if (!enabled) { setResult(null); return; }
@@ -185,11 +196,22 @@ function useDailyWallpaper(enabled) {
           dailyWallpaper.dispose(next);
           return;
         }
+        const unchanged = currentResult && next.source === currentResult.source && (next.source === 'bing'
+          ? next.date === currentResult.date && next.imageUrl === currentResult.imageUrl
+          : next.url === currentResult.url);
+        if (unchanged) {
+          // Returning to a tab often reads the same day's cached image. Keep
+          // its live URL so the existing palette/sample remains valid.
+          if (next.url !== currentResult.url) dailyWallpaper.dispose(next);
+          currentResult = { ...next, url: currentResult.url };
+          setResult(currentResult);
+          return;
+        }
         if (currentResult) dailyWallpaper.dispose(currentResult);
         currentResult = next;
         setResult(next);
       } catch {
-        if (active) setResult({ source: "builtin", message: tr("每日壁纸暂不可用，正在显示内置背景。") });
+        if (active) setResult(currentResult || { source: "builtin", message: tr("每日壁纸暂不可用，正在显示内置背景。") });
       } finally { loading = false; }
     }
     refresh();
@@ -202,40 +224,47 @@ function useDailyWallpaper(enabled) {
       document.removeEventListener("visibilitychange", visible);
       if (currentResult) dailyWallpaper.dispose(currentResult);
     };
-  }, [enabled]);
+  }, [enabled, syncRevision]);
   return result;
 }
-function SiteIcon({ entry, small = false, children = [] }) {
+function SiteIcon({ entry, small = false, children = [], initialAppearance }) {
   const [failedImage, setFailedImage] = useState({ source: "", urls: [] });
-  const [surfaceRef, automaticScheme] = useIconScheme();
+  const [surfaceRef, automaticScheme] = useIconScheme(initialAppearance?.scheme);
   const visualEnabled = useContext(AdaptIcons);
-  const localImage = useAsset(
+  const localAsset = useAsset(
     entry.icon?.kind === "image" ? entry.icon.value : null,
   );
   const variants = entry.icon?.kind === 'image' ? null : entry.iconVariants;
   const paired = Boolean(variants?.light && variants?.dark);
   const scheme = entry.iconBackground ? iconTextColor(entry.iconBackground) === '#fff' ? 'dark' : 'light' : automaticScheme;
   const variant = visualEnabled && paired ? variants[scheme] : null;
-  const address = entry.type === 'site' && entry.icon?.kind !== 'image' ? variant?.url || siteIconAddress(entry) : '';
-  const cachedImage = useNavigationIcon(address, visualEnabled ? scheme : 'light', surfaceRef);
+  const displaySources = navigationIconDisplaySources(entry, scheme, visualEnabled);
+  const address = localAsset.phase === 'missing' ? displaySources.explicitFallback || displaySources.primary : displaySources.primary;
   const source = JSON.stringify([entry.id, entry.url, entry.icon, entry.iconUrl, entry.iconVariants]);
   const failedUrls = failedImage.source === source ? failedImage.urls : [];
-  const nativeImage = useSiteFavicon(entry);
-  const image = [localImage, cachedImage?.url, address, siteIconAddress(entry), nativeImage].find((url) => url && !failedUrls.includes(url)) || '';
-  const themedArtwork = Boolean((variant || cachedImage?.adaptive) && [cachedImage?.url, address].includes(image));
+  const cachedImage = useNavigationIcon(address, visualEnabled ? scheme : 'light', surfaceRef, 0, displaySources.fallback);
+  const localImage = localAsset.url;
+  const image = [localImage, cachedImage?.url].find((url) => url && !failedUrls.includes(url)) || '';
+  const usingVariant = Boolean(variant && cachedImage.source === variant.url);
+  const themedArtwork = Boolean((usingVariant || cachedImage?.adaptive) && cachedImage?.url === image);
   const adapted = useAdaptedIcon(image, visualEnabled && entry.type === "site" && image.startsWith('blob:'));
-  const fullBleed = adapted.fullBleed || (variant?.fit || entry.iconFit) === 'cover' && !cachedImage?.vector;
+  const visualPending = visualEnabled && entry.type === 'site' && image.startsWith('blob:') && adapted.phase === 'processing';
+  const presentation = adapted.phase === 'ready' || !initialAppearance ? adapted : { ...initialAppearance, ...adapted };
+  const fullBleed = presentation.fullBleed || (usingVariant ? variant.fit : entry.iconFit) === 'cover' && !cachedImage?.vector;
   const renderedImage = fullBleed ? image : adapted.url && !failedUrls.includes(adapted.url) ? adapted.url : image;
-  const background = entry.iconBackground || adapted.background || (themedArtwork && scheme === 'dark' ? '#242426' : DEFAULT_ICON_BACKGROUND);
-  const hasImage = renderedImage && !failedUrls.includes(renderedImage);
+  const background = entry.iconBackground || presentation.background || (themedArtwork && scheme === 'dark' ? '#242426' : DEFAULT_ICON_BACKGROUND);
+  const hasImage = renderedImage && !failedUrls.includes(renderedImage) && !visualPending;
+  const imagePending = visualPending || localAsset.phase === 'loading' || cachedImage.phase === 'loading';
   // Adapt the surrounding surface only. Never recolor an actual site image.
   // Full app artwork keeps its own edge color so it does not acquire a second
   // circular/rounded frame when the wallpaper changes.
   const autoSurface = visualEnabled && !small && !entry.iconBackground && (!(hasImage && fullBleed) || themedArtwork);
-  const surfaceTone = hasImage ? themedArtwork ? 'themed' : adapted.surfaceTone || adapted.monochrome || 'mixed' : 'text';
+  const surfaceTone = hasImage ? themedArtwork ? 'themed' : presentation.surfaceTone || presentation.monochrome || 'mixed' : 'text';
   const surfaceProps = autoSurface ? { 'data-icon-surface': surfaceTone,
-    ...(!themedArtwork && adapted.ink ? { 'data-icon-ink': JSON.stringify(adapted.ink) } : {}) } : {};
-  const style = { colorScheme: scheme, backgroundColor: autoSurface ? `var(--navigation-icon-background, ${background})` : background,
+    ...(!themedArtwork && presentation.ink ? { 'data-icon-ink': JSON.stringify(presentation.ink) } : {}) } : {};
+  const style = { ...(autoSurface && initialAppearance ? { '--navigation-icon-background': initialAppearance.background,
+    '--navigation-icon-ink': initialAppearance.foreground } : {}),
+    colorScheme: scheme, backgroundColor: autoSurface ? `var(--navigation-icon-background, ${background})` : background,
     color: autoSurface ? `var(--navigation-icon-ink, ${iconTextColor(background)})` : iconTextColor(background) };
   if (entry.type === "folder")
     return (
@@ -250,89 +279,100 @@ function SiteIcon({ entry, small = false, children = [] }) {
       className={`site-icon ${small ? "small" : ""}`}
       style={style}
     >
-      {hasImage ? (
-        <IconArtwork src={renderedImage} scheme={scheme} className={fullBleed ? 'full-bleed-icon' : adapted.adapted && renderedImage === adapted.url ? "adapted-icon" : undefined}
-          onError={(url) => setFailedImage((current) => ({ source, urls: [...(current.source === source ? current.urls : []), url].slice(-8) }))} />
-      ) : (
+        <IconArtwork src={hasImage ? renderedImage : ''} identity={image} pending={imagePending} scheme={themedArtwork ? scheme : 'light'} className={fullBleed ? 'full-bleed-icon' : adapted.adapted && renderedImage === adapted.url ? "adapted-icon" : undefined}
+          onError={(url) => setFailedImage((current) => ({ source,
+            urls: [...(current.source === source ? current.urls : []), url].slice(-8) }))} />
+      {!hasImage && !imagePending ? (
         <span className="letter-icon">
           {letterIcon(entry.name).value}
         </span>
-      )}
+      ) : null}
     </span>
   );
 }
-function DragArtwork({ entry, entries, snapshot, compact = false }) {
+function DragArtwork({ entry, entries, snapshot, compact = false, hidden = false }) {
   const holder = useRef(null);
-  const scale = snapshot && compact ? Math.min(1, 64 / Math.max(snapshot.width, snapshot.height)) : 1;
+  const widgetSnapshot = entry.type === 'widget' && (!hidden || snapshot?.hidden) ? snapshot : null;
+  const scale = widgetSnapshot && compact ? Math.min(1, 64 / Math.max(widgetSnapshot.width, widgetSnapshot.height)) : 1;
   useLayoutEffect(() => {
-    if (!snapshot || !holder.current) return;
-    snapshot.node.style.transform = `scale(${scale})`;
-    holder.current.replaceChildren(snapshot.node);
-    snapshot.restoreScroll();
-    return () => { snapshot.node.remove(); };
-  }, [snapshot, scale]);
-  return entry.type === 'widget' ? snapshot && <span className="drag-widget-snapshot" ref={holder} aria-hidden="true" style={{ width: snapshot.width * scale, height: snapshot.height * scale }} />
-    : <SiteIcon entry={entry} children={entries.filter((child) => child.parentId === entry.id).sort((a, b) => a.order - b.order)} />;
+    if (!widgetSnapshot || !holder.current) return;
+    widgetSnapshot.node.style.transform = `scale(${scale})`;
+    holder.current.replaceChildren(widgetSnapshot.node);
+    widgetSnapshot.restoreScroll();
+    return () => { widgetSnapshot.node.remove(); };
+  }, [widgetSnapshot, scale]);
+  const shield = <span className="site-icon presentation-private-icon"><LockSimple size={26} /></span>;
+  return entry.type === 'widget' ? widgetSnapshot ? <span className="drag-widget-snapshot" ref={holder} aria-hidden="true" style={{ width: widgetSnapshot.width * scale, height: widgetSnapshot.height * scale }} /> : hidden ? shield : null
+    : hidden ? shield
+    : <SiteIcon entry={entry} initialAppearance={snapshot} children={entries.filter((child) => child.parentId === entry.id).sort((a, b) => a.order - b.order)} />;
 }
 
-function Modal({ title, titleContent, onClose, onBack, backLabel = tr("返回"), closeDisabled = false, children, wide = false, maximizable = false, className = "" }) {
+function Modal({ title, titleContent, onClose, onBack, backLabel = tr("返回"), closeDisabled = false, children, wide = false, maximizable = false, className = "", privacyKeys = [] }) {
   const ref = useRef(null);
+  const presentation = useContext(PresentationContext), shielded = presentation.active && privacyKeys.some((key) => presentation.hiddenKeys.has(key));
   const [maximized, setMaximized] = useState(false), [surface, setSurface] = useState(null);
-  useLayoutEffect(() => { setSurface(ref.current); }, []);
+  const [contentSurface, setContentSurface] = useState(null);
+  const setDialogRef = useCallback((node) => { ref.current = node; setSurface(node); }, []);
   const previousTitle = useRef(null);
   const opener = useRef(document.activeElement);
   const dialogError = useContext(DialogError);
-  useEffect(() => () => { if (opener.current?.isConnected) opener.current.focus({ preventScroll: true }); }, []);
-  useEffect(() => {
-    if (!ref.current.open) ref.current.showModal();
-    const selector = previousTitle.current ? ".modal-title h2" : titleContent ? ".modal-title > .icon-button" : "input:not([type=file]),[role=combobox],textarea,[role=tab][aria-selected=true]";
-    ref.current.querySelector(selector)?.focus();
-    ref.current.querySelector('[data-autofocus]')?.focus();
+  function focusContent() {
+    if (!ref.current || ref.current.querySelector('[role=alertdialog]')) return;
+    const selector = previousTitle.current ? ".modal-title h2" : titleContent ? ".modal-title > .icon-button" : "input:not([type=file]):not([type=hidden]):not([aria-hidden=true]),[role=combobox],textarea,[role=tab][aria-selected=true]";
+    const target = ref.current.querySelector('[data-autofocus]') || ref.current.querySelector(selector) || ref.current.querySelector('button:not(:disabled)') || ref.current;
+    target.focus({ preventScroll: true });
     previousTitle.current = title;
-  }, [title]);
-  const closeButton = <button type="button" className="icon-button" disabled={closeDisabled} onClick={onClose} aria-label={tr("关闭")}><X size={22} /></button>;
+  }
+  useEffect(() => { if (previousTitle.current && previousTitle.current !== title) focusContent(); }, [title]);
+  const closeButton = <Button variant="unstyled" size="unstyled" type="button" className="icon-button" disabled={closeDisabled} onClick={onClose} aria-label={tr("关闭")}><X size={22} /></Button>;
   return (
-    <dialog
-      ref={ref}
-      aria-label={title}
+    <UIDialog open onOpenChange={(open) => { if (!open && !closeDisabled) onClose(); }}>
+    <DialogContent
+      ref={setDialogRef}
+      container={document.querySelector('.owntab') || document.body}
+      aria-label={shielded ? tr('内容已隐藏') : title}
+      aria-describedby={undefined}
       className={`modal ${wide ? "wide" : ""} ${className} ${maximized ? 'is-maximized' : ''}`}
       data-maximized={maximized || undefined}
-      onCancel={(e) => {
-        e.preventDefault();
-        if (!closeDisabled) onClose();
-      }}
-      onClick={(e) => {
-        if (!closeDisabled && e.target === ref.current) {
-          const box = ref.current.getBoundingClientRect();
-          if (
-            e.clientX < box.left ||
-            e.clientX > box.right ||
-            e.clientY < box.top ||
-            e.clientY > box.bottom
-          )
-            onClose();
-        }
-      }}
+      onOpenAutoFocus={(event) => { event.preventDefault(); focusContent(); }}
+      onCloseAutoFocus={(event) => { event.preventDefault(); if (opener.current?.isConnected && !opener.current.matches(':disabled')) opener.current.focus({ preventScroll: true }); }}
+      onEscapeKeyDown={(event) => { if (closeDisabled) event.preventDefault(); }}
+      onInteractOutside={(event) => { if (closeDisabled) event.preventDefault(); }}
+      onKeyDown={(event) => event.stopPropagation()}
+      onContextMenu={(event) => event.stopPropagation()}
     >
       <div className={`modal-title ${titleContent ? "folder-title" : ""}`}>
-        {onBack && <button type="button" className="icon-button" disabled={closeDisabled} onClick={onBack} aria-label={backLabel}><ArrowLeft size={22} /></button>}
+        {onBack && <Button variant="unstyled" size="unstyled" type="button" className="icon-button" disabled={closeDisabled} onClick={onBack} aria-label={backLabel}><ArrowLeft size={22} /></Button>}
         {titleContent && closeButton}
-        {titleContent || <h2 tabIndex={-1}>{title}</h2>}
-        {maximizable && <button type="button" className="icon-button modal-maximize" aria-pressed={maximized}
+        {shielded ? <DialogTitle asChild><h2>{tr('内容已隐藏')}</h2></DialogTitle> : titleContent ? <DialogTitle className="visually-hidden">{title}</DialogTitle> : <DialogTitle asChild><h2 tabIndex={-1}>{title}</h2></DialogTitle>}
+        {titleContent && <div style={{ display: shielded ? 'none' : 'contents' }} inert={shielded || undefined} aria-hidden={shielded || undefined}>{titleContent}</div>}
+        {!shielded && maximizable && <Button variant="unstyled" size="unstyled" type="button" className="icon-button modal-maximize" aria-pressed={maximized}
           aria-label={maximized ? tr('还原窗口') : tr('最大化')} title={maximized ? tr('还原窗口') : tr('最大化')}
-          onClick={() => setMaximized((value) => !value)}>{maximized ? <CornersIn size={20} /> : <CornersOut size={20} />}</button>}
+          onClick={() => setMaximized((value) => !value)}>{maximized ? <CornersIn size={20} /> : <CornersOut size={20} />}</Button>}
         {!titleContent && closeButton}
       </div>
-      <DialogSurface.Provider value={surface}>
-        <MessageDialog message={dialogError} />
-        {children}
+      <DialogSurface.Provider value={contentSurface}>
+        {shielded && <div className="presentation-dialog-shield"><p className="hint">{tr('此内容已隐藏，解锁后可继续编辑，未保存的修改会保留。')}</p>
+          <PrivacyPasswordForm purpose="unlock" disabled={closeDisabled} Heading="h3" /></div>}
+        <div ref={setContentSurface} className="modal-preserved-content" style={{ display: shielded ? 'none' : 'contents' }} inert={shielded || undefined} aria-hidden={shielded || undefined}>
+          <MessageDialog message={dialogError} />{children}
+        </div>
       </DialogSurface.Provider>
-    </dialog>
+    </DialogContent>
+    </UIDialog>
   );
 }
 
 export function App() {
   useLanguage();
+  const { data: personalData, error: personalDataError } = usePersonalTools({ loadCore: false });
+  const { data: contentPreferences, error: contentPreferencesError, ready: contentPreferencesReady } = useContentPreferences();
+  const [privacyBusy, setPrivacyBusy] = useState(false);
+  const [privacyDialog, setPrivacyDialog] = useState(null);
+  const privacyOperation = useRef(false);
+  const [presentationHint, setPresentationHint] = useState('');
+  const engineChoice = useRef(false);
+  const composingSearch = useRef(false);
   useEffect(() => { if (!demo) return startCloudSync(); }, []);
   const [state, setState] = useState(null),
     [folderId, setFolder] = useState(null);
@@ -351,6 +391,13 @@ export function App() {
     [importPlan, setImportPlan] = useState(null),
     [backupPlan, setBackupPlan] = useState(null);
   const [siteInfo, setSiteInfo] = useState({ phase: "idle", message: "" });
+  const [entryIconInfo, setEntryIconInfo] = useState({ phase: 'idle' }), [iconPreview, setIconPreview] = useState(null);
+  const iconOperation = useRef(null);
+  const entryIconPending = ['permission', 'loading'].includes(entryIconInfo.phase);
+  const [entrySaving, setEntrySaving] = useState(false), entrySavePending = useRef(false);
+  const siteInfoPending = ["loading", "permission"].includes(siteInfo.phase);
+  const [iconProgress, setIconProgress] = useState(null);
+  useEffect(() => { setIconProgress(null); }, [modal?.kind]);
   const preferenceState = useRef(state);
   preferenceState.current = state;
   const [activeScreen, setActiveScreen] = useState('0:0'), [draftPage, setDraftPage] = useState(null);
@@ -360,9 +407,35 @@ export function App() {
   const mainRef = useRef(null), wallpaperRef = useRef(null);
   const [providerIconEpoch, setProviderIconEpoch] = useState(0);
   const siteRequest = useRef(0), manualFields = useRef({ name: false }), originalSiteOrigin = useRef(null);
+  useEffect(() => { if (entry && !manualFields.current.icon) setIconPreview(entry); }, [entry]);
+  const siteAccess = useRef({ origin: '', granted: false });
   const inputRef = useRef(null),
+    suggestionsRef = useRef(null),
     bookmarkInput = useRef(null),
     backupInput = useRef(null);
+  useEffect(() => {
+    siteAccess.current = { origin: '', granted: false };
+    if (modal?.kind !== 'entry' || entry?.type !== 'site' || !entry.url || !supportsSiteInfo()) return;
+    let origin;
+    try { origin = new URL(normalizeUrl(entry.url)).origin; } catch { return; }
+    let active = true, check = 0;
+    const refresh = () => {
+      const version = ++check;
+      siteAccess.current = { origin, granted: false };
+      canReadSite(origin).then((granted) => {
+        if (active && check === version) siteAccess.current = { origin, granted };
+      }).catch(() => { /* An unknown grant is checked by Chrome on the explicit click. */ });
+    };
+    const permissions = globalThis.chrome.permissions;
+    refresh();
+    permissions.onAdded?.addListener(refresh);
+    permissions.onRemoved?.addListener(refresh);
+    return () => {
+      active = false;
+      permissions.onAdded?.removeListener(refresh);
+      permissions.onRemoved?.removeListener(refresh);
+    };
+  }, [modal?.kind, entry?.id, entry?.url]);
   useEffect(() => {
     const sequence = ++siteRequest.current;
     if (modal?.kind !== "entry" || entry?.type !== "site" || !entry.url) {
@@ -401,6 +474,29 @@ export function App() {
     },
   });
   const desktopState = layoutEditor.draft || state;
+  const presentation = contentPreferences.presentation;
+  const hiddenKeys = useMemo(() => privateContentKeys(state, contentPreferences), [state, contentPreferences]);
+  const privacyKey = presentation ? `hidden:${[...hiddenKeys].sort().join('\n')}` : 'public';
+  const requestPrivacyUnlock = useCallback(() => setPrivacyDialog('unlock'), []);
+  const presentationContext = useMemo(() => ({ active: presentation, hiddenKeys, requestUnlock: requestPrivacyUnlock }), [presentation, hiddenKeys, requestPrivacyUnlock]);
+  const privateEntryIds = useMemo(() => (state?.entries || []).filter((item) => hiddenKeys.has(`${item.type}:${item.id}`)).map((item) => item.id), [state, hiddenKeys]);
+  useEffect(() => {
+    setPresentationHint('');
+    stopLayoutPress(); cancelDrag();
+    if (!presentation) { setPrivacyDialog((value) => value === 'unlock' ? null : value); return; }
+    setContext((current) => current?.item && hiddenKeys.has(`${current.item.type}:${current.item.id}`) ? null : current);
+    layoutEditor.setSelectedIds((ids) => ids.filter((id) => !privateEntryIds.includes(id)));
+  }, [presentation, privacyKey]);
+  async function togglePresentation() {
+    if (privacyOperation.current) return;
+    if (presentation) { requestPrivacyUnlock(); return; }
+    privacyOperation.current = true; setPrivacyBusy(true); setPresentationHint('');
+    try { await setPresentationMode(true); }
+    catch (reason) {
+      if (reason.code === 'PRIVACY_SETUP_REQUIRED') setPrivacyDialog('setup');
+      else setPresentationHint(reason.message || tr('无法切换隐藏状态，请重试。'));
+    } finally { privacyOperation.current = false; setPrivacyBusy(false); }
+  }
   useEffect(() => {
     if (['clock', 'personal-tool'].includes(modal?.kind) && state && !state.entries.some((item) => item.id === modal.id && item.type === 'widget' && !item.detached)) setModal(null);
   }, [state, modal?.kind, modal?.id]);
@@ -410,10 +506,12 @@ export function App() {
     return () => window.removeEventListener('covelet-clock-alert', alert);
   }, []);
   useEffect(() => {
-    let mounted = true;
+    let mounted = true, initial = true;
     (demo ? Promise.resolve(createInitialState()) : loadState())
-      .then((value) => {
-        if (mounted) {
+      .then(async (value) => {
+        if (!mounted || !initial) return;
+        await prepareNavigationIconCache(value);
+        if (mounted && initial) {
           setState(value);
         }
       })
@@ -424,6 +522,7 @@ export function App() {
       ? () => {}
       : subscribeState((value) => {
           if (!mounted) return;
+          initial = false;
           setState(value);
           setFolder((id) =>
             value.entries.some((e) => e.id === id) ? id : null,
@@ -444,27 +543,6 @@ export function App() {
     window.addEventListener('blur', cancel); window.addEventListener('pointerup', cancel);
     return () => { cancel(); window.removeEventListener('blur', cancel); window.removeEventListener('pointerup', cancel); };
   }, []);
-  useEffect(() => {
-    if (!context && !engineMenu) return;
-    const dismiss = (e) => {
-      if (!e.target.closest("[data-popover]")) {
-        setContext(null);
-        setEngineMenu(false);
-      }
-    };
-    document.addEventListener("pointerdown", dismiss);
-    const escape = (event) => {
-      if (event.key === "Escape" && !event.defaultPrevented) {
-        setContext(null);
-        setEngineMenu(false);
-      }
-    };
-    document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("pointerdown", dismiss);
-      document.removeEventListener("keydown", escape);
-    };
-  }, [context, engineMenu]);
   useEffect(() => {
     if (!state) return;
     if (
@@ -488,8 +566,18 @@ export function App() {
   const wallpaperAppearance = useWallpaperAppearance(imageUrl, visualEnabled);
   const adaptive = visualEnabled && wallpaperAppearance.phase === "ready"
     ? createAdaptiveAppearance(wallpaperAppearance.palette, settings.shade) : null;
-  const candidates =
-    state && query.trim() ? searchEntries(state, query).slice(0, 6) : [];
+  const candidates = useMemo(() => state && query.trim()
+    ? searchCoveletContent(state, personalData, query, { aliases: contentPreferences.aliases, hiddenKeys: presentation ? hiddenKeys : [], limit: 24 }) : [],
+  [state, personalData, query, contentPreferences, presentation, hiddenKeys]);
+  useEffect(() => { setCandidate((value) => Math.min(value, candidates.length - 1)); }, [candidates.length]);
+  useLayoutEffect(() => {
+    const list = suggestionsRef.current, option = list?.children[candidate];
+    if (!focused || !option) return;
+    // Keep keyboard selection visible without scrolling the desktop behind it.
+    const bounds = list.getBoundingClientRect(), selected = option.getBoundingClientRect();
+    if (selected.top < bounds.top + 8) list.scrollTop += selected.top - bounds.top - 8;
+    else if (selected.bottom > bounds.bottom - 8) list.scrollTop += selected.bottom - bounds.bottom + 8;
+  }, [candidate, focused, query, state?.revision, personalData?.revision]);
   const currentFolder = state?.entries.find((item) => item.id === folderId);
   const selectedProvider = state?.providers.find((item) => item.id === provider);
   const items =
@@ -498,6 +586,8 @@ export function App() {
       .sort((a, b) => a.order - b.order) ?? [];
   const { drag, tileProps, cancelDrag } = useIconDrag({ state: desktopState, page: Number(activeScreen.split(':')[0]), screenKey: activeScreen,
     editing: layoutEditor.editing, selectedIds: layoutEditor.selectedIds, onSelect: layoutEditor.setSelectedIds,
+    hiddenIds: presentation ? privateEntryIds : [],
+    privacyKey,
     onCancel: (message) => notify(message, "error"),
     onPageHover: (target) => {
       if (target.create) layoutEditor.addPage(target.page);
@@ -546,7 +636,7 @@ export function App() {
   }
   function requestLayoutDelete(ids) {
     if (!layoutEditor.editing || layoutEditor.saving || layoutEditor.conflict || !ids.length || modal?.kind === 'layout-delete') return;
-    const selected = desktopState.entries.filter((item) => ids.includes(item.id) && item.parentId === null && !item.detached);
+    const selected = desktopState.entries.filter((item) => ids.includes(item.id) && item.parentId === null && !item.detached && (!presentation || !hiddenKeys.has(`${item.type}:${item.id}`)));
     if (!selected.length) return;
     const children = desktopState.entries.filter((item) => selected.some((root) => root.type === 'folder' && root.id === item.parentId));
     cancelDrag(); setContext(null);
@@ -578,13 +668,36 @@ export function App() {
       return null;
     }
   }
-  function openClock(item) {
+  async function commitImportedNavigation(next, addedIds, expected, message) {
+    const imported = { entries: next.entries.filter((item) => addedIds.has(item.id)) };
+    const release = retainNavigationIconResources(imported);
+    try {
+      const icons = await prepareImportedNavigationIcons(imported, {
+        onIconProgress: setIconProgress, isCurrent: () => preferenceState.current.revision === expected,
+      });
+      if (icons.cancelled) throw Error(tr('数据已更新，已停止本次图标补齐，请重试。'));
+      const preferences = await loadContentPreferences();
+      if (preferences.presentation && imported.entries.some((item) => item.parentId && preferences.privateKeys.includes(`folder:${item.parentId}`))) throw Error(tr('请先输入密码解除隐藏。'));
+      const saved = await commit(next, message, expected);
+      if (saved && icons.failed) notify(tr('部分图标无法读取，可在备份与恢复中心授权图片网站后重试，或编辑网址后重新获取。'), 'error');
+      return saved;
+    } finally { release(); }
+  }
+  function openClock(item, initialContext) {
+    if (presentation && hiddenKeys.has(`widget:${item.id}`)) { requestPrivacyUnlock(); return; }
     if (layoutEditor.editing || modal || drag) return;
     stopLayoutPress(); cancelDrag(); setContext(null); setEngineMenu(false); setQuery(''); setFocused(false);
-    setModal({ kind: item.extensionId === CLOCK_WIDGET_ID ? 'clock' : 'personal-tool', id: item.id });
+    setModal(isAppId(item.extensionId) ? { kind: 'app-tool', appId: item.extensionId, id: item.id, initialContext } : { kind: item.extensionId === CLOCK_WIDGET_ID ? 'clock' : item.extensionId === GITHUB_WIDGET_ID ? 'github-tool' : 'personal-tool', id: item.id });
+  }
+  function openAppTool(appId, initialContext) {
+    if (!isAppId(appId)) return;
+    const widget = state.entries.find((item) => item.type === 'widget' && item.extensionId === appId);
+    if (widget && presentation && hiddenKeys.has(`widget:${widget.id}`)) { requestPrivacyUnlock(); return; }
+    setModal({ kind: 'app-tool', appId, id: widget?.id, initialContext });
   }
   function openEntry(item) {
-    if (item.type === 'widget' && [CLOCK_WIDGET_ID, 'notes', 'read-later'].includes(item.extensionId)) {
+    if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
+    if (item.type === 'widget' && ([CLOCK_WIDGET_ID, GITHUB_WIDGET_ID, 'notes', 'read-later'].includes(item.extensionId) || isAppId(item.extensionId))) {
       revealDesktopEntry(state, item.id); openClock(item); return;
     }
     if (item.type === "folder") {
@@ -596,7 +709,14 @@ export function App() {
       window.open(item.url, "_blank", "noopener,noreferrer");
     else location.assign(item.url);
   }
+  function openContent(item) {
+    if (['site', 'folder'].includes(item.type)) { openEntry(item.entry); return; }
+    if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
+    setQuery(''); setFocused(false); setCandidate(-1); setFolder(null); setContext(null);
+    setModal({ kind: 'personal-content', type: item.type, recordId: item.id });
+  }
   async function saveFolderName(name, originalName) {
+    if (presentation && hiddenKeys.has(`folder:${folderId}`)) throw Error(tr('请先输入密码解除隐藏。'));
     const folder = state.entries.find((item) => item.id === folderId && item.type === "folder");
     if (!folder) throw Error(tr("文件夹已被移除。"));
     if (folder.name !== originalName) throw Error(tr("文件夹名称已在其他页面更新，请重新编辑。"));
@@ -607,8 +727,9 @@ export function App() {
   }
   async function submit(e) {
     e.preventDefault();
+    if (composingSearch.current || e.nativeEvent.isComposing) return;
     if (candidate >= 0 && candidates[candidate]) {
-      openEntry(candidates[candidate]);
+      openContent(candidates[candidate]);
       return;
     }
     if (!query.trim()) return;
@@ -632,6 +753,7 @@ export function App() {
     }
   }
   function newEntry() {
+    setIconPreview(null); setEntryIconInfo({ phase: 'idle' }); iconOperation.current?.abort();
     setEntry({
       id: uid(),
       type: "site",
@@ -651,12 +773,14 @@ export function App() {
     setSiteInfo({ phase: "idle", message: "" });
   }
   function editEntry(item) {
+    if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
     if (item.type === 'widget') {
       setContext(null); setError('');
       setModal({ kind: 'extensions', initialExtension: item.extensionId, editingId: item.id });
       return;
     }
     setEntry(structuredClone(item));
+    setIconPreview(structuredClone(item)); setEntryIconInfo({ phase: 'idle' }); iconOperation.current?.abort();
     setModal({ kind: "entry", revision: state.revision, isNew: false });
     setContext(null);
     setError("");
@@ -666,11 +790,13 @@ export function App() {
     setSiteInfo({ phase: "idle", message: "" });
   }
   function closeEntry() {
+    if (entrySavePending.current) return;
     siteRequest.current++;
+    iconOperation.current?.abort();
     setModal(null);
     setEntry(null);
   }
-  async function useWidget(config, original, extensionId = original?.extensionId || GITHUB_WIDGET_ID) {
+  async function useWidget(config, original, extensionId = original?.extensionId || GITHUB_WIDGET_ID, { close = true } = {}) {
     const latest = demo ? preferenceState.current : await loadState();
     const existing = latest.entries.find((item) => item.id === original?.id);
     if (original && (!existing || Boolean(existing.detached) !== Boolean(original.detached) || JSON.stringify(existing.config) !== JSON.stringify(original.config))) throw new Error(tr("组件已在其他页面修改或移除，请重新打开扩展。"));
@@ -678,13 +804,23 @@ export function App() {
     const next = configureWidget(latest, extensionId, config, original?.id, { page: desktopScreen.current.page });
     const saved = await commit(next, undefined, latest.revision);
     if (!saved) throw new Error(tr("组件未保存，请重试。"));
-    setModal(null);
+    if (close) setModal(null);
     const widget = saved.entries.find((item) => original ? item.id === original.id : item.type === 'widget' && item.extensionId === extensionId);
     revealDesktopEntry(saved, widget.id);
     setDraftPage(null);
-    requestAnimationFrame(() => document.getElementById(`widget-title-${widget.id}`)?.focus({ preventScroll: true }));
+    if (close) requestAnimationFrame(() => document.getElementById(`widget-title-${widget.id}`)?.focus({ preventScroll: true }));
+  }
+  async function detachWidget(original) {
+    const latest = demo ? preferenceState.current : await loadState(), current = latest.entries.find((item) => item.id === original.id);
+    if (!current || current.type !== 'widget' || JSON.stringify(current) !== JSON.stringify(original)) throw Error(tr('组件已在其他页面修改或移除，请重新打开扩展。'));
+    if (presentation && hiddenKeys.has(`widget:${current.id}`)) { requestPrivacyUnlock(); return; }
+    const entries = latest.entries.map((item) => { if (item.id !== current.id) return item; const next = { ...item, detached: true }; delete next.position; return next; });
+    const saved = await commit({ ...latest, entries }, undefined, latest.revision);
+    if (!saved) throw Error(tr('组件未保存，请重试。'));
+    setUndo({ before: latest, revision: saved.revision }); setModal(null);
   }
   async function removeEntry(item) {
+    if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
     const before = state,
       saved = await commit(deleteEntry(state, item.id), tr("已删除"));
     if (saved) {
@@ -704,15 +840,15 @@ export function App() {
     );
     if (saved) { setUndo(null); setNotice(null); }
   }
-  async function fillSiteInfo(url, entryId, sequence, explicit = false) {
+  async function fillSiteInfo(url, entryId, sequence, explicit = false, iconOptions = {}) {
     if (siteRequest.current !== sequence) return;
-    const origin = new URL(normalizeUrl(url)).origin;
-    setSiteInfo({ phase: "loading", message: explicit ? tr("正在获取名称…") : "" });
+    setSiteInfo({ phase: "loading", message: "" });
     try {
-      const info = await recognizeSite(url);
+      const origin = new URL(normalizeUrl(url)).origin;
+      const info = await recognizeSite(url, iconOptions);
       if (siteRequest.current !== sequence) return;
       let icon;
-      if (info.highResolution && info.iconUrl) icon = { kind: 'url', value: info.iconUrl };
+      if (info.iconAvailable && info.iconUrl || info.highResolution && info.iconUrl) icon = { kind: 'url', value: info.iconUrl };
       else if (info.icon) {
         try {
           const id = await putImage(info.icon, "icon");
@@ -722,51 +858,73 @@ export function App() {
       }
       setEntry((value) => {
         if (siteRequest.current !== sequence || value?.id !== entryId) return value;
-        const next = applyRecognizedSite(value, { title: info.title, icon }, { entryId, origin, preserveName: manualFields.current.name, preserveIcon: true });
-        return info.iconUrl && !manualFields.current.icon ? withDiscoveredIcon(next, { url: info.iconUrl, fit: info.iconFit, variants: info.iconVariants }) : next;
+        const next = applyRecognizedSite(value, {
+          title: info.nameFound ? info.title : undefined,
+          icon: manualFields.current.icon && !iconOptions.iconUrl ? undefined : icon,
+        }, { entryId, origin, preserveName: manualFields.current.name, preserveIcon: true });
+        return info.iconUrl && (!manualFields.current.icon || iconOptions.iconUrl) ? withDiscoveredIcon(next, { url: info.iconUrl, fit: info.iconFit, variants: info.iconVariants }) : next;
       });
-      const missingName = explicit && info.title === fallbackSiteName(url);
-      setSiteInfo({ phase: missingName ? "error" : "ready", message: missingName ? tr("未获取到名称，请手动填写。") : "", hasAccess: info.hasAccess });
-    } catch (err) {
+      const errors = explicit ? [
+        !info.nameFound && !entry?.name.trim() && !manualFields.current.name && "未获取到名称，请手动填写。",
+        !icon && !info.iconUrl && iconFailureMessage(info.iconError),
+      ].filter(Boolean) : [];
+      setSiteInfo({ phase: errors.length ? "error" : "ready", message: "", errors, hasAccess: info.hasAccess });
+      if (iconOptions.iconUrl && icon && info.iconUrl) {
+        setIconPreview((current) => withDiscoveredIcon({ ...(current || entry), icon }, { url: info.iconUrl, fit: info.iconFit, variants: info.iconVariants }));
+        setEntryIconInfo({ phase: 'ready', source: info.iconUrl });
+      }
+    } catch {
       if (siteRequest.current === sequence) {
-        setSiteInfo({ phase: "error", message: explicit ? tr("获取名称失败，请重试或手动填写。") : "" });
+        setSiteInfo({ phase: "error", message: "", errors: explicit ? [
+          !entry?.name.trim() && !manualFields.current.name && "未获取到名称，请手动填写。",
+          iconFailureMessage(null),
+        ].filter(Boolean) : [] });
       }
     }
   }
-  function authorizeSiteInfo() {
+  function getSiteInfo() {
+    if (!entry?.url || siteInfoPending || entryIconPending) return;
     let access;
     const sequence = ++siteRequest.current, entryId = entry.id, url = entry.url;
+    iconOperation.current?.abort(); const controller = new AbortController(); iconOperation.current = controller;
     try {
-      // Invoke the browser permission request immediately in this click gesture.
-      access = siteInfo.hasAccess ? Promise.resolve(true) : requestSiteAccess(url);
-    } catch (err) { setSiteInfo({ phase: "error", message: err.message }); return; }
-    setSiteInfo({ phase: "permission", message: tr("请允许读取此网站以获取名称。") });
-    Promise.resolve(access).then((allowed) => {
+      const source = entry.iconUrl || siteIconAddress(entry);
+      access = !supportsSiteInfo() ? undefined : requestNavigationIconAccess([{ source: url }, ...(source ? [{ source }] : [])]);
+    } catch { /* Name access must not block independent icon discovery. */ }
+    setSiteInfo({ phase: access ? "permission" : "loading", message: "" });
+    Promise.resolve(access).catch(() => false).then(() => {
       if (siteRequest.current !== sequence) return;
-      if (allowed) fillSiteInfo(url, entryId, sequence, true);
-      else {
-        setSiteInfo({ phase: "access", message: tr("未获得读取权限，请手动填写名称。") });
-      }
-    }).catch((err) => { if (siteRequest.current === sequence) setSiteInfo({ phase: "error", message: err.message }); });
+      // Denied page access can still yield a public image or browser-cache icon.
+      return fillSiteInfo(url, entryId, sequence, true, { iconUrl: entry.iconUrl || siteIconAddress(entry), forceIcon: true, signal: controller.signal });
+    });
   }
-  function findHdIcon() {
-    const url = entry.url, entryId = entry.id, sequence = ++siteRequest.current;
-    let permission;
-    try { permission = requestSiteAccess(url); }
-    catch (reason) { setSiteInfo({ phase: 'error', message: reason.message }); return; }
-    setSiteInfo({ phase: 'loading', message: '' });
-    Promise.resolve(permission).then(async (allowed) => {
-      if (!allowed) throw Error(tr("未获得读取权限，已保留原图。"));
-      const result = await discoverHighResolutionIcon(url);
+  function getEntryIcon() {
+    if (!entry || entryIconPending || siteInfoPending || entrySaving) return;
+    let source;
+    try { source = normalizeIconAddress(entry.iconUrl || siteIconAddress(entry)); }
+    catch (reason) { setEntryIconInfo({ phase: 'error', message: reason.message }); return; }
+    const sequence = ++siteRequest.current, id = entry.id;
+    iconOperation.current?.abort(); const controller = new AbortController(); iconOperation.current = controller;
+    const authorization = requestNavigationIconAccess([{ source }]);
+    setEntryIconInfo({ phase: 'permission', source }); setSiteInfo({ phase: 'idle', message: '' });
+    Promise.resolve(authorization).catch(() => false).then(async () => {
       if (sequence !== siteRequest.current) return;
+      setEntryIconInfo({ phase: 'loading', source });
+      const item = await navigationIcon(source, { force: true, signal: controller.signal });
+      if (sequence !== siteRequest.current) return;
+      if (!item) { setEntryIconInfo({ phase: 'error', source, message: iconFailureMessage(getNavigationIconFailure(source)) }); return; }
+      const next = withDiscoveredIcon({ ...entry, icon: { kind: 'url', value: source } }, { url: source, fit: guessIconFit(source) });
       manualFields.current.icon = true;
-      setEntry((value) => value?.id === entryId ? withDiscoveredIcon({ ...value, icon: { kind: 'url', value: result.url } }, result) : value);
-      setSiteInfo({ phase: 'ready', message: '', hasAccess: true });
-    }).catch((reason) => { if (sequence === siteRequest.current) setSiteInfo({ phase: 'error', message: reason.message }); });
+      setEntry((current) => current?.id === id ? withDiscoveredIcon({ ...current, icon: next.icon }, { url: source, fit: next.iconFit }) : current);
+      setIconPreview(next); setEntryIconInfo({ phase: 'ready', source });
+    }).catch(() => { if (sequence === siteRequest.current) setEntryIconInfo({ phase: 'error', source, message: iconFailureMessage(getNavigationIconFailure(source)) }); });
   }
   async function saveEntry(e) {
     e.preventDefault();
+    if (entrySavePending.current || entryIconPending || siteInfoPending || e.nativeEvent?.isComposing) return;
+    entrySavePending.current = true; setEntrySaving(true);
     siteRequest.current++;
+    setSiteInfo({ phase: "idle", message: "" });
     try {
       const value = { ...entry, name: entry.name.trim() };
       if (value.type === "site") {
@@ -779,6 +937,16 @@ export function App() {
       }
       if (value.icon.kind === "letter")
         value.icon = letterIcon(value.name);
+      const previous = state.entries.find((item) => item.id === value.id);
+      if (manualFields.current.icon && value.type === 'site' && value.icon?.kind !== 'image') {
+        await requestNavigationIconAccess([{ source: siteIconAddress(value) }]);
+      }
+      const iconsReady = await prepareSavedNavigationIcon(value, previous, { iconEdited: Boolean(manualFields.current.icon) });
+      if (!iconsReady && (previous || manualFields.current.icon)) throw Error(iconFailureMessage(getNavigationIconFailure(siteIconAddress(value))));
+      if (!demo) {
+        const preferences = await loadContentPreferences();
+        if (preferences.presentation && privateContentKeys(state, preferences).has(`${value.type}:${value.id}`)) throw Error(tr('请先输入密码解除隐藏。'));
+      }
       let next = {
         ...state,
         entries: modal.isNew
@@ -790,6 +958,7 @@ export function App() {
       }
       const saved = await commit(next, undefined, modal.revision);
       if (saved) {
+        if (!iconsReady) notify(iconFailureMessage(getNavigationIconFailure(siteIconAddress(value))), 'error');
         revealDesktopEntry(saved, value.id);
         setDraftPage(null);
         setModal(null);
@@ -797,7 +966,7 @@ export function App() {
       }
     } catch (e) {
       setError(e.message);
-    }
+    } finally { entrySavePending.current = false; setEntrySaving(false); }
   }
   async function readBookmarks(e) {
     const file = e.target.files?.[0];
@@ -806,14 +975,6 @@ export function App() {
     try {
       if (file.size > 5 * 1024 * 1024) throw Error(tr("书签文件不能超过 5 MB"));
       const plan = parseBookmarks(await file.text());
-      const preview = applyBookmarkImport(state, plan);
-      plan.addedSites =
-        preview.entries.filter((item) => item.type === "site").length -
-        state.entries.filter((item) => item.type === "site").length;
-      plan.addedFolders =
-        preview.entries.filter((item) => item.type === "folder").length -
-        state.entries.filter((item) => item.type === "folder").length;
-      plan.skippedDuplicates = plan.sites.length - plan.addedSites;
       setImportPlan(plan);
       setModal({ kind: "bookmarks", revision: state.revision });
     } catch (e) {
@@ -835,16 +996,11 @@ export function App() {
     }
   }
   async function download(currentState) {
+    if (demo) return;
     setBusy(true);
     try {
-      const blob = await exportBackup(currentState || preferenceState.current),
-        url = URL.createObjectURL(blob),
-        a = document.createElement("a");
-      a.href = url;
-      a.download = "Covelet-backup.zip";
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      notify(tr("完整备份已导出"));
+      const blob = await recoveryCenter.exportCompleteBackup();
+      downloadRecoveryFile(blob, 'Covelet-complete-backup.json');
     } catch (e) {
       notify(e.message, "error");
     } finally {
@@ -854,11 +1010,19 @@ export function App() {
   function renderTiles(list, placements) {
     return list.map((item) => {
       const target = drag?.target?.id === item.id ? drag.target : null;
-      const children = desktopState.entries.filter((entry) => entry.parentId === item.id).sort((a, b) => a.order - b.order);
-      const editing = layoutEditor.editing && item.parentId === null, selected = editing && layoutEditor.selectedIds.includes(item.id);
+      const children = desktopState.entries.filter((entry) => entry.parentId === item.id && (!presentation || !hiddenKeys.has(`site:${entry.id}`))).sort((a, b) => a.order - b.order);
+      const editing = layoutEditor.editing && item.parentId === null && (!presentation || !hiddenKeys.has(`${item.type}:${item.id}`)), selected = editing && layoutEditor.selectedIds.includes(item.id);
       const Tile = item.type === 'widget' ? WidgetTile : 'div';
       const placement = placements?.get(item.id);
-      return <Tile key={item.id} {...(item.type === 'widget' ? { item, editing } : {})}
+      if (presentation && item.type !== 'widget' && hiddenKeys.has(`${item.type}:${item.id}`)) return <div key={item.id} className={`site-tile presentation-private-tile ${drag?.ids.includes(item.id) ? 'dragging' : ''}`}
+        {...tileProps(item)}
+        onContextMenu={(event) => event.preventDefault()}
+        data-grid-row={placement ? placement.row - 1 : undefined} data-grid-column={placement ? placement.column - 1 : undefined}
+        style={placement ? { gridColumn: `${placement.column} / span ${placement.columns}`, gridRow: `${placement.row} / span ${placement.rows}` } : undefined}>
+        <Button variant="unstyled" size="unstyled" type="button" className="site-link" onClick={requestPrivacyUnlock} aria-haspopup="dialog" aria-label={tr('输入密码查看隐藏内容')} title={tr('输入密码查看隐藏内容')}>
+          <span className="site-icon presentation-private-icon" aria-hidden="true"><LockSimple size={26} /></span><span className="site-name">{tr('已隐藏')}</span>
+        </Button></div>;
+      return <Tile key={item.id} {...(item.type === 'widget' ? { item, editing, presentationHidden: presentation && hiddenKeys.has(`widget:${item.id}`) } : {})}
         role={editing ? 'button' : undefined} tabIndex={editing ? 0 : undefined} aria-label={editing ? builtinName(item.extensionId, item.name) : undefined} aria-pressed={editing ? selected : undefined}
         data-grid-row={placement ? placement.row - 1 : undefined} data-grid-column={placement ? placement.column - 1 : undefined}
         style={placement ? { gridColumn: `${placement.column} / span ${placement.columns}`, gridRow: `${placement.row} / span ${placement.rows}` } : undefined}
@@ -866,15 +1030,17 @@ export function App() {
         {...tileProps(item)}
         onContextMenu={(event) => {
           event.preventDefault();
+          if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) return;
           if (drag) return;
           const source = editing ? event.currentTarget : event.currentTarget.querySelector('.site-link, [id^="widget-title-"]');
           const box = source.getBoundingClientRect();
           setContext({ kind: editing ? 'layout' : "entry", item, source, x: event.clientX || box.left, y: event.clientY || box.bottom });
         }}
         onKeyDown={(event) => {
+          if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) return;
           if (editing && !drag && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a' && !event.altKey) {
             event.preventDefault(); event.stopPropagation();
-            layoutEditor.setSelectedIds([...new Set([...layoutEditor.selectedIds, ...list.filter((entry) => entry.parentId === null && !entry.detached).map((entry) => entry.id)])]);
+            layoutEditor.setSelectedIds([...new Set([...layoutEditor.selectedIds, ...list.filter((entry) => entry.parentId === null && !entry.detached && (!presentation || !hiddenKeys.has(`${entry.type}:${entry.id}`))).map((entry) => entry.id)])]);
             return;
           }
           if (editing && !drag && !event.ctrlKey && !event.metaKey && !event.altKey && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
@@ -894,22 +1060,24 @@ export function App() {
           setContext({ kind: editing ? 'layout' : "entry", item, source, keyboard: true, x: box.left, y: box.bottom + 6 });
         }}>
         {item.type === 'widget' ? item.extensionId === CLOCK_WIDGET_ID
-          ? <ClockWidget entry={item} open={modal?.kind === 'clock' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} Dialog={Modal} portalTarget={mainRef.current} />
+          ? <ClockWidget entry={item} open={modal?.kind === 'clock' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} />
           : ['notes', 'read-later'].includes(item.extensionId) ? <PersonalWidget entry={item} open={modal?.kind === 'personal-tool' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} Dialog={Modal} portalTarget={mainRef.current} />
-          : <GitHubWidget entry={item} /> : item.type === "site" ? <a className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} href={item.url} draggable={false} target={settings.openNewTab ? "_blank" : undefined} rel="noreferrer noopener" title={`${item.name}\n${item.url}`}>
+          : isAppId(item.extensionId) ? <AppWidget entry={item} open={modal?.kind === 'app-tool' && modal.appId === item.extensionId} onOpen={(initialContext) => openClock(item, initialContext)} />
+          : <GitHubWidget entry={item} open={modal?.kind === 'github-tool' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} /> : item.type === "site" ? <a className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} href={item.url} draggable={false} target={settings.openNewTab ? "_blank" : undefined} rel="noreferrer noopener" title={`${item.name}\n${item.url}`}>
           <SiteIcon entry={item} /><span className="site-name">{item.name}</span>
-        </a> : <button className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} title={item.name} aria-label={item.name} aria-haspopup="dialog" onClick={() => openEntry(item)}>
+        </a> : <Button variant="unstyled" size="unstyled" className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} title={item.name} aria-label={item.name} aria-haspopup="dialog" onClick={() => openEntry(item)}>
           <SiteIcon entry={item} children={children} /><span className="site-name">{item.name}</span>
-        </button>}
+        </Button>}
         {selected && <span className="layout-selection-mark" aria-hidden="true"><Check size={13} weight="bold" /></span>}
       </Tile>;
     });
   }
   function renderDragGhost() {
-    if (!drag) return null;
+    if (!drag || drag.privacyKey !== privacyKey) return null;
     const dragged = drag.items || [drag.item];
     const anchor = drag.previewAnchor;
-    const artwork = (item, index = 0) => <DragArtwork entry={item} entries={desktopState.entries} snapshot={drag.previews?.get(item.id)} compact={index > 0} />;
+    const visibleEntries = presentation ? desktopState.entries.filter((item) => !hiddenKeys.has(`${item.type}:${item.id}`)) : desktopState.entries;
+    const artwork = (item, index = 0) => <DragArtwork entry={item} entries={visibleEntries} snapshot={drag.previews?.get(item.id)} compact={index > 0} hidden={presentation && hiddenKeys.has(`${item.type}:${item.id}`)} />;
     return <div className={`icon-drag-ghost ${dragged.length > 1 ? 'is-multiple' : ''} ${anchor ? 'is-widget' : ''}`} aria-hidden="true"
       style={anchor ? { left: drag.x - anchor.x, top: drag.y - anchor.y, width: anchor.width, height: anchor.height } : { left: drag.x, top: drag.y }}>
       {dragged.length > 1 ? dragged.slice(0, 4).map((item, index) => <span key={item.id} className="icon-drag-stack" style={{ '--stack-index': index, zIndex: 5 - index }}>{artwork(item, index)}</span>) : artwork(drag.item)}
@@ -918,29 +1086,34 @@ export function App() {
     </div>;
   }
   function renderContextMenu() {
-    if (!context) return null;
+    if (!context || presentation && context.item && hiddenKeys.has(`${context.item.type}:${context.item.id}`)) return null;
     if (context.kind === 'layout') return <ContextMenu context={context} label={tr("布局操作")} onClose={() => setContext(null)} items={layoutEditor.editing ? [
       { label: tr("屏幕管理"), icon: <SquaresFour size={18} />, action: manageScreens, disabled: layoutEditor.saving },
       { label: tr("保存布局"), icon: <Check size={18} />, action: layoutEditor.save, disabled: layoutEditor.saving || layoutEditor.conflict },
       { label: tr("退出编辑"), icon: <X size={18} />, action: layoutEditor.cancel, disabled: layoutEditor.saving },
-    ] : [{ label: tr("编辑布局"), icon: <PencilSimple size={18} />, action: layoutEditor.begin }]} />;
+    ] : [
+      { label: tr("编辑布局"), icon: <PencilSimple size={18} />, action: layoutEditor.begin },
+      { label: tr('桌面方案与分享'), icon: <SquaresFour size={18} />, action: () => setModal({ kind: 'desktop-templates' }) },
+    ]} />;
     const item = context.item;
     return <ContextMenu context={context} label={item.type === 'widget' ? tr("组件操作") : tr("网站操作")} onClose={() => setContext(null)} items={[
       ...(item.type === 'widget' && item.extensionId === GITHUB_WIDGET_ID ? [{ label: tr('打开'), icon: <ArrowSquareOut size={18} />, action: () => window.open(`https://github.com/${item.config.username}`, '_blank', 'noopener,noreferrer') }] : []),
       { label: item.type === 'widget' ? tr("配置组件") : tr("编辑"), icon: <PencilSimple size={18} />, action: () => editEntry(item) },
+      ...(item.type === 'site' ? [{ label: tr('搜索别名'), icon: <MagnifyingGlass size={18} />, action: () => setModal({ kind: 'content-preferences', key: `site:${item.id}` }) }] : []),
+      { label: contentPreferences.privateKeys.includes(`${item.type}:${item.id}`) ? tr('取消私密标记') : tr('标记为私密'), icon: <EyeSlash size={18} />, action: () => saveContentSettings(`${item.type}:${item.id}`, { private: !contentPreferences.privateKeys.includes(`${item.type}:${item.id}`) }).catch((reason) => notify(reason.message, 'error')) },
       { label: tr("编辑布局"), icon: <SquaresFour size={18} />, action: layoutEditor.begin },
       { divider: true },
       { label: item.type === 'widget' ? tr("移除组件") : item.type === "folder" ? tr("解散文件夹") : tr("删除网站"), icon: <Trash size={18} />, danger: true, action: () => removeEntry(item) },
     ]} />;
   }
-  if (!state)
+  if (!state || !contentPreferencesReady)
     return (
       <main className="loading-screen">
-        {error ? (
+        {error || contentPreferencesError ? (
           <>
             <h1>{tr("暂时无法读取本地数据")}</h1>
-            <p>{tr(error)}</p>
-            <button onClick={() => location.reload()}>{tr("重新读取")}</button>
+            <p>{tr(error || contentPreferencesError)}</p>
+            <Button variant="unstyled" size="unstyled" onClick={() => location.reload()}>{tr("重新读取")}</Button>
           </>
         ) : (
           <span>Covelet</span>
@@ -952,10 +1125,11 @@ export function App() {
     : undefined;
   return (
     <DialogError.Provider value={notice?.kind === "error" ? notice.text : ""}>
+      <PresentationContext.Provider value={presentationContext}>
       <AdaptIcons.Provider value={visualEnabled}>
       <main
         ref={mainRef}
-        className={`owntab theme-${settings.theme} ${visualEnabled ? 'visual-enhanced' : ''} ${adaptive ? "adaptive-wallpaper" : ""} ${layoutEditor.editing ? 'layout-editing' : ''}`}
+        className={`owntab theme-${settings.theme} ${visualEnabled ? 'visual-enhanced' : ''} ${adaptive ? "adaptive-wallpaper" : ""} ${layoutEditor.editing ? 'layout-editing' : ''} ${presentation ? 'presentation-active' : ''}`}
         style={{
           ...adaptive?.style,
           "--content-width": `${settings.width}px`,
@@ -982,8 +1156,10 @@ export function App() {
         />
         <header className="page-header">
           <div className="header-actions" inert={layoutEditor.editing || undefined}>
-            <button className="header-icon" type="button" aria-label={tr("添加网站")} title={tr("添加网站")} onClick={newEntry}><Plus size={25} /></button>
-            <button
+            <Button variant="unstyled" size="unstyled" className="header-icon" type="button" aria-label={tr("添加网站")} title={tr("添加网站")} onClick={newEntry}><Plus size={25} /></Button>
+            <Button variant="unstyled" size="unstyled" className="header-icon" type="button" disabled={privacyBusy || Boolean(modal) || Boolean(privacyDialog)} aria-pressed={presentation} aria-label={presentation ? tr('关闭隐藏') : tr('开启隐藏')} title={presentation ? tr('关闭隐藏') : tr('开启隐藏')}
+              onClick={togglePresentation}>{presentation ? <EyeSlash size={25} /> : <Eye size={25} />}</Button>
+            <Button variant="unstyled" size="unstyled"
               className="header-icon"
               aria-label={tr("打开扩展")}
               title={tr("扩展")}
@@ -993,8 +1169,8 @@ export function App() {
               }}
             >
               <PuzzlePiece size={27} />
-            </button>
-            <button
+            </Button>
+            <Button variant="unstyled" size="unstyled"
               className="header-icon"
               aria-label={tr("打开设置")}
               title={tr("设置")}
@@ -1004,58 +1180,48 @@ export function App() {
               }}
             >
               <GearSix size={29} />
-            </button>
+            </Button>
           </div>
         </header>
+        {presentationHint && <p className="presentation-status" role="status">{presentationHint}</p>}
         <section className="search-area" aria-label={tr("搜索")} inert={layoutEditor.editing || undefined}>
           <form className="search-box" onSubmit={submit} role="search">
             <div className="engine-selector" data-popover>
-              <button
+              <DropdownMenu open={engineMenu} modal={false} onOpenChange={(open) => { if (open) engineChoice.current = false; setEngineMenu(open); }}>
+              <DropdownMenuTrigger asChild><Button variant="unstyled" size="unstyled"
                 type="button"
                 className="engine-button"
                 aria-label={tr("选择搜索引擎，当前为{0}", [providerName(selectedProvider)])}
                 title={providerName(selectedProvider)}
                 aria-expanded={engineMenu}
-                onClick={() => setEngineMenu(!engineMenu)}
               >
                 {selectedProvider
                   ? <SearchProviderIcon provider={selectedProvider} epoch={providerIconEpoch} fallback="name" />
                   : <MagnifyingGlass className="provider-symbol" size={24} weight="light" aria-hidden="true" />}
                 <CaretDown className="engine-caret" size={13} aria-hidden="true" />
-              </button>
-              {engineMenu && (
-                <div className="popover engine-popover">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProvider("browser");
-                      setEngineMenu(false);
-                    }}
-                  >
+              </Button></DropdownMenuTrigger>
+              <DropdownMenuContent container={document.querySelector('.owntab') || document.body} className="search-engine-menu" align="start"
+                onCloseAutoFocus={(event) => { if (engineChoice.current) { event.preventDefault(); inputRef.current?.focus({ preventScroll: true }); } }}>
+                <DropdownMenuRadioGroup value={provider} onValueChange={(value) => { engineChoice.current = true; setProvider(value); setEngineMenu(false); }}>
+                  <DropdownMenuRadioItem value="browser">
                     <MagnifyingGlass className="provider-symbol" size={22} weight="light" aria-hidden="true" />
                     <span className="engine-name">{tr("浏览器默认搜索")}</span>
-                    {provider === "browser" && <Check size={17} />}
-                  </button>
-                  <div className="popover-divider" />
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuSeparator />
                   {state.providers.map((p) => (
-                    <button
+                    <DropdownMenuRadioItem
                       key={p.id}
-                      type="button"
-                      onClick={() => {
-                        setProvider(p.id);
-                        setEngineMenu(false);
-                        inputRef.current?.focus();
-                      }}
+                      value={p.id}
                     >
                       <SearchProviderIcon provider={p} epoch={providerIconEpoch} />
                       <span className="engine-name">{providerName(p)}</span>
-                      {provider === p.id && <Check size={17} />}
-                    </button>
+                    </DropdownMenuRadioItem>
                   ))}
-                </div>
-              )}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            <input
+            <Input unstyled
               ref={inputRef}
               type="text"
               value={query}
@@ -1063,6 +1229,8 @@ export function App() {
               placeholder={tr("搜索或输入网址")}
               autoComplete="off"
               spellCheck="false"
+              onCompositionStart={() => { composingSearch.current = true; }}
+              onCompositionEnd={() => { composingSearch.current = false; }}
               role="combobox"
               aria-expanded={Boolean(focused && candidates.length)}
               aria-controls="search-candidates"
@@ -1076,6 +1244,7 @@ export function App() {
                 setCandidate(-1);
               }}
               onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing || e.keyCode === 229) return;
                 if (e.key === "ArrowDown") {
                   e.preventDefault();
                   setFocused(true);
@@ -1092,37 +1261,34 @@ export function App() {
                 }
               }}
             />
-            <button className="search-submit" type="submit" aria-label={tr("搜索")}>
+            <Button variant="unstyled" size="unstyled" className="search-submit" type="submit" aria-label={tr("搜索")}>
               <MagnifyingGlass size={33} weight="light" />
-            </button>
+            </Button>
           </form>
           {focused && candidates.length > 0 && (
-            <div id="search-candidates" role="listbox" className="suggestions">
+            <div ref={suggestionsRef} id="search-candidates" role="listbox" className="suggestions">
               {candidates.map((item, i) => (
-                <button
-                  key={item.id}
+                <Button variant="unstyled" size="unstyled"
+                  key={item.key}
                   id={`candidate-${i}`}
                   role="option"
                   aria-selected={candidate === i}
                   className={candidate === i ? "selected" : ""}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => openEntry(item)}
+                  onClick={() => openContent(item)}
+                  onContextMenu={(event) => { event.preventDefault(); setModal({ kind: 'content-preferences', key: item.key }); setFocused(false); }}
                 >
-                  <SiteIcon entry={item} small />
+                  {['site', 'folder'].includes(item.type) ? <SiteIcon entry={item.entry} small children={state.entries.filter((entry) => entry.parentId === item.id && (!presentation || !hiddenKeys.has(`site:${entry.id}`)))} /> : <span className="content-result-icon">{item.type === 'note' ? <NotePencil size={22} /> : <BookOpen size={22} />}</span>}
                   <span>
-                    <strong>{item.type === "widget" ? builtinName(item.extensionId, item.name) : item.name}</strong>
-                    <small>
-                      {item.parentId ? state.entries.find((entry) => entry.id === item.parentId)?.name : tr("桌面")}
-                      {item.type === "site"
-                        ? ` · ${new URL(item.url).hostname}`
-                        : tr(" · 文件夹")}
-                    </small>
+                    <strong>{item.title}</strong>
+                    <small>{item.type === 'site' ? tr('网站') : item.type === 'folder' ? tr('文件夹') : item.type === 'note' ? tr('便笺') : tr('稍后读')}{item.subtitle ? ` · ${item.subtitle}` : ''}</small>
                   </span>
                   <ArrowSquareOut size={18} />
-                </button>
+                </Button>
               ))}
             </div>
           )}
+          {focused && query.trim() && (personalDataError || contentPreferencesError) && <p className="content-search-error" role="status">{tr('部分本机内容暂时无法搜索。')}</p>}
         </section>
           <section className={`navigation-shelf ${drag ? "is-dragging" : ""}`} aria-label={tr("网站导航")} inert={layoutEditor.saving || undefined}
             onKeyDown={(event) => {
@@ -1139,7 +1305,7 @@ export function App() {
             }}
             onPointerDownCapture={(event) => {
               stopLayoutPress(); layoutLongClick.current = false;
-              if (event.button !== 0 || event.pointerType === 'touch' || layoutEditor.editing || layoutEditor.saving || event.shiftKey || event.target.closest('dialog')
+              if (event.button !== 0 || event.pointerType === 'touch' || layoutEditor.editing || layoutEditor.saving || event.shiftKey || event.target.closest('dialog, [data-ui-modal]')
                 || event.target.closest('input,textarea,[data-layout-control],.clock-widget button,.github-widget button,.github-widget a')) return;
               const source = event.target.closest('.site-link') || event.currentTarget.querySelector('.desktop-page-viewport');
               const press = { x: event.clientX, y: event.clientY };
@@ -1165,22 +1331,23 @@ export function App() {
               onNewPage={(page) => layoutEditor.addPage(page)} renderTiles={renderTiles} />
           </section>
         {layoutEditor.editing && <DesktopEditBar editor={layoutEditor} drag={drag} onManage={manageScreens} onDelete={requestLayoutDelete} />}
-        {modal?.kind === 'layout-delete' && layoutEditor.editing && <Modal title={modal.title} onClose={() => setModal(null)}>
+        {modal?.kind === 'layout-delete' && layoutEditor.editing && <Modal title={modal.title} privacyKeys={modal.ids.flatMap((id) => desktopState.entries.filter((item) => item.id === id || item.parentId === id).map((item) => `${item.type}:${item.id}`))} onClose={() => setModal(null)}>
           <div className="form-stack">
             {modal.children > 0 && <p>{tr("文件夹内的 {0} 个网站也会删除。", [formatNumber(modal.children)])}</p>}
             {modal.clock && <p>{tr("保存后将清除所选时钟的计时记录和倒计时提醒。")}</p>}
-            <div className="modal-footer"><button type="button" className="button" data-autofocus onClick={() => setModal(null)}>{tr("取消")}</button>
-              <button type="button" className="button danger" disabled={layoutEditor.saving || layoutEditor.conflict} onClick={confirmLayoutDelete}>{tr("删除")}</button></div>
+            <div className="modal-footer"><Button variant="secondary" type="button" className="button" data-autofocus onClick={() => setModal(null)}>{tr("取消")}</Button>
+              <Button variant="destructive" type="button" className="button" disabled={layoutEditor.saving || layoutEditor.conflict} onClick={confirmLayoutDelete}>{tr("删除")}</Button></div>
           </div>
         </Modal>}
         {screenManager && layoutEditor.editing && <DesktopScreenManager Dialog={Modal} state={desktopState} columns={desktopScreen.current.columns}
+          hiddenIds={presentation ? privateEntryIds : []}
           activeKey={activeScreen} editor={layoutEditor} onSelect={setActiveScreen} onClose={() => { setScreenManager(false); focusDesktop(); }}
-          renderIcon={(item) => <SiteIcon entry={item} small children={desktopState.entries.filter((entry) => entry.parentId === item.id).sort((a, b) => a.order - b.order)} />} />}
+          renderIcon={(item) => <SiteIcon entry={item} small children={desktopState.entries.filter((entry) => entry.parentId === item.id && (!presentation || !hiddenKeys.has(`${entry.type}:${entry.id}`))).sort((a, b) => a.order - b.order)} />} />}
         {!folderId && renderContextMenu()}
         {!folderId && renderDragGhost()}
         {currentFolder && !modal && (
-          <Modal title={currentFolder.name} titleContent={<FolderName name={currentFolder.name} onSave={saveFolderName} />} onClose={() => setFolder(null)} wide>
-            <div className="folder-content" data-folder-panel>
+          <Modal title={currentFolder.name} privacyKeys={[`folder:${currentFolder.id}`]} titleContent={<FolderName name={currentFolder.name} onSave={saveFolderName} />} onClose={() => { cancelDrag(); setFolder(null); }} wide>
+            <div className="folder-content" data-folder-panel={currentFolder.id}>
               <div className="sites-grid folder-sites" data-drop-parent={currentFolder.id}>
                 {renderTiles(state.entries.filter((item) => item.parentId === currentFolder.id).sort((a,b) => a.order-b.order))}
               </div>
@@ -1198,29 +1365,29 @@ export function App() {
           >
             <span>{tr(notice.text)}</span>
             {undo && notice.kind !== "error" && (
-              <button onClick={undoDelete}>
-                <ArrowUUpLeft size={17} />{tr("撤销")}</button>
+              <Button variant="unstyled" size="unstyled" onClick={undoDelete}>
+                <ArrowUUpLeft size={17} />{tr("撤销")}</Button>
             )}
-            <button
+            <Button variant="unstyled" size="unstyled"
               className="icon-button"
               aria-label={tr("关闭提示")}
               onClick={() => setNotice(null)}
             >
               <X size={17} />
-            </button>
+            </Button>
           </div>
         )}
         {busy && (
-          <div className="busy-indicator" role="status">{tr("正在处理本地文件…")}</div>
+          <div className="busy-indicator" role="status">{tr('处理中…')}</div>
         )}
-        <input
+        <Input
           ref={bookmarkInput}
           type="file"
           accept=".html,.htm,text/html"
           hidden
           onChange={readBookmarks}
         />
-        <input
+        <Input
           ref={backupInput}
           type="file"
           accept=".zip,application/zip"
@@ -1229,14 +1396,18 @@ export function App() {
         />
         {modal?.kind === "entry" && entry && (
           <Modal
+            privacyKeys={modal.isNew ? [] : [`${entry.type}:${entry.id}`]}
             title={`${modal.isNew ? tr("添加") : tr("编辑")}${entry.type === "folder" ? tr("文件夹") : tr("网站")}`}
+            closeDisabled={entrySaving}
             onClose={closeEntry}
           >
             <form onSubmit={saveEntry} className="form-stack">
+              <fieldset disabled={entrySaving} style={{ display: 'contents', border: 0, padding: 0, margin: 0, minWidth: 0 }}>
               {entry.type === "site" && (
                 <>
-                  <label>{tr("网址")}<input autoFocus required value={entry.url} maxLength={2048} placeholder="https://example.com" onChange={(event) => {
+                  <label>{tr("网址")}<Input autoFocus required value={entry.url} maxLength={2048} placeholder="https://example.com" onChange={(event) => {
                       siteRequest.current++;
+                      iconOperation.current?.abort(); setEntryIconInfo({ phase: 'idle' });
                       setSiteInfo({ phase: "idle", message: "" });
                       const url = event.target.value;
                       setEntry((value) => {
@@ -1254,8 +1425,11 @@ export function App() {
                 </>
               )}
               <div className="site-name-field">
-                <div className="field-heading"><label htmlFor="entry-name">{tr("名称")}</label>{entry.type === "site" && <button className="field-action" type="button" disabled={!entry.url || !supportsSiteInfo() || ["loading", "permission"].includes(siteInfo.phase)} aria-describedby={!siteInfo.hasAccess && supportsSiteInfo() ? "site-name-permission" : undefined} onClick={authorizeSiteInfo}>{tr("获取名称")}</button>}</div>
-                <input
+                <div className="field-heading"><label htmlFor="entry-name">{tr("名称")}</label>{entry.type === "site" && <Button variant="unstyled" size="unstyled" className="field-action" type="button" disabled={!entry.url || siteInfoPending || entryIconPending} aria-label={tr(siteInfoPending ? "正在获取信息…" : "获取信息")} aria-busy={siteInfoPending} onClick={getSiteInfo}>
+                  {siteInfoPending && <CircleNotch size={14} className="site-info-spinner" aria-hidden="true" />}
+                  <span role="status" aria-live="polite">{tr(siteInfoPending ? "正在获取信息…" : "获取信息")}</span>
+                </Button>}</div>
+                <Input
                   id="entry-name"
                   autoFocus={entry.type === "folder"}
                   required
@@ -1271,52 +1445,87 @@ export function App() {
                   }
                 />
               </div>
-              {entry.type === "site" && (siteInfo.message || supportsSiteInfo() && !siteInfo.hasAccess) && <div className="site-recognition">
-                {supportsSiteInfo() && !siteInfo.hasAccess && <span className="hint" id="site-name-permission">{tr("获取名称时需允许读取此网站。")}</span>}
+              {entry.type === "site" && (siteInfo.message || siteInfo.errors?.length > 0) && <div className="site-recognition">
                 {siteInfo.message && <span className="hint" role="status">{tr(siteInfo.message)}</span>}
+                {siteInfo.errors?.map((message) => <span className="hint" role="status" key={message}>{tr(message)}</span>)}
               </div>}
               <IconBackground value={entry.iconBackground || DEFAULT_ICON_BACKGROUND}
                 onChange={(iconBackground) => setEntry((value) => ({ ...value, iconBackground }))}
                 onReset={() => setEntry((value) => { const next = { ...value }; delete next.iconBackground; return next; })}
-                preview={<SiteIcon entry={entry} children={state.entries.filter((child) => child.parentId === entry.id).sort((a, b) => a.order - b.order)} />} />
-              {entry.type === 'site' && <button type="button" className="field-action hd-icon-action" disabled={!entry.url || siteInfo.phase === 'loading'} onClick={findHdIcon}>{tr("获取高清图标")}</button>}
-              {entry.type === 'site' && <label>{tr("图标地址")}<input type="url" value={entry.iconUrl ?? siteIconAddress(entry)} maxLength={4096}
+                preview={<SiteIcon entry={iconPreview ? { ...iconPreview, name: entry.name, iconBackground: entry.iconBackground } : entry} children={state.entries.filter((child) => child.parentId === entry.id && (!presentation || !hiddenKeys.has(`${child.type}:${child.id}`))).sort((a, b) => a.order - b.order)} />} />
+              {entry.type === 'site' && <label>{tr("图标地址")}<Input type="url" value={entry.iconUrl ?? siteIconAddress(entry)} maxLength={4096}
                 placeholder="https://example.com/icon.png" onChange={(event) => {
-                  siteRequest.current++;
+                  // An older acquisition must not replace the newly typed source.
+                  siteRequest.current++; iconOperation.current?.abort();
+                  setEntryIconInfo({ phase: 'idle' }); setSiteInfo({ phase: 'idle', message: '' });
                   manualFields.current.icon = true;
                   const iconUrl = event.target.value;
                   let icon;
                   try { icon = { kind: 'url', value: normalizeIconAddress(iconUrl) }; } catch { /* Keep the name fallback while typing. */ }
                   setEntry((value) => withDiscoveredIcon({ ...value, icon: icon || letterIcon(value.name) }, { url: iconUrl }));
                 }} /></label>}
+              {entry.type === 'site' && <div className="form-stack">
+                <Button variant="secondary" type="button" disabled={entrySaving || entryIconPending || siteInfoPending || !(entry.iconUrl || entry.url)} aria-busy={entryIconPending} onClick={getEntryIcon}>
+                  {entryIconPending && <CircleNotch size={14} className="site-info-spinner" aria-hidden="true" />}
+                  {entryIconPending ? tr('正在获取图标…') : tr('获取图标')}
+                </Button>
+                {entryIconInfo.phase === 'error' && <p className="form-error" role="alert">{entryIconInfo.message}</p>}
+              </div>}
               {error && (
                 <p className="form-error" role="alert">
                   {tr(error)}
                 </p>
               )}
               <div className="modal-footer">
-                <button
+                <Button variant="secondary"
                   type="button"
                   className="button"
                   onClick={closeEntry}
-                >{tr("取消")}</button>
-                <button
+                >{tr("取消")}</Button>
+                <Button variant="default"
                   className="button primary"
                   type="submit"
-                  disabled={busy}
+                  disabled={busy || entryIconPending || siteInfoPending}
                 >
-                  {modal.isNew ? tr("添加") : tr("保存")}
-                </button>
+                  {entrySaving ? tr('保存中…') : modal.isNew ? tr("添加") : tr("保存")}
+                </Button>
               </div>
+              </fieldset>
             </form>
           </Modal>
         )}
         {modal?.kind === "extensions" && (
-          <ExtensionCenter Dialog={Modal} demo={demo} state={state} initialExtension={modal.initialExtension} editingId={modal.editingId} onUseWidget={useWidget} onClose={() => setModal(null)} />
+          <ExtensionCenter Dialog={Modal} state={state} initialExtension={modal.initialExtension} editingId={modal.editingId} onUseWidget={useWidget} onRemoveWidget={detachWidget} onConfigureFunctional={() => setModal({ kind: 'sync-settings' })} onClose={() => setModal(null)} />
         )}
+        {modal?.kind === 'app-tool' && <AppToolWindow key={modal.appId} appId={modal.appId} widgetId={modal.id} initialContext={modal.initialContext} Dialog={Modal} onOpenApp={openAppTool} onClose={() => setModal(null)} />}
+        {modal?.kind === 'sync-settings' && <Modal title={tr('自定义存储同步')} className="settings-modal sync-settings-modal" wide maximizable closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}><CloudSyncSettings demo={demo} onBusyChange={setBusy} /></Modal>}
+        {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} Dialog={Modal} onClose={() => setModal(null)} />}
+        {modal?.kind === 'tools-trash' && <PersonalToolsTrashDialog Dialog={Modal} onClose={() => setModal(null)} />}
+        {modal?.kind === 'content-preferences' && <Modal title={tr('内容与隐私')} privacyKeys={modal.key ? [modal.key] : []} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
+          <ContentPreferences navigation={state} tools={personalData} preferences={contentPreferences} initialKey={modal.key} onBusyChange={setBusy} onClose={() => setModal(null)} />
+        </Modal>}
+        {modal?.kind === 'desktop-templates' && <Modal title={tr('桌面方案与分享')} className="desktop-templates-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide maximizable>
+          <DesktopTemplates state={state} privateEntryIds={privateEntryIds} iconProgress={iconProgress} onBusyChange={setBusy} onClose={() => setModal(null)} onApply={async (prepared) => {
+            const before = state;
+            const existing = new Set(before.entries.map((entry) => entry.id));
+            const added = new Set(prepared.state.entries.filter((entry) => !existing.has(entry.id)).map((entry) => entry.id));
+            const saved = await commitImportedNavigation(prepared.state, added, prepared.sourceRevision, tr('桌面方案已应用。'));
+            if (!saved) return false;
+            setUndo({ before, revision: saved.revision });
+            if (prepared.revealId) revealDesktopEntry(saved, prepared.revealId);
+            setModal(null); return true;
+          }} />
+        </Modal>}
+        {modal?.kind === 'recovery-center' && <Modal title={tr('备份与恢复中心')} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide>
+          <RecoveryCenter onBusyChange={setBusy} onRestored={(next) => {
+            if (next.revision >= preferenceState.current.revision) preferenceState.current = next;
+            setState((current) => current.revision > next.revision ? current : next); setFolder(null); setUndo(null);
+          }} />
+        </Modal>}
         {modal?.kind === "settings" && (
           <Settings
             state={state}
+            busy={busy} iconProgress={iconProgress}
             onClose={() => setModal(null)}
             readPreferences={() => demo ? Promise.resolve(preferenceState.current) : loadState()}
             writePreferences={async (next, revision) => {
@@ -1326,79 +1535,60 @@ export function App() {
               return saved;
             }}
             onExport={download}
-            onImport={() => backupInput.current.click()}
-            onBookmarks={() => bookmarkInput.current.click()}
+            onImport={() => setModal({ kind: 'recovery-center' })}
+            onBookmarks={() => { setImportPlan(null); setModal({ kind: 'bookmarks', revision: preferenceState.current.revision }); }}
+            onContentPreferences={() => setModal({ kind: 'content-preferences' })}
+            onDesktopTemplates={() => setModal({ kind: 'desktop-templates' })}
+            onToolsTrash={() => setModal({ kind: 'tools-trash' })}
             onSnapshot={async (latest) => {
+              if (busy) return;
+              setBusy(true);
               try {
-                const result = await restoreSnapshot(latest.revision);
+                const result = await restoreSnapshot(latest.revision, { onIconProgress: setIconProgress });
                 setState(result);
                 setModal(null);
                 notify(tr("已恢复上一份本地快照"));
               } catch (e) {
                 notify(e.message, "error");
-              }
+              } finally { setBusy(false); }
             }}
             wallpaper={wallpaper}
             providerIconEpoch={providerIconEpoch}
             onProviderIconReady={() => setProviderIconEpoch((value) => value + 1)}
-            onRestoreConflict={async (id) => {
-              try {
-                const result = await restoreSyncConflict(id);
-                setState(result);
-                setModal(null);
-                notify(tr("已恢复冲突版本"));
-              } catch (e) { notify(e.message, "error"); }
-            }}
           />
         )}
-        {modal?.kind === "bookmarks" && importPlan && (
-          <Modal title={tr("导入书签")} onClose={() => setModal(null)}>
-            <div className="form-stack">
-              <p>{tr("将添加 {0} 个网址和 {1} 个文件夹。相同位置的重复网址将跳过，保留现有内容。", [formatNumber(importPlan.addedSites ?? importPlan.sites.length), formatNumber(importPlan.addedFolders ?? importPlan.folders.length)])}</p>
-              {importPlan.skippedDuplicates > 0 && (
-                <p>{tr("将跳过 {0} 条重复网址。", [formatNumber(importPlan.skippedDuplicates)])}</p>
-              )}
-              {importPlan.invalid?.length > 0 && (
-                <p className="form-error">{tr("已跳过 {0} 项无效地址。", [formatNumber(importPlan.invalid.length)])}</p>
-              )}
-              <div className="import-preview">
-                {importPlan.folders.map((folder, i) => (
-                  <p key={`f${i}`}><Folder size={16} />{folder.originalPath || folder.name} → {folder.name}</p>
-                ))}
-                {importPlan.sites.slice(0, 30).map((site, i) => (
-                  <p key={i}>{site.name}<small>{site.folder || tr("桌面")} · {site.url}</small></p>
-                ))}
-              </div>
-              <div className="modal-footer">
-                <button className="button" onClick={() => setModal(null)}>{tr("取消")}</button>
-                <button className="button primary" onClick={async () => {
-                  try {
-                    const saved = await commit(applyBookmarkImport(state, importPlan), tr("书签已导入"), modal.revision);
-                    if (saved) setModal(null);
-                  } catch (e) { notify(e.message, "error"); }
-                }}>{tr("确认导入")}</button>
-              </div>
-            </div>
-          </Modal>
-        )}
+        {modal?.kind === 'bookmarks' && <Modal title={tr('导入网址与书签')} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide>
+          <BookmarkImport state={state} initialPlan={importPlan} initialPage={desktopScreen.current.page} columns={desktopScreen.current.columns} iconProgress={iconProgress}
+            onBusyChange={setBusy} onClose={() => setModal(null)} onApply={async (prepared) => {
+              const before = state;
+              const added = new Set(prepared.rows.filter((row) => row.willAdd).map((row) => row.entryId));
+              const saved = await commitImportedNavigation(prepared.state, added, prepared.sourceRevision, tr('已导入 {0} 个网址。', [formatNumber(prepared.addedSites)]));
+              if (!saved) return false;
+              setUndo({ before, revision: saved.revision });
+              if (prepared.revealId) revealDesktopEntry(saved, prepared.revealId);
+              setModal(null); return true;
+            }} />
+        </Modal>}
         {modal?.kind === "restore" && backupPlan && (
-          <Modal title={tr("恢复完整备份")} onClose={() => setModal(null)}>
+          <Modal title={tr("恢复完整备份")} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
             <div className="form-stack">
               <p>{tr("备份包含 {0} 个网站和 {1} 个自定义图片。", [formatNumber(backupPlan.summary.sites), formatNumber(backupPlan.summary.assets)])}</p>
-              <p>{tr("恢复会替换当前网址、搜索选项、外观和布局，并保留上一份本地快照。 开启浏览器同步时，恢复结果也会参与同步。")}</p>
+              <p>{tr("恢复会替换当前网址、搜索选项、外观和布局，并保留上一份本地快照。")}</p>
+              <NavigationIconStatus report={iconProgress} busy={busy} />
               {backupPlan.state.settings.background.kind === "image" && (
-                <p className="hint">{tr("旧备份中的壁纸已完成校验，恢复时将改用 Bing 每日壁纸，不保存该壁纸图片；自定义图标会保留。")}</p>
+                <p className="hint">{tr('此备份的壁纸无法恢复，将使用 Bing 每日壁纸。')}</p>
               )}
               <div className="modal-footer">
-                <button className="button" onClick={() => setModal(null)}>{tr("取消")}</button>
-                <button
-                  className="button primary"
+                <Button variant="secondary" className="button" disabled={busy} onClick={() => setModal(null)}>{tr("取消")}</Button>
+                <Button variant="default"
+                  className="button primary" disabled={busy}
                   onClick={async () => {
                     setBusy(true);
                     try {
                       const result = await restoreBackup(
                         backupPlan,
                         modal.revision,
+                        { onIconProgress: setIconProgress },
                       );
                       setState(result);
                       setFolder(null);
@@ -1410,11 +1600,12 @@ export function App() {
                       setBusy(false);
                     }
                   }}
-                >{tr("替换并恢复")}</button>
+                >{tr("替换并恢复")}</Button>
               </div>
             </div>
           </Modal>
         )}
+        {privacyDialog && <PrivacyPasswordDialog purpose={privacyDialog} onClose={() => setPrivacyDialog(null)} />}
         {settings.background.kind === "bing" && wallpaper?.source === "bing" && wallpaper.copyright && (
           <a className="wallpaper-credit" href={wallpaper.copyrightUrl} target="_blank" rel="noopener noreferrer" title={wallpaper.title}>
             {wallpaper.copyright}{wallpaper.stale ? tr(" · 缓存壁纸") : ""}
@@ -1422,23 +1613,27 @@ export function App() {
         )}
       </main>
       </AdaptIcons.Provider>
+      </PresentationContext.Provider>
     </DialogError.Provider>
   );
 }
 
 function Settings({
   state,
+  busy = false, iconProgress,
   onClose,
   readPreferences,
   writePreferences,
   onExport,
   onImport,
   onBookmarks,
+  onContentPreferences,
+  onDesktopTemplates,
+  onToolsTrash,
   onSnapshot,
   wallpaper,
   providerIconEpoch,
   onProviderIconReady,
-  onRestoreConflict,
 }) {
   const [tab, setTab] = useState("appearance"),
     [draft, setDraft] = useState(structuredClone(state.settings)),
@@ -1447,12 +1642,9 @@ function Settings({
     [editingProvider, setEditingProvider] = useState(null),
     [newTemplate, setNewTemplate] = useState(""),
     [error, setError] = useState("");
-  const [syncStatus, setSyncStatus] = useState({ enabled: false, phase: demo ? "preview" : "disabled", message: demo ? tr("演示模式不连接浏览器同步。") : tr("浏览器同步尚未开启。") });
-  const [syncBusy, setSyncBusy] = useState(false), [conflicts, setConflicts] = useState([]);
   const [saving, setSaving] = useState({ phase: "idle" });
   const panelRef = useRef(null);
   useLayoutEffect(() => { if (panelRef.current) panelRef.current.scrollTop = 0; }, [tab]);
-  const visualStatus = useVisualRuntimeStatus();
   const settingsMounted = useRef(false), saveCallbacks = useRef(null);
   saveCallbacks.current = { readPreferences, writePreferences };
   const [saver] = useState(() => createPreferenceSaver({ initial: state,
@@ -1470,6 +1662,7 @@ function Settings({
     saver.queue({ providers: next });
   }
   async function afterSave(action) {
+    if (busy) return;
     try { const latest = await saver.flush(); await action(latest); } catch { /* The save error stays visible. */ }
   }
   function closeSettings() { afterSave(onClose); }
@@ -1497,63 +1690,28 @@ function Settings({
     event.preventDefault();
     addProvider();
   }
-  useEffect(() => {
-    if (demo) return;
-    let active = true;
-    const update = async (status) => {
-      if (!active) return;
-      setSyncStatus(status);
-      try {
-        const list = await getSyncConflicts();
-        if (active) setConflicts(list);
-      } catch (err) { if (active) setError(err.message); }
-    };
-    Promise.resolve().then(getSyncStatus).then(update).catch((err) => { if (active) setError(err.message); });
-    const off = subscribeSyncStatus(update);
-    return () => { active = false; off(); };
-  }, []);
-  async function changeSync(action) {
-    setSyncBusy(true);
-    setError("");
-    try {
-      await action();
-      setSyncStatus(await getSyncStatus());
-      setConflicts(await getSyncConflicts());
-    } catch (err) { setError(err.message); }
-    finally { setSyncBusy(false); }
-  }
   const patch = (value) => { setDraft((d) => ({ ...d, ...value })); saver.queue({ settings: value }); };
   const tabs = [["appearance", tr("外观")], ["layout", tr("布局")], ["search", tr("搜索")], ["enhancements", tr("增强")], ["data", tr("数据")]];
   return (
-    <Modal title={tr("设置")} onClose={closeSettings} className="settings-modal preferences-modal" wide>
-      <div className="settings-layout">
-      <div className="settings-tabs" role="tablist" aria-label={tr("设置分类")} aria-orientation="vertical">
-        {tabs.map(([id, name], index) => (
-          <button
-            role="tab"
-            type="button"
+    <Modal title={tr("设置")} closeDisabled={busy} onClose={closeSettings} className="settings-modal preferences-modal" wide>
+      <Tabs className="settings-layout" value={tab} orientation="vertical" onValueChange={(value) => { setTab(value); setError(''); }}>
+      <TabsList className="settings-tabs" aria-label={tr("设置分类")}>
+        {tabs.map(([id, name]) => (
+          <TabsTrigger
+            value={id}
             id={`settings-tab-${id}`}
             aria-controls="settings-panel"
-            aria-selected={tab === id}
-            tabIndex={tab === id ? 0 : -1}
             key={id}
-            onClick={() => { setTab(id); setError(""); }}
-            onKeyDown={(event) => {
-              if (event.nativeEvent.isComposing || !["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
-              event.preventDefault();
-              const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + tabs.length) % tabs.length;
-              setTab(tabs[next][0]); setError("");
-              document.getElementById(`settings-tab-${tabs[next][0]}`)?.focus();
-            }}
           >
             {name}
-          </button>
+          </TabsTrigger>
         ))}
-      </div>
+      </TabsList>
       <div className="settings-content">
-      <div ref={panelRef} className="form-stack settings-scroll" role="tabpanel" id="settings-panel" aria-labelledby={`settings-tab-${tab}`} tabIndex={0}>
+      <TabsContent value={tab} ref={panelRef} className="form-stack settings-scroll" id="settings-panel" aria-labelledby={`settings-tab-${tab}`} tabIndex={0}>
         {tab === "appearance" && (
           <>
+            <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onDesktopTemplates)}><SquaresFour size={18} />{tr('桌面方案与分享')}</Button>
             <LanguageSettings />
             <Select label={tr("主题")} value={draft.theme} onChange={(theme) => patch({ theme })}
               options={[{ value: "system", label: tr("跟随系统") }, { value: "light", label: tr("浅色") }, { value: "dark", label: tr("深色") }]} />
@@ -1581,10 +1739,9 @@ function Settings({
             <section className="enhancement-row" aria-labelledby="visual-enhancement-heading">
               <label className="check-label enhancement-toggle">
                 <span><strong id="visual-enhancement-heading">{tr("视觉增强")}</strong><span className="enhancement-description">{tr("自动适配文字颜色、图标和组件背景。")}</span></span>
-                <input type="checkbox" role="switch" aria-label={tr("视觉增强")} checked={draft.visualEnhancement} onChange={(e) => patch({ visualEnhancement: e.target.checked })} />
+                <Switch aria-label={tr("视觉增强")} checked={draft.visualEnhancement} onCheckedChange={(nextChecked) => patch({ visualEnhancement: nextChecked })} />
               </label>
             </section>
-            {draft.visualEnhancement && visualStatus.phase === "fallback" && <p className="hint" role="status">{tr(visualStatus.message)}</p>}
           </div>
         )}
         {tab === "layout" && (
@@ -1626,22 +1783,23 @@ function Settings({
               onChange={(gap) => patch({ gap })}
             />
             <label className="check-label">
-              <input
-                type="checkbox"
+              <Switch
+
                 checked={draft.showLabels}
-                onChange={(e) => patch({ showLabels: e.target.checked })}
+                onCheckedChange={(nextChecked) => patch({ showLabels: nextChecked })}
               />{tr("显示网站名称")}</label>
             <label className="check-label">
-              <input
-                type="checkbox"
+              <Switch
+
                 checked={draft.openNewTab}
-                onChange={(e) => patch({ openNewTab: e.target.checked })}
+                onCheckedChange={(nextChecked) => patch({ openNewTab: nextChecked })}
               />{tr("在新标签页打开网站和搜索结果")}</label>
           </>
         )}
         {tab === "search" && (
           <>
-            <p className="hint">{tr("新标签页默认使用浏览器搜索引擎。")}</p>
+            <p className="hint">{tr('支持搜索导航、便笺和稍后读，也可输入拼音首字母。')}</p>
+            <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onContentPreferences)}>{tr('内容别名与隐私标记')}</Button>
             <div className="provider-list">
               <div>
                 <MagnifyingGlass className="provider-symbol" size={22} weight="light" aria-hidden="true" />
@@ -1655,7 +1813,7 @@ function Settings({
                     {providerName(p)}
                     <small>{p.template}</small>
                   </span>
-                  <button
+                  <Button variant="unstyled" size="unstyled"
                     className="icon-button"
                     type="button"
                     aria-label={tr("上移{0}", [providerName(p)])}
@@ -1671,8 +1829,8 @@ function Settings({
                     }}
                   >
                     <ArrowUp size={18} />
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="unstyled" size="unstyled"
                     type="button"
                     className="icon-button"
                     aria-label={tr("编辑{0}", [providerName(p)])}
@@ -1683,8 +1841,8 @@ function Settings({
                     }}
                   >
                     <PencilSimple size={18} />
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="unstyled" size="unstyled"
                     className="icon-button danger"
                     type="button"
                     aria-label={tr("删除{0}", [providerName(p)])}
@@ -1694,11 +1852,11 @@ function Settings({
                     }}
                   >
                     <Trash size={18} />
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
-            <label>{tr("引擎名称")}<input
+            <label>{tr("引擎名称")}<Input
                 value={newName}
                 maxLength={80}
                 onChange={(e) => setNewName(e.target.value)}
@@ -1706,61 +1864,38 @@ function Settings({
                 placeholder={tr("例如：站点搜索")}
               />
             </label>
-            <label>{tr("搜索地址模板")}<input
+            <label>{tr("搜索地址模板")}<Input
                 value={newTemplate}
                 onChange={(e) => setNewTemplate(e.target.value)}
                 onKeyDown={providerInputKeyDown}
                 placeholder={tr("搜索地址，使用 {query} 表示关键词")}
               />
             </label>
-            <button
+            <Button variant="secondary"
               type="button"
               className="button"
               onClick={addProvider}
             >
               {editingProvider ? tr("保存引擎") : tr("添加引擎")}
-            </button>
-            {editingProvider && <button type="button" className="button quiet" onClick={() => { setEditingProvider(null); setNewName(""); setNewTemplate(""); setError(""); }}>{tr("取消修改")}</button>}
+            </Button>
+            {editingProvider && <Button variant="ghost" type="button" className="button quiet" onClick={() => { setEditingProvider(null); setNewName(""); setNewTemplate(""); setError(""); }}>{tr("取消修改")}</Button>}
           </>
         )}
         {tab === "data" && (
           <>
-            <fieldset className="sync-settings">
-              <legend>{tr("浏览器原生同步")}</legend>
-              <label className="check-label">
-                <input
-                  type="checkbox"
-                  checked={syncStatus.enabled}
-                  disabled={syncBusy || syncStatus.phase === "preview"}
-                  aria-label={tr("启用浏览器同步")}
-                  onChange={(event) => { const enabled = event.target.checked; changeSync(() => setSyncEnabled(enabled)); }}
-                />{tr("启用浏览器同步")}</label>
-              {['error', 'conflict', 'blocked'].includes(syncStatus.phase) && <p className="form-error" id="sync-status" role="alert">{tr(syncStatus.message)}</p>}
-              {syncStatus.enabled && (
-                <button type="button" className="button" disabled={syncBusy} onClick={() => changeSync(() => syncNow())}>{tr("重新同步")}</button>
-              )}
-              {conflicts.length > 0 && (
-                <div className="sync-conflicts">
-                  <strong>{tr("保留的冲突版本")} · {formatNumber(conflicts.length)}</strong>
-                  {conflicts.map((conflict) => (
-                    <div key={conflict.id}>
-                      <span>{conflict.name || conflict.key}{conflict.deleted ? tr("（删除记录）") : ""}</span>
-                      <button type="button" className="button" disabled={syncBusy} onClick={() => changeSync(() => onRestoreConflict(conflict.id))}>{tr("恢复此版本")}</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </fieldset>
             <div className="data-actions">
-              <button type="button" className="button" onClick={() => afterSave(onBookmarks)}>
-                <UploadSimple size={19} />{tr("导入浏览器书签")}</button>
-              <button type="button" className="button" onClick={() => afterSave(onExport)}>
-                <DownloadSimple size={19} />{tr("导出完整备份")}</button>
-              <button type="button" className="button" onClick={() => afterSave(onImport)}>
-                <UploadSimple size={19} />{tr("恢复完整备份")}</button>
-              <button type="button" className="button" onClick={() => afterSave(onSnapshot)}>
-                <ArrowUUpLeft size={19} />{tr("恢复上一份本地快照")}</button>
+              <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onBookmarks)}>
+                <UploadSimple size={19} />{tr('导入网址与书签')}</Button>
+              <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onExport)}>
+                <DownloadSimple size={19} />{tr("导出完整备份")}</Button>
+              <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onImport)}>
+                <UploadSimple size={19} />{tr('备份与恢复中心')}</Button>
+              <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onToolsTrash)}>
+                <Trash size={19} />{tr('工具回收站')}</Button>
+              <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onSnapshot)}>
+                <ArrowUUpLeft size={19} />{tr("恢复上一份本地快照")}</Button>
             </div>
+            <NavigationIconStatus report={iconProgress} busy={busy} />
             <a className="settings-privacy-link" href="https://sites.google.com/view/covelet-privacy" target="_blank" rel="noopener noreferrer">{tr("隐私政策")}</a>
           </>
         )}
@@ -1769,21 +1904,21 @@ function Settings({
             {tr(error)}
           </p>
         )}
-      </div>
+      </TabsContent>
       {saving.phase === "error" && <div className="settings-save-status">
           <p className="form-error" role="alert">{tr(saving.error?.message) || tr("设置未保存，请重试。")}</p>
           <div className="settings-retry-actions">
-            {saving.error?.code !== "PREFERENCE_CONFLICT" && <button type="button" className="button" onClick={() => saver.retry().catch(() => {})}>{tr("重试")}</button>}
-            <button type="button" className="button quiet" onClick={async () => {
+            {saving.error?.code !== "PREFERENCE_CONFLICT" && <Button variant="secondary" type="button" className="button" onClick={() => saver.retry().catch(() => {})}>{tr("重试")}</Button>}
+            <Button variant="ghost" type="button" className="button quiet" onClick={async () => {
               try {
                 const latest = await saver.reload();
                 setDraft(structuredClone(latest.settings)); setProviderDraft(structuredClone(latest.providers));
               } catch (reason) { setError(reason.message); }
-            }}>{tr("放弃修改并重新载入")}</button>
+            }}>{tr("放弃修改并重新载入")}</Button>
           </div>
       </div>}
       </div>
-      </div>
+      </Tabs>
     </Modal>
   );
 }
@@ -1797,11 +1932,11 @@ function Range({ label, value, onChange, suffix = "", ...props }) {
           {suffix && ` ${suffix}`}
         </output>
       </span>
-      <input
-        type="range"
+      <Slider
+
         aria-label={label}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        value={[Number(value)]}
+        onValueChange={([nextValue]) => onChange(Number(nextValue))}
         {...props}
       />
     </label>

@@ -3,12 +3,134 @@ import assert from 'node:assert/strict';
 import { zipSync, unzipSync, strToU8 } from 'fflate';
 import { createStorage } from './storage.js';
 import { createEmptyState, createInitialState, configureGitHubWidget, deleteEntry } from './model.js';
-import { createReplica, portableState } from './sync.js';
 import { createColorBackground } from './background-colors.js';
 
 const PNG = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB0kAAAAASUVORK5CYII=', 'base64'));
 const image = () => new Blob([PNG], { type: 'image/png' });
 const mockImages = { validate: async () => ({ width: 1, height: 1 }), resize: async (blob) => blob };
+
+test('local image reads reject corrupt stored bytes before exposing a URL, so a saved URL fallback can be selected', async () => {
+  const subject = harness();
+  subject.records.set('bad-header', { blob: new Blob(['not a picture'], { type: 'image/png' }) });
+  await assert.rejects(subject.store.getAssetUrl('bad-header'), { code: 'INVALID_IMAGE' });
+  const undecodable = harness({ imageTools: { ...mockImages, validate: async () => { throw Error('Stored image cannot decode'); } } });
+  undecodable.records.set('bad-body', { blob: image() });
+  await assert.rejects(undecodable.store.getAssetUrl('bad-body'), /cannot decode/);
+  subject.records.set('valid', { blob: image() });
+  const url = await subject.store.getAssetUrl('valid');
+  assert(url.startsWith('blob:')); URL.revokeObjectURL(url);
+  assert.equal(subject.writes, 0);
+});
+
+const iconResource = (url, adaptive = false) => ({ url, blob: image(), ...(adaptive ? { darkBlob: image() } : {}), width: 1, height: 1,
+  vector: adaptive, adaptive, updatedAt: 123456 });
+function withRemoteIcons() {
+  const state = createEmptyState();
+  state.entries.push({ id: 'remote', type: 'site', name: 'Remote', url: 'https://remote.example/', groupId: 'group-home', parentId: null,
+    icon: { kind: 'letter', value: 'R' }, iconUrl: 'https://cdn.example/icon.png', iconVariants: {
+      light: { url: 'https://cdn.example/light.png', fit: 'contain' }, dark: { url: 'https://cdn.example/dark.png', fit: 'cover' },
+    }, order: 0 });
+  state.entries.push({ ...state.entries[0], id: 'remote-two', url: 'https://two.example/', order: 1 });
+  return state;
+}
+
+test('portable ZIP contains only referenced cached URL images and both adaptive schemes before publishing restored navigation', async () => {
+  const source = harness(), state = withRemoteIcons();
+  for (const url of ['https://cdn.example/icon.png', 'https://cdn.example/light.png', 'https://cdn.example/dark.png', 'https://unused.example/icon.png']) {
+    source.icons.set(url, iconResource(url, url.includes('/light.')));
+  }
+  const archive = await source.store.exportBackup(state), files = unzipSync(new Uint8Array(await archive.arrayBuffer()));
+  const manifest = JSON.parse(new TextDecoder().decode(files['manifest.json']));
+  assert.equal(manifest.version, 2);
+  assert.equal(manifest.icons.length, 3, 'shared URLs are stored once and unrelated cache records stay private');
+  assert.equal(Object.keys(files).filter((path) => path.startsWith('icons/')).length, 4);
+  assert.equal(source.writes, 0, 'export never changes navigation');
+  const target = harness(), plan = await target.store.inspectBackup(archive);
+  assert.equal(plan.icons.size, 3);
+  assert.equal(target.icons.size, 0, 'inspection does not write image records');
+  const saved = await target.store.restoreBackup(plan, 0);
+  assert.deepEqual(saved.entries, state.entries, 'portable HTTP keys and per-scheme fits remain unchanged');
+  assert.equal(target.icons.size, 3);
+  assert.deepEqual(target.iconEvents.map((event) => event.kind), ['restore', 'restore', 'restore', 'publish']);
+  assert.equal(target.iconEvents.at(-1).sources.length, 3, 'no navigation notification precedes its restored bytes');
+  const adaptive = target.icons.get('https://cdn.example/light.png');
+  assert.equal(adaptive.adaptive, true); assert.equal(adaptive.vector, true);
+  assert.deepEqual(new Uint8Array(await adaptive.darkBlob.arrayBuffer()), PNG);
+  assert.equal(adaptive.updatedAt, 123456);
+});
+
+test('old URL-only ZIP remains readable and hydration is an explicit restore action with revision and rollback guards', async () => {
+  const source = harness(), archive = await source.store.exportBackup(withRemoteIcons());
+  const legacy = await rewriteBackup(archive, (files) => {
+    const manifest = JSON.parse(new TextDecoder().decode(files['manifest.json'])); manifest.version = 1; delete manifest.icons;
+    files['manifest.json'] = strToU8(JSON.stringify(manifest));
+  });
+  let prepared = 0, results = 0;
+  const target = harness({ iconResources: { read: async () => null, restore: async () => assert.fail('legacy ZIP has no bytes'),
+    prepare: async (state, options) => { prepared++; assert.equal(state.entries.length, 2); options.onIconProgress?.({ completed: 1 }); return { ready: 1 }; } } });
+  const plan = await target.store.inspectBackup(legacy);
+  assert.equal(plan.icons.size, 0); assert.equal(prepared, 0, 'preview never visits imported websites');
+  await assert.rejects(target.store.restoreBackup(plan, 7), { code: 'REVISION_CONFLICT' });
+  assert.equal(prepared, 0, 'a stale import does not start downloads');
+  await target.store.restoreBackup(plan, 0, { onIconProgress: (value) => assert.equal(value.completed, 1), onIconResult: (value) => { assert.equal(value.ready, 1); results++; } });
+  assert.equal(prepared, 1); assert.equal(results, 1);
+  await target.store.restoreBackup(plan, 1, { hydrateIcons: false });
+  assert.equal(prepared, 1, 'automatic recovery rollback never downloads icons');
+});
+
+test('portable ZIP rejects tampered URL icon bytes, references, paths and dimensions before writing any data', async () => {
+  const source = harness(), state = withRemoteIcons();
+  source.icons.set('https://cdn.example/light.png', iconResource('https://cdn.example/light.png', true));
+  const archive = await source.store.exportBackup(state), target = harness();
+  const mutations = [
+    (item) => { item.blob.sha256 = '0'.repeat(64); },
+    (item) => { item.url = 'https://unreferenced.example/icon.png'; },
+    (item) => { item.width = 2; },
+    (item) => { delete item.darkBlob; },
+    (item) => { item.darkBlob.path = item.blob.path; },
+    (item) => { item.blob.path = 'assets/0.png'; },
+    (item) => { item.blob.extra = 'unexpected'; },
+    (item) => { item.adaptive = false; },
+  ];
+  for (const mutate of mutations) await assert.rejects(target.store.inspectBackup(await rewriteBackup(archive, (files) => {
+    const manifest = JSON.parse(new TextDecoder().decode(files['manifest.json'])); mutate(manifest.icons[0]);
+    files['manifest.json'] = strToU8(JSON.stringify(manifest));
+  })));
+  await assert.rejects(target.store.inspectBackup(await rewriteBackup(archive, (files) => {
+    const manifest = JSON.parse(new TextDecoder().decode(files['manifest.json'])); manifest.icons.push(manifest.icons[0]);
+    files['manifest.json'] = strToU8(JSON.stringify(manifest));
+  })));
+  const plan = await target.store.inspectBackup(archive); plan.icons.get('https://cdn.example/light.png').width = 2;
+  await assert.rejects(target.store.restoreBackup(plan, 0));
+  assert.equal(target.writes, 0); assert.equal(target.icons.size, 0); assert.equal(target.records.size, 0);
+});
+
+test('included image persistence failure aborts restoration before hydration or navigation writes', async () => {
+  const source = harness(), state = withRemoteIcons();
+  source.icons.set('https://cdn.example/icon.png', iconResource('https://cdn.example/icon.png'));
+  let preparations = 0;
+  const target = harness({ iconResources: { read: async () => null, restore: async () => null,
+    prepare: async () => { preparations++; throw Error('included bytes must never be downloaded again'); } } });
+  const plan = await target.store.inspectBackup(await source.store.exportBackup(state));
+  await assert.rejects(target.store.restoreBackup(plan, 0), { code: 'MISSING_ASSET' });
+  assert.equal(preparations, 0); assert.equal(target.writes, 0); assert.equal(target.records.size, 0);
+  assert.equal((await target.store.loadState()).entries.length, 0);
+});
+
+test('image-only sync cancellation aborts restore even when navigation revision is unchanged', async () => {
+  const source = harness(), state = withImages();
+  state.entries.push({ ...withRemoteIcons().entries[0], order: 1 });
+  source.records.set('icon', { id: 'icon', blob: image() });
+  let preparations = 0;
+  const target = harness({ iconResources: { read: async () => null, restore: async () => assert.fail('no URL icon bytes in this archive'),
+    prepare: async () => { preparations++; return { total: 3, completed: 1, cancelled: true, missing: [] }; } } });
+  const before = await target.store.loadState(), plan = await target.store.inspectBackup(await source.store.exportBackup(state));
+  await assert.rejects(target.store.restoreBackup(plan, before.revision), { code: 'REVISION_CONFLICT' });
+  assert.equal(preparations, 1);
+  assert.equal(target.writes, 0, 'an unchanged navigation revision cannot authorize stale image preparation after sync');
+  assert.equal(target.records.size, 0, 'cancelled preparation does not stage uploaded icon assets');
+  assert.deepEqual(await target.store.loadState(), before);
+});
 
 test('multi-color background and custom curve survive local save and ZIP restoration without image assets', async () => {
   const subject = harness();
@@ -45,31 +167,12 @@ test('fresh installation defaults remain deleted after reload and an existing em
   assert.equal((await subject.another().loadState()).entries.length, 0);
 });
 
-test('a fresh device cannot resurrect a deleted default or overwrite an edited default on its first sync', async () => {
-  const remote = syncHarness();
-  const a = harness({ initialState: createInitialState, syncStore: remote.adapter, device: 'zz-existing' }).store;
-  const b = harness({ initialState: createInitialState, syncStore: remote.adapter, device: 'aa-fresh' }).store;
-  const initial = await a.loadState();
-  const edited = deleteEntry(initial, 'default-google');
-  const github = edited.entries.find((entry) => entry.id === 'default-github');
-  github.name = 'GitHub Work'; github.page = 2;
-  await a.saveState(edited, initial.revision);
-  await a.setSyncEnabled(true);
-  assert.equal((await b.loadState()).entries.length, 6);
-  await b.setSyncEnabled(true);
-  const received = await b.loadState();
-  assert(!received.entries.some((entry) => entry.id === 'default-google'));
-  assert.equal(received.entries.find((entry) => entry.id === 'default-github').name, 'GitHub Work');
-  assert.equal(received.entries.find((entry) => entry.id === 'default-github').page, 2);
-  await a.syncNow();
-  assert(!((await a.loadState()).entries.some((entry) => entry.id === 'default-google')));
-});
-
-function harness({ syncStore, device = 'new', syncMinInterval = 0, initialState } = {}) {
+function harness({ syncStore, device = 'new', initialState, iconResources, imageTools = mockImages } = {}) {
   let envelope = null;
   let writes = 0;
   let rejectWrite = false;
   const records = new Map();
+  const icons = new Map(), iconEvents = [];
   const listeners = new Set();
   let queue = Promise.resolve();
   let ids = 0;
@@ -77,6 +180,7 @@ function harness({ syncStore, device = 'new', syncMinInterval = 0, initialState 
     read: async () => structuredClone(envelope),
     async write(value) {
       if (rejectWrite) throw new Error('模拟存储额度不足');
+      iconEvents.push({ kind: 'publish', sources: [...icons.keys()] });
       envelope = structuredClone(value);
       writes++;
       for (const listener of listeners) listener(structuredClone(value.state));
@@ -95,9 +199,17 @@ function harness({ syncStore, device = 'new', syncMinInterval = 0, initialState 
     async add(record) { assert.equal(records.has(record.id), false); records.set(record.id, record); },
     delete: async (id) => records.delete(id),
   };
-  const options = { configStore, assetStore, locks, syncStore, initialState, syncDelay: 600_000, syncMinInterval, imageTools: mockImages, uuid: () => `${device}-${++ids}` };
+  const iconAdapter = iconResources || {
+    read: async (source) => icons.get(source) || null,
+    restore: async (record) => {
+      iconEvents.push({ kind: 'restore', source: record.url });
+      if (!icons.has(record.url)) icons.set(record.url, structuredClone(record));
+      return icons.get(record.url);
+    },
+  };
+  const options = { configStore, assetStore, iconResources: iconAdapter, locks, syncStore, initialState, imageTools, uuid: () => `${device}-${++ids}` };
   return {
-    store: createStorage(options), another: () => createStorage(options), records,
+    store: createStorage(options), another: () => createStorage(options), records, icons, iconEvents,
     get writes() { return writes; }, get envelope() { return structuredClone(envelope); },
     failWrites() { rejectWrite = true; },
     seedEnvelope(value) { envelope = structuredClone(value); },
@@ -152,6 +264,7 @@ test('legacy backup validates wallpaper before migration but does not store or r
   delete legacy.settings.columns;
   delete legacy.settings.adaptiveWallpaper;
   delete legacy.settings.adaptIcons;
+  delete legacy.settings.visualEnhancement;
   legacy.settings.iconSize = 108;
   legacy.groups.push({ id: 'old-group', name: '旧分组' });
   legacy.entries.push({ id: 'old-site', type: 'site', name: '旧网址', url: 'https://legacy.example.com/', groupId: 'old-group', parentId: null, icon: { kind: 'preset', value: 'github' }, order: 0 });
@@ -165,8 +278,9 @@ test('legacy backup validates wallpaper before migration but does not store or r
   const restored = await subject.store.restoreBackup(plan, 0);
   assert.deepEqual(restored.settings.background, { kind: 'bing', value: 'daily' });
   assert.equal(restored.settings.columns, 8, 'older backups acquire the new column preference');
-  assert.equal(restored.settings.adaptiveWallpaper, false, 'older backups keep visual enhancements disabled');
-  assert.equal(restored.settings.adaptIcons, false);
+  assert.equal(restored.settings.visualEnhancement, true, 'missing legacy choices acquire the current unified default');
+  assert.equal(Object.hasOwn(restored.settings, 'adaptiveWallpaper'), false);
+  assert.equal(Object.hasOwn(restored.settings, 'adaptIcons'), false);
   assert.equal(restored.settings.iconSize, 108, 'existing layout choices remain intact');
   assert.equal(restored.providers.some((provider) => provider.id === 'baidu'), false, 'legacy archives do not restore the retired built-in');
   assert.equal(restored.providers.some((provider) => provider.id === 'my-baidu'), true, 'same-name and same-domain custom searches remain available');
@@ -187,22 +301,21 @@ test('ZIP restores visual module switches and manual appearance while retaining 
   const subject = harness();
   const state = withImages();
   state.settings.background = { kind: 'bing', value: 'daily' };
-  state.settings.adaptiveWallpaper = true; state.settings.adaptIcons = true;
+  state.settings.visualEnhancement = true;
   state.settings.shade = 53; state.settings.theme = 'dark';
   subject.records.set('icon', { id: 'icon', blob: image() });
   subject.records.set('unreferenced-derived-icon', { id: 'unreferenced-derived-icon', blob: image() });
   const backup = await subject.store.exportBackup(state);
   const files = unzipSync(new Uint8Array(await backup.arrayBuffer()));
   const data = JSON.parse(new TextDecoder().decode(files['data.json']));
-  assert.equal(data.settings.adaptiveWallpaper, true);
-  assert.equal(data.settings.adaptIcons, true);
+  assert.equal(data.settings.visualEnhancement, true);
+  assert.equal(Object.hasOwn(data.settings, 'adaptIcons'), false);
   assert.deepEqual(Object.keys(files).sort(), ['assets/0.png', 'data.json', 'manifest.json']);
   assert.equal(new TextDecoder().decode(files['data.json']).includes('unreferenced-derived-icon'), false);
   const plan = await subject.store.inspectBackup(backup);
   assert.deepEqual([...plan.assets.keys()], ['icon']);
   const restored = await subject.store.restoreBackup(plan, 0);
-  assert.equal(restored.settings.adaptiveWallpaper, true);
-  assert.equal(restored.settings.adaptIcons, true);
+  assert.equal(restored.settings.visualEnhancement, true);
   assert.equal(restored.settings.shade, 53);
   assert.equal(restored.settings.theme, 'dark');
   assert.equal(restored.entries[1].iconBackground, '#cceeff');
@@ -228,6 +341,23 @@ test('two tabs cannot overwrite the same revision; retain only three snapshots a
   assert.equal(restored.revision, 6);
   assert.equal(restored.settings.width, 1040);
   await assert.rejects(subject.store.restoreSnapshot(5), { code: 'REVISION_CONFLICT' });
+});
+
+test('snapshot restoration prepares historical icons once and rejects a concurrent edit without holding the navigation lock', async () => {
+  let subject, mutateDuringPrepare = false, prepared = 0;
+  subject = harness({ iconResources: { read: async () => null, restore: async () => null, prepare: async (state) => {
+    prepared++; assert.equal(state.entries.length, 2);
+    if (mutateDuringPrepare) { const current = await subject.store.loadState(); current.settings.width = 1370; await subject.store.saveState(current, current.revision); }
+    return { completed: 2 };
+  } } });
+  const saved = await subject.store.saveState(withRemoteIcons(), 0);
+  await subject.store.saveState(createEmptyState(), saved.revision);
+  mutateDuringPrepare = true;
+  await assert.rejects(subject.store.restoreSnapshot(2), { code: 'REVISION_CONFLICT' });
+  assert.equal(prepared, 1); assert.equal((await subject.store.loadState()).settings.width, 1370);
+  assert.equal((await subject.store.loadState()).entries.length, 0);
+  await assert.rejects(subject.store.restoreSnapshot(2), { code: 'REVISION_CONFLICT' });
+  assert.equal(prepared, 1, 'a stale snapshot action does not fetch again');
 });
 
 test('legacy local configuration, snapshots and newly exported backup all materialize one desktop', async () => {
@@ -277,7 +407,7 @@ test('inspection rejects missing assets, tampered hashes, unknown files and vers
     },
     (files) => { files['../escape.html'] = strToU8('<script>throw 1</script>'); },
     (files) => {
-      const manifest = JSON.parse(new TextDecoder().decode(files['manifest.json'])); manifest.version = 2;
+      const manifest = JSON.parse(new TextDecoder().decode(files['manifest.json'])); manifest.version = 99;
       files['manifest.json'] = strToU8(JSON.stringify(manifest));
     },
     (files) => { files['surprise.js'] = strToU8('alert(1)'); },
@@ -326,181 +456,90 @@ test('image ingestion validates MIME, byte and pixel limits before decoding; cha
   assert.deepEqual(revisions, [1]);
 });
 
-function syncHarness() {
-  let items = {};
-  let failure = false;
-  let writes = 0;
-  const listeners = new Set();
-  const emit = () => { for (const listener of listeners) queueMicrotask(listener); };
-  return {
-    adapter: {
-      get: async () => structuredClone(items),
-      async set(values) { if (failure) throw new Error('模拟浏览器同步不可用'); Object.assign(items, structuredClone(values)); writes++; emit(); },
-      async remove(keys) { for (const key of keys) delete items[key]; emit(); },
-      subscribe(callback) { listeners.add(callback); return () => listeners.delete(callback); },
-    },
-    get writes() { return writes; }, get items() { return structuredClone(items); }, fail(value) { failure = value; },
-  };
-}
-
 const site = (id, label = id, order = 0) => ({ id, type: 'site', name: label, url: `https://${id}.example.com/`, groupId: 'group-home', parentId: null, icon: { kind: 'letter', value: '网' }, order });
 
-test('native sync is opt-in, publishes portable configuration, retries failures and disabling keeps local changes', async () => {
-  const remote = syncHarness();
-  const subject = harness({ syncStore: remote.adapter, device: 'device-a' });
-  let state = await subject.store.loadState();
-  state.entries.push(site('private'));
-  state = await subject.store.saveState(state, state.revision);
-  assert.equal(remote.writes, 0);
-  assert.equal(subject.envelope.sync.enabled, false);
-  remote.fail(true);
-  assert.equal((await subject.store.setSyncEnabled(true)).phase, 'error');
-  assert.equal((await subject.store.loadState()).entries[0].id, 'private');
-  remote.fail(false);
-  assert.equal((await subject.store.syncNow()).phase, 'saved');
-  assert.ok(remote.writes > 0);
-  await subject.store.setSyncEnabled(false);
-  state = await subject.store.loadState();
-  state.entries[0].name = '关闭期间修改';
-  await subject.store.saveState(state, state.revision);
-  const writes = remote.writes;
+function retiredNativeStore() {
+  const calls = [];
+  const existing = { 'owntab.sync.v1.old.head': { clock: 18 }, 'owntab.sync.v1.old.18': 'remote data stays untouched' };
+  const adapter = Object.fromEntries(['get', 'set', 'remove', 'subscribe'].map((method) => [method, () => {
+    calls.push(method); throw Error('Retired native sync must never run.');
+  }]));
+  return { adapter, calls, existing };
+}
+
+test('retired browser sync performs no startup, reads, writes, subscriptions or remote cleanup', async () => {
+  const remote = retiredNativeStore();
+  const beforeRemote = structuredClone(remote.existing);
+  const subject = harness({ syncStore: remote.adapter });
+  const state = createEmptyState(); state.entries.push(site('local'));
+  const legacy = { version: 1, enabled: true, dirty: true, document: { actor: 'legacy-device', clock: 27 },
+    documents: { preserved: { records: { 'e:old': { value: 'retained conflict metadata' } } } },
+    base: { retained: true }, blockedError: 'old quota error', lastPublishedAt: 123 };
+  subject.seedEnvelope({ version: 1, state, snapshots: [], sync: legacy });
+  const loaded = await subject.store.loadState();
+  assert.equal(loaded.entries[0].id, 'local');
+  const statuses = [];
+  const stop = subject.store.subscribeSyncStatus((value) => statuses.push(value));
+  assert.equal(subject.store.getSyncStatus().enabled, false);
   assert.equal((await subject.store.syncNow()).phase, 'disabled');
-  assert.equal(remote.writes, writes);
-  assert.equal((await subject.store.setSyncEnabled(true)).phase, 'saved');
-  assert.equal((await subject.store.loadState()).entries[0].name, '关闭期间修改');
-});
-
-test('native-sync storage adapters carry only visual preferences and preserve local original icons when switching off', async () => {
-  const remote = syncHarness();
-  const a = harness({ syncStore: remote.adapter, device: 'visual-a' });
-  const b = harness({ syncStore: remote.adapter, device: 'visual-b' });
-  let original = await a.store.loadState();
-  original.settings.adaptiveWallpaper = true; original.settings.adaptIcons = true;
-  original.settings.shade = 36; original.settings.theme = 'dark';
-  original.entries.push({ ...site('original'), icon: { kind: 'image', value: 'device-original-image' }, iconBackground: '#cceeff' });
-  a.records.set('device-original-image', { id: 'device-original-image', blob: image() });
-  await a.store.saveState(original, original.revision);
-  assert.equal(remote.writes, 0, 'saving module switches does not opt the user into native sync');
-  await a.store.setSyncEnabled(true); await b.store.setSyncEnabled(true);
-  let incoming = await b.store.loadState();
-  assert.equal(incoming.settings.adaptiveWallpaper, true);
-  assert.equal(incoming.settings.adaptIcons, true);
-  assert.equal(incoming.settings.shade, 36);
-  assert.equal(incoming.settings.theme, 'dark');
-  assert.equal(incoming.entries[0].iconBackground, '#cceeff');
-  assert.equal(incoming.entries[0].icon.kind, 'letter');
-  assert.equal(JSON.stringify(remote.items).includes('device-original-image'), false);
-  assert.equal(b.records.size, 0, 'native sync does not copy any image or derived image');
-  incoming.settings.adaptiveWallpaper = false; incoming.settings.adaptIcons = false;
-  incoming = await b.store.saveState(incoming, incoming.revision);
-  await b.store.syncNow(); await a.store.syncNow();
-  const restored = await a.store.loadState();
-  assert.equal(restored.settings.adaptiveWallpaper, false);
-  assert.equal(restored.settings.adaptIcons, false);
-  assert.equal(restored.settings.shade, 36);
-  assert.equal(restored.entries[0].iconBackground, '#cceeff');
-  assert.deepEqual(restored.entries[0].icon, original.entries[0].icon);
-  assert.deepEqual([...new Uint8Array(await a.records.get('device-original-image').blob.arrayBuffer())], [...PNG]);
-});
-
-test('two native sync devices merge independent edits, preserve conflicts and publish a chosen recovery', async () => {
-  const remote = syncHarness();
-  const a = harness({ syncStore: remote.adapter, device: 'device-a' }).store;
-  const b = harness({ syncStore: remote.adapter, device: 'device-b' }).store;
-  await a.setSyncEnabled(true); await b.setSyncEnabled(true);
-  let first = await a.loadState(); let second = await b.loadState();
-  first.entries.push(site('alpha')); second.entries.push(site('beta'));
-  await a.saveState(first, first.revision); await b.saveState(second, second.revision);
-  await Promise.all([a.syncNow(), b.syncNow()]);
-  const notifications = [];
-  const stop = b.subscribeState((value) => notifications.push(value));
-  await a.syncNow(); await b.syncNow();
-  first = await a.loadState(); second = await b.loadState();
-  assert.deepEqual(first.entries.map((entry) => entry.id).sort(), ['alpha', 'beta']);
-  assert.deepEqual(second.entries.map((entry) => entry.id).sort(), ['alpha', 'beta']);
-  assert.ok(notifications.some((value) => value.entries.length === 2));
+  assert.equal((await subject.store.setSyncEnabled(false)).phase, 'disabled');
+  await assert.rejects(subject.store.setSyncEnabled(true), { code: 'SYNC_UNAVAILABLE' });
+  await assert.rejects(subject.store.setSyncEnabled('true'), { code: 'SYNC_INVALID' });
+  await assert.rejects(subject.store.restoreSyncConflict('legacy-conflict'), { code: 'SYNC_UNAVAILABLE' });
+  assert.deepEqual(await subject.store.getSyncConflicts(), []);
   stop();
-  first.entries.find((entry) => entry.id === 'alpha').name = '设备 A';
-  second.entries.find((entry) => entry.id === 'alpha').name = '设备 B';
-  await a.saveState(first, first.revision); await b.saveState(second, second.revision);
-  await Promise.all([a.syncNow(), b.syncNow()]); await a.syncNow(); await b.syncNow();
-  const conflicts = await a.getSyncConflicts();
-  assert.equal(conflicts.length, 1);
-  assert.equal(conflicts[0].kind, 'entry');
-  const recovered = await a.restoreSyncConflict(conflicts[0].id);
-  assert.equal(recovered.entries.find((entry) => entry.id === 'alpha').name, conflicts[0].name);
-  await a.syncNow(); await b.syncNow();
-  assert.equal((await b.loadState()).entries.find((entry) => entry.id === 'alpha').name, conflicts[0].name);
-  assert.equal((await b.getSyncConflicts()).length, 0);
-  const stableWrites = remote.writes;
-  await a.syncNow(); await b.syncNow();
-  assert.equal(remote.writes, stableWrites, 'a clean pull must not publish a new generation or loop');
+  assert.deepEqual(statuses.map(({ phase, enabled }) => [phase, enabled]), [['disabled', false]]);
+  assert.equal(subject.writes, 0, 'compatibility calls must not rewrite local data or old metadata');
+  loaded.entries[0].name = '本机继续编辑';
+  const saved = await subject.store.saveState(loaded, loaded.revision);
+  assert.equal((await subject.another().loadState()).entries[0].name, '本机继续编辑');
+  assert.deepEqual(subject.envelope.sync, legacy);
+  const restored = await subject.store.restoreSnapshot(saved.revision);
+  assert.equal(restored.entries[0].name, 'local');
+  assert.deepEqual(subject.envelope.sync, legacy, 'snapshot restore preserves retired metadata verbatim');
+  assert.deepEqual(remote.calls, []);
+  assert.deepEqual(remote.existing, beforeRemote);
 });
 
-test('preview cannot enable native sync and quota errors retain the complete local configuration', async () => {
-  const preview = harness({ syncStore: null }).store;
-  await preview.loadState();
-  assert.equal(preview.getSyncStatus().phase, 'preview');
-  await assert.rejects(preview.setSyncEnabled(true), { code: 'SYNC_UNAVAILABLE' });
-  const remote = syncHarness();
-  const subject = harness({ syncStore: remote.adapter, device: 'device-large' });
+test('local navigation above native-sync quota saves, reloads and restores through ZIP without truncation', async () => {
+  const remote = retiredNativeStore();
+  const subject = harness({ syncStore: remote.adapter });
   let state = await subject.store.loadState();
-  for (let index = 0; index < 300; index++) state.entries.push({ ...site(`site-${index}`, `网站 ${index}`, index), url: `https://example.com/${'a'.repeat(500)}?id=${index}` });
+  for (let index = 0; index < 300; index++) state.entries.push({ ...site(`site-${index}`, `网站 ${index}`, index),
+    url: `https://example.com/${'a'.repeat(500)}?id=${index}` });
+  assert(Buffer.byteLength(JSON.stringify(state)) > 100 * 1024, 'fixture must exceed the removed native sync quota');
   state = await subject.store.saveState(state, state.revision);
-  assert.equal((await subject.store.setSyncEnabled(true)).phase, 'error');
-  assert.equal((await subject.store.loadState()).entries.length, 300);
-  assert.equal(remote.writes, 0, 'no truncated or partial configuration is uploaded');
+  assert.equal((await subject.another().loadState()).entries.length, 300);
+  assert.equal(Object.hasOwn(subject.envelope, 'sync'), false, 'new local envelopes create no browser-sync history');
+  const archive = await subject.store.exportBackup(state);
+  const plan = await subject.store.inspectBackup(archive);
+  const restored = await subject.store.restoreBackup(plan, state.revision);
+  assert.deepEqual(restored.entries, state.entries);
+  assert.equal(restored.entries.length, 300);
+  assert.deepEqual(remote.calls, []);
 });
 
-test('sync publication throttle persists across new pages and keeps edits locally while waiting', async () => {
-  const remote = syncHarness();
-  const subject = harness({ syncStore: remote.adapter, device: 'device-throttle', syncMinInterval: 10000 });
-  assert.equal((await subject.store.setSyncEnabled(true)).phase, 'saved');
-  const firstWrites = remote.writes;
-  let state = await subject.store.loadState();
-  state.entries.push(site('waiting'));
-  state = await subject.store.saveState(state, state.revision);
-  assert.equal((await subject.store.syncNow()).phase, 'pending');
-  const anotherPage = subject.another();
-  assert.equal((await anotherPage.syncNow()).phase, 'pending');
-  assert.equal(remote.writes, firstWrites);
-  assert.equal((await anotherPage.loadState()).entries[0].id, 'waiting');
-  assert.ok(subject.envelope.sync.lastPublishedAt > 0);
-});
-
-test('exhausted sync history pauses synchronization without rejecting or reverting valid local edits', async () => {
-  const remote = syncHarness();
-  const subject = harness({ syncStore: remote.adapter, device: 'device-full' });
+test('exhausted or malformed retired native metadata cannot block valid local edits', async () => {
+  const remote = retiredNativeStore();
+  const subject = harness({ syncStore: remote.adapter });
   const state = createEmptyState();
-  const document = createReplica('device-full');
-  document.clock = 1;
-  for (let index = 0; index < 10000; index++) document.records[`e:old-${index}`] = { n: 1, context: { 'device-full': 0 }, value: null };
-  subject.seedEnvelope({ version: 1, state, snapshots: [], sync: { version: 1, enabled: true, dirty: false,
-    document, documents: { 'device-full': document }, base: portableState(state), lastPublishedAt: 0 } });
+  const retired = { version: 99, enabled: true, dirty: true, blockedError: 'native history exhausted',
+    document: { clock: 1, records: Object.fromEntries(Array.from({ length: 10001 }, (_, index) => [`e:old-${index}`, null])) },
+    unknownLegacyField: { retain: ['all', 'original', 'metadata'] } };
+  subject.seedEnvelope({ version: 1, state, snapshots: [], sync: retired });
   let current = await subject.store.loadState();
-  current.entries.push(site('untracked'));
+  current.entries.push(site('unlimited-local'));
   current = await subject.store.saveState(current, current.revision);
-  assert.equal(current.entries[0].id, 'untracked');
   assert.equal(current.revision, 1);
-  assert.ok(subject.envelope.sync.blockedError);
-  assert.equal(Object.keys(subject.envelope.sync.document.records).length, 10000);
-  assert.equal(subject.envelope.sync.base.entries.length, 0, 'retain the last fully tracked baseline');
-  assert.equal(subject.store.getSyncStatus().phase, 'error');
-  current.entries[0].name = '未同步的后续本地修改';
+  assert.deepEqual(subject.envelope.sync, retired);
+  current.entries[0].name = '继续保存在本机';
   current = await subject.store.saveState(current, current.revision);
-  assert.ok(subject.envelope.sync.blockedError, 'a later edit must also include the previously untracked addition');
-  assert.equal((await subject.store.syncNow()).phase, 'error');
-  assert.equal((await subject.store.loadState()).entries[0].name, '未同步的后续本地修改');
-  const anotherPage = subject.another();
-  assert.equal((await anotherPage.syncNow()).phase, 'error');
-  assert.equal((await anotherPage.loadState()).entries[0].name, '未同步的后续本地修改');
-  assert.equal(remote.writes, 0, 'never materialize or publish the stale replica over untracked local edits');
-  current.entries = [];
-  current = await subject.store.saveState(current, current.revision);
-  assert.equal(subject.envelope.sync.blockedError, null, 'returning to a trackable baseline can clear the protocol block');
+  assert.equal((await subject.another().loadState()).entries[0].name, '继续保存在本机');
+  assert.deepEqual(subject.envelope.sync, retired);
   const previous = subject.envelope;
   subject.failWrites();
   current.settings.width = 1200;
   await assert.rejects(subject.store.saveState(current, current.revision), /额度不足/u);
-  assert.deepEqual(subject.envelope, previous, 'an actual local storage failure still rejects and preserves the previous valid state');
+  assert.deepEqual(subject.envelope, previous, 'actual local persistence failures still preserve the last valid envelope');
+  assert.deepEqual(remote.calls, []);
 });

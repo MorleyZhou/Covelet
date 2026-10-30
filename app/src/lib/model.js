@@ -419,6 +419,42 @@ export function combineEntries(input, draggedId, targetId, { folderId, name: fol
   return finish(state);
 }
 
+// A desktop selection enters one folder in a single state transition. Keep the
+// target's seat and existing contents; all selected site metadata stays intact.
+export function combineSelectedEntries(input, draggedIds, targetId, options = {}) {
+  const ids = [...new Set(draggedIds)];
+  if (ids.length === 1) return combineEntries(input, ids[0], targetId, options);
+  const state = migrateNavigationState(input), selected = new Set(ids);
+  const sources = ids.map((id) => state.entries.find((entry) => entry.id === id));
+  const target = state.entries.find((entry) => entry.id === targetId);
+  if (!ids.length || !target || sources.some((entry) => !entry)) fail(tr("找不到要合并的条目"));
+  if (selected.has(targetId)) fail(tr("不能将条目拖到自身"));
+  if (sources.some((entry) => entry.type !== 'site')) fail(tr("只有网站可以合并到文件夹。"));
+  if (sources.some((entry) => entry.parentId !== null) || target.parentId !== null) fail(tr("多选仅支持主屏幕条目。"));
+  if (!['site', 'folder'].includes(target.type)) fail(tr("组件不能合并为文件夹"));
+
+  let folder = target, children;
+  if (target.type === 'folder') {
+    children = ordered(state.entries.filter((entry) => entry.parentId === target.id));
+  } else {
+    identifier(options.folderId, tr("新文件夹标识"));
+    if (state.entries.some((entry) => entry.id === options.folderId)) fail(tr("新文件夹标识已存在"));
+    const label = name(options.name ?? tr("新建文件夹"), tr("文件夹名称"));
+    folder = { id: options.folderId, type: 'folder', name: label, groupId: 'group-home', parentId: null,
+      page: target.page ?? 0, icon: letterIcon(label), order: target.order };
+    if (target.position) folder.position = copy(target.position);
+    state.entries.push(folder);
+    children = [target];
+  }
+  children.push(...sources);
+  children.forEach((entry, order) => {
+    entry.parentId = folder.id; entry.page = folder.page ?? 0; entry.order = order;
+    delete entry.position;
+  });
+  renumber(state);
+  return finish(state);
+}
+
 export function deleteEntry(input, id) {
   const state = migrateNavigationState(input);
   const entry = state.entries.find((item) => item.id === id);

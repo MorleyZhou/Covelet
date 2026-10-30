@@ -12,6 +12,34 @@ const memory = () => {
   return { records, get: async (origin) => records.get(origin), set: async (origin, blob) => { records.set(origin, blob); } };
 };
 
+test('a full-sync invalidation reloads a provider image from disk without evicting it or fetching', async () => {
+  const cacheStore = memory(), before = image(), after = image();
+  cacheStore.records.set('https://search.example', before);
+  let network = 0;
+  const icons = createProviderIconCache({ cacheStore, fetcher: async () => { network++; throw Error('Keep imported icons offline.'); } });
+  assert.equal(await icons.readCached('https://search.example?q={query}'), before);
+  cacheStore.records.set('https://search.example', after);
+  icons.invalidate();
+  assert.equal(await icons.readCached('https://search.example?q={query}'), after);
+  assert.equal(cacheStore.records.get('https://search.example'), after);
+  assert.equal(network, 0);
+});
+
+test('provider work started before a sync import cannot write stale icon bytes afterwards', async () => {
+  const cacheStore = memory();
+  let release, started;
+  const ready = new Promise((resolve) => { started = resolve; });
+  const icons = createProviderIconCache({ cacheStore, browserIcon: async () => {
+    started(); return new Promise((resolve) => { release = resolve; });
+  } });
+  const oldWork = icons.fetchForSave('https://search.example?q={query}');
+  await ready;
+  const incoming = image(); cacheStore.records.set('https://search.example', incoming);
+  icons.invalidate(); release(image());
+  assert.equal(await oldWork, null);
+  assert.equal(await icons.readCached('https://search.example?q={query}'), incoming);
+});
+
 test('saving a custom engine uses an existing origin grant without requesting new access', async () => {
   const requests = [], calls = [];
   const api = allowed();

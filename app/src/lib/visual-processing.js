@@ -189,8 +189,12 @@ function createWorkerClient(workerFactory, timeoutMs) {
   let worker, serial = 0;
   const waiting = new Map();
   function stop(error = new Error(FALLBACK_MESSAGE)) {
-    worker?.terminate();
+    const previous = worker;
     worker = null;
+    if (previous) {
+      previous.onmessage = previous.onerror = previous.onmessageerror = null;
+      previous.terminate();
+    }
     for (const job of waiting.values()) job.reject(error);
     waiting.clear();
   }
@@ -199,7 +203,9 @@ function createWorkerClient(workerFactory, timeoutMs) {
       active(signal);
       if (!worker) {
         worker = workerFactory();
+        const owner = worker;
         worker.onmessage = ({ data: message }) => {
+          if (worker !== owner) return;
           const job = waiting.get(message?.id);
           if (!job) return;
           waiting.delete(message.id);
@@ -207,14 +213,14 @@ function createWorkerClient(workerFactory, timeoutMs) {
           else if (message.ok) job.resolve(message.result);
           else job.reject(new Error(FALLBACK_MESSAGE));
         };
-        worker.onerror = () => stop();
-        worker.onmessageerror = () => stop();
+        worker.onerror = () => { if (worker === owner) stop(); };
+        worker.onmessageerror = () => { if (worker === owner) stop(); };
       }
-      const id = ++serial;
+      const id = ++serial, owner = worker;
       return new Promise((resolve, reject) => {
         const cleanup = () => { clearTimeout(timer); signal?.removeEventListener('abort', aborted); waiting.delete(id); };
         const aborted = () => { cleanup(); reject(abortError()); };
-        const timer = setTimeout(() => stop(), timeoutMs);
+        const timer = setTimeout(() => { if (worker === owner && waiting.has(id)) stop(); }, timeoutMs);
         waiting.set(id, { resolve(value) { cleanup(); resolve(value); }, reject(error) { cleanup(); reject(error); } });
         signal?.addEventListener('abort', aborted, { once: true });
         try { worker.postMessage({ id, ...data }, data.kind === 'captions' ? data.patches.map((patch) => patch.pixels) : [data.pixels]); }
@@ -287,11 +293,15 @@ export function createVisualProcessor({
       });
     }
     if (!running && !captionJobs && !queue.length) {
-      idleTimer = setTimeout(() => client.stop(), idleMs);
+      idleTimer = setTimeout(() => { if (!running && !captionJobs && !queue.length) client.stop(); }, idleMs);
       idleTimer.unref?.();
     }
   }
   return {
+    peekIconPresentation(url) {
+      const blob = cache.get(`icon:${url}`);
+      return blob ? iconPresentation.get(blob) : undefined;
+    },
     async captions(patches, signal) {
       active(signal);
       if (disposed) throw new Error(FALLBACK_MESSAGE);
@@ -355,6 +365,10 @@ export function createVisualProcessor({
 }
 
 let processor;
+export function getCachedIconPresentation(url) {
+  return processor?.peekIconPresentation(url);
+}
+
 export function acquireVisualResult(kind, url) {
   processor ??= createVisualProcessor();
   return processor.acquire(kind, url);

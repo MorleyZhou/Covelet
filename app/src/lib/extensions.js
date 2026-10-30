@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { APP_DEFINITIONS } from './app-catalog.js';
 // The catalog contains only reviewed modules bundled with Covelet. Configuration
 // and imported backups cannot register executable code or download a module.
 export const EXTENSION_TYPES = Object.freeze([
@@ -7,14 +8,18 @@ export const EXTENSION_TYPES = Object.freeze([
 ]);
 
 export const EXTENSION_CATEGORIES = Object.freeze([
+  Object.freeze({ id: 'learning', get label() { return tr('语言学习'); } }),
+  Object.freeze({ id: 'finance', get label() { return tr('财务与行情'); } }),
+  Object.freeze({ id: 'creative', get label() { return tr('处理与创作'); } }),
+  Object.freeze({ id: 'life', get label() { return tr('生活与关注'); } }),
   Object.freeze({ id: 'development', get label() { return tr("开发工具"); } }),
   Object.freeze({ id: 'time', get label() { return tr("时间工具"); } }),
   Object.freeze({ id: 'productivity', get label() { return tr("记录与阅读"); } }),
-  Object.freeze({ id: 'browsing', get label() { return tr("浏览管理"); } }),
   Object.freeze({ id: 'sync', get label() { return tr("数据同步"); } }),
 ]);
 
 export const BUNDLED_EXTENSIONS = Object.freeze([
+  ...APP_DEFINITIONS,
   Object.freeze({ id: 'clock', type: 'widget', category: 'time', get name() { return tr("时钟"); },
     get description() { return tr("世界时钟、时区对照、倒计时与计时。"); }, core: 'clock-core.wasm',
     keywords: Object.freeze(['时间', '时钟', '世界时钟', '时区', '倒计时', '秒表', '计时', 'clock', 'timer']) }),
@@ -24,9 +29,6 @@ export const BUNDLED_EXTENSIONS = Object.freeze([
   Object.freeze({ id: 'read-later', type: 'widget', category: 'productivity', get name() { return tr("稍后读"); },
     get description() { return tr("收藏链接，按未读、已读与归档整理。"); }, core: 'tools-core.wasm',
     keywords: Object.freeze(['阅读', '链接', '收藏', '未读', 'reading']) }),
-  Object.freeze({ id: 'tab-snapshots', type: 'functional', category: 'browsing', get name() { return tr("标签快照"); },
-    get description() { return tr("保存当前窗口，按需重新打开所选标签。"); }, core: 'tools-core.wasm',
-    keywords: Object.freeze(['标签', '窗口', '会话', '快照', 'tabs', 'session']) }),
   Object.freeze({
     id: 'github-contributions',
     type: 'widget',
@@ -41,7 +43,7 @@ export const BUNDLED_EXTENSIONS = Object.freeze([
     type: 'functional',
     category: 'sync',
     get name() { return tr("自定义存储同步"); },
-    get description() { return tr("加密同步导航和设置，浏览版本与选择性恢复。"); },
+    get description() { return tr("统一加密同步桌面、所有内置扩展数据和图标。"); },
     core: 'sync-core.wasm',
     keywords: Object.freeze(['GitHub', 'GitLab', 'Cloudflare R2', 'OSS', 'WebDAV', '存储', '同步', '加密']),
   }),

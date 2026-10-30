@@ -1,6 +1,7 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { createEmptyState, createInitialState, letterIcon, migrateNavigationState } from './model.js';
 import { siteIconAddress } from './site-icons.js';
+import { sameJson as same } from './json-equal.js';
 
 // Each installation owns its keys. A shared mutable "whole state" key would let
 // Chrome's last writer silently discard another device's offline changes.
@@ -8,7 +9,6 @@ export const SYNC_PREFIX = 'owntab.sync.v1.';
 export const SYNC_LIMITS = Object.freeze({ total: 102400, item: 8192, items: 512 });
 const encoder = new TextEncoder();
 const copy = (value) => structuredClone(value);
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const legacyVisualSettings = new Set(['adaptiveWallpaper', 'adaptIcons']);
 const initialSites = new Map(createInitialState().entries.map((entry) => [entry.id, entry]));
 const untouchedDefault = (value) => {
@@ -43,6 +43,18 @@ export function portableState(input) {
   }
   if (state.settings.background.kind === 'image') state.settings.background = copy(createEmptyState().settings.background);
   return state;
+}
+
+export function sameNavigationState(before, after) {
+  const normalize = (input) => {
+    const state = portableState(input);
+    // Entries have stable IDs and explicit order/parent/page/position fields.
+    // Only their containing array may be rearranged by materialization. Provider
+    // arrays and every nested value remain ordered and participate in equality.
+    state.entries.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+    return state;
+  };
+  return same(normalize(before), normalize(after));
 }
 
 function recordsOf(input) {
@@ -288,23 +300,7 @@ export async function publishReplica(store, document, items) {
 }
 
 export function browserSyncStore() {
-  const chrome = globalThis.chrome;
-  if (!chrome?.runtime?.id || !chrome?.storage?.sync) return null;
-  const call = (method, argument) => new Promise((resolve, reject) => {
-    try {
-      chrome.storage.sync[method](argument, (result) => {
-        const lastError = chrome.runtime.lastError;
-        if (lastError) reject(error(lastError.message, 'SYNC_BROWSER_ERROR'));
-        else resolve(result);
-      });
-    } catch (cause) { reject(cause); }
-  });
-  return {
-    get: () => call('get', null), set: (items) => call('set', items), remove: (keys) => call('remove', keys),
-    subscribe(callback) {
-      const listener = (changes, area) => { if (area === 'sync' && Object.keys(changes).some((key) => key.startsWith(SYNC_PREFIX))) callback(); };
-      chrome.storage.onChanged.addListener(listener);
-      return () => chrome.storage.onChanged.removeListener(listener);
-    },
-  };
+  // Kept as an inert compatibility export for old callers. Persistence and
+  // synchronization now use encrypted local data and the sync extension.
+  return null;
 }

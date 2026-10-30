@@ -5,6 +5,8 @@ app/.wxt/
 app/.output/
 app/output/
 app/.playwright-cli/
+/output/
+/.playwright-cli/
 **/target/
 
 # Local secrets and machine-specific files

@@ -1,13 +1,18 @@
 import { tr, getLocale, builtinName, formatNumber } from "../i18n/index.js";
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Clock, Globe, ArrowsLeftRight, Hourglass, Timer, Bell, Play, Pause, ArrowCounterClockwise, X } from '@phosphor-icons/react';
+import { Clock, Globe, ArrowsLeftRight, Hourglass, Timer, Bell, Play, Pause, ArrowCounterClockwise, X, GearSix, ArrowLeft } from '@phosphor-icons/react';
 import Select from './Select.jsx';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs.jsx';
 import { CLOCK_WIDGET_ID, WIDGET_SIZE_OPTIONS, validateWidgetConfig } from '../lib/widget-model.js';
 import { loadClockCore } from '../lib/clock-core.js';
 import { emptyClockState, prepareClockState, subscribeClockState, updateClockState, finishClockTimer, requestClockNotifications, supportsClockBackground } from '../lib/clock-runtime.js';
 import { WORLD_ZONES, DEFAULT_WORLD_ZONES, normalizeTimeZone, zoneLabel, zoneParts, wallInput, instantsForWall, utcOffset } from '../lib/time-zones.js';
 import './clock-widget.css';
+import { Button } from './ui/button.jsx';
+import { Input } from './ui/input.jsx';
+import { Switch } from './ui/switch.jsx';
+import Confirm from './PromptDialog.jsx';
 
 const MODES = [{ id: 'clock', get label() { return tr("时钟"); }, Icon: Clock }, { id: 'world', get label() { return tr("世界时钟"); }, Icon: Globe }, { id: 'compare', get label() { return tr("时区对照"); }, Icon: ArrowsLeftRight }, { id: 'countdown', get label() { return tr("倒计时"); }, Icon: Hourglass }, { id: 'stopwatch', get label() { return tr("计时"); }, Icon: Timer }];
 const pad = (number) => String(number).padStart(2, '0');
@@ -17,11 +22,13 @@ const durationText = (value, fraction = false) => {
   return `${hours ? `${pad(hours)}:` : ''}${pad(minutes)}:${pad(seconds)}${fraction ? `.${Math.floor(value / 100) % 10}` : ''}`;
 };
 
-export function ClockWidgetSettings({ entry, onUse, onBusyChange, introduction }) {
+export function ClockWidgetSettings({ entry, onUse, onBusyChange, onDirtyChange, introduction, internal = false }) {
   const [size, setSize] = useState(entry?.config.size || 'small'), [style, setStyle] = useState(entry?.config.style || 'analog');
   const [zones, setZones] = useState(entry?.config.zones || [...DEFAULT_WORLD_ZONES]);
   const [timeZone, setTimeZone] = useState(entry?.config.timeZone || 'local'), [newZone, setNewZone] = useState('');
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const initial = useRef(JSON.stringify({ size, style, zones, timeZone }));
+  useEffect(() => { onDirtyChange?.(initial.current !== JSON.stringify({ size, style, zones, timeZone })); return () => onDirtyChange?.(false); }, [size, style, zones, timeZone, onDirtyChange]);
   return <form className="form-stack widget-config-form" onSubmit={async (event) => {
     event.preventDefault(); if (busy) return;
     setBusy(true); onBusyChange(true); setError('');
@@ -30,18 +37,18 @@ export function ClockWidgetSettings({ entry, onUse, onBusyChange, introduction }
     finally { setBusy(false); onBusyChange(false); }
   }}>
     <div className="settings-scroll form-stack">{introduction}
-      <Select label={tr("尺寸")} value={size} onChange={setSize} disabled={busy} options={WIDGET_SIZE_OPTIONS} />
+      {!internal && <Select label={tr("尺寸")} value={size} onChange={setSize} disabled={busy} options={WIDGET_SIZE_OPTIONS} />}
       <Select label={tr("样式")} value={style} onChange={setStyle} disabled={busy} options={[{ value: 'analog', label: tr("指针") }, { value: 'digital', label: tr("数字") }]} />
       <Select label={tr("桌面时区")} value={timeZone} onChange={setTimeZone} disabled={busy} options={[{ value: 'local', label: tr("跟随系统") }, ...[...new Set([...WORLD_ZONES.map((item) => item.value), ...zones, ...(timeZone === 'local' ? [] : [timeZone])])].map((value) => ({ value, label: zoneLabel(value) }))]} />
       <fieldset className="world-zone-settings" disabled={busy}><legend>{tr("世界时钟")}</legend>
-        <div className="world-zone-chips">{zones.map((zone) => <button type="button" key={zone} disabled={zones.length === 1} aria-label={tr("移除{0}", [zoneLabel(zone)])} onClick={() => setZones(zones.filter((item) => item !== zone))}>{zoneLabel(zone)}<X size={12} /></button>)}</div>
+        <div className="world-zone-chips">{zones.map((zone) => <Button variant="unstyled" size="unstyled" type="button" key={zone} disabled={zones.length === 1} aria-label={tr("移除{0}", [zoneLabel(zone)])} onClick={() => setZones(zones.filter((item) => item !== zone))}>{zoneLabel(zone)}<X size={12} /></Button>)}</div>
         <Select label={tr("添加城市")} value="" onChange={(value) => { setError(''); setZones((items) => [...items, value]); }} disabled={zones.length >= 8} options={WORLD_ZONES.filter((item) => !zones.includes(item.value))} placeholder={tr("选择城市")} />
-        <div className="world-zone-custom"><label>{tr("其他时区")}<input value={newZone} maxLength={100} placeholder={tr("例如 America/Vancouver")} onChange={(event) => setNewZone(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }} /></label>
-          <button className="button" type="button" disabled={!newZone.trim() || zones.length >= 8} onClick={() => { try { const value = normalizeTimeZone(newZone.trim()); setZones((items) => items.includes(value) ? items : [...items, value]); setNewZone(''); setError(''); } catch (reason) { setError(reason.message); } }}>{tr("添加")}</button></div>
+        <div className="world-zone-custom"><label>{tr("其他时区")}<Input value={newZone} maxLength={100} placeholder={tr("例如 America/Vancouver")} onChange={(event) => setNewZone(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }} /></label>
+          <Button variant="secondary" className="button" type="button" disabled={!newZone.trim() || zones.length >= 8} onClick={() => { try { const value = normalizeTimeZone(newZone.trim()); setZones((items) => items.includes(value) ? items : [...items, value]); setNewZone(''); setError(''); } catch (reason) { setError(reason.message); } }}>{tr("添加")}</Button></div>
       </fieldset>
       {error && <p className="form-error" role="alert">{tr(error)}</p>}
     </div>
-    <div className="settings-footer"><button type="submit" className="button primary" disabled={busy}>{entry && !entry.detached ? tr("保存") : tr("使用")}</button></div>
+    <div className="settings-footer"><Button variant="default" type="submit" className="button primary" disabled={busy}>{entry && !entry.detached ? tr("保存") : tr("使用")}</Button></div>
   </form>;
 }
 
@@ -80,10 +87,10 @@ function WorldClocks({ zones, now, compare = false }) {
   const anchor = instant === undefined ? null : zoneParts(instant, reference);
   return <div className="world-clocks">
     {compare && <div className="time-comparison-fields"><Select label={tr("参考时区")} value={reference} onChange={(value) => { setReference(value); setOccurrence(0); }} options={options} />
-      <label>{tr("日期与时间")}<input type="datetime-local" min="1970-01-01T00:00" max="2100-12-31T23:59" value={input} onChange={(event) => { setInput(event.target.value); setOccurrence(0); }} /></label>
+      <label>{tr("日期与时间")}<Input type="datetime-local" min="1970-01-01T00:00" max="2100-12-31T23:59" value={input} onChange={(event) => { setInput(event.target.value); setOccurrence(0); }} /></label>
       {candidates.length > 1 && <Select label={tr("重复时间")} value={occurrence} onChange={setOccurrence} options={candidates.map((value, index) => ({ value: index, label: `${index ? tr("第二次") : tr("第一次")} · ${utcOffset(zoneParts(value, reference).offset)}` }))} />}
       {!candidates.length && <p className="form-error" role="alert">{tr("这个时间不存在或日期无效，请调整时间。")}</p>}
-      <button className="button quiet" type="button" onClick={() => { setInput(wallInput(Date.now(), reference)); setOccurrence(0); }}>{tr("现在")}</button>
+      <Button variant="ghost" className="button quiet" type="button" onClick={() => { setInput(wallInput(Date.now(), reference)); setOccurrence(0); }}>{tr("现在")}</Button>
     </div>}
     {anchor && <div className="world-clock-list">{zones.map((zone) => {
       const p = zoneParts(instant, zone), difference = p.offset - anchor.offset;
@@ -94,10 +101,13 @@ function WorldClocks({ zones, now, compare = false }) {
   </div>;
 }
 
-export default function ClockWidget({ entry, open = false, onOpen, onClose, Dialog, portalTarget }) {
+export default function ClockWidget({ entry, open = false, onOpen, onClose, onSaveConfig, Dialog, portalTarget }) {
   const [state, setState] = useState(emptyClockState), [core, setCore] = useState(null), [now, setNow] = useState(Date.now);
   const [ready, setReady] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [duration, setDuration] = useState([0, 25, 0]);
+  const [configuring, setConfiguring] = useState(false), [configBusy, setConfigBusy] = useState(false), [configDirty, setConfigDirty] = useState(false), [discarding, setDiscarding] = useState(null);
+  const close = () => { if (busy || configBusy) return; if (configDirty) setDiscarding('window'); else { setConfiguring(false); onClose(); } };
+  const backToClock = () => { if (configBusy) return; if (configDirty) setDiscarding('settings'); else setConfiguring(false); };
   const finishing = useRef(false), mounted = useRef(true);
   const background = supportsClockBackground();
   const timeZone = entry.config.timeZone && entry.config.timeZone !== 'local' ? entry.config.timeZone : undefined;
@@ -152,55 +162,50 @@ export default function ClockWidget({ entry, open = false, onOpen, onClose, Dial
   }
   const stop = (event) => event.stopPropagation();
   return <>
-    <button type="button" data-widget-launcher data-widget-surface id={`widget-title-${entry.id}`}
+    <Button variant="unstyled" size="unstyled" type="button" data-widget-launcher data-widget-surface id={`widget-title-${entry.id}`}
       className={`clock-widget clock-widget-${entry.config.size} clock-style-${entry.config.style}`}
       aria-label={tr("{0}，{1}，打开时钟", [builtinName(entry.extensionId, entry.name), date.toLocaleTimeString(getLocale(), { timeZone, hour: '2-digit', minute: '2-digit' })])}
       aria-haspopup="dialog" aria-expanded={open} onClick={onOpen}>
       <ClockDisplay now={now} core={core} appearance={entry.config.style} timeZone={timeZone} mini={entry.config.size === 'mini'} decorative />
-    </button>
-    {open && Dialog && portalTarget && createPortal(<div className="clock-dialog-layer" onPointerDown={stop} onPointerMove={stop} onPointerUp={stop}
-      onClick={stop} onContextMenu={stop} onKeyDown={stop}>
-    <Dialog title={tr("时钟")} className="clock-tools-modal" onClose={onClose} maximizable>
+    </Button>
+    {open && Dialog && portalTarget && createPortal(<div className="clock-dialog-layer" onContextMenu={stop} onKeyDown={stop} onPointerDown={stop} onPointerMove={stop} onPointerUp={stop}>
+    <Dialog title={tr("时钟")} className="clock-tools-modal" onClose={close} closeDisabled={busy || configBusy} privacyKeys={[`widget:${entry.id}`]} maximizable>
     <section className={`clock-tools clock-mode-${state.mode}`}>
-    <div className="clock-modes" role="tablist" aria-label={tr("时钟功能")}>
-      {MODES.map(({ id, label, Icon }, index) => <button type="button" role="tab" key={id} aria-label={label} title={label} aria-selected={state.mode === id} tabIndex={state.mode === id ? 0 : -1}
-        id={`clock-mode-${entry.id}-${id}`} aria-controls={`clock-panel-${entry.id}`}
-        disabled={!ready || busy} onClick={() => change((value) => ({ ...value, mode: id }))}
-        onKeyDown={(event) => {
-          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-          event.preventDefault(); event.stopPropagation();
-          const next = event.key === 'Home' ? 0 : event.key === 'End' ? MODES.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : MODES.length - 1)) % MODES.length;
-          const target = event.currentTarget.parentElement;
-          change((value) => ({ ...value, mode: MODES[next].id })).then(() => requestAnimationFrame(() => target.querySelectorAll('button')[next]?.focus()));
-        }}><Icon size={18} /><span>{label}</span></button>)}
-    </div>
-    <div className="clock-widget-content" id={`clock-panel-${entry.id}`} role="tabpanel" aria-labelledby={`clock-mode-${entry.id}-${mode.id}`}>
+    <div className="clock-window-settings">{configuring ? <Button type="button" variant="ghost" disabled={configBusy} onClick={backToClock}><ArrowLeft size={16} />{tr('返回')}</Button> : <Button type="button" variant="ghost" size="icon" aria-label={tr('设置')} disabled={busy} onClick={() => setConfiguring(true)}><GearSix size={18} /></Button>}</div>
+    {configuring ? <ClockWidgetSettings internal entry={entry} onBusyChange={setConfigBusy} onDirtyChange={setConfigDirty} onUse={async (config) => { await onSaveConfig(config); setConfiguring(false); }} /> : <Tabs value={state.mode} activationMode="manual" onValueChange={(id) => change((value) => ({ ...value, mode: id }))}>
+    <TabsList className="clock-modes" aria-label={tr("时钟功能")}>
+      {MODES.map(({ id, label, Icon }) => <TabsTrigger value={id} key={id} aria-label={label} title={label}
+        id={`clock-mode-${entry.id}-${id}`} aria-controls={`clock-panel-${entry.id}`} disabled={!ready || busy}><Icon size={18} /><span>{label}</span></TabsTrigger>)}
+    </TabsList>
+    <TabsContent value={state.mode} className="clock-widget-content" id={`clock-panel-${entry.id}`} aria-labelledby={`clock-mode-${entry.id}-${mode.id}`}>
       {state.mode === 'clock' && <ClockDisplay now={now} core={core} appearance={entry.config.style} timeZone={timeZone} />}
       {['world', 'compare'].includes(state.mode) && <WorldClocks key={state.mode} zones={zones} now={now} compare={state.mode === 'compare'} />}
       {state.mode === 'stopwatch' && <div className="clock-measure">
         <output className="clock-digits" aria-label={tr("已计时")}>{durationText(elapsed(state.stopwatch), true)}</output>
-        <div className="clock-actions"><button type="button" aria-label={tr("重置计时")} disabled={!ready || busy} onClick={() => change((value) => ({ ...value, stopwatch: { elapsed: 0, startedAt: 0, running: false } }))}><ArrowCounterClockwise size={19} /></button>
-          <button type="button" className="clock-primary" aria-label={state.stopwatch.running ? tr("暂停计时") : tr("开始计时")} disabled={!ready || busy} onClick={() => change((value) => {
+        <div className="clock-actions"><Button variant="unstyled" size="unstyled" type="button" aria-label={tr("重置计时")} disabled={!ready || busy} onClick={() => change((value) => ({ ...value, stopwatch: { elapsed: 0, startedAt: 0, running: false } }))}><ArrowCounterClockwise size={19} /></Button>
+          <Button variant="unstyled" size="unstyled" type="button" className="clock-primary" aria-label={state.stopwatch.running ? tr("暂停计时") : tr("开始计时")} disabled={!ready || busy} onClick={() => change((value) => {
             value.stopwatch = value.stopwatch.running ? { elapsed: core.elapsed(Date.now(), value.stopwatch.startedAt, value.stopwatch.elapsed, 1), startedAt: 0, running: false }
               : { ...value.stopwatch, startedAt: Date.now(), running: true }; return value;
-          })}>{state.stopwatch.running ? <Pause size={20} weight="fill" /> : <Play size={20} weight="fill" />}</button></div>
+          })}>{state.stopwatch.running ? <Pause size={20} weight="fill" /> : <Play size={20} weight="fill" />}</Button></div>
       </div>}
       {state.mode === 'countdown' && <div className="clock-measure">
         {state.timer.running || state.timer.elapsed > 0 ? <div className="countdown-display">
           <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" /><circle className="countdown-progress" cx="50" cy="50" r="46" transform="rotate(-90 50 50)" strokeDasharray={`${remaining / state.duration * 289} 289`} /></svg>
           <output className="clock-digits" aria-label={tr("剩余时间")}>{durationText(remaining)}</output>
-        </div> : <div className="clock-duration">{[tr("时"), tr("分"), tr("秒")].map((label, index) => <label key={label}><input type="number" inputMode="numeric" min="0" max={index ? 59 : 24} value={duration[index]} aria-label={tr("倒计时{0}", [label])} disabled={busy || !ready}
+        </div> : <div className="clock-duration">{[tr("时"), tr("分"), tr("秒")].map((label, index) => <label key={label}><Input type="number" inputMode="numeric" min="0" max={index ? 59 : 24} value={duration[index]} aria-label={tr("倒计时{0}", [label])} disabled={busy || !ready}
           onChange={(event) => setDuration((current) => current.map((value, at) => at === index ? event.target.value === '' ? '' : Math.max(0, Math.min(index ? 59 : 24, Number(event.target.value))) : value))} /><span>{label}</span></label>)}</div>}
-        <div className="clock-actions"><button type="button" aria-label={tr("取消倒计时")} disabled={!ready || busy} onClick={() => change((value) => ({ ...value, timer: { elapsed: 0, startedAt: 0, running: false, completed: false } }))}><ArrowCounterClockwise size={18} /></button>
-          <button type="button" className="clock-primary" aria-label={state.timer.running ? tr("暂停倒计时") : tr("开始倒计时")} disabled={!ready || busy} onClick={toggleTimer}>{state.timer.running ? <Pause size={20} weight="fill" /> : <Play size={20} weight="fill" />}</button>
-          <label className="clock-notify" title={background ? tr("浏览器运行时通知") : tr("页面打开时提醒")}><input type="checkbox" aria-label={background ? tr("倒计时通知") : tr("倒计时页面提醒")} checked={state.notify} disabled={!ready || busy} onChange={(event) => {
-            const checked = event.target.checked, permission = checked ? requestClockNotifications() : null;
+        <div className="clock-actions"><Button variant="unstyled" size="unstyled" type="button" aria-label={tr("取消倒计时")} disabled={!ready || busy} onClick={() => change((value) => ({ ...value, timer: { elapsed: 0, startedAt: 0, running: false, completed: false } }))}><ArrowCounterClockwise size={18} /></Button>
+          <Button variant="unstyled" size="unstyled" type="button" className="clock-primary" aria-label={state.timer.running ? tr("暂停倒计时") : tr("开始倒计时")} disabled={!ready || busy} onClick={toggleTimer}>{state.timer.running ? <Pause size={20} weight="fill" /> : <Play size={20} weight="fill" />}</Button>
+          <label className="clock-notify" title={background ? tr("浏览器运行时通知") : tr("页面打开时提醒")}><Switch aria-label={background ? tr("倒计时通知") : tr("倒计时页面提醒")} checked={state.notify} disabled={!ready || busy} onCheckedChange={(nextChecked) => {
+            const checked = nextChecked, permission = checked ? requestClockNotifications() : null;
             change((value) => ({ ...value, notify: checked }), permission);
           }} /><Bell size={16} /></label>
         </div>
         {state.timer.completed && <span className="clock-finished" role="status">{tr("时间到")}</span>}
       </div>}
-    </div>
+    </TabsContent>
+    </Tabs>}
+    {discarding && <Confirm action={tr('放弃修改')} onCancel={() => setDiscarding(null)} onConfirm={() => { const target = discarding; setDiscarding(null); setConfigDirty(false); setConfiguring(false); if (target === 'window') onClose(); }}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
     {error && <p className="clock-error" role="alert">{tr(error)}</p>}
     </section>
     </Dialog>

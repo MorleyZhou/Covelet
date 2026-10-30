@@ -1,0 +1,2168 @@
+{
+  "正在加载…": {
+    "en": "Loading…",
+    "zh-TW": "正在載入…",
+    "ja": "読み込み中…",
+    "ko": "불러오는 중…",
+    "de": "Wird geladen…",
+    "fr": "Chargement…",
+    "ru": "Загрузка…"
+  },
+  "不重复": {
+    "en": "Does not repeat",
+    "zh-TW": "不重複",
+    "ja": "繰り返さない",
+    "ko": "반복 안 함",
+    "de": "Keine Wiederholung",
+    "fr": "Sans répétition",
+    "ru": "Не повторять"
+  },
+  "每天": {
+    "en": "Daily",
+    "zh-TW": "每天",
+    "ja": "毎日",
+    "ko": "매일",
+    "de": "Täglich",
+    "fr": "Chaque jour",
+    "ru": "Ежедневно"
+  },
+  "工作日": {
+    "en": "Weekdays",
+    "zh-TW": "工作日",
+    "ja": "平日",
+    "ko": "평일",
+    "de": "Werktags",
+    "fr": "En semaine",
+    "ru": "По будням"
+  },
+  "每周": {
+    "en": "Weekly",
+    "zh-TW": "每週",
+    "ja": "毎週",
+    "ko": "매주",
+    "de": "Wöchentlich",
+    "fr": "Chaque semaine",
+    "ru": "Еженедельно"
+  },
+  "每月": {
+    "en": "Monthly",
+    "zh-TW": "每月",
+    "ja": "毎月",
+    "ko": "매월",
+    "de": "Monatlich",
+    "fr": "Chaque mois",
+    "ru": "Ежемесячно"
+  },
+  "需要允许通知，才能接收任务提醒。": {
+    "en": "Allow notifications to receive task reminders.",
+    "zh-TW": "需要允許通知，才能接收任務提醒。",
+    "ja": "タスクの通知を受け取るには通知を許可してください。",
+    "ko": "작업 알림을 받으려면 알림을 허용하세요.",
+    "de": "Erlaube Benachrichtigungen für Aufgabenerinnerungen.",
+    "fr": "Autorisez les notifications pour recevoir les rappels.",
+    "ru": "Разрешите уведомления для напоминаний о задачах."
+  },
+  "搜索任务": {
+    "en": "Search tasks",
+    "zh-TW": "搜尋任務",
+    "ja": "タスクを検索",
+    "ko": "작업 검색",
+    "de": "Aufgaben suchen",
+    "fr": "Rechercher des tâches",
+    "ru": "Поиск задач"
+  },
+  "新任务": {
+    "en": "New task",
+    "zh-TW": "新任務",
+    "ja": "新しいタスク",
+    "ko": "새 작업",
+    "de": "Neue Aufgabe",
+    "fr": "Nouvelle tâche",
+    "ru": "Новая задача"
+  },
+  "管理清单": {
+    "en": "Manage lists",
+    "zh-TW": "管理清單",
+    "ja": "リストを管理",
+    "ko": "목록 관리",
+    "de": "Listen verwalten",
+    "fr": "Gérer les listes",
+    "ru": "Управление списками"
+  },
+  "关闭提醒": {
+    "en": "Turn off reminders",
+    "zh-TW": "關閉提醒",
+    "ja": "通知をオフ",
+    "ko": "알림 끄기",
+    "de": "Erinnerungen ausschalten",
+    "fr": "Désactiver les rappels",
+    "ru": "Отключить напоминания"
+  },
+  "开启提醒": {
+    "en": "Enable reminders",
+    "zh-TW": "開啟提醒",
+    "ja": "通知をオン",
+    "ko": "알림 켜기",
+    "de": "Erinnerungen aktivieren",
+    "fr": "Activer les rappels",
+    "ru": "Включить напоминания"
+  },
+  "添加到待办": {
+    "en": "Add to tasks",
+    "zh-TW": "加入待辦",
+    "ja": "タスクに追加",
+    "ko": "할 일에 추가",
+    "de": "Zu Aufgaben hinzufügen",
+    "fr": "Ajouter aux tâches",
+    "ru": "Добавить в задачи"
+  },
+  "记录数量已达上限，请先整理已有内容。": {
+    "en": "The record limit has been reached. Organize existing content first.",
+    "zh-TW": "記錄數量已達上限，請先整理現有內容。",
+    "ja": "件数の上限に達しました。既存の内容を整理してください。",
+    "ko": "기록 수가 한도에 도달했습니다. 기존 내용을 정리하세요.",
+    "de": "Die Höchstzahl ist erreicht. Räume vorhandene Inhalte auf.",
+    "fr": "La limite est atteinte. Triez d’abord le contenu existant.",
+    "ru": "Достигнут предел записей. Сначала упорядочьте имеющиеся данные."
+  },
+  "确认添加": {
+    "en": "Confirm addition",
+    "zh-TW": "確認新增",
+    "ja": "追加を確認",
+    "ko": "추가 확인",
+    "de": "Hinzufügen bestätigen",
+    "fr": "Confirmer l’ajout",
+    "ru": "Подтвердить добавление"
+  },
+  "清单数量已达上限。": {
+    "en": "The list limit has been reached.",
+    "zh-TW": "清單數量已達上限。",
+    "ja": "リスト数の上限に達しました。",
+    "ko": "목록 수가 한도에 도달했습니다.",
+    "de": "Die maximale Listenanzahl ist erreicht.",
+    "fr": "Le nombre maximal de listes est atteint.",
+    "ru": "Достигнут предел списков."
+  },
+  "清单名称": {
+    "en": "List name",
+    "zh-TW": "清單名稱",
+    "ja": "リスト名",
+    "ko": "목록 이름",
+    "de": "Listenname",
+    "fr": "Nom de la liste",
+    "ru": "Название списка"
+  },
+  "添加清单": {
+    "en": "Add list",
+    "zh-TW": "新增清單",
+    "ja": "リストを追加",
+    "ko": "목록 추가",
+    "de": "Liste hinzufügen",
+    "fr": "Ajouter une liste",
+    "ru": "Добавить список"
+  },
+  "任务视图": {
+    "en": "Task views",
+    "zh-TW": "任務檢視",
+    "ja": "タスク表示",
+    "ko": "작업 보기",
+    "de": "Aufgabenansichten",
+    "fr": "Vues des tâches",
+    "ru": "Виды задач"
+  },
+  "我的一天": {
+    "en": "My Day",
+    "zh-TW": "我的一天",
+    "ja": "今日の予定",
+    "ko": "오늘 할 일",
+    "de": "Mein Tag",
+    "fr": "Ma journée",
+    "ru": "Мой день"
+  },
+  "重要": {
+    "en": "Important",
+    "zh-TW": "重要",
+    "ja": "重要",
+    "ko": "중요",
+    "de": "Wichtig",
+    "fr": "Important",
+    "ru": "Важные"
+  },
+  "计划内": {
+    "en": "Planned",
+    "zh-TW": "已規劃",
+    "ja": "予定あり",
+    "ko": "예정됨",
+    "de": "Geplant",
+    "fr": "Planifiées",
+    "ru": "Запланированные"
+  },
+  "全部任务": {
+    "en": "All tasks",
+    "zh-TW": "全部任務",
+    "ja": "すべてのタスク",
+    "ko": "모든 작업",
+    "de": "Alle Aufgaben",
+    "fr": "Toutes les tâches",
+    "ru": "Все задачи"
+  },
+  "已完成": {
+    "en": "Completed",
+    "zh-TW": "已完成",
+    "ja": "完了",
+    "ko": "완료됨",
+    "de": "Erledigt",
+    "fr": "Terminées",
+    "ru": "Завершённые"
+  },
+  "完成记录": {
+    "en": "Completion history",
+    "zh-TW": "完成記錄",
+    "ja": "完了履歴",
+    "ko": "완료 기록",
+    "de": "Abschlussverlauf",
+    "fr": "Historique des tâches",
+    "ru": "История выполнения"
+  },
+  "任务清单": {
+    "en": "Tasks",
+    "zh-TW": "任務清單",
+    "ja": "タスク一覧",
+    "ko": "작업 목록",
+    "de": "Aufgabenliste",
+    "fr": "Liste de tâches",
+    "ru": "Список задач"
+  },
+  "任务列表": {
+    "en": "Task list",
+    "zh-TW": "任務列表",
+    "ja": "タスク一覧",
+    "ko": "작업 목록",
+    "de": "Aufgabenliste",
+    "fr": "Liste des tâches",
+    "ru": "Список задач"
+  },
+  "标为未完成": {
+    "en": "Mark incomplete",
+    "zh-TW": "標為未完成",
+    "ja": "未完了にする",
+    "ko": "미완료로 표시",
+    "de": "Als unerledigt markieren",
+    "fr": "Marquer comme non terminée",
+    "ru": "Отметить невыполненной"
+  },
+  "完成任务": {
+    "en": "Complete task",
+    "zh-TW": "完成任務",
+    "ja": "タスクを完了",
+    "ko": "작업 완료",
+    "de": "Aufgabe erledigen",
+    "fr": "Terminer la tâche",
+    "ru": "Завершить задачу"
+  },
+  "取消重要": {
+    "en": "Remove importance",
+    "zh-TW": "取消重要",
+    "ja": "重要を解除",
+    "ko": "중요 표시 해제",
+    "de": "Wichtigkeit entfernen",
+    "fr": "Retirer des importantes",
+    "ru": "Убрать из важных"
+  },
+  "标为重要": {
+    "en": "Mark important",
+    "zh-TW": "標為重要",
+    "ja": "重要にする",
+    "ko": "중요로 표시",
+    "de": "Als wichtig markieren",
+    "fr": "Marquer comme importante",
+    "ru": "Отметить важной"
+  },
+  "挑选今天想完成的任务": {
+    "en": "Choose tasks for today",
+    "zh-TW": "挑選今天想完成的任務",
+    "ja": "今日取り組むタスクを選びましょう",
+    "ko": "오늘 완료할 작업을 선택하세요",
+    "de": "Wähle Aufgaben für heute",
+    "fr": "Choisissez les tâches du jour",
+    "ru": "Выберите задачи на сегодня"
+  },
+  "暂无任务": {
+    "en": "No tasks yet",
+    "zh-TW": "暫無任務",
+    "ja": "タスクはありません",
+    "ko": "아직 작업이 없습니다",
+    "de": "Noch keine Aufgaben",
+    "fr": "Aucune tâche",
+    "ru": "Пока нет задач"
+  },
+  "清单已被移除，请重新选择。": {
+    "en": "This list was removed. Choose another list.",
+    "zh-TW": "清單已移除，請重新選擇。",
+    "ja": "リストが削除されました。選び直してください。",
+    "ko": "목록이 삭제되었습니다. 다시 선택하세요.",
+    "de": "Die Liste wurde entfernt. Wähle eine andere.",
+    "fr": "Cette liste a été supprimée. Choisissez-en une autre.",
+    "ru": "Список удалён. Выберите другой."
+  },
+  "任务": {
+    "en": "Task",
+    "zh-TW": "任務",
+    "ja": "タスク",
+    "ko": "작업",
+    "de": "Aufgabe",
+    "fr": "Tâche",
+    "ru": "Задача"
+  },
+  "清单": {
+    "en": "List",
+    "zh-TW": "清單",
+    "ja": "リスト",
+    "ko": "목록",
+    "de": "Liste",
+    "fr": "Liste",
+    "ru": "Список"
+  },
+  "移出我的一天": {
+    "en": "Remove from My Day",
+    "zh-TW": "移出我的一天",
+    "ja": "今日の予定から外す",
+    "ko": "오늘 할 일에서 제거",
+    "de": "Aus Mein Tag entfernen",
+    "fr": "Retirer de Ma journée",
+    "ru": "Убрать из «Мой день»"
+  },
+  "加入我的一天": {
+    "en": "Add to My Day",
+    "zh-TW": "加入我的一天",
+    "ja": "今日の予定に追加",
+    "ko": "오늘 할 일에 추가",
+    "de": "Zu Mein Tag hinzufügen",
+    "fr": "Ajouter à Ma journée",
+    "ru": "Добавить в «Мой день»"
+  },
+  "截止日期": {
+    "en": "Due date",
+    "zh-TW": "截止日期",
+    "ja": "期限",
+    "ko": "기한",
+    "de": "Fälligkeitsdatum",
+    "fr": "Échéance",
+    "ru": "Срок"
+  },
+  "提醒时间": {
+    "en": "Reminder time",
+    "zh-TW": "提醒時間",
+    "ja": "通知日時",
+    "ko": "알림 시간",
+    "de": "Erinnerungszeit",
+    "fr": "Heure du rappel",
+    "ru": "Время напоминания"
+  },
+  "重复": {
+    "en": "Repeat",
+    "zh-TW": "重複",
+    "ja": "繰り返し",
+    "ko": "반복",
+    "de": "Wiederholen",
+    "fr": "Répéter",
+    "ru": "Повторять"
+  },
+  "子步骤": {
+    "en": "Steps",
+    "zh-TW": "子步驟",
+    "ja": "手順",
+    "ko": "하위 단계",
+    "de": "Schritte",
+    "fr": "Étapes",
+    "ru": "Шаги"
+  },
+  "完成步骤": {
+    "en": "Complete step",
+    "zh-TW": "完成步驟",
+    "ja": "手順を完了",
+    "ko": "단계 완료",
+    "de": "Schritt erledigen",
+    "fr": "Terminer l’étape",
+    "ru": "Завершить шаг"
+  },
+  "步骤名称": {
+    "en": "Step name",
+    "zh-TW": "步驟名稱",
+    "ja": "手順名",
+    "ko": "단계 이름",
+    "de": "Schrittname",
+    "fr": "Nom de l’étape",
+    "ru": "Название шага"
+  },
+  "移除步骤": {
+    "en": "Remove step",
+    "zh-TW": "移除步驟",
+    "ja": "手順を削除",
+    "ko": "단계 제거",
+    "de": "Schritt entfernen",
+    "fr": "Retirer l’étape",
+    "ru": "Удалить шаг"
+  },
+  "新步骤": {
+    "en": "New step",
+    "zh-TW": "新步驟",
+    "ja": "新しい手順",
+    "ko": "새 단계",
+    "de": "Neuer Schritt",
+    "fr": "Nouvelle étape",
+    "ru": "Новый шаг"
+  },
+  "添加步骤": {
+    "en": "Add step",
+    "zh-TW": "新增步驟",
+    "ja": "手順を追加",
+    "ko": "단계 추가",
+    "de": "Schritt hinzufügen",
+    "fr": "Ajouter une étape",
+    "ru": "Добавить шаг"
+  },
+  "备注": {
+    "en": "Notes",
+    "zh-TW": "備註",
+    "ja": "メモ",
+    "ko": "메모",
+    "de": "Notizen",
+    "fr": "Notes",
+    "ru": "Примечания"
+  },
+  "删除清单后，其中的任务会移至默认清单。": {
+    "en": "Tasks in this list will move to the default list.",
+    "zh-TW": "刪除清單後，其中的任務會移至預設清單。",
+    "ja": "リストを削除すると、タスクは既定のリストに移動します。",
+    "ko": "목록을 삭제하면 작업이 기본 목록으로 이동합니다.",
+    "de": "Die Aufgaben werden in die Standardliste verschoben.",
+    "fr": "Les tâches seront déplacées vers la liste par défaut.",
+    "ru": "После удаления задачи будут перемещены в список по умолчанию."
+  },
+  "常用语": {
+    "en": "Quick text",
+    "zh-TW": "常用語",
+    "ja": "定型文",
+    "ko": "상용구",
+    "de": "Textbausteine",
+    "fr": "Textes fréquents",
+    "ru": "Готовые фразы"
+  },
+  "代码片段": {
+    "en": "Code snippet",
+    "zh-TW": "程式碼片段",
+    "ja": "コードスニペット",
+    "ko": "코드 조각",
+    "de": "Codeausschnitt",
+    "fr": "Extrait de code",
+    "ru": "Фрагмент кода"
+  },
+  "命令": {
+    "en": "Command",
+    "zh-TW": "指令",
+    "ja": "コマンド",
+    "ko": "명령",
+    "de": "Befehl",
+    "fr": "Commande",
+    "ru": "Команда"
+  },
+  "提示词": {
+    "en": "Prompt",
+    "zh-TW": "提示詞",
+    "ja": "プロンプト",
+    "ko": "프롬프트",
+    "de": "Prompt",
+    "fr": "Prompt",
+    "ru": "Промпт"
+  },
+  "搜索小抄": {
+    "en": "Search snippets",
+    "zh-TW": "搜尋小抄",
+    "ja": "スニペットを検索",
+    "ko": "스니펫 검색",
+    "de": "Snippets suchen",
+    "fr": "Rechercher des extraits",
+    "ru": "Поиск заготовок"
+  },
+  "新小抄": {
+    "en": "New snippet",
+    "zh-TW": "新小抄",
+    "ja": "新しいスニペット",
+    "ko": "새 스니펫",
+    "de": "Neues Snippet",
+    "fr": "Nouvel extrait",
+    "ru": "Новая заготовка"
+  },
+  "导入小抄": {
+    "en": "Import snippets",
+    "zh-TW": "匯入小抄",
+    "ja": "スニペットを読み込む",
+    "ko": "스니펫 가져오기",
+    "de": "Snippets importieren",
+    "fr": "Importer des extraits",
+    "ru": "Импорт заготовок"
+  },
+  "内容类型": {
+    "en": "Content type",
+    "zh-TW": "內容類型",
+    "ja": "内容の種類",
+    "ko": "내용 유형",
+    "de": "Inhaltstyp",
+    "fr": "Type de contenu",
+    "ru": "Тип содержимого"
+  },
+  "全部": {
+    "en": "All",
+    "zh-TW": "全部",
+    "ja": "すべて",
+    "ko": "전체",
+    "de": "Alle",
+    "fr": "Tout",
+    "ru": "Все"
+  },
+  "收藏": {
+    "en": "Favorites",
+    "zh-TW": "收藏",
+    "ja": "お気に入り",
+    "ko": "즐겨찾기",
+    "de": "Favoriten",
+    "fr": "Favoris",
+    "ru": "Избранное"
+  },
+  "全部分类": {
+    "en": "All categories",
+    "zh-TW": "全部分類",
+    "ja": "すべての分類",
+    "ko": "모든 분류",
+    "de": "Alle Kategorien",
+    "fr": "Toutes les catégories",
+    "ru": "Все категории"
+  },
+  "小抄列表": {
+    "en": "Snippet list",
+    "zh-TW": "小抄列表",
+    "ja": "スニペット一覧",
+    "ko": "스니펫 목록",
+    "de": "Snippetliste",
+    "fr": "Liste des extraits",
+    "ru": "Список заготовок"
+  },
+  "没有找到小抄": {
+    "en": "No snippets found",
+    "zh-TW": "找不到小抄",
+    "ja": "該当するスニペットはありません",
+    "ko": "스니펫을 찾을 수 없습니다",
+    "de": "Keine Snippets gefunden",
+    "fr": "Aucun extrait trouvé",
+    "ru": "Заготовки не найдены"
+  },
+  "暂无小抄": {
+    "en": "No snippets yet",
+    "zh-TW": "暫無小抄",
+    "ja": "スニペットはまだありません",
+    "ko": "아직 스니펫이 없습니다",
+    "de": "Noch keine Snippets",
+    "fr": "Aucun extrait pour le moment",
+    "ru": "Пока нет заготовок"
+  },
+  "标签": {
+    "en": "Tags",
+    "zh-TW": "標籤",
+    "ja": "タグ",
+    "ko": "태그",
+    "de": "Tags",
+    "fr": "Étiquettes",
+    "ru": "Метки"
+  },
+  "用逗号分隔": {
+    "en": "Separate with commas",
+    "zh-TW": "以逗號分隔",
+    "ja": "カンマで区切る",
+    "ko": "쉼표로 구분",
+    "de": "Mit Kommas trennen",
+    "fr": "Séparer par des virgules",
+    "ru": "Разделяйте запятыми"
+  },
+  "说明": {
+    "en": "Description",
+    "zh-TW": "說明",
+    "ja": "説明",
+    "ko": "설명",
+    "de": "Beschreibung",
+    "fr": "Description",
+    "ru": "Описание"
+  },
+  "用 {{名称}} 插入填写项，{{date}} 和 {{time}} 可填入当前日期与时间。": {
+    "en": "Use {{name}} for fill-in fields, and {{date}} or {{time}} for the current date and time.",
+    "zh-TW": "使用 {{名稱}} 插入填寫項，{{date}} 和 {{time}} 可填入目前日期與時間。",
+    "ja": "{{名前}} で入力欄、{{date}} と {{time}} で現在の日時を挿入します。",
+    "ko": "{{이름}}으로 입력 항목을, {{date}}와 {{time}}으로 현재 날짜와 시간을 넣으세요.",
+    "de": "Nutze {{Name}} für Felder sowie {{date}} und {{time}} für Datum und Uhrzeit.",
+    "fr": "Utilisez {{nom}} pour un champ, {{date}} et {{time}} pour la date et l’heure.",
+    "ru": "Используйте {{имя}} для поля, {{date}} и {{time}} для текущих даты и времени."
+  },
+  "当前日期或时间": {
+    "en": "Current date or time",
+    "zh-TW": "目前日期或時間",
+    "ja": "現在の日時",
+    "ko": "현재 날짜 또는 시간",
+    "de": "Aktuelles Datum oder Uhrzeit",
+    "fr": "Date ou heure actuelle",
+    "ru": "Текущая дата или время"
+  },
+  "复制": {
+    "en": "Copy",
+    "zh-TW": "複製",
+    "ja": "コピー",
+    "ko": "복사",
+    "de": "Kopieren",
+    "fr": "Copier",
+    "ru": "Копировать"
+  },
+  "用于 AI 聊天": {
+    "en": "Use in AI chat",
+    "zh-TW": "用於 AI 聊天",
+    "ja": "AI チャットで使う",
+    "ko": "AI 채팅에서 사용",
+    "de": "Im KI-Chat verwenden",
+    "fr": "Utiliser dans le chat IA",
+    "ru": "Использовать в ИИ-чате"
+  },
+  "导入 {0} 条小抄？相同内容会自动跳过。": {
+    "en": "Import {0} snippets? Duplicate content will be skipped.",
+    "zh-TW": "匯入 {0} 條小抄？相同內容會自動略過。",
+    "ja": "{0} 件のスニペットを読み込みますか？重複はスキップします。",
+    "ko": "스니펫 {0}개를 가져올까요? 중복 내용은 건너뜁니다.",
+    "de": "{0} Snippets importieren? Doppelte Inhalte werden übersprungen.",
+    "fr": "Importer {0} extraits ? Les doublons seront ignorés.",
+    "ru": "Импортировать {0} заготовок? Дубликаты будут пропущены."
+  },
+  "英语": {
+    "en": "English",
+    "zh-TW": "英語",
+    "ja": "英語",
+    "ko": "영어",
+    "de": "Englisch",
+    "fr": "Anglais",
+    "ru": "Английский"
+  },
+  "日语": {
+    "en": "Japanese",
+    "zh-TW": "日語",
+    "ja": "日本語",
+    "ko": "일본어",
+    "de": "Japanisch",
+    "fr": "Japonais",
+    "ru": "Японский"
+  },
+  "韩语": {
+    "en": "Korean",
+    "zh-TW": "韓語",
+    "ja": "韓国語",
+    "ko": "한국어",
+    "de": "Koreanisch",
+    "fr": "Coréen",
+    "ru": "Корейский"
+  },
+  "法语": {
+    "en": "French",
+    "zh-TW": "法語",
+    "ja": "フランス語",
+    "ko": "프랑스어",
+    "de": "Französisch",
+    "fr": "Français",
+    "ru": "Французский"
+  },
+  "德语": {
+    "en": "German",
+    "zh-TW": "德語",
+    "ja": "ドイツ語",
+    "ko": "독일어",
+    "de": "Deutsch",
+    "fr": "Allemand",
+    "ru": "Немецкий"
+  },
+  "西班牙语": {
+    "en": "Spanish",
+    "zh-TW": "西班牙語",
+    "ja": "スペイン語",
+    "ko": "스페인어",
+    "de": "Spanisch",
+    "fr": "Espagnol",
+    "ru": "Испанский"
+  },
+  "俄语": {
+    "en": "Russian",
+    "zh-TW": "俄語",
+    "ja": "ロシア語",
+    "ko": "러시아어",
+    "de": "Russisch",
+    "fr": "Russe",
+    "ru": "Русский"
+  },
+  "中文": {
+    "en": "Chinese",
+    "zh-TW": "中文",
+    "ja": "中国語",
+    "ko": "중국어",
+    "de": "Chinesisch",
+    "fr": "Chinois",
+    "ru": "Китайский"
+  },
+  "当前浏览器无法播放发音。": {
+    "en": "This browser cannot play pronunciations.",
+    "zh-TW": "目前瀏覽器無法播放發音。",
+    "ja": "このブラウザーでは発音を再生できません。",
+    "ko": "이 브라우저에서는 발음을 재생할 수 없습니다.",
+    "de": "Dieser Browser kann keine Aussprache wiedergeben.",
+    "fr": "Ce navigateur ne peut pas lire la prononciation.",
+    "ru": "Этот браузер не поддерживает воспроизведение произношения."
+  },
+  "这条记录已在其他页面更新，请重新打开。": {
+    "en": "This record changed on another page. Reopen it before editing.",
+    "zh-TW": "這筆記錄已在其他頁面更新，請重新開啟。",
+    "ja": "別のページで更新されました。開き直してください。",
+    "ko": "다른 페이지에서 변경되었습니다. 다시 여세요.",
+    "de": "Der Eintrag wurde anderswo geändert. Öffne ihn erneut.",
+    "fr": "Cet élément a été modifié ailleurs. Rouvrez-le.",
+    "ru": "Запись изменена на другой странице. Откройте её заново."
+  },
+  "学习语种": {
+    "en": "Learning language",
+    "zh-TW": "學習語種",
+    "ja": "学習言語",
+    "ko": "학습 언어",
+    "de": "Lernsprache",
+    "fr": "Langue étudiée",
+    "ru": "Изучаемый язык"
+  },
+  "添加单词": {
+    "en": "Add word",
+    "zh-TW": "新增單字",
+    "ja": "単語を追加",
+    "ko": "단어 추가",
+    "de": "Wort hinzufügen",
+    "fr": "Ajouter un mot",
+    "ru": "Добавить слово"
+  },
+  "开始学习": {
+    "en": "Start learning",
+    "zh-TW": "開始學習",
+    "ja": "学習を始める",
+    "ko": "학습 시작",
+    "de": "Lernen starten",
+    "fr": "Commencer à apprendre",
+    "ru": "Начать обучение"
+  },
+  "{0} 个单词 · {1} 个待复习 · 今日已练习 {2} 次": {
+    "en": "{0} words · {1} due · {2} reviews today",
+    "zh-TW": "{0} 個單字 · {1} 個待複習 · 今日已練習 {2} 次",
+    "ja": "{0} 語 · 復習待ち {1} 語 · 今日の練習 {2} 回",
+    "ko": "단어 {0}개 · 복습 {1}개 · 오늘 연습 {2}회",
+    "de": "{0} Wörter · {1} fällig · heute {2} Übungen",
+    "fr": "{0} mots · {1} à réviser · {2} révisions aujourd’hui",
+    "ru": "{0} слов · {1} к повторению · {2} повторений сегодня"
+  },
+  "练习方式": {
+    "en": "Practice mode",
+    "zh-TW": "練習方式",
+    "ja": "練習方法",
+    "ko": "연습 방식",
+    "de": "Übungsmodus",
+    "fr": "Mode d’exercice",
+    "ru": "Режим тренировки"
+  },
+  "单词卡片": {
+    "en": "Word cards",
+    "zh-TW": "單字卡片",
+    "ja": "単語カード",
+    "ko": "단어 카드",
+    "de": "Wortkarten",
+    "fr": "Cartes de vocabulaire",
+    "ru": "Карточки слов"
+  },
+  "拼写练习": {
+    "en": "Spelling",
+    "zh-TW": "拼字練習",
+    "ja": "つづりの練習",
+    "ko": "철자 연습",
+    "de": "Rechtschreibung",
+    "fr": "Orthographe",
+    "ru": "Правописание"
+  },
+  "听写练习": {
+    "en": "Dictation",
+    "zh-TW": "聽寫練習",
+    "ja": "書き取り",
+    "ko": "받아쓰기",
+    "de": "Diktat",
+    "fr": "Dictée",
+    "ru": "Диктант"
+  },
+  "语境填空": {
+    "en": "Fill in context",
+    "zh-TW": "語境填空",
+    "ja": "文脈の穴埋め",
+    "ko": "문맥 빈칸 채우기",
+    "de": "Lückentext",
+    "fr": "Texte à trous",
+    "ru": "Пропуски в контексте"
+  },
+  "返回词库": {
+    "en": "Back to vocabulary",
+    "zh-TW": "返回詞庫",
+    "ja": "単語帳に戻る",
+    "ko": "단어장으로 돌아가기",
+    "de": "Zurück zum Wortschatz",
+    "fr": "Retour au vocabulaire",
+    "ru": "Назад к словарю"
+  },
+  "剩余 {0} 个": {
+    "en": "{0} remaining",
+    "zh-TW": "剩餘 {0} 個",
+    "ja": "残り {0} 語",
+    "ko": "{0}개 남음",
+    "de": "{0} verbleibend",
+    "fr": "{0} restants",
+    "ru": "Осталось: {0}"
+  },
+  "听发音，写出单词": {
+    "en": "Listen and spell the word",
+    "zh-TW": "聽發音，寫出單字",
+    "ja": "発音を聞いて単語を書いてください",
+    "ko": "발음을 듣고 단어를 쓰세요",
+    "de": "Höre zu und schreibe das Wort",
+    "fr": "Écoutez et écrivez le mot",
+    "ru": "Прослушайте и напишите слово"
+  },
+  "播放发音": {
+    "en": "Play pronunciation",
+    "zh-TW": "播放發音",
+    "ja": "発音を再生",
+    "ko": "발음 재생",
+    "de": "Aussprache abspielen",
+    "fr": "Écouter la prononciation",
+    "ru": "Прослушать произношение"
+  },
+  "填写单词": {
+    "en": "Enter the word",
+    "zh-TW": "填寫單字",
+    "ja": "単語を入力",
+    "ko": "단어 입력",
+    "de": "Wort eingeben",
+    "fr": "Saisir le mot",
+    "ru": "Введите слово"
+  },
+  "检查答案": {
+    "en": "Check answer",
+    "zh-TW": "檢查答案",
+    "ja": "答えを確認",
+    "ko": "정답 확인",
+    "de": "Antwort prüfen",
+    "fr": "Vérifier la réponse",
+    "ru": "Проверить ответ"
+  },
+  "显示释义": {
+    "en": "Show meaning",
+    "zh-TW": "顯示釋義",
+    "ja": "意味を表示",
+    "ko": "뜻 표시",
+    "de": "Bedeutung anzeigen",
+    "fr": "Afficher le sens",
+    "ru": "Показать значение"
+  },
+  "回答正确": {
+    "en": "Correct",
+    "zh-TW": "回答正確",
+    "ja": "正解です",
+    "ko": "정답입니다",
+    "de": "Richtig",
+    "fr": "Bonne réponse",
+    "ru": "Верно"
+  },
+  "正确答案：{0}": {
+    "en": "Correct answer: {0}",
+    "zh-TW": "正確答案：{0}",
+    "ja": "正解：{0}",
+    "ko": "정답: {0}",
+    "de": "Richtige Antwort: {0}",
+    "fr": "Réponse correcte : {0}",
+    "ru": "Правильный ответ: {0}"
+  },
+  "来源：{0}": {
+    "en": "Source: {0}",
+    "zh-TW": "來源：{0}",
+    "ja": "出典：{0}",
+    "ko": "출처: {0}",
+    "de": "Quelle: {0}",
+    "fr": "Source : {0}",
+    "ru": "Источник: {0}"
+  },
+  "再练一次": {
+    "en": "Again",
+    "zh-TW": "再練一次",
+    "ja": "もう一度",
+    "ko": "다시 연습",
+    "de": "Noch einmal",
+    "fr": "Revoir",
+    "ru": "Ещё раз"
+  },
+  "记住了": {
+    "en": "Got it",
+    "zh-TW": "記住了",
+    "ja": "覚えた",
+    "ko": "외웠어요",
+    "de": "Gewusst",
+    "fr": "Retenu",
+    "ru": "Запомнил"
+  },
+  "很熟悉": {
+    "en": "Easy",
+    "zh-TW": "很熟悉",
+    "ja": "簡単",
+    "ko": "익숙해요",
+    "de": "Einfach",
+    "fr": "Facile",
+    "ru": "Легко"
+  },
+  "请用我能理解的方式解释这个单词或短语，说明常见用法并给出例句。\n语种：{0}\n单词：{1}\n原句：{2}": {
+    "en": "Explain this word or phrase clearly, including common usage and examples.\nLanguage: {0}\nWord: {1}\nOriginal sentence: {2}",
+    "zh-TW": "請用容易理解的方式解釋這個單字或片語，說明常見用法並提供例句。\n語種：{0}\n單字：{1}\n原句：{2}",
+    "ja": "この単語や表現をわかりやすく説明し、よく使う用法と例文を教えてください。\n言語：{0}\n単語：{1}\n元の文：{2}",
+    "ko": "이 단어나 표현을 쉽게 설명하고 일반적인 용법과 예문을 알려 주세요.\n언어: {0}\n단어: {1}\n원문: {2}",
+    "de": "Erkläre dieses Wort oder diesen Ausdruck verständlich, mit üblicher Verwendung und Beispielen.\nSprache: {0}\nWort: {1}\nOriginalsatz: {2}",
+    "fr": "Explique ce mot ou cette expression simplement, avec les usages courants et des exemples.\nLangue : {0}\nMot : {1}\nPhrase d’origine : {2}",
+    "ru": "Понятно объясни это слово или выражение, приведи распространённые употребления и примеры.\nЯзык: {0}\nСлово: {1}\nИсходное предложение: {2}"
+  },
+  "请 AI 解释": {
+    "en": "Ask AI to explain",
+    "zh-TW": "請 AI 解釋",
+    "ja": "AI に説明を依頼",
+    "ko": "AI에게 설명 요청",
+    "de": "KI um Erklärung bitten",
+    "fr": "Demander une explication à l’IA",
+    "ru": "Попросить ИИ объяснить"
+  },
+  "本次练习已完成": {
+    "en": "Practice complete",
+    "zh-TW": "本次練習已完成",
+    "ja": "今回の練習が完了しました",
+    "ko": "연습을 완료했습니다",
+    "de": "Übung abgeschlossen",
+    "fr": "Exercice terminé",
+    "ru": "Тренировка завершена"
+  },
+  "已练习 {0} 个单词": {
+    "en": "Practiced {0} words",
+    "zh-TW": "已練習 {0} 個單字",
+    "ja": "{0} 語を練習しました",
+    "ko": "단어 {0}개 연습 완료",
+    "de": "{0} Wörter geübt",
+    "fr": "{0} mots travaillés",
+    "ru": "Отработано слов: {0}"
+  },
+  "练习全部单词": {
+    "en": "Practice all words",
+    "zh-TW": "練習全部單字",
+    "ja": "すべての単語を練習",
+    "ko": "모든 단어 연습",
+    "de": "Alle Wörter üben",
+    "fr": "Travailler tous les mots",
+    "ru": "Тренировать все слова"
+  },
+  "搜索词库": {
+    "en": "Search vocabulary",
+    "zh-TW": "搜尋詞庫",
+    "ja": "単語帳を検索",
+    "ko": "단어장 검색",
+    "de": "Wortschatz durchsuchen",
+    "fr": "Rechercher dans le vocabulaire",
+    "ru": "Поиск в словаре"
+  },
+  "个人词库": {
+    "en": "My vocabulary",
+    "zh-TW": "個人詞庫",
+    "ja": "自分の単語帳",
+    "ko": "개인 단어장",
+    "de": "Mein Wortschatz",
+    "fr": "Mon vocabulaire",
+    "ru": "Мой словарь"
+  },
+  "已练习 · 熟悉程度 {0}": {
+    "en": "Practiced · familiarity {0}",
+    "zh-TW": "已練習 · 熟悉程度 {0}",
+    "ja": "練習済み · 習熟度 {0}",
+    "ko": "연습 완료 · 숙련도 {0}",
+    "de": "Geübt · Vertrautheit {0}",
+    "fr": "Travaillé · maîtrise {0}",
+    "ru": "Изучено · уровень освоения {0}"
+  },
+  "新单词": {
+    "en": "New word",
+    "zh-TW": "新單字",
+    "ja": "新しい単語",
+    "ko": "새 단어",
+    "de": "Neues Wort",
+    "fr": "Nouveau mot",
+    "ru": "Новое слово"
+  },
+  "添加想学习的单词或短语": {
+    "en": "Add words or phrases you want to learn",
+    "zh-TW": "新增想學習的單字或片語",
+    "ja": "学びたい単語や表現を追加しましょう",
+    "ko": "배우고 싶은 단어나 표현을 추가하세요",
+    "de": "Füge Wörter oder Ausdrücke zum Lernen hinzu",
+    "fr": "Ajoutez les mots ou expressions à apprendre",
+    "ru": "Добавьте слова или выражения для изучения"
+  },
+  "词库中已有这个单词。": {
+    "en": "This word is already in your vocabulary.",
+    "zh-TW": "詞庫中已有這個單字。",
+    "ja": "この単語はすでに登録されています。",
+    "ko": "단어장에 이미 있는 단어입니다.",
+    "de": "Dieses Wort ist bereits im Wortschatz.",
+    "fr": "Ce mot est déjà dans votre vocabulaire.",
+    "ru": "Это слово уже есть в словаре."
+  },
+  "单词或短语": {
+    "en": "Word or phrase",
+    "zh-TW": "單字或片語",
+    "ja": "単語または表現",
+    "ko": "단어 또는 표현",
+    "de": "Wort oder Ausdruck",
+    "fr": "Mot ou expression",
+    "ru": "Слово или выражение"
+  },
+  "语种": {
+    "en": "Language",
+    "zh-TW": "語種",
+    "ja": "言語",
+    "ko": "언어",
+    "de": "Sprache",
+    "fr": "Langue",
+    "ru": "Язык"
+  },
+  "音标": {
+    "en": "Pronunciation notation",
+    "zh-TW": "音標",
+    "ja": "発音記号",
+    "ko": "발음 기호",
+    "de": "Lautschrift",
+    "fr": "Transcription phonétique",
+    "ru": "Транскрипция"
+  },
+  "释义": {
+    "en": "Meaning",
+    "zh-TW": "釋義",
+    "ja": "意味",
+    "ko": "뜻",
+    "de": "Bedeutung",
+    "fr": "Sens",
+    "ru": "Значение"
+  },
+  "例句": {
+    "en": "Example sentence",
+    "zh-TW": "例句",
+    "ja": "例文",
+    "ko": "예문",
+    "de": "Beispielsatz",
+    "fr": "Phrase d’exemple",
+    "ru": "Пример предложения"
+  },
+  "例句译文": {
+    "en": "Example translation",
+    "zh-TW": "例句譯文",
+    "ja": "例文の訳",
+    "ko": "예문 번역",
+    "de": "Übersetzung des Beispiels",
+    "fr": "Traduction de l’exemple",
+    "ru": "Перевод примера"
+  },
+  "来源": {
+    "en": "Source",
+    "zh-TW": "來源",
+    "ja": "出典",
+    "ko": "출처",
+    "de": "Quelle",
+    "fr": "Source",
+    "ru": "Источник"
+  },
+  "发音": {
+    "en": "Pronunciation",
+    "zh-TW": "發音",
+    "ja": "発音",
+    "ko": "발음",
+    "de": "Aussprache",
+    "fr": "Prononciation",
+    "ru": "Произношение"
+  },
+  "地点": {
+    "en": "Place",
+    "zh-TW": "地點",
+    "ja": "場所",
+    "ko": "장소",
+    "de": "Ort",
+    "fr": "Lieu",
+    "ru": "Место"
+  },
+  "交通": {
+    "en": "Transport",
+    "zh-TW": "交通",
+    "ja": "交通",
+    "ko": "교통",
+    "de": "Transport",
+    "fr": "Transport",
+    "ru": "Транспорт"
+  },
+  "住宿": {
+    "en": "Accommodation",
+    "zh-TW": "住宿",
+    "ja": "宿泊",
+    "ko": "숙박",
+    "de": "Unterkunft",
+    "fr": "Hébergement",
+    "ru": "Проживание"
+  },
+  "预订": {
+    "en": "Booking",
+    "zh-TW": "預訂",
+    "ja": "予約",
+    "ko": "예약",
+    "de": "Buchung",
+    "fr": "Réservation",
+    "ru": "Бронирование"
+  },
+  "行程已被移除。": {
+    "en": "This trip was removed.",
+    "zh-TW": "行程已移除。",
+    "ja": "旅行が削除されました。",
+    "ko": "여행 일정이 삭제되었습니다.",
+    "de": "Diese Reise wurde entfernt.",
+    "fr": "Ce voyage a été supprimé.",
+    "ru": "Поездка удалена."
+  },
+  "搜索行程": {
+    "en": "Search trips",
+    "zh-TW": "搜尋行程",
+    "ja": "旅行を検索",
+    "ko": "여행 검색",
+    "de": "Reisen suchen",
+    "fr": "Rechercher des voyages",
+    "ru": "Поиск поездок"
+  },
+  "新行程": {
+    "en": "New trip",
+    "zh-TW": "新行程",
+    "ja": "新しい旅行",
+    "ko": "새 여행",
+    "de": "Neue Reise",
+    "fr": "Nouveau voyage",
+    "ru": "Новая поездка"
+  },
+  "行程列表": {
+    "en": "Trip list",
+    "zh-TW": "行程列表",
+    "ja": "旅行一覧",
+    "ko": "여행 목록",
+    "de": "Reiseliste",
+    "fr": "Liste des voyages",
+    "ru": "Список поездок"
+  },
+  "{0} 项安排": {
+    "en": "{0} itinerary items",
+    "zh-TW": "{0} 項安排",
+    "ja": "予定 {0} 件",
+    "ko": "일정 {0}개",
+    "de": "{0} Programmpunkte",
+    "fr": "{0} étapes",
+    "ru": "Пунктов маршрута: {0}"
+  },
+  "整理下一次旅行的安排": {
+    "en": "Plan your next trip",
+    "zh-TW": "整理下一次旅行的安排",
+    "ja": "次の旅行を計画しましょう",
+    "ko": "다음 여행을 계획하세요",
+    "de": "Plane deine nächste Reise",
+    "fr": "Organisez votre prochain voyage",
+    "ru": "Спланируйте следующую поездку"
+  },
+  "行程名称": {
+    "en": "Trip name",
+    "zh-TW": "行程名稱",
+    "ja": "旅行名",
+    "ko": "여행 이름",
+    "de": "Reisename",
+    "fr": "Nom du voyage",
+    "ru": "Название поездки"
+  },
+  "开始日期": {
+    "en": "Start date",
+    "zh-TW": "開始日期",
+    "ja": "開始日",
+    "ko": "시작 날짜",
+    "de": "Startdatum",
+    "fr": "Date de début",
+    "ru": "Дата начала"
+  },
+  "结束日期": {
+    "en": "End date",
+    "zh-TW": "結束日期",
+    "ja": "終了日",
+    "ko": "종료 날짜",
+    "de": "Enddatum",
+    "fr": "Date de fin",
+    "ru": "Дата окончания"
+  },
+  "行程备注": {
+    "en": "Trip notes",
+    "zh-TW": "行程備註",
+    "ja": "旅行メモ",
+    "ko": "여행 메모",
+    "de": "Reisenotizen",
+    "fr": "Notes de voyage",
+    "ru": "Заметки о поездке"
+  },
+  "删除行程": {
+    "en": "Delete trip",
+    "zh-TW": "刪除行程",
+    "ja": "旅行を削除",
+    "ko": "여행 삭제",
+    "de": "Reise löschen",
+    "fr": "Supprimer le voyage",
+    "ru": "Удалить поездку"
+  },
+  "保存行程": {
+    "en": "Save trip",
+    "zh-TW": "儲存行程",
+    "ja": "旅行を保存",
+    "ko": "여행 저장",
+    "de": "Reise speichern",
+    "fr": "Enregistrer le voyage",
+    "ru": "Сохранить поездку"
+  },
+  "每日安排": {
+    "en": "Daily itinerary",
+    "zh-TW": "每日安排",
+    "ja": "日ごとの予定",
+    "ko": "일별 일정",
+    "de": "Tagesplanung",
+    "fr": "Programme quotidien",
+    "ru": "План по дням"
+  },
+  "添加安排": {
+    "en": "Add itinerary item",
+    "zh-TW": "新增安排",
+    "ja": "予定を追加",
+    "ko": "일정 추가",
+    "de": "Programmpunkt hinzufügen",
+    "fr": "Ajouter une étape",
+    "ru": "Добавить пункт маршрута"
+  },
+  "日期": {
+    "en": "Date",
+    "zh-TW": "日期",
+    "ja": "日付",
+    "ko": "날짜",
+    "de": "Datum",
+    "fr": "Date",
+    "ru": "Дата"
+  },
+  "地点或地址": {
+    "en": "Place or address",
+    "zh-TW": "地點或地址",
+    "ja": "場所または住所",
+    "ko": "장소 또는 주소",
+    "de": "Ort oder Adresse",
+    "fr": "Lieu ou adresse",
+    "ru": "Место или адрес"
+  },
+  "预订编号": {
+    "en": "Booking reference",
+    "zh-TW": "預訂編號",
+    "ja": "予約番号",
+    "ko": "예약 번호",
+    "de": "Buchungsnummer",
+    "fr": "Numéro de réservation",
+    "ru": "Номер бронирования"
+  },
+  "相关网址": {
+    "en": "Related link",
+    "zh-TW": "相關網址",
+    "ja": "関連リンク",
+    "ko": "관련 링크",
+    "de": "Zugehöriger Link",
+    "fr": "Lien associé",
+    "ru": "Связанная ссылка"
+  },
+  "安排备注": {
+    "en": "Itinerary notes",
+    "zh-TW": "安排備註",
+    "ja": "予定のメモ",
+    "ko": "일정 메모",
+    "de": "Notizen zum Programmpunkt",
+    "fr": "Notes de l’étape",
+    "ru": "Заметки к пункту маршрута"
+  },
+  "预订凭证": {
+    "en": "Booking documents",
+    "zh-TW": "預訂憑證",
+    "ja": "予約書類",
+    "ko": "예약 증빙",
+    "de": "Buchungsbelege",
+    "fr": "Justificatifs de réservation",
+    "ru": "Документы бронирования"
+  },
+  "附件仅支持图片、PDF 或文本，每个不超过 5 MB。": {
+    "en": "Use images, PDF, or text files up to 5 MB each.",
+    "zh-TW": "附件僅支援圖片、PDF 或文字，每個不超過 5 MB。",
+    "ja": "画像、PDF、テキストのみ対応し、各 5 MB までです。",
+    "ko": "이미지, PDF, 텍스트 파일만 지원하며 파일당 최대 5 MB입니다.",
+    "de": "Nur Bilder, PDF oder Textdateien mit jeweils bis zu 5 MB.",
+    "fr": "Images, PDF ou texte uniquement, 5 Mo maximum par fichier.",
+    "ru": "Поддерживаются изображения, PDF и текст, до 5 МБ на файл."
+  },
+  "附件总大小不能超过 20 MB。": {
+    "en": "Attachments must total no more than 20 MB.",
+    "zh-TW": "附件總大小不能超過 20 MB。",
+    "ja": "添付ファイルの合計は 20 MB までです。",
+    "ko": "첨부 파일의 총 크기는 20 MB를 넘을 수 없습니다.",
+    "de": "Anhänge dürfen zusammen höchstens 20 MB groß sein.",
+    "fr": "Les pièces jointes ne doivent pas dépasser 20 Mo au total.",
+    "ru": "Общий размер вложений не должен превышать 20 МБ."
+  },
+  "移除附件": {
+    "en": "Remove attachment",
+    "zh-TW": "移除附件",
+    "ja": "添付を削除",
+    "ko": "첨부 파일 제거",
+    "de": "Anhang entfernen",
+    "fr": "Retirer la pièce jointe",
+    "ru": "Удалить вложение"
+  },
+  "保存安排": {
+    "en": "Save itinerary item",
+    "zh-TW": "儲存安排",
+    "ja": "予定を保存",
+    "ko": "일정 저장",
+    "de": "Programmpunkt speichern",
+    "fr": "Enregistrer l’étape",
+    "ru": "Сохранить пункт маршрута"
+  },
+  "预订编号：{0}": {
+    "en": "Booking reference: {0}",
+    "zh-TW": "預訂編號：{0}",
+    "ja": "予約番号：{0}",
+    "ko": "예약 번호: {0}",
+    "de": "Buchungsnummer: {0}",
+    "fr": "Numéro de réservation : {0}",
+    "ru": "Номер бронирования: {0}"
+  },
+  "打开网址": {
+    "en": "Open link",
+    "zh-TW": "開啟網址",
+    "ja": "リンクを開く",
+    "ko": "링크 열기",
+    "de": "Link öffnen",
+    "fr": "Ouvrir le lien",
+    "ru": "Открыть ссылку"
+  },
+  "添加地点、交通、住宿或预订": {
+    "en": "Add places, transport, accommodation, or bookings",
+    "zh-TW": "新增地點、交通、住宿或預訂",
+    "ja": "場所、交通、宿泊、予約を追加しましょう",
+    "ko": "장소, 교통, 숙박 또는 예약을 추가하세요",
+    "de": "Füge Orte, Transport, Unterkünfte oder Buchungen hinzu",
+    "fr": "Ajoutez des lieux, transports, hébergements ou réservations",
+    "ru": "Добавьте места, транспорт, проживание или бронирования"
+  },
+  "删除“{0}”及其中的全部安排和凭证？": {
+    "en": "Delete “{0}” and all its itinerary items and documents?",
+    "zh-TW": "刪除「{0}」及其中的全部安排與憑證？",
+    "ja": "「{0}」とすべての予定・書類を削除しますか？",
+    "ko": "‘{0}’ 및 모든 일정과 증빙을 삭제할까요?",
+    "de": "„{0}“ mit allen Programmpunkten und Belegen löschen?",
+    "fr": "Supprimer « {0} » avec toutes ses étapes et pièces jointes ?",
+    "ru": "Удалить «{0}» со всеми пунктами маршрута и документами?"
+  },
+  "早餐": {
+    "en": "Breakfast",
+    "zh-TW": "早餐",
+    "ja": "朝食",
+    "ko": "아침",
+    "de": "Frühstück",
+    "fr": "Petit-déjeuner",
+    "ru": "Завтрак"
+  },
+  "午餐": {
+    "en": "Lunch",
+    "zh-TW": "午餐",
+    "ja": "昼食",
+    "ko": "점심",
+    "de": "Mittagessen",
+    "fr": "Déjeuner",
+    "ru": "Обед"
+  },
+  "晚餐": {
+    "en": "Dinner",
+    "zh-TW": "晚餐",
+    "ja": "夕食",
+    "ko": "저녁",
+    "de": "Abendessen",
+    "fr": "Dîner",
+    "ru": "Ужин"
+  },
+  "加餐": {
+    "en": "Snack",
+    "zh-TW": "點心",
+    "ja": "間食",
+    "ko": "간식",
+    "de": "Zwischenmahlzeit",
+    "fr": "Collation",
+    "ru": "Перекус"
+  },
+  "适量": {
+    "en": "As needed",
+    "zh-TW": "適量",
+    "ja": "適量",
+    "ko": "적당량",
+    "de": "Nach Bedarf",
+    "fr": "Selon le besoin",
+    "ru": "По вкусу"
+  },
+  "另加适量": {
+    "en": "plus extra as needed",
+    "zh-TW": "另加適量",
+    "ja": "さらに適量",
+    "ko": "추가 적당량",
+    "de": "zusätzlich nach Bedarf",
+    "fr": "et un supplément au besoin",
+    "ru": "плюс по вкусу"
+  },
+  "饮食计划视图": {
+    "en": "Meal planning views",
+    "zh-TW": "飲食計畫檢視",
+    "ja": "食事計画の表示",
+    "ko": "식단 계획 보기",
+    "de": "Ansichten der Essensplanung",
+    "fr": "Vues des menus",
+    "ru": "Виды плана питания"
+  },
+  "食谱": {
+    "en": "Recipes",
+    "zh-TW": "食譜",
+    "ja": "レシピ",
+    "ko": "레시피",
+    "de": "Rezepte",
+    "fr": "Recettes",
+    "ru": "Рецепты"
+  },
+  "每周菜单": {
+    "en": "Weekly menu",
+    "zh-TW": "每週菜單",
+    "ja": "週間メニュー",
+    "ko": "주간 식단",
+    "de": "Wochenmenü",
+    "fr": "Menu de la semaine",
+    "ru": "Меню на неделю"
+  },
+  "购物清单": {
+    "en": "Shopping list",
+    "zh-TW": "購物清單",
+    "ja": "買い物リスト",
+    "ko": "장보기 목록",
+    "de": "Einkaufsliste",
+    "fr": "Liste de courses",
+    "ru": "Список покупок"
+  },
+  "搜索食谱": {
+    "en": "Search recipes",
+    "zh-TW": "搜尋食譜",
+    "ja": "レシピを検索",
+    "ko": "레시피 검색",
+    "de": "Rezepte suchen",
+    "fr": "Rechercher des recettes",
+    "ru": "Поиск рецептов"
+  },
+  "新食谱": {
+    "en": "New recipe",
+    "zh-TW": "新食譜",
+    "ja": "新しいレシピ",
+    "ko": "새 레시피",
+    "de": "Neues Rezept",
+    "fr": "Nouvelle recette",
+    "ru": "Новый рецепт"
+  },
+  "食谱列表": {
+    "en": "Recipe list",
+    "zh-TW": "食譜列表",
+    "ja": "レシピ一覧",
+    "ko": "레시피 목록",
+    "de": "Rezeptliste",
+    "fr": "Liste des recettes",
+    "ru": "Список рецептов"
+  },
+  "{0} 份 · {1} 种食材": {
+    "en": "{0} servings · {1} ingredients",
+    "zh-TW": "{0} 份 · {1} 種食材",
+    "ja": "{0} 人分 · 食材 {1} 種",
+    "ko": "{0}인분 · 식재료 {1}개",
+    "de": "{0} Portionen · {1} Zutaten",
+    "fr": "{0} portions · {1} ingrédients",
+    "ru": "{0} порций · {1} ингредиентов"
+  },
+  "保存喜欢的食谱": {
+    "en": "Save your favorite recipes",
+    "zh-TW": "儲存喜歡的食譜",
+    "ja": "お気に入りのレシピを保存しましょう",
+    "ko": "좋아하는 레시피를 저장하세요",
+    "de": "Speichere deine Lieblingsrezepte",
+    "fr": "Enregistrez vos recettes préférées",
+    "ru": "Сохраните любимые рецепты"
+  },
+  "食谱名称": {
+    "en": "Recipe name",
+    "zh-TW": "食譜名稱",
+    "ja": "レシピ名",
+    "ko": "레시피 이름",
+    "de": "Rezeptname",
+    "fr": "Nom de la recette",
+    "ru": "Название рецепта"
+  },
+  "原食谱份数": {
+    "en": "Original servings",
+    "zh-TW": "原食譜份數",
+    "ja": "元のレシピの人数",
+    "ko": "원래 레시피 인분",
+    "de": "Ursprüngliche Portionen",
+    "fr": "Portions de la recette",
+    "ru": "Исходное число порций"
+  },
+  "食材": {
+    "en": "Ingredients",
+    "zh-TW": "食材",
+    "ja": "食材",
+    "ko": "식재료",
+    "de": "Zutaten",
+    "fr": "Ingrédients",
+    "ru": "Ингредиенты"
+  },
+  "食材名称": {
+    "en": "Ingredient name",
+    "zh-TW": "食材名稱",
+    "ja": "食材名",
+    "ko": "식재료 이름",
+    "de": "Zutatenname",
+    "fr": "Nom de l’ingrédient",
+    "ru": "Название ингредиента"
+  },
+  "食材数量": {
+    "en": "Ingredient quantity",
+    "zh-TW": "食材數量",
+    "ja": "食材の量",
+    "ko": "식재료 수량",
+    "de": "Zutatenmenge",
+    "fr": "Quantité de l’ingrédient",
+    "ru": "Количество ингредиента"
+  },
+  "食材单位": {
+    "en": "Ingredient unit",
+    "zh-TW": "食材單位",
+    "ja": "食材の単位",
+    "ko": "식재료 단위",
+    "de": "Zutateneinheit",
+    "fr": "Unité de l’ingrédient",
+    "ru": "Единица ингредиента"
+  },
+  "单位": {
+    "en": "Unit",
+    "zh-TW": "單位",
+    "ja": "単位",
+    "ko": "단위",
+    "de": "Einheit",
+    "fr": "Unité",
+    "ru": "Единица"
+  },
+  "移除食材": {
+    "en": "Remove ingredient",
+    "zh-TW": "移除食材",
+    "ja": "食材を削除",
+    "ko": "식재료 제거",
+    "de": "Zutat entfernen",
+    "fr": "Retirer l’ingrédient",
+    "ru": "Удалить ингредиент"
+  },
+  "添加食材": {
+    "en": "Add ingredient",
+    "zh-TW": "新增食材",
+    "ja": "食材を追加",
+    "ko": "식재료 추가",
+    "de": "Zutat hinzufügen",
+    "fr": "Ajouter un ingrédient",
+    "ru": "Добавить ингредиент"
+  },
+  "做法": {
+    "en": "Instructions",
+    "zh-TW": "做法",
+    "ja": "作り方",
+    "ko": "조리법",
+    "de": "Zubereitung",
+    "fr": "Préparation",
+    "ru": "Приготовление"
+  },
+  "食谱来源网址": {
+    "en": "Recipe source link",
+    "zh-TW": "食譜來源網址",
+    "ja": "レシピの出典リンク",
+    "ko": "레시피 출처 링크",
+    "de": "Quelllink des Rezepts",
+    "fr": "Lien de la recette",
+    "ru": "Ссылка на рецепт"
+  },
+  "上一周": {
+    "en": "Previous week",
+    "zh-TW": "上一週",
+    "ja": "前の週",
+    "ko": "이전 주",
+    "de": "Vorherige Woche",
+    "fr": "Semaine précédente",
+    "ru": "Предыдущая неделя"
+  },
+  "选择日期": {
+    "en": "Choose date",
+    "zh-TW": "選擇日期",
+    "ja": "日付を選択",
+    "ko": "날짜 선택",
+    "de": "Datum wählen",
+    "fr": "Choisir une date",
+    "ru": "Выберите дату"
+  },
+  "下一周": {
+    "en": "Next week",
+    "zh-TW": "下一週",
+    "ja": "次の週",
+    "ko": "다음 주",
+    "de": "Nächste Woche",
+    "fr": "Semaine suivante",
+    "ru": "Следующая неделя"
+  },
+  "餐次": {
+    "en": "Meal",
+    "zh-TW": "餐次",
+    "ja": "食事",
+    "ko": "식사",
+    "de": "Mahlzeit",
+    "fr": "Repas",
+    "ru": "Приём пищи"
+  },
+  "计划份数": {
+    "en": "Planned servings",
+    "zh-TW": "計畫份數",
+    "ja": "予定の人数",
+    "ko": "계획 인분",
+    "de": "Geplante Portionen",
+    "fr": "Portions prévues",
+    "ru": "Запланированное число порций"
+  },
+  "加入菜单": {
+    "en": "Add to menu",
+    "zh-TW": "加入菜單",
+    "ja": "メニューに追加",
+    "ko": "식단에 추가",
+    "de": "Zum Menü hinzufügen",
+    "fr": "Ajouter au menu",
+    "ru": "Добавить в меню"
+  },
+  "食谱已移除": {
+    "en": "Recipe removed",
+    "zh-TW": "食譜已移除",
+    "ja": "レシピは削除されました",
+    "ko": "레시피가 삭제됨",
+    "de": "Rezept entfernt",
+    "fr": "Recette supprimée",
+    "ru": "Рецепт удалён"
+  },
+  "{0} 份": {
+    "en": "{0} servings",
+    "zh-TW": "{0} 份",
+    "ja": "{0} 人分",
+    "ko": "{0}인분",
+    "de": "{0} Portionen",
+    "fr": "{0} portions",
+    "ru": "Порций: {0}"
+  },
+  "移除餐次": {
+    "en": "Remove meal",
+    "zh-TW": "移除餐次",
+    "ja": "食事を削除",
+    "ko": "식사 제거",
+    "de": "Mahlzeit entfernen",
+    "fr": "Retirer le repas",
+    "ru": "Удалить приём пищи"
+  },
+  "尚未安排": {
+    "en": "Not planned",
+    "zh-TW": "尚未安排",
+    "ja": "未定",
+    "ko": "미정",
+    "de": "Noch nicht geplant",
+    "fr": "Non prévu",
+    "ru": "Не запланировано"
+  },
+  "本周需要的食材": {
+    "en": "Ingredients for this week",
+    "zh-TW": "本週需要的食材",
+    "ja": "今週必要な食材",
+    "ko": "이번 주에 필요한 식재료",
+    "de": "Zutaten für diese Woche",
+    "fr": "Ingrédients de la semaine",
+    "ru": "Ингредиенты на эту неделю"
+  },
+  "请先清理旧购物记录。": {
+    "en": "Clear old shopping records first.",
+    "zh-TW": "請先清理舊購物記錄。",
+    "ja": "古い買い物記録を整理してください。",
+    "ko": "이전 장보기 기록을 먼저 정리하세요.",
+    "de": "Bereinige zuerst alte Einkaufsaufzeichnungen.",
+    "fr": "Supprimez d’abord les anciennes coches.",
+    "ru": "Сначала очистите старые записи покупок."
+  },
+  "安排本周菜单后，这里会合并所需食材": {
+    "en": "Plan this week’s menu to combine the ingredients here",
+    "zh-TW": "安排本週菜單後，這裡會合併所需食材",
+    "ja": "週間メニューを作ると、必要な食材がここにまとまります",
+    "ko": "이번 주 식단을 계획하면 필요한 식재료가 여기에 모입니다",
+    "de": "Plane das Wochenmenü, um die Zutaten hier zusammenzufassen",
+    "fr": "Planifiez la semaine pour regrouper ici les ingrédients nécessaires",
+    "ru": "Составьте меню на неделю, чтобы объединить нужные ингредиенты"
+  },
+  "购买 {0}：{1}": {
+    "en": "Buy {0}: {1}",
+    "zh-TW": "購買 {0}：{1}",
+    "ja": "{0} を購入：{1}",
+    "ko": "{0} 구매: {1}",
+    "de": "{0} kaufen: {1}",
+    "fr": "Acheter {0} : {1}",
+    "ru": "Купить {0}: {1}"
+  },
+  "清除勾选": {
+    "en": "Clear checks",
+    "zh-TW": "清除勾選",
+    "ja": "チェックを解除",
+    "ko": "체크 지우기",
+    "de": "Häkchen entfernen",
+    "fr": "Effacer les coches",
+    "ru": "Снять отметки"
+  },
+  "删除“{0}”及菜单中对应的餐次？": {
+    "en": "Delete “{0}” and its scheduled meals?",
+    "zh-TW": "刪除「{0}」及菜單中對應的餐次？",
+    "ja": "「{0}」と対応する献立を削除しますか？",
+    "ko": "‘{0}’ 및 연결된 식단을 삭제할까요?",
+    "de": "„{0}“ und zugehörige geplante Mahlzeiten löschen?",
+    "fr": "Supprimer « {0} » et les repas correspondants ?",
+    "ru": "Удалить «{0}» и соответствующие блюда в меню?"
+  },
+  "请检查填写的内容。": {
+    "en": "Check the entered content.",
+    "zh-TW": "請檢查填寫的內容。",
+    "ja": "入力内容を確認してください。",
+    "ko": "입력한 내용을 확인하세요.",
+    "de": "Prüfe die eingegebenen Inhalte.",
+    "fr": "Vérifiez le contenu saisi.",
+    "ru": "Проверьте введённые данные."
+  },
+  "日期无效。": {
+    "en": "Invalid date.",
+    "zh-TW": "日期無效。",
+    "ja": "日付が無効です。",
+    "ko": "날짜가 올바르지 않습니다.",
+    "de": "Ungültiges Datum.",
+    "fr": "Date invalide.",
+    "ru": "Недопустимая дата."
+  },
+  "请填写有效的 HTTP 或 HTTPS 地址。": {
+    "en": "Enter a valid HTTP or HTTPS address.",
+    "zh-TW": "請填寫有效的 HTTP 或 HTTPS 網址。",
+    "ja": "有効な HTTP または HTTPS アドレスを入力してください。",
+    "ko": "올바른 HTTP 또는 HTTPS 주소를 입력하세요.",
+    "de": "Gib eine gültige HTTP- oder HTTPS-Adresse ein.",
+    "fr": "Saisissez une adresse HTTP ou HTTPS valide.",
+    "ru": "Введите корректный адрес HTTP или HTTPS."
+  },
+  "这条记录已存在。": {
+    "en": "This record already exists.",
+    "zh-TW": "這筆記錄已存在。",
+    "ja": "この記録はすでに存在します。",
+    "ko": "이미 있는 기록입니다.",
+    "de": "Dieser Eintrag ist bereits vorhanden.",
+    "fr": "Cet élément existe déjà.",
+    "ru": "Такая запись уже существует."
+  },
+  "任务无效。": {
+    "en": "Invalid task.",
+    "zh-TW": "任務無效。",
+    "ja": "タスクが無効です。",
+    "ko": "작업이 올바르지 않습니다.",
+    "de": "Ungültige Aufgabe.",
+    "fr": "Tâche invalide.",
+    "ru": "Недопустимая задача."
+  },
+  "提醒时间无效。": {
+    "en": "Invalid reminder time.",
+    "zh-TW": "提醒時間無效。",
+    "ja": "通知日時が無効です。",
+    "ko": "알림 시간이 올바르지 않습니다.",
+    "de": "Ungültige Erinnerungszeit.",
+    "fr": "Heure du rappel invalide.",
+    "ru": "Недопустимое время напоминания."
+  },
+  "任务步骤无效。": {
+    "en": "Invalid task steps.",
+    "zh-TW": "任務步驟無效。",
+    "ja": "タスクの手順が無効です。",
+    "ko": "작업 단계가 올바르지 않습니다.",
+    "de": "Ungültige Aufgabenschritte.",
+    "fr": "Étapes de tâche invalides.",
+    "ru": "Недопустимые шаги задачи."
+  },
+  "任务已被移除。": {
+    "en": "This task was removed.",
+    "zh-TW": "任務已移除。",
+    "ja": "タスクが削除されました。",
+    "ko": "작업이 삭제되었습니다.",
+    "de": "Diese Aufgabe wurde entfernt.",
+    "fr": "Cette tâche a été supprimée.",
+    "ru": "Задача удалена."
+  },
+  "小抄内容无效。": {
+    "en": "Invalid snippet content.",
+    "zh-TW": "小抄內容無效。",
+    "ja": "スニペットの内容が無効です。",
+    "ko": "스니펫 내용이 올바르지 않습니다.",
+    "de": "Ungültiger Snippetinhalt.",
+    "fr": "Contenu de l’extrait invalide.",
+    "ru": "Недопустимое содержимое заготовки."
+  },
+  "小抄文件过大。": {
+    "en": "The snippet file is too large.",
+    "zh-TW": "小抄檔案過大。",
+    "ja": "スニペットのファイルが大きすぎます。",
+    "ko": "스니펫 파일이 너무 큽니다.",
+    "de": "Die Snippetdatei ist zu groß.",
+    "fr": "Le fichier d’extraits est trop volumineux.",
+    "ru": "Файл заготовок слишком большой."
+  },
+  "无法读取小抄文件。": {
+    "en": "Could not read the snippet file.",
+    "zh-TW": "無法讀取小抄檔案。",
+    "ja": "スニペットのファイルを読み取れません。",
+    "ko": "스니펫 파일을 읽을 수 없습니다.",
+    "de": "Die Snippetdatei konnte nicht gelesen werden.",
+    "fr": "Impossible de lire le fichier d’extraits.",
+    "ru": "Не удалось прочитать файл заготовок."
+  },
+  "小抄文件格式无效。": {
+    "en": "Invalid snippet file format.",
+    "zh-TW": "小抄檔案格式無效。",
+    "ja": "スニペットのファイル形式が無効です。",
+    "ko": "스니펫 파일 형식이 올바르지 않습니다.",
+    "de": "Ungültiges Format der Snippetdatei.",
+    "fr": "Format du fichier d’extraits invalide.",
+    "ru": "Недопустимый формат файла заготовок."
+  },
+  "单词内容无效。": {
+    "en": "Invalid word entry.",
+    "zh-TW": "單字內容無效。",
+    "ja": "単語の内容が無効です。",
+    "ko": "단어 내용이 올바르지 않습니다.",
+    "de": "Ungültiger Worteintrag.",
+    "fr": "Entrée de vocabulaire invalide.",
+    "ru": "Недопустимая запись слова."
+  },
+  "语种代码无效。": {
+    "en": "Invalid language code.",
+    "zh-TW": "語種代碼無效。",
+    "ja": "言語コードが無効です。",
+    "ko": "언어 코드가 올바르지 않습니다.",
+    "de": "Ungültiger Sprachcode.",
+    "fr": "Code de langue invalide.",
+    "ru": "Недопустимый код языка."
+  },
+  "复习结果无效。": {
+    "en": "Invalid review result.",
+    "zh-TW": "複習結果無效。",
+    "ja": "復習結果が無効です。",
+    "ko": "복습 결과가 올바르지 않습니다.",
+    "de": "Ungültiges Wiederholungsergebnis.",
+    "fr": "Résultat de révision invalide.",
+    "ru": "Недопустимый результат повторения."
+  },
+  "行程内容无效。": {
+    "en": "Invalid trip content.",
+    "zh-TW": "行程內容無效。",
+    "ja": "旅行の内容が無効です。",
+    "ko": "여행 내용이 올바르지 않습니다.",
+    "de": "Ungültiger Reiseinhalt.",
+    "fr": "Contenu du voyage invalide.",
+    "ru": "Недопустимое содержимое поездки."
+  },
+  "结束日期不能早于开始日期。": {
+    "en": "The end date cannot precede the start date.",
+    "zh-TW": "結束日期不能早於開始日期。",
+    "ja": "終了日は開始日より前にできません。",
+    "ko": "종료 날짜는 시작 날짜보다 빠를 수 없습니다.",
+    "de": "Das Enddatum darf nicht vor dem Startdatum liegen.",
+    "fr": "La fin ne peut pas précéder le début.",
+    "ru": "Дата окончания не может быть раньше даты начала."
+  },
+  "行程安排无效。": {
+    "en": "Invalid itinerary item.",
+    "zh-TW": "行程安排無效。",
+    "ja": "旅行の予定が無効です。",
+    "ko": "여행 일정이 올바르지 않습니다.",
+    "de": "Ungültiger Programmpunkt.",
+    "fr": "Étape de voyage invalide.",
+    "ru": "Недопустимый пункт маршрута."
+  },
+  "安排日期应在行程日期范围内。": {
+    "en": "The date must be within the trip’s date range.",
+    "zh-TW": "安排日期應在行程日期範圍內。",
+    "ja": "予定日は旅行期間内にしてください。",
+    "ko": "일정 날짜는 여행 기간 내여야 합니다.",
+    "de": "Das Datum muss im Reisezeitraum liegen.",
+    "fr": "La date doit être comprise dans la période du voyage.",
+    "ru": "Дата должна входить в период поездки."
+  },
+  "时间无效。": {
+    "en": "Invalid time.",
+    "zh-TW": "時間無效。",
+    "ja": "時刻が無効です。",
+    "ko": "시간이 올바르지 않습니다.",
+    "de": "Ungültige Uhrzeit.",
+    "fr": "Heure invalide.",
+    "ru": "Недопустимое время."
+  },
+  "请添加食材。": {
+    "en": "Add an ingredient.",
+    "zh-TW": "請新增食材。",
+    "ja": "食材を追加してください。",
+    "ko": "식재료를 추가하세요.",
+    "de": "Füge eine Zutat hinzu.",
+    "fr": "Ajoutez un ingrédient.",
+    "ru": "Добавьте ингредиент."
+  },
+  "请填写有效的份数。": {
+    "en": "Enter a valid number of servings.",
+    "zh-TW": "請填寫有效的份數。",
+    "ja": "有効な人数を入力してください。",
+    "ko": "올바른 인분 수를 입력하세요.",
+    "de": "Gib eine gültige Portionszahl ein.",
+    "fr": "Saisissez un nombre de portions valide.",
+    "ru": "Введите допустимое число порций."
+  },
+  "食材数量无效。": {
+    "en": "Invalid ingredient quantity.",
+    "zh-TW": "食材數量無效。",
+    "ja": "食材の量が無効です。",
+    "ko": "식재료 수량이 올바르지 않습니다.",
+    "de": "Ungültige Zutatenmenge.",
+    "fr": "Quantité d’ingrédient invalide.",
+    "ru": "Недопустимое количество ингредиента."
+  },
+  "用餐安排无效。": {
+    "en": "Invalid meal plan entry.",
+    "zh-TW": "用餐安排無效。",
+    "ja": "献立が無効です。",
+    "ko": "식단 계획이 올바르지 않습니다.",
+    "de": "Ungültiger Menüeintrag.",
+    "fr": "Repas planifié invalide.",
+    "ru": "Недопустимый пункт меню."
+  },
+  "扩展数据无效，原有内容已保留。": {
+    "en": "Extension data is invalid. Existing content was preserved.",
+    "zh-TW": "擴充資料無效，原有內容已保留。",
+    "ja": "拡張機能のデータが無効です。既存の内容は保持されています。",
+    "ko": "확장 데이터가 올바르지 않습니다. 기존 내용은 보존되었습니다.",
+    "de": "Ungültige Erweiterungsdaten. Vorhandene Inhalte bleiben erhalten.",
+    "fr": "Données d’extension invalides. Le contenu existant est conservé.",
+    "ru": "Данные расширения недопустимы. Имеющееся содержимое сохранено."
+  },
+  "扩展内容过多或格式无效。": {
+    "en": "There is too much extension content, or its format is invalid.",
+    "zh-TW": "擴充內容過多或格式無效。",
+    "ja": "拡張機能の内容が多すぎるか、形式が無効です。",
+    "ko": "확장 내용이 너무 많거나 형식이 올바르지 않습니다.",
+    "de": "Zu viele Erweiterungsinhalte oder ungültiges Format.",
+    "fr": "Contenu d’extension trop volumineux ou format invalide.",
+    "ru": "Слишком много данных расширения или неверный формат."
+  },
+  "扩展记录无效，原有内容已保留。": {
+    "en": "An extension record is invalid. Existing content was preserved.",
+    "zh-TW": "擴充記錄無效，原有內容已保留。",
+    "ja": "拡張機能の記録が無効です。既存の内容は保持されています。",
+    "ko": "확장 기록이 올바르지 않습니다. 기존 내용은 보존되었습니다.",
+    "de": "Ungültiger Erweiterungseintrag. Vorhandene Inhalte bleiben erhalten.",
+    "fr": "Un élément d’extension est invalide. Le contenu existant est conservé.",
+    "ru": "Запись расширения недопустима. Имеющееся содержимое сохранено."
+  },
+  "任务清单无效。": {
+    "en": "Invalid task list.",
+    "zh-TW": "任務清單無效。",
+    "ja": "タスクリストが無効です。",
+    "ko": "작업 목록이 올바르지 않습니다.",
+    "de": "Ungültige Aufgabenliste.",
+    "fr": "Liste de tâches invalide.",
+    "ru": "Недопустимый список задач."
+  },
+  "任务记录无效。": {
+    "en": "Invalid task history.",
+    "zh-TW": "任務記錄無效。",
+    "ja": "タスクの記録が無効です。",
+    "ko": "작업 기록이 올바르지 않습니다.",
+    "de": "Ungültiger Aufgabenverlauf.",
+    "fr": "Historique des tâches invalide.",
+    "ru": "Недопустимая история задач."
+  },
+  "单词记录无效。": {
+    "en": "Invalid vocabulary record.",
+    "zh-TW": "單字記錄無效。",
+    "ja": "単語の記録が無効です。",
+    "ko": "단어 기록이 올바르지 않습니다.",
+    "de": "Ungültiger Wortschatzeintrag.",
+    "fr": "Entrée de vocabulaire invalide.",
+    "ru": "Недопустимая запись словаря."
+  },
+  "学习记录无效。": {
+    "en": "Invalid learning history.",
+    "zh-TW": "學習記錄無效。",
+    "ja": "学習の記録が無効です。",
+    "ko": "학습 기록이 올바르지 않습니다.",
+    "de": "Ungültiger Lernverlauf.",
+    "fr": "Historique d’apprentissage invalide.",
+    "ru": "Недопустимая история обучения."
+  },
+  "购物记录无效。": {
+    "en": "Invalid shopping record.",
+    "zh-TW": "購物記錄無效。",
+    "ja": "買い物の記録が無効です。",
+    "ko": "장보기 기록이 올바르지 않습니다.",
+    "de": "Ungültiger Einkaufsdatensatz.",
+    "fr": "Données de courses invalides.",
+    "ru": "Недопустимая запись покупок."
+  },
+  "快速添加任务": {
+    "en": "Quick add task", "zh-TW": "快速新增工作", "ja": "タスクをすばやく追加", "ko": "작업 빠르게 추가", "de": "Aufgabe schnell hinzufügen", "fr": "Ajout rapide d’une tâche", "ru": "Быстро добавить задачу"
+  },
+  "添加任务，按 Enter 保存": {
+    "en": "Add a task, press Enter to save", "zh-TW": "新增工作，按 Enter 儲存", "ja": "タスクを入力し、Enter で保存", "ko": "작업 입력 후 Enter로 저장", "de": "Aufgabe eingeben, mit Enter speichern", "fr": "Saisissez une tâche, puis Entrée pour enregistrer", "ru": "Введите задачу и нажмите Enter"
+  },
+  "更多选项": {
+    "en": "More options", "zh-TW": "更多選項", "ja": "その他のオプション", "ko": "추가 옵션", "de": "Weitere Optionen", "fr": "Plus d’options", "ru": "Дополнительные параметры"
+  },
+  "任务详情": {
+    "en": "Task details", "zh-TW": "工作詳細資料", "ja": "タスクの詳細", "ko": "작업 세부 정보", "de": "Aufgabendetails", "fr": "Détails de la tâche", "ru": "Сведения о задаче"
+  },
+  "关闭详情": {
+    "en": "Close details", "zh-TW": "關閉詳細資料", "ja": "詳細を閉じる", "ko": "세부 정보 닫기", "de": "Details schließen", "fr": "Fermer les détails", "ru": "Закрыть сведения"
+  },
+  "编辑小抄": {
+    "en": "Edit snippet", "zh-TW": "編輯小抄", "ja": "スニペットを編集", "ko": "스니펫 편집", "de": "Textbaustein bearbeiten", "fr": "Modifier l’extrait", "ru": "Редактировать фрагмент"
+  },
+  "关闭编辑": {
+    "en": "Close editor", "zh-TW": "關閉編輯", "ja": "編集を閉じる", "ko": "편집 닫기", "de": "Editor schließen", "fr": "Fermer l’éditeur", "ru": "Закрыть редактор"
+  },
+  "分类与说明": {
+    "en": "Category and description", "zh-TW": "分類與說明", "ja": "分類と説明", "ko": "분류 및 설명", "de": "Kategorie und Beschreibung", "fr": "Catégorie et description", "ru": "Категория и описание"
+  },
+  "小抄正文": {
+    "en": "Snippet content", "zh-TW": "小抄內容", "ja": "スニペットの内容", "ko": "스니펫 내용", "de": "Textbaustein-Inhalt", "fr": "Contenu de l’extrait", "ru": "Содержимое фрагмента"
+  },
+  "填写变量": {
+    "en": "Fill in variables", "zh-TW": "填寫變數", "ja": "変数を入力", "ko": "변수 입력", "de": "Variablen ausfüllen", "fr": "Renseigner les variables", "ru": "Заполнить переменные"
+  },
+  "语言学习视图": {
+    "en": "Language learning views", "zh-TW": "語言學習檢視", "ja": "語学学習の表示", "ko": "언어 학습 보기", "de": "Ansichten zum Sprachenlernen", "fr": "Vues d’apprentissage des langues", "ru": "Разделы изучения языка"
+  },
+  "今日学习": {
+    "en": "Learn today", "zh-TW": "今日學習", "ja": "今日の学習", "ko": "오늘의 학습", "de": "Heute lernen", "fr": "Apprendre aujourd’hui", "ru": "Учиться сегодня"
+  },
+  "词库": {
+    "en": "Vocabulary", "zh-TW": "詞庫", "ja": "単語帳", "ko": "단어장", "de": "Wortschatz", "fr": "Vocabulaire", "ru": "Словарь"
+  },
+  "学习进度": {
+    "en": "Learning progress", "zh-TW": "學習進度", "ja": "学習の進捗", "ko": "학습 진도", "de": "Lernfortschritt", "fr": "Progression", "ru": "Прогресс обучения"
+  },
+  "今天没有待复习单词": {
+    "en": "No words due for review today", "zh-TW": "今天沒有待複習單字", "ja": "今日復習する単語はありません", "ko": "오늘 복습할 단어가 없습니다", "de": "Heute sind keine Wörter zur Wiederholung fällig", "fr": "Aucun mot à réviser aujourd’hui", "ru": "Сегодня нет слов для повторения"
+  },
+  "从第一个单词开始": {
+    "en": "Start with your first word", "zh-TW": "從第一個單字開始", "ja": "最初の単語から始めましょう", "ko": "첫 단어부터 시작하세요", "de": "Mit dem ersten Wort beginnen", "fr": "Commencez par votre premier mot", "ru": "Начните с первого слова"
+  },
+  "编辑单词": {
+    "en": "Edit word", "zh-TW": "編輯單字", "ja": "単語を編集", "ko": "단어 편집", "de": "Wort bearbeiten", "fr": "Modifier le mot", "ru": "Редактировать слово"
+  },
+  "译文与来源": {
+    "en": "Translation and source", "zh-TW": "譯文與來源", "ja": "訳文と出典", "ko": "번역 및 출처", "de": "Übersetzung und Quelle", "fr": "Traduction et source", "ru": "Перевод и источник"
+  },
+  "练习这个单词": {
+    "en": "Practice this word", "zh-TW": "練習這個單字", "ja": "この単語を練習", "ko": "이 단어 연습", "de": "Dieses Wort üben", "fr": "Pratiquer ce mot", "ru": "Повторить это слово"
+  },
+  "总词数": {
+    "en": "Total words", "zh-TW": "總單字數", "ja": "総単語数", "ko": "전체 단어", "de": "Wörter insgesamt", "fr": "Nombre de mots", "ru": "Всего слов"
+  },
+  "待复习": {
+    "en": "Due for review", "zh-TW": "待複習", "ja": "復習待ち", "ko": "복습 예정", "de": "Zur Wiederholung fällig", "fr": "À réviser", "ru": "К повторению"
+  },
+  "已掌握": {
+    "en": "Mastered", "zh-TW": "已掌握", "ja": "習得済み", "ko": "습득 완료", "de": "Beherrscht", "fr": "Maîtrisés", "ru": "Освоено"
+  },
+  "今日练习": {
+    "en": "Practiced today", "zh-TW": "今日練習", "ja": "今日の練習", "ko": "오늘 연습", "de": "Heute geübt", "fr": "Pratiqués aujourd’hui", "ru": "Повторено сегодня"
+  },
+  "最近七天": {
+    "en": "Last seven days", "zh-TW": "最近七天", "ja": "過去7日間", "ko": "최근 7일", "de": "Letzte sieben Tage", "fr": "Sept derniers jours", "ru": "Последние семь дней"
+  },
+  "最近练习": {
+    "en": "Recent practice", "zh-TW": "最近練習", "ja": "最近の練習", "ko": "최근 연습", "de": "Letzte Übungen", "fr": "Derniers exercices", "ru": "Последние повторения"
+  },
+  "暂无学习记录": {
+    "en": "No learning history yet", "zh-TW": "尚無學習記錄", "ja": "学習履歴はまだありません", "ko": "아직 학습 기록이 없습니다", "de": "Noch kein Lernverlauf", "fr": "Aucun historique d’apprentissage", "ru": "Истории обучения пока нет"
+  },
+  "行程设置": {
+    "en": "Trip settings", "zh-TW": "行程設定", "ja": "旅行の設定", "ko": "여행 설정", "de": "Reiseeinstellungen", "fr": "Paramètres du voyage", "ru": "Настройки поездки"
+  },
+  "当天没有安排": {
+    "en": "Nothing planned for this day", "zh-TW": "當天沒有安排", "ja": "この日の予定はありません", "ko": "이날은 일정이 없습니다", "de": "Für diesen Tag ist nichts geplant", "fr": "Rien de prévu pour ce jour", "ru": "На этот день ничего не запланировано"
+  },
+  "本周": {
+    "en": "This week", "zh-TW": "本週", "ja": "今週", "ko": "이번 주", "de": "Diese Woche", "fr": "Cette semaine", "ru": "Эта неделя"
+  },
+  "添加 {0} {1}": {
+    "en": "Add {1} on {0}", "zh-TW": "新增 {0} {1}", "ja": "{0}の{1}を追加", "ko": "{0} {1} 추가", "de": "{1} am {0} hinzufügen", "fr": "Ajouter {1} le {0}", "ru": "Добавить: {1}, {0}"
+  },
+  "安排用餐": {
+    "en": "Plan a meal", "zh-TW": "安排用餐", "ja": "食事を予定", "ko": "식사 계획", "de": "Mahlzeit planen", "fr": "Planifier un repas", "ru": "Запланировать приём пищи"
+  },
+  "保存餐次": {
+    "en": "Save meal", "zh-TW": "儲存餐次", "ja": "食事を保存", "ko": "식사 저장", "de": "Mahlzeit speichern", "fr": "Enregistrer le repas", "ru": "Сохранить приём пищи"
+  },
+  "选择一道食谱": {
+    "en": "Choose a recipe", "zh-TW": "選擇一道食譜", "ja": "レシピを選択", "ko": "레시피를 선택하세요", "de": "Ein Rezept auswählen", "fr": "Choisissez une recette", "ru": "Выберите рецепт"
+  },
+  "编辑食谱": {
+    "en": "Edit recipe", "zh-TW": "編輯食譜", "ja": "レシピを編集", "ko": "레시피 편집", "de": "Rezept bearbeiten", "fr": "Modifier la recette", "ru": "Редактировать рецепт"
+  },
+  "按份数查看": {
+    "en": "View by servings", "zh-TW": "依份數檢視", "ja": "人数に合わせて表示", "ko": "인분별로 보기", "de": "Nach Portionen anzeigen", "fr": "Afficher par portions", "ru": "Показать по порциям"
+  },
+  "不支持此扩展。": {
+    "en": "This extension is not supported.",
+    "zh-TW": "不支援此擴充。",
+    "ja": "この拡張機能はサポートされていません。",
+    "ko": "지원하지 않는 확장입니다.",
+    "de": "Diese Erweiterung wird nicht unterstützt.",
+    "fr": "Cette extension n’est pas prise en charge.",
+    "ru": "Это расширение не поддерживается."
+  }
+}

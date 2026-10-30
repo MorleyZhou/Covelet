@@ -5,7 +5,6 @@
 .layout-editing .site-tile { cursor: grab; outline: none; touch-action: none; }
 .layout-editing .site-tile:active { cursor: grabbing; }
 .layout-editing .site-link { pointer-events: none; }
-.layout-editing .site-link:hover .site-icon { transform: none; }
 .layout-editing .site-tile .site-icon:not(.small), .layout-editing .widget-live-content { animation: desktop-jiggle .27s ease-in-out infinite alternate; transform-origin: 50% 60%; }
 .layout-editing .site-tile:nth-child(2n) .site-icon:not(.small) { animation-delay: -.19s; animation-direction: alternate-reverse; }
 .layout-editing .site-tile:nth-child(3n) .site-icon:not(.small) { animation-duration: .32s; animation-delay: -.1s; }
@@ -19,7 +18,7 @@
 .widget-live-content { flex: 1; display: flex; width: 100%; min-height: 0; min-width: 0; }
 .layout-editing .desktop-pages { --desktop-controls-bottom: 111px; }
 .desktop-edit-bar { position: fixed; z-index: 15; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 9px; max-width: calc(100vw - 24px); color: #fff; }
-.desktop-edit-actions { display: flex; align-items: center; gap: 4px; background: #1d1d1fdb; backdrop-filter: blur(20px); border-radius: 18px; padding: 6px; }
+.desktop-edit-actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; max-width: 100%; gap: 4px; background: #1d1d1fdb; backdrop-filter: blur(20px); border-radius: 18px; padding: 6px; }
 .desktop-edit-actions button { display: flex; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; min-height: 34px; padding: 6px 12px; border-radius: 12px; font-size: 13px; }
 .desktop-edit-actions button:hover { background: #ffffff13; }
 .desktop-edit-actions .desktop-edit-done { background: #087aff; color: #fff; min-width: 58px; }
@@ -56,5 +55,6 @@
 @keyframes desktop-jiggle { from { transform: rotate(-1.1deg) translateY(-.3px); } to { transform: rotate(1.1deg) translateY(.3px); } }
 @keyframes desktop-widget-jiggle { from { transform: rotate(-.3deg); } to { transform: rotate(.3deg); } }
 @media (max-width: 520px) { .desktop-screen-list { grid-template-columns: 1fr; }.desktop-edit-shortcuts { gap: 5px; font-size: 10px; } }
+@media (max-width: 640px) { .desktop-edit-history > span { display: none; }.desktop-edit-actions .desktop-edit-history { padding-inline: 8px; } }
 @media (max-width: 430px) { .desktop-edit-actions button { padding-inline: 9px; gap: 5px; }.desktop-edit-actions .desktop-edit-done { min-width: 52px; }.desktop-edit-actions .desktop-edit-trash { min-width: 40px; } }
 @media (prefers-reduced-motion: reduce) { .layout-editing .site-tile .site-icon:not(.small), .layout-editing .widget-live-content { animation: none; }.desktop-edit-actions .desktop-edit-trash { transition: none; }.desktop-edit-actions .desktop-edit-trash.is-drop-target { transform: none; } }

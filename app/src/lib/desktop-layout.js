@@ -95,48 +95,82 @@ export function freezeDesktopPositions(entries, columns, pages, pageIds = []) {
   return { entries: result, pageMap };
 }
 
-export function placeDesktopEntry(entries, id, page, position, columns, { lockedIds = [] } = {}) {
-  const result = structuredClone(entries), entry = result.find((item) => item.id === id);
-  if (!entry || entry.parentId !== null) throw Error(tr("只能在桌面放置图标和组件。"));
-  const size = desktopFootprint(entry, columns);
+export function placeDesktopEntry(entries, id, page, position, columns, { lockedIds = [], pageIds = [] } = {}) {
+  return placeDesktopEntries(entries, [id], page, position, columns, { lockedIds, pageIds });
+}
+
+// A same-page icon insertion rotates the occupied seats between source and
+// destination. Larger widgets and deliberately empty cells retain their seats.
+// Other drops push the stable visual sequence forward, never into the source's
+// first empty cell (which would turn insertion into a two-icon swap).
+export function placeDesktopEntries(entries, ids, page, position, columns, { lockedIds = [], pageIds = [] } = {}) {
+  const result = structuredClone(entries), selected = new Set(ids), locked = new Set(lockedIds.filter((id) => !selected.has(id)));
+  const root = (item) => item.parentId === null && !item.detached;
+  const slotOf = (item) => item.position ? item.position.row * columns + item.position.column : Number.MAX_SAFE_INTEGER;
+  const spatial = (a, b) => (a.page ?? 0) - (b.page ?? 0) || slotOf(a) - slotOf(b) || a.order - b.order;
+  const moving = result.filter((item) => selected.has(item.id)).sort(spatial);
+  if (!moving.length || moving.length !== selected.size || moving.some((item) => !root(item))) throw Error(tr("只能在桌面放置图标和组件。"));
+  const cells = (anchor, size) => Array.from({ length: size.rows }, (_, row) => Array.from({ length: size.columns }, (_, col) => (anchor.row + row) * columns + anchor.column + col)).flat();
+  const size = desktopFootprint(moving[0], columns);
   const wanted = { row: Math.max(0, Math.min(DESKTOP_ROWS - size.rows, position.row)), column: Math.max(0, Math.min(columns - size.columns, position.column)) };
-  entry.page = page; entry.position = wanted;
-  const occupied = new Set();
-  const cells = (position, size) => Array.from({ length: size.rows }, (_, row) => Array.from({ length: size.columns }, (_, col) => (position.row + row) * columns + position.column + col)).flat();
-  cells(wanted, size).forEach((slot) => occupied.add(slot));
-  const locked = new Set(lockedIds);
-  for (const item of result) if (item.id !== id && locked.has(item.id) && item.parentId === null && !item.detached && (item.page ?? 0) === page && item.position) {
-    cells(item.position, desktopFootprint(item, columns)).forEach((slot) => occupied.add(slot));
-  }
-  const displaced = [];
-  const neighbors = result.filter((item) => item.id !== id && !locked.has(item.id) && !item.detached && item.parentId === null && (item.page ?? 0) === page).sort((a, b) => a.order - b.order);
-  for (const item of neighbors) {
-    const footprint = desktopFootprint(item, columns), anchor = item.position;
-    if (anchor && anchor.column + footprint.columns <= columns && anchor.row + footprint.rows <= DESKTOP_ROWS
-      && cells(anchor, footprint).every((slot) => !occupied.has(slot))) cells(anchor, footprint).forEach((slot) => occupied.add(slot));
-    else displaced.push(item);
-  }
-  let overflowPage = Math.max(0, ...result.map((item) => item.page ?? 0)), overflowOccupied = null;
-  const findSeat = (footprint, taken) => {
-    for (let slot = 0; slot < columns * DESKTOP_ROWS; slot++) {
-      const possible = { row: Math.floor(slot / columns), column: slot % columns };
-      if (possible.column + footprint.columns <= columns && possible.row + footprint.rows <= DESKTOP_ROWS
-        && cells(possible, footprint).every((cell) => !taken.has(cell))) return possible;
-    }
-    return null;
-  };
-  for (const item of displaced) {
-    const footprint = desktopFootprint(item, columns);
-    const anchor = findSeat(footprint, occupied);
-    if (anchor) { item.position = anchor; cells(anchor, footprint).forEach((slot) => occupied.add(slot)); }
-    else {
-      let overflowAnchor = overflowOccupied && findSeat(footprint, overflowOccupied);
-      if (!overflowAnchor) {
-        if (overflowPage >= MAX_DESKTOP_PAGE) throw Error(tr("主屏幕数量已达上限。"));
-        overflowPage++; overflowOccupied = new Set(); overflowAnchor = { row: 0, column: 0 };
+  const wantedSlot = wanted.row * columns + wanted.column;
+  const onDestination = result.filter((item) => root(item) && (item.page ?? 0) === page);
+  const isUnit = (item) => { const size = desktopFootprint(item, columns); return size.rows === 1 && size.columns === 1; };
+  const unitTarget = onDestination.find((item) => !selected.has(item.id) && isUnit(item) && slotOf(item) === wantedSlot);
+  const fixedCollision = onDestination.some((item) => !selected.has(item.id) && !isUnit(item) && item.position
+    && cells(item.position, desktopFootprint(item, columns)).includes(wantedSlot));
+  if (moving.length === 1 && !locked.size && (moving[0].page ?? 0) === page && moving[0].position && isUnit(moving[0]) && unitTarget && !fixedCollision) {
+    const icons = onDestination.filter((item) => isUnit(item) && item.position).sort(spatial);
+    const seats = icons.map((item) => ({ ...item.position }));
+    const sourceIndex = icons.findIndex((item) => item.id === moving[0].id), targetIndex = icons.findIndex((item) => item.id === unitTarget.id);
+    const [source] = icons.splice(sourceIndex, 1); icons.splice(targetIndex, 0, source);
+    icons.forEach((item, index) => { item.position = seats[index]; });
+  } else {
+    const occupied = new Map([[page, new Set()]]), overflowPages = [];
+    let lastPage = Math.max(page, ...pageIds, ...result.map((item) => item.page ?? 0));
+    const taken = (value) => { if (!occupied.has(value)) occupied.set(value, new Set()); return occupied.get(value); };
+    const fits = (anchor, footprint, reserved) => anchor.row >= 0 && anchor.column >= 0
+      && anchor.column + footprint.columns <= columns && anchor.row + footprint.rows <= DESKTOP_ROWS
+      && cells(anchor, footprint).every((cell) => !reserved.has(cell));
+    const findSeat = (footprint, reserved, start) => {
+      for (let slot = Math.max(0, start); slot < columns * DESKTOP_ROWS; slot++) {
+        const anchor = { row: Math.floor(slot / columns), column: slot % columns };
+        if (fits(anchor, footprint, reserved)) return anchor;
       }
-      item.page = overflowPage; item.position = overflowAnchor;
-      cells(overflowAnchor, footprint).forEach((slot) => overflowOccupied.add(slot));
+      return null;
+    };
+    const addPage = () => {
+      if (lastPage >= MAX_DESKTOP_PAGE) throw Error(tr("主屏幕数量已达上限。"));
+      const next = ++lastPage; overflowPages.push(next); taken(next); return next;
+    };
+    const put = (item, destination, anchor) => {
+      item.page = destination; item.position = anchor;
+      cells(anchor, desktopFootprint(item, columns)).forEach((cell) => taken(destination).add(cell));
+    };
+    for (const item of onDestination) if (locked.has(item.id) && item.position) cells(item.position, desktopFootprint(item, columns)).forEach((cell) => taken(page).add(cell));
+    let destination = page, cursor = wantedSlot;
+    // Reserve the entire selected stack before reflowing colliding neighbors.
+    for (const [index, item] of moving.entries()) {
+      const footprint = desktopFootprint(item, columns);
+      let anchor = index === 0 && fits(wanted, footprint, taken(destination)) ? wanted : findSeat(footprint, taken(destination), cursor);
+      if (!anchor) { destination = addPage(); anchor = { row: 0, column: 0 }; }
+      put(item, destination, anchor); cursor = anchor.row * columns + anchor.column + footprint.columns;
+    }
+    const neighbors = onDestination.filter((item) => !selected.has(item.id) && !locked.has(item.id)).sort(spatial);
+    let overflow = null, neighborCursor = 0, overflowIndex = 0;
+    for (const item of neighbors) {
+      const footprint = desktopFootprint(item, columns), originalSlot = slotOf(item);
+      let anchor = overflow === null ? findSeat(footprint, taken(page), Math.max(neighborCursor, originalSlot === Number.MAX_SAFE_INTEGER ? neighborCursor : originalSlot)) : null;
+      if (anchor) { put(item, page, anchor); neighborCursor = anchor.row * columns + anchor.column + 1; continue; }
+      // Once a neighbor spills, later neighbors continue after it; they cannot
+      // jump back into a small earlier hole and reverse the visual order.
+      if (overflow === null) { overflow = overflowPages[overflowIndex] ?? addPage(); neighborCursor = 0; }
+      anchor = findSeat(footprint, taken(overflow), neighborCursor);
+      while (!anchor) {
+        overflowIndex++; overflow = overflowPages[overflowIndex] ?? addPage(); neighborCursor = 0;
+        anchor = findSeat(footprint, taken(overflow), neighborCursor);
+      }
+      put(item, overflow, anchor); neighborCursor = anchor.row * columns + anchor.column + 1;
     }
   }
   const byId = new Map(result.map((item) => [item.id, item]));

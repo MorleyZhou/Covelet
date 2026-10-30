@@ -1,7 +1,8 @@
 import { tr, getLocale } from "../i18n/index.js";
 // Fixed packaged WebDAV transport for encrypted, content-addressed snapshots.
-// Only the user-selected directory is listed; this adapter never creates or
-// deletes directories, follows redirects, or evaluates XML resources.
+// Only the user-selected directory is listed. Explicit sync setup may create
+// its fixed protocol children, never arbitrary parents; no directory is deleted,
+// no redirect followed, and no XML resource is evaluated.
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
 const MAX_BODY = 768 * 1024;
@@ -355,6 +356,22 @@ export function createWebdavProvider(input, secrets, options = {}) {
     return checkedBody(bytes);
   }
   return {
+    ensureToolDirectory() {
+      // A dedicated opt-in call, never an automatic side effect of list/write.
+      if (!/\/(?:tools-v1|all-data-v1(?:\/blobs)?)$/.test(profile.prefix)) throw invalid();
+      return operation(async request => {
+        const { response } = await request('MKCOL', directory);
+        if (response.status === 201) return;
+        if (response.status === 405) {
+          const body = encoder.encode('<?xml version="1.0" encoding="UTF-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/><d:getcontentlength/></d:prop></d:propfind>');
+          const check = await request('PROPFIND', directory, body, { depth: '0', 'content-type': 'application/xml; charset=utf-8' });
+          if (check.response.status !== 207) throw statusError(check.response.status);
+          listObjects(check.bytes, directory); return;
+        }
+        if (response.status === 409) throw error(tr('WebDAV 父目录不存在，请先建立所选保存目录。'), 'CLOUD_NOT_FOUND');
+        throw statusError(response.status);
+      });
+    },
     list() {
       return operation(async request => {
         const body = encoder.encode('<?xml version="1.0" encoding="UTF-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/><d:getcontentlength/></d:prop></d:propfind>');

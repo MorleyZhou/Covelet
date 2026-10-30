@@ -24,6 +24,23 @@ function memory() {
   return { read: async () => structuredClone(value), write: async (next) => { value = structuredClone(next); } };
 }
 
+test('sync invalidation prevents an older GitHub flight from overwriting imported calendar data', async () => {
+  const store = memory(), now = Date.now();
+  let release, started, requests = 0;
+  const ready = new Promise((resolve) => { started = resolve; });
+  const provider = createGitHubProvider({ store, now: () => now, canRead: async () => true, isPreview: false,
+    request: async () => { requests++; started(); return new Promise((resolve) => { release = resolve; }); } });
+  const old = provider.load('torvalds');
+  await ready;
+  const imported = structuredClone(calendarDays); imported[0] = { ...imported[0], count: 42, level: 2 };
+  await store.write({ torvalds: { days: imported, fetchedAt: now, attemptedAt: now } });
+  provider.invalidate(); release(response());
+  await assert.rejects(old, (reason) => reason.code === 'GITHUB_STALE');
+  assert.deepEqual((await provider.load('torvalds')).days, imported);
+  assert.deepEqual((await store.read()).torvalds.days, imported);
+  assert.equal(requests, 1);
+});
+
 test('GitHub usernames cannot become paths, query strings or additional origins', () => {
   assert.equal(normalizeGitHubUsername(' @Torvalds '), 'torvalds');
   for (const name of ['', '../x', 'x?token=secret', 'a/b', 'https://github.com/a', '-x', 'x-', 'a--b', 'x'.repeat(40)]) assert.throws(() => normalizeGitHubUsername(name));

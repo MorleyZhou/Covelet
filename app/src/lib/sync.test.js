@@ -50,37 +50,35 @@ test('column preference survives packed browser-sync round trips and legacy repl
   assert.equal(materializeState(documents(resetReplica)).settings.columns, 8);
 });
 
-test('packaged visual module switches round trip through sync without image results, and missing legacy fields stay off', async () => {
+test('unified visual preference round trips without image results, preserves explicit disables and defaults missing legacy choices on', async () => {
   const initial = withSite();
   initial.settings.theme = 'dark'; initial.settings.shade = 42;
+  initial.settings.visualEnhancement = false;
   initial.entries[0].icon = { kind: 'image', value: 'original-device-image' };
   initial.entries[0].iconBackground = '#aabbcc';
   const seed = recordChanges(createReplica('visual-device'), createEmptyState(), initial);
   const enabled = structuredClone(initial);
-  enabled.settings.adaptiveWallpaper = true; enabled.settings.adaptIcons = true;
+  enabled.settings.visualEnhancement = true;
   const replica = recordChanges(seed, initial, enabled, documents(seed));
-  assert.deepEqual(Object.entries(replica.records).filter(([, operation]) => operation.n === replica.clock).map(([key]) => key).sort(), ['s:adaptIcons', 's:adaptiveWallpaper']);
+  assert.deepEqual(Object.entries(replica.records).filter(([, operation]) => operation.n === replica.clock).map(([key]) => key).sort(), ['s:visualEnhancement']);
   const packed = await packReplica(replica);
   const incoming = await readReplicas({ ...packed.chunks, [packed.key]: packed.head });
   const remote = materializeState(incoming.documents);
-  assert.equal(remote.settings.adaptiveWallpaper, true);
-  assert.equal(remote.settings.adaptIcons, true);
+  assert.equal(remote.settings.visualEnhancement, true);
   assert.equal(remote.settings.theme, 'dark');
   assert.equal(remote.settings.shade, 42);
   assert.equal(remote.entries[0].iconBackground, '#aabbcc');
-  assert.equal(remote.entries[0].icon.kind, 'letter');
+  assert.equal(remote.entries[0].icon.kind, 'url');
   assert.equal(JSON.stringify(incoming.documents).includes('original-device-image'), false);
   assert.deepEqual(materializeState(incoming.documents, enabled).entries[0].icon, initial.entries[0].icon);
   const legacy = structuredClone(replica);
-  delete legacy.records['s:adaptiveWallpaper']; delete legacy.records['s:adaptIcons'];
-  assert.equal(materializeState(documents(legacy)).settings.adaptiveWallpaper, false);
-  assert.equal(materializeState(documents(legacy)).settings.adaptIcons, false);
+  delete legacy.records['s:visualEnhancement'];
+  assert.equal(materializeState(documents(legacy)).settings.visualEnhancement, true);
   const disabled = structuredClone(remote);
-  disabled.settings.adaptiveWallpaper = false; disabled.settings.adaptIcons = false;
+  disabled.settings.visualEnhancement = false;
   const reset = recordChanges(replica, remote, disabled, incoming.documents);
   const final = materializeState(documents(reset), enabled);
-  assert.equal(final.settings.adaptiveWallpaper, false);
-  assert.equal(final.settings.adaptIcons, false);
+  assert.equal(final.settings.visualEnhancement, false);
   assert.equal(final.settings.shade, 42);
   assert.deepEqual(final.entries[0].icon, initial.entries[0].icon);
 });
@@ -157,7 +155,7 @@ test('portable synchronization removes image IDs while preserving unchanged icon
   local.entries[0].iconBackground = '#b6d8fa';
   local.settings.background = { kind: 'image', value: 'old-wallpaper-id' };
   const portable = portableState(local);
-  assert.deepEqual(portable.entries[0].icon, { kind: 'letter', value: 'al' });
+  assert.deepEqual(portable.entries[0].icon, { kind: 'url', value: 'https://alpha.example.com/favicon.ico' });
   assert.equal(portable.entries[0].iconBackground, '#b6d8fa');
   assert.deepEqual(portable.settings.background, createEmptyState().settings.background);
   const replica = recordChanges(createReplica('a'), baseline, local);
@@ -165,7 +163,7 @@ test('portable synchronization removes image IDs while preserving unchanged icon
   assert.equal(packedText.includes('local-only-asset-id'), false);
   assert.equal(packedText.includes('old-wallpaper-id'), false);
   assert.equal(materializeState(documents(replica), local).entries[0].icon.kind, 'image');
-  assert.equal(materializeState(documents(replica)).entries[0].icon.kind, 'letter');
+  assert.equal(materializeState(documents(replica)).entries[0].icon.kind, 'url');
   const remote = materializeState(documents(replica));
   remote.entries[0].iconBackground = '#112233';
   const recolored = recordChanges(createReplica('b'), materializeState(documents(replica)), remote, documents(replica));
@@ -173,7 +171,7 @@ test('portable synchronization removes image IDs while preserving unchanged icon
   assert.deepEqual(merged.entries[0].icon, local.entries[0].icon, 'editing the portable background does not discard the original local image');
   assert.equal(merged.entries[0].iconBackground, '#112233');
   assert.equal(materializeState(documents(replica, recolored)).entries[0].iconBackground, '#112233');
-  const oldReplica = structuredClone(replica); oldReplica.records['e:alpha'].value.icon.value = 'a';
+  const oldReplica = structuredClone(replica); oldReplica.records['e:alpha'].value.icon = { kind: 'letter', value: 'a' };
   assert.deepEqual(materializeState(documents(oldReplica), local).entries[0].icon, local.entries[0].icon, 'an unchanged one-character fallback from a v1 device still restores its local image');
 });
 
@@ -190,9 +188,10 @@ test('remote name changes preserve a local site image while changing the URL ori
   assert.deepEqual(merged.entries[0].icon, local.entries[0].icon, 'a remote label edit did not change the same-origin image');
   const redirected = structuredClone(renamed);
   redirected.entries[0].url = 'https://different.example.com/';
+  delete redirected.entries[0].iconUrl;
   const moved = recordChanges(b, renamed, redirected, documents(a, b));
   const latest = materializeState(documents(a, moved), merged);
-  assert.deepEqual(latest.entries[0].icon, letterIcon('重命名网站'), 'an old local image must not masquerade as another origin');
+  assert.deepEqual(latest.entries[0].icon, { kind: 'url', value: 'https://different.example.com/favicon.ico' }, 'a new origin derives its own portable address instead of reusing the old local image');
   assert.equal(local.entries[0].icon.value, 'local-original-icon', 'the source configuration is not mutated or deleted');
 });
 
@@ -212,7 +211,7 @@ test('legacy preset sync preserves committed bytes and causal identity while act
   const edited = recordChanges(unchanged, materializeState(incoming.documents), active, incoming.documents);
   const merged = materializeState(combineReplicas(incoming.documents, documents(edited)));
   assert.equal(merged.entries[0].iconBackground, '#fef0cc');
-  assert.deepEqual(merged.entries[0].icon, { kind: 'letter', value: 'Gi' });
+  assert.deepEqual(merged.entries[0].icon, { kind: 'url', value: 'https://alpha.example.com/favicon.ico' });
   assert.equal(syncConflicts(combineReplicas(incoming.documents, documents(edited))).length, 0);
 });
 

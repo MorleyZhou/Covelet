@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { localData } from './local-data.js';
 const PREFIX = 'covelet.clock.v1.';
 const DEMO_PREFIX = 'covelet.clock.demo.v1.';
 const ALARM_PREFIX = 'covelet-clock:';
@@ -41,26 +42,18 @@ function check(input) {
 }
 
 async function readClockRecord(id) {
-  if (native()) return (await chrome.storage.local.get(keyFor(id)))[keyFor(id)];
-  const text = globalThis.localStorage?.getItem(keyFor(id));
-  try { return text ? JSON.parse(text) : null; } catch { throw Error(tr("无法读取本机时钟数据。")); }
+  return (await localData.get(keyFor(id)))[keyFor(id)];
 }
 export async function readClockState(id) { return check(await readClockRecord(id)); }
 async function write(id, value) {
   const checked = check(value);
-  if (native()) await chrome.storage.local.set({ [keyFor(id)]: checked });
-  else { localStorage.setItem(keyFor(id), JSON.stringify(checked)); for (const listener of localListeners) listener(id, checked); }
+  await localData.set({ [keyFor(id)]: checked });
   return checked;
 }
 export function subscribeClockState(id, callback) {
-  if (native()) {
-    const change = (items, area) => { if (area === 'local' && items[keyFor(id)]) { try { callback(check(items[keyFor(id)].newValue)); } catch { /* Keep usable state; the next user action reports an error. */ } } };
-    chrome.storage.onChanged.addListener(change); return () => chrome.storage.onChanged.removeListener(change);
-  }
-  const samePage = (key, state) => { if (key === id) callback(state); };
-  const otherPage = (event) => { if (event.key === keyFor(id)) readClockState(id).then(callback).catch(() => {}); };
-  localListeners.add(samePage); globalThis.addEventListener?.('storage', otherPage);
-  return () => { localListeners.delete(samePage); globalThis.removeEventListener?.('storage', otherPage); };
+  return localData.subscribe((items) => {
+    if (items[keyFor(id)]) { try { callback(check(items[keyFor(id)].newValue)); } catch { /* Keep usable state; the next user action reports an error. */ } }
+  });
 }
 export async function updateClockState(id, update) {
   const action = async () => {
@@ -139,7 +132,7 @@ export async function restoreClockSchedules() {
   for (const alarm of await chrome.alarms.getAll()) {
     if (alarm.name.startsWith(ALARM_PREFIX) && alarm.name.slice(ALARM_PREFIX.length).split(':')[1] === 'alarm') await chrome.alarms.clear(alarm.name);
   }
-  const all = await chrome.storage.local.get(null), navigation = all['owntab.local.v1']?.state;
+  const all = await localData.get(null), navigation = all['owntab.local.v1']?.state;
   // A screen deletion only detaches the widget. Its record, local timers and
   // countdown plans remain valid until the user explicitly removes the widget.
   const valid = new Set(navigation?.entries?.filter((entry) => entry.type === 'widget' && entry.extensionId === 'clock').map((entry) => entry.id) || []);
@@ -155,6 +148,6 @@ export async function restoreClockSchedules() {
 export async function removeClockState(id) {
   if (native()) {
     for (const alarm of await chrome.alarms.getAll()) if (alarm.name.startsWith(alarmScope(id))) await chrome.alarms.clear(alarm.name);
-    await chrome.storage.local.remove(keyFor(id));
-  } else localStorage.removeItem(keyFor(id));
+  }
+  await localData.remove(keyFor(id));
 }

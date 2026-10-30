@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { localData, syncDataStore as defaultSnapshotStore } from './local-data.js';
 import * as navigationStorage from './storage.js';
 import { createEmptyState } from './model.js';
 import { createReplica, validateReplica, combineReplicas, recordChanges, portableState, materializeState, syncConflicts } from './sync.js';
@@ -6,6 +7,8 @@ import { validateCloudConfig, createCloudProvider, cloudOrigin, parseCloudSnapsh
 import * as packagedWasm from './sync-wasm.js';
 import { encryptCloudPayload, decryptCloudPayload, validateCloudPassword, CLOUD_OBJECT_LIMIT, CLOUD_PLAINTEXT_LIMIT } from './cloud-crypto.js';
 import { revisionDiff, applyRevisionSelection } from './revision-diff.js';
+import { createToolSync, validateToolReplica, materializeToolReplicas } from './tool-sync.js';
+import { createFullDataSync } from './full-data-sync.js';
 
 const LOCAL_KEY = 'covelet.cloud.local.v1';
 const SESSION_KEY = 'covelet.cloud.session.v1';
@@ -43,6 +46,7 @@ const messages = {
   get CLOUD_HISTORY_SELECTION() { return tr("所选项目不能恢复，请重新查看差异并选择关联的文件夹。"); },
   get CLOUD_TARGET_PENDING() { return tr("还有尚未上传的同步版本，请先完成当前云端同步，再切换存储位置。"); },
   get CLOUD_TARGET_CONFLICTS() { return tr("当前云端还有可恢复的并发版本，请先恢复并完成同步，再切换存储位置。"); },
+  get TOOLS_SYNC_TARGET() { return tr('工具内容还有待上传或冲突版本，请先处理后再切换存储位置。'); },
   get REVISION_CONFLICT() { return tr("数据已在另一个标签页更新，本次未覆盖；请重新同步。"); },
   get SYNC_DEVICE_CONFLICT() { return tr("同一设备出现不一致的同步版本，已保留本地数据。"); },
   get SYNC_CAPACITY() { return tr("同步历史超出限制，已保留本地数据；请使用 ZIP 备份。"); },
@@ -70,16 +74,13 @@ function chromeCall(area, method, argument) {
 }
 
 function localConfigStore() {
-  let memory = null;
   return {
     async read() {
-      if (globalThis.chrome?.runtime?.id && globalThis.chrome.storage?.local) return (await chromeCall(globalThis.chrome.storage.local, 'get', LOCAL_KEY))[LOCAL_KEY] || null;
-      try { return globalThis.localStorage ? JSON.parse(globalThis.localStorage.getItem(LOCAL_KEY) || 'null') : clone(memory); }
+      try { return (await localData.get(LOCAL_KEY))[LOCAL_KEY] || null; }
       catch { throw failure(tr("无法读取本机云同步设置。"), 'CLOUD_LOCAL'); }
     },
     async write(value) {
-      if (globalThis.chrome?.runtime?.id && globalThis.chrome.storage?.local) return chromeCall(globalThis.chrome.storage.local, 'set', { [LOCAL_KEY]: value });
-      try { if (globalThis.localStorage) globalThis.localStorage.setItem(LOCAL_KEY, JSON.stringify(value)); else memory = clone(value); }
+      try { await localData.set({ [LOCAL_KEY]: value }); }
       catch { throw failure(tr("无法保存本机云同步设置。"), 'CLOUD_LOCAL'); }
     },
   };
@@ -123,7 +124,8 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
   providerFactory = createCloudProvider, validateConfig = validateCloudConfig, originOf = cloudOrigin, parseName = parseCloudSnapshotName,
   signer = packagedWasm, hasPermission = defaultPermission, locks = globalThis.navigator?.locks,
   uuid = () => globalThis.crypto.randomUUID(), crypto = globalThis.crypto, now = () => Date.now(),
-  autoDelay = 15_000, pullInterval = 60_000, eventWindow = globalThis.window, eventDocument = globalThis.document } = {}) {
+  autoDelay = 15_000, pullInterval = 60_000, eventWindow = globalThis.window, eventDocument = globalThis.document,
+  toolSyncStore, toolsStore, fullData = true, snapshotStore = defaultSnapshotStore, fullSyncStore, fullPendingStore, legacySeed = true } = {}) {
   let serial = Promise.resolve();
   let flight;
   let started = false;
@@ -198,10 +200,13 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     const config = await read();
     const target = config.profile ? await targetOf(config.profile) : null;
     const session = target ? await currentSession(target) : null;
-    const conflicts = config.metadata ? syncConflicts(config.metadata.documents).length : 0;
+    if (fullData) await fullSync.loadFullDataSyncSettings();
+    const fullStatus = fullData ? fullSync.getFullDataSyncStatus() : null;
+    const conflicts = fullData ? fullStatus.conflicts : config.metadata ? syncConflicts(config.metadata.documents).length : 0;
     report({ phase: config.profile ? (session ? (status.phase === 'syncing' ? 'syncing' : status.phase === 'saved' ? 'saved' : 'idle') : 'locked') : 'unconfigured',
       message: config.profile ? (session ? tr("已解锁，凭据仅保留在当前浏览器会话。") : messages.CLOUD_LOCKED) : tr("尚未配置自定义云同步。"),
-      autoSync: config.autoSync, unlocked: Boolean(session), lastSync: config.metadata?.lastSync || 0, conflicts });
+      autoSync: config.autoSync, unlocked: Boolean(session), lastSync: fullData ? fullStatus.lastSync : config.metadata?.lastSync || 0, conflicts,
+      ...(fullData ? { pending: fullStatus.pending } : {}) });
     return { profile: clone(config.profile), autoSync: config.autoSync, configured: Boolean(config.profile), unlocked: Boolean(session) };
   };
   const schedule = () => {
@@ -218,6 +223,130 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     if (!latest.profile || await targetOf(latest.profile) !== session.target || await targetOf(config.profile) !== session.target) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
     if (!await hasPermission(originOf(config.profile))) throw failure(messages.CLOUD_PERMISSION, 'CLOUD_PERMISSION');
   };
+  const toolSync = createToolSync({ store: toolSyncStore, tools: toolsStore, locks, crypto, uuid, now, autoDelay, pullInterval, eventWindow, eventDocument,
+    access: async () => {
+      const config = await read();
+      if (!config.profile) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+      const target = await targetOf(config.profile), session = await currentSession(target);
+      if (!session) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+      await checkAccess(config, session);
+      // Navigation readers only understand navigation snapshots. A separate
+      // directory also prevents tool-body traffic from entering that history.
+      const profile = validateConfig({ ...config.profile, prefix: `${config.profile.prefix}/tools-v1` });
+      const check = () => checkAccess(config, session);
+      return { target, password: session.password, autoSync: config.autoSync, check,
+        provider: providerFactory(profile, session.secrets, { signer, beforeRequest: check }) };
+    } });
+  const fullAccess = async () => {
+    let config = await read();
+    if (!config.profile) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+    const target = await targetOf(config.profile), session = await currentSession(target);
+    if (!session) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+    await checkAccess(config, session);
+    await flushLegacyPending(config, session);
+    config = await read();
+    const check = () => checkAccess(config, session);
+    const providerAt = (suffix) => providerFactory(validateConfig({ ...config.profile, prefix: `${config.profile.prefix}/${suffix}` }), session.secrets, { signer, beforeRequest: check });
+    return { target, password: session.password, autoSync: config.autoSync, check,
+      provider: providerAt('all-data-v1'), assetProvider: providerAt('all-data-v1/blobs') };
+  };
+  // The first upgraded device imports the old formats without asking old
+  // clients to understand the new protocol. Once an all-data manifest exists,
+  // the unified directory is authoritative and legacy clients must be upgraded.
+  const seedLegacyData = async (snapshot) => {
+    const config = await read(), session = await currentSession(await targetOf(config.profile));
+    if (!session) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+    const records = clone(snapshot.records);
+    const replace = (key, value) => {
+      const index = records.findIndex((item) => item.namespace === 'preferences' && item.key === key);
+      const next = { namespace: 'preferences', key, value };
+      if (index < 0) records.push(next); else records[index] = next;
+    };
+    const navigation = records.find((item) => item.namespace === 'preferences' && item.key === 'owntab.local.v1');
+    const local = navigation?.value.state || await stateStore.loadState();
+    const provider = providerFactory(config.profile, session.secrets, { signer, beforeRequest: () => checkAccess(config, session) });
+    const incoming = await fetchDocuments(provider, config, session);
+    if (Object.keys(incoming.documents).length) {
+      const metadata = config.metadata || await metadataFor(config);
+      const authored = recordChanges(metadata.document, metadata.base, local, metadata.documents);
+      const merged = materializeState(combineReplicas(metadata.documents, incoming.documents, { [authored.actor]: authored }), local);
+      replace('owntab.local.v1', { ...(navigation?.value || { version: 1, snapshots: [] }), state: merged });
+    }
+    const toolConfig = toolSyncStore ? await toolSyncStore.read() : (await localData.get('covelet.tools.cloud.v1'))['covelet.tools.cloud.v1'];
+    const toolProvider = providerFactory(validateConfig({ ...config.profile, prefix: `${config.profile.prefix}/tools-v1` }), session.secrets, { signer, beforeRequest: () => checkAccess(config, session) });
+    let listing;
+    try { listing = await toolProvider.list(); } catch (cause) { if (cause.code === 'CLOUD_NOT_FOUND') listing = []; else throw cause; }
+    if (!Array.isArray(listing) || listing.length > MAX_OBJECTS) throw failure(messages.CLOUD_CAPACITY, 'CLOUD_CAPACITY');
+    const latest = new Map(), documents = {}, seen = new Set();
+    for (const item of listing) {
+      const identity = parseName(item?.name);
+      if (!identity || seen.has(item.name)) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
+      seen.add(item.name);
+      const prior = latest.get(identity.actor);
+      if (!prior || identity.clock > prior.clock) latest.set(identity.actor, { ...identity, name: item.name });
+      else if (identity.clock === prior.clock && identity.digest !== prior.digest) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
+    }
+    if (latest.size > MAX_ACTORS) throw failure(messages.CLOUD_CAPACITY, 'CLOUD_CAPACITY');
+    let total = 0;
+    for (const identity of latest.values()) {
+      await checkAccess(config, session);
+      const bytes = await toolProvider.read(identity.name); total += bytes?.byteLength || 0;
+      if (!(bytes instanceof Uint8Array) || bytes.length > CLOUD_OBJECT_LIMIT || total > MAX_TOTAL_BYTES || await signer.sha256(bytes) !== identity.digest) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
+      const payload = JSON.parse(decoder.decode(await decryptCloudPayload(bytes, session.password, { crypto })));
+      if (payload?.format !== 'covelet-tools-sync' || payload.version !== 1 || Object.keys(payload).some((key) => !['format', 'version', 'document'].includes(key))) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
+      const document = validateToolReplica(payload.document);
+      if (document.actor !== identity.actor || document.clock !== identity.clock) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
+      documents[document.actor] = document;
+    }
+    if (Object.keys(documents).length) {
+      const old = records.find((item) => item.namespace === 'preferences' && item.key === 'covelet.tools.v1');
+      const localTools = old?.value || { version: 3, revision: 0, notes: [], reading: [], snapshots: [], trash: [] };
+      const combined = { ...documents };
+      for (const document of Object.values(toolConfig?.metadata?.documents || {})) {
+        const checked = validateToolReplica(document), prior = combined[checked.actor];
+        if (!prior || checked.clock > prior.clock) combined[checked.actor] = checked;
+        else if (checked.clock === prior.clock && !same(checked, prior)) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
+      }
+      const merged = materializeToolReplicas(combined).data;
+      const base = toolConfig?.metadata?.base || { notes: [], reading: [] };
+      // Keep unsynced local edits and local-only tool collections. A competing
+      // legacy version stays in its original immutable history for recovery.
+      const mergeKind = (kind) => {
+        const result = new Map(merged[kind].map((item) => [item.id, item]));
+        const before = new Map(base[kind].map((item) => [item.id, item]));
+        const current = new Map(localTools[kind].map((item) => [item.id, item]));
+        for (const [id, item] of current) if (!same({ ...item, revision: 1 }, before.get(id))) result.set(id, item);
+        for (const id of before.keys()) if (!current.has(id)) result.delete(id);
+        return [...result.values()];
+      };
+      replace('covelet.tools.v1', { ...localTools, notes: mergeKind('notes'), reading: mergeKind('reading') });
+    }
+    return { version: 1, records };
+  };
+  const fullSync = fullData ? createFullDataSync({ access: fullAccess, store: fullSyncStore, pendingStore: fullPendingStore, snapshotStore,
+    signer, crypto, locks, uuid, now, autoDelay, pullInterval, eventWindow, eventDocument, seed: legacySeed ? seedLegacyData : undefined }) : null;
+  if (fullSync) fullSync.subscribeFullDataSyncStatus((value) => {
+    if (['syncing', 'saved', 'error', 'locked'].includes(value.phase)) report({ ...value, unlocked: value.phase === 'locked' ? false : status.unlocked });
+  });
+  async function flushLegacyPending(config, session) {
+    if (config.metadata?.pending) {
+      const provider = providerFactory(config.profile, session.secrets, { signer, beforeRequest: () => checkAccess(config, session) });
+      await publishPending(config, session, provider);
+    }
+    const tools = toolSyncStore ? await toolSyncStore.read() : (await localData.get('covelet.tools.cloud.v1'))['covelet.tools.cloud.v1'];
+    const pending = tools?.metadata?.pending;
+    if (!pending) return;
+    const identity = parseName(pending.name), bytes = encoder.encode(pending.body);
+    if (!identity || bytes.length > CLOUD_OBJECT_LIMIT || await signer.sha256(bytes) !== identity.digest) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
+    const payload = JSON.parse(decoder.decode(await decryptCloudPayload(bytes, session.password, { crypto })));
+    const document = validateToolReplica(payload.document);
+    if (payload.format !== 'covelet-tools-sync' || payload.version !== 1 || Object.keys(payload).some((key) => !['format', 'version', 'document'].includes(key))
+      || document.actor !== identity.actor || document.clock !== identity.clock || !same(document, tools.metadata.document)) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
+    const provider = providerFactory(validateConfig({ ...config.profile, prefix: `${config.profile.prefix}/tools-v1` }), session.secrets, { signer, beforeRequest: () => checkAccess(config, session) });
+    await checkAccess(config, session); await provider.write(pending.name, bytes); await checkAccess(config, session);
+    tools.metadata.publishedClock = document.clock; tools.metadata.pending = null;
+    if (toolSyncStore) await toolSyncStore.write(tools); else await localData.set({ 'covelet.tools.cloud.v1': tools });
+  }
   const parseRevision = async (name, body, password) => {
     const identity = parseName(name);
     if (!identity || !(body instanceof Uint8Array) || !body.length || body.length > CLOUD_OBJECT_LIMIT) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
@@ -292,6 +421,13 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     await persist(config);
   };
   const api = {
+    loadToolSyncSettings: toolSync.loadToolSyncSettings,
+    setToolSyncEnabled: toolSync.setToolSyncEnabled,
+    getToolSyncStatus: toolSync.getToolSyncStatus,
+    subscribeToolSyncStatus: toolSync.subscribeToolSyncStatus,
+    getToolSyncConflicts: toolSync.getToolSyncConflicts,
+    useToolSyncConflict: toolSync.useToolSyncConflict,
+    syncToolCloudNow: fullData ? () => api.syncCloudNow() : toolSync.syncToolCloudNow,
     async loadCloudSyncSettings() { try { return await inspectSettings(); } catch (cause) { throw publicError(cause); } },
     async saveCloudSyncSettings(profile, secrets, password, { autoSync = false } = {}) {
       try {
@@ -302,17 +438,20 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
         await exclusive(async () => {
           const previous = await read();
           const target = await targetOf(checked);
-          if (previous.metadata && previous.metadata.target !== target) {
-            // Switching a target replaces its local causal history. Never let
-            // that destroy the only unuploaded/conflicting version after a
-            // merge changed the visible navigation state (e.g. delete wins).
-            if (previous.metadata.pending) throw failure(messages.CLOUD_TARGET_PENDING, 'CLOUD_TARGET_PENDING');
-            if (syncConflicts(previous.metadata.documents).length) throw failure(messages.CLOUD_TARGET_CONFLICTS, 'CLOUD_TARGET_CONFLICTS');
-          }
-          const config = { version: 1, profile: checked, autoSync, metadata: previous.metadata };
-          config.metadata = await metadataFor(config);
-          await persist(config);
-          await sessionStore.write({ target: config.metadata.target, secrets: clone(secrets), password });
+          const guard = fullData ? (action) => fullSync.guardFullDataTarget(target, action) : (action) => action();
+          await guard(() => toolSync.guardToolTarget(target, async () => {
+            if (previous.metadata && previous.metadata.target !== target) {
+              // Switching a target replaces its local causal history. Never let
+              // that destroy the only unuploaded/conflicting version after a
+              // merge changed the visible navigation state (e.g. delete wins).
+              if (previous.metadata.pending) throw failure(messages.CLOUD_TARGET_PENDING, 'CLOUD_TARGET_PENDING');
+              if (syncConflicts(previous.metadata.documents).length) throw failure(messages.CLOUD_TARGET_CONFLICTS, 'CLOUD_TARGET_CONFLICTS');
+            }
+            const config = { version: 1, profile: checked, autoSync, metadata: previous.metadata };
+            config.metadata = await metadataFor(config);
+            await persist(config);
+            await sessionStore.write({ target: config.metadata.target, secrets: clone(secrets), password });
+          }));
         });
         const settings = await inspectSettings(); schedule(); return settings;
       } catch (cause) { throw publicError(cause); }
@@ -399,10 +538,12 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       } catch (cause) { throw publicError(cause); }
     },
     async getCloudSyncConflicts() {
+      if (fullData) return fullSync.getFullDataConflicts();
       try { const config = await read(); return config.metadata ? syncConflicts(config.metadata.documents) : []; }
       catch (cause) { throw publicError(cause); }
     },
-    async restoreCloudSyncConflict(id) {
+    async restoreCloudSyncConflict(id, options) {
+      if (fullData) return fullSync.restoreFullDataConflict(id, options);
       try {
         return await exclusive(async () => {
           const config = await read();
@@ -431,6 +572,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       } catch (cause) { throw publicError(cause); }
     },
     async syncCloudNow() {
+      if (fullData) return fullSync.syncFullDataNow();
       if (flight) return flight;
       flight = exclusive(async () => {
         const config = await read();
@@ -503,6 +645,12 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     startCloudSync() {
       if (started) return () => api.stopCloudSync();
       started = true;
+      if (fullData) {
+        fullSync.startFullDataSync();
+        inspectSettings().then((settings) => { if (settings.autoSync && settings.unlocked) schedule(); }).catch(() => {});
+        return () => api.stopCloudSync();
+      }
+      toolSync.startToolSync();
       unsubscribe = stateStore.subscribeState?.((state) => {
         if (applying) return;
         try {
@@ -525,6 +673,8 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       return () => api.stopCloudSync();
     },
     stopCloudSync() {
+      fullSync?.stopFullDataSync();
+      toolSync.stopToolSync();
       started = false; clearTimeout(timer); clearInterval(interval); unsubscribe?.(); unsubscribe = undefined;
       eventWindow?.removeEventListener?.('focus', api._refresh);
       eventDocument?.removeEventListener?.('visibilitychange', api._refresh);
@@ -536,4 +686,5 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
 const cloud = createCloudSync();
 export const { loadCloudSyncSettings, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, syncCloudNow, getCloudSyncStatus,
   subscribeCloudSyncStatus, startCloudSync, stopCloudSync, getCloudSyncConflicts, restoreCloudSyncConflict,
-  listCloudHistory, previewCloudHistory, restoreCloudHistory, clearCloudHistoryPreview } = cloud;
+  listCloudHistory, previewCloudHistory, restoreCloudHistory, clearCloudHistoryPreview,
+  loadToolSyncSettings, setToolSyncEnabled, getToolSyncStatus, subscribeToolSyncStatus, getToolSyncConflicts, useToolSyncConflict, syncToolCloudNow } = cloud;

@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import dependencyReload from './scripts/vite-dependency-reload.mjs';
+import processingPdf from './scripts/vite-processing-pdf.mjs';
 
 export default defineConfig({
   build: {
@@ -8,7 +9,7 @@ export default defineConfig({
     modulePreload: { polyfill: false },
     assetsInlineLimit: 0,
   },
-  worker: { format: "es" },
+  worker: { format: "es", plugins: () => [processingPdf()] },
   optimizeDeps: {
     include: ["react", "react-dom/client"],
   },
@@ -49,5 +50,5 @@ export default defineConfig({
       clientFiles: ["./src/main.jsx"],
     },
   },
-  plugins: [react(), dependencyReload()],
+  plugins: [processingPdf(), react(), dependencyReload()],
 });

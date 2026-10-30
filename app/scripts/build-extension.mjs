@@ -17,6 +17,10 @@ const appRoot = realpathSync(
 );
 const distRoot = path.resolve(appRoot, "dist");
 const extensionRoot = path.resolve(distRoot, "extension");
+const unpackedOnly = process.argv.includes("--unpacked");
+// Explicit release packaging for sessions where the user has disabled checks.
+// The normal release command retains every existing validation step.
+const skipChecks = process.argv.includes("--skip-checks");
 
 // WXT clears its target output directory. Check the exact absolute scope and reject
 // junctions/symlinks before allowing it to touch that directory on Windows.
@@ -48,11 +52,13 @@ function run(command, args) {
   }
 }
 
-run(process.execPath, [path.join(appRoot, "scripts", "build-wasm.mjs"), "--check"]);
-run(process.execPath, [path.join(appRoot, "scripts", "build-sync-wasm.mjs"), "--check"]);
-run(process.execPath, [path.join(appRoot, "scripts", "build-github-wasm.mjs"), "--check"]);
-run(process.execPath, [path.join(appRoot, "scripts", "clock-wasm.mjs"), "--check"]);
-run(process.execPath, [path.join(appRoot, "scripts", "build-tools-wasm.mjs"), "--check"]);
+if (!unpackedOnly && !skipChecks) {
+  run(process.execPath, [path.join(appRoot, "scripts", "build-wasm.mjs"), "--check"]);
+  run(process.execPath, [path.join(appRoot, "scripts", "build-sync-wasm.mjs"), "--check"]);
+  run(process.execPath, [path.join(appRoot, "scripts", "build-github-wasm.mjs"), "--check"]);
+  run(process.execPath, [path.join(appRoot, "scripts", "clock-wasm.mjs"), "--check"]);
+  run(process.execPath, [path.join(appRoot, "scripts", "build-tools-wasm.mjs"), "--check"]);
+}
 run(process.execPath, [
   path.join(appRoot, "node_modules", "wxt", "bin", "wxt.mjs"),
   "build",
@@ -60,7 +66,12 @@ run(process.execPath, [
   "chrome",
   "--mv3",
 ]);
-run(process.execPath, [path.join(appRoot, "scripts", "check-extension.mjs")]);
+if (unpackedOnly) {
+  console.log(`Unpacked extension directory: ${extensionRoot}`);
+  console.log("Build-only output for manual browser testing; tests and extension checks were not run.");
+  process.exit(0);
+}
+if (!skipChecks) run(process.execPath, [path.join(appRoot, "scripts", "check-extension.mjs")]);
 
 const files = Object.create(null);
 function collect(directory) {
@@ -102,5 +113,7 @@ writeFileSync(archive, zipSync(files, { level: 6 }));
 console.log(`Extension directory: ${extensionRoot}`);
 console.log(`Extension ZIP: ${archive} (${Object.keys(files).length} files)`);
 console.log(
-  "Build and static checks only; Chrome runtime acceptance and Web Store review remain separate.",
+  skipChecks
+    ? "Build and archive only; tests, WASM checks, extension checks and browser QA were not run."
+    : "Build and static checks only; Chrome runtime acceptance and Web Store review remain separate.",
 );

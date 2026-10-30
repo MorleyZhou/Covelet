@@ -1,0 +1,2963 @@
+{
+  "TheSportsDB API Key，可选": {
+    "en": "TheSportsDB API key (optional)",
+    "zh-TW": "TheSportsDB API Key，選填",
+    "ja": "TheSportsDB API キー（任意）",
+    "ko": "TheSportsDB API 키 (선택)",
+    "de": "TheSportsDB API-Schlüssel (optional)",
+    "fr": "Clé API TheSportsDB (facultatif)",
+    "ru": "Ключ API TheSportsDB (необязательно)"
+  },
+  "{0} 个数据点": {
+    "en": "{0} data points",
+    "zh-TW": "{0} 個資料點",
+    "ja": "{0} データ点",
+    "ko": "데이터 {0}개",
+    "de": "{0} Datenpunkte",
+    "fr": "{0} points de données",
+    "ru": "Точек данных: {0}"
+  },
+  "{0} 走势，{1} 至 {2}": {
+    "en": "{0} chart, {1} to {2}",
+    "zh-TW": "{0} 走勢，{1} 至 {2}",
+    "ja": "{0} の推移、{1}～{2}",
+    "ko": "{0} 추이, {1}~{2}",
+    "de": "{0}, Verlauf von {1} bis {2}",
+    "fr": "Évolution de {0}, du {1} au {2}",
+    "ru": "График {0}, с {1} по {2}"
+  },
+  "{0}预算使用情况": {
+    "en": "Budget usage for {0}",
+    "zh-TW": "{0}預算使用情況",
+    "ja": "{0} の予算使用状況",
+    "ko": "{0} 예산 사용량",
+    "de": "Budgetnutzung für {0}",
+    "fr": "Utilisation du budget {0}",
+    "ru": "Использование бюджета: {0}"
+  },
+  "上移 {0}": {
+    "en": "Move {0} up",
+    "zh-TW": "上移 {0}",
+    "ja": "{0} を上へ",
+    "ko": "{0} 위로 이동",
+    "de": "{0} nach oben",
+    "fr": "Monter {0}",
+    "ru": "Поднять {0}"
+  },
+  "下次日期": {
+    "en": "Next date",
+    "zh-TW": "下次日期",
+    "ja": "次回日付",
+    "ko": "다음 날짜",
+    "de": "Nächstes Datum",
+    "fr": "Prochaine date",
+    "ru": "Следующая дата"
+  },
+  "下移 {0}": {
+    "en": "Move {0} down",
+    "zh-TW": "下移 {0}",
+    "ja": "{0} を下へ",
+    "ko": "{0} 아래로 이동",
+    "de": "{0} nach unten",
+    "fr": "Descendre {0}",
+    "ru": "Опустить {0}"
+  },
+  "下载": {
+    "en": "Download",
+    "zh-TW": "下載",
+    "ja": "ダウンロード",
+    "ko": "다운로드",
+    "de": "Herunterladen",
+    "fr": "Télécharger",
+    "ru": "Скачать"
+  },
+  "主队": {
+    "en": "Home team",
+    "zh-TW": "主隊",
+    "ja": "ホーム",
+    "ko": "홈 팀",
+    "de": "Heimteam",
+    "fr": "Équipe à domicile",
+    "ru": "Хозяева"
+  },
+  "主队比分": {
+    "en": "Home score",
+    "zh-TW": "主隊比分",
+    "ja": "ホームの得点",
+    "ko": "홈 팀 점수",
+    "de": "Heimpunkte",
+    "fr": "Score à domicile",
+    "ru": "Счёт хозяев"
+  },
+  "交换货币": {
+    "en": "Swap currencies",
+    "zh-TW": "交換貨幣",
+    "ja": "通貨を入れ替え",
+    "ko": "통화 바꾸기",
+    "de": "Währungen tauschen",
+    "fr": "Inverser les devises",
+    "ru": "Поменять валюты"
+  },
+  "交易中": {
+    "en": "Market open",
+    "zh-TW": "交易中",
+    "ja": "取引中",
+    "ko": "거래 중",
+    "de": "Markt geöffnet",
+    "fr": "Marché ouvert",
+    "ru": "Торги открыты"
+  },
+  "交易所，可选": {
+    "en": "Exchange (optional)",
+    "zh-TW": "交易所，選填",
+    "ja": "取引所（任意）",
+    "ko": "거래소 (선택)",
+    "de": "Börse (optional)",
+    "fr": "Bourse (facultatif)",
+    "ru": "Биржа (необязательно)"
+  },
+  "休市": {
+    "en": "Market closed",
+    "zh-TW": "休市",
+    "ja": "休場",
+    "ko": "장 마감",
+    "de": "Markt geschlossen",
+    "fr": "Marché fermé",
+    "ru": "Торги закрыты"
+  },
+  "使用你有权展示的行情数据。市场覆盖、实时性和请求额度由数据源决定。": {
+    "en": "Use market data you are licensed to display. Coverage, delays and request limits depend on your provider.",
+    "zh-TW": "請使用你有權展示的行情資料。市場範圍、時效與請求額度由資料來源決定。",
+    "ja": "表示権限のある市場データをご利用ください。対象市場、遅延、リクエスト上限は提供元によって異なります。",
+    "ko": "표시 권한이 있는 시세를 사용하세요. 지원 시장, 지연 시간, 요청 한도는 제공업체에 따라 다릅니다.",
+    "de": "Verwende nur zur Anzeige lizenzierte Marktdaten. Abdeckung, Verzögerung und Anfragelimits bestimmt der Anbieter.",
+    "fr": "Utilisez des données dont vous avez les droits d’affichage. Couverture, délais et quotas dépendent du fournisseur.",
+    "ru": "Используйте данные, разрешённые для отображения. Рынки, задержки и лимиты запросов зависят от поставщика."
+  },
+  "保修截止": {
+    "en": "Warranty ends",
+    "zh-TW": "保固截止",
+    "ja": "保証期限",
+    "ko": "보증 만료",
+    "de": "Garantieende",
+    "fr": "Fin de garantie",
+    "ru": "Конец гарантии"
+  },
+  "保存比赛": {
+    "en": "Save match",
+    "zh-TW": "儲存比賽",
+    "ja": "試合を保存",
+    "ko": "경기 저장",
+    "de": "Spiel speichern",
+    "fr": "Enregistrer le match",
+    "ru": "Сохранить матч"
+  },
+  "保存订单、收据与保修资料，方便之后查找。": {
+    "en": "Keep orders, receipts and warranty details together.",
+    "zh-TW": "儲存訂單、收據與保固資料，方便日後查找。",
+    "ja": "注文、領収書、保証情報をまとめて保管できます。",
+    "ko": "주문, 영수증, 보증 정보를 한곳에 보관하세요.",
+    "de": "Bestellungen, Belege und Garantieinformationen zusammen aufbewahren.",
+    "fr": "Conservez commandes, reçus et garanties au même endroit.",
+    "ru": "Храните заказы, чеки и гарантийные документы вместе."
+  },
+  "保存预算": {
+    "en": "Save budget",
+    "zh-TW": "儲存預算",
+    "ja": "予算を保存",
+    "ko": "예산 저장",
+    "de": "Budget speichern",
+    "fr": "Enregistrer le budget",
+    "ru": "Сохранить бюджет"
+  },
+  "先到账户页添加一个账户。": {
+    "en": "Add an account on the Accounts page first.",
+    "zh-TW": "請先到帳戶頁新增帳戶。",
+    "ja": "先に口座ページで口座を追加してください。",
+    "ko": "먼저 계정 페이지에서 계정을 추가하세요.",
+    "de": "Füge zuerst unter Konten ein Konto hinzu.",
+    "fr": "Ajoutez d’abord un compte dans la page Comptes.",
+    "ru": "Сначала добавьте счёт на странице счетов."
+  },
+  "全部": {
+    "en": "All",
+    "zh-TW": "全部",
+    "ja": "すべて",
+    "ko": "전체",
+    "de": "Alle",
+    "fr": "Tout",
+    "ru": "Все"
+  },
+  "全部账户": {
+    "en": "All accounts",
+    "zh-TW": "全部帳戶",
+    "ja": "すべての口座",
+    "ko": "모든 계정",
+    "de": "Alle Konten",
+    "fr": "Tous les comptes",
+    "ru": "Все счета"
+  },
+  "关注": {
+    "en": "Follow",
+    "zh-TW": "追蹤",
+    "ja": "フォロー",
+    "ko": "팔로우",
+    "de": "Folgen",
+    "fr": "Suivre",
+    "ru": "Подписаться"
+  },
+  "关注或数据源已变更，请重新更新。": {
+    "en": "Following or data settings changed. Refresh again.",
+    "zh-TW": "追蹤或資料來源已變更，請重新更新。",
+    "ja": "フォローまたはデータ設定が変更されました。再度更新してください。",
+    "ko": "팔로우 또는 데이터 설정이 변경되었습니다. 다시 업데이트하세요.",
+    "de": "Favoriten oder Datenquelle wurden geändert. Erneut aktualisieren.",
+    "fr": "Le suivi ou la source a changé. Actualisez à nouveau.",
+    "ru": "Подписки или источник изменились. Обновите ещё раз."
+  },
+  "关注球队后更新赛程，也可以手动记录比赛。": {
+    "en": "Follow a team and refresh the schedule, or add matches manually.",
+    "zh-TW": "追蹤球隊後更新賽程，也可手動記錄比賽。",
+    "ja": "チームをフォローして日程を更新するか、試合を手動で追加できます。",
+    "ko": "팀을 팔로우해 일정을 업데이트하거나 경기를 직접 추가하세요.",
+    "de": "Folge einem Team und aktualisiere den Spielplan oder füge Spiele manuell hinzu.",
+    "fr": "Suivez une équipe et actualisez le calendrier, ou ajoutez des matchs manuellement.",
+    "ru": "Подпишитесь на команду и обновите расписание либо добавьте матч вручную."
+  },
+  "关注球队数量已达上限。": {
+    "en": "The followed-team limit has been reached.",
+    "zh-TW": "追蹤球隊數量已達上限。",
+    "ja": "フォローできるチーム数の上限です。",
+    "ko": "팔로우 팀 수가 한도에 도달했습니다.",
+    "de": "Das Limit gefolgter Teams ist erreicht.",
+    "fr": "La limite d’équipes suivies est atteinte.",
+    "ru": "Достигнут лимит отслеживаемых команд."
+  },
+  "删除列表": {
+    "en": "Delete list",
+    "zh-TW": "刪除清單",
+    "ja": "リストを削除",
+    "ko": "목록 삭제",
+    "de": "Liste löschen",
+    "fr": "Supprimer la liste",
+    "ru": "Удалить список"
+  },
+  "删除这个列表及其中的自选标的？": {
+    "en": "Delete this list and its symbols?",
+    "zh-TW": "刪除此清單及其中的自選標的？",
+    "ja": "このリストと登録銘柄を削除しますか？",
+    "ko": "이 목록과 등록 종목을 삭제할까요?",
+    "de": "Diese Liste und ihre Werte löschen?",
+    "fr": "Supprimer cette liste et ses valeurs ?",
+    "ru": "Удалить список и входящие в него инструменты?"
+  },
+  "删除这件物品及其收据和物流记录？": {
+    "en": "Delete this item, its receipts and tracking history?",
+    "zh-TW": "刪除此物品及其收據和物流紀錄？",
+    "ja": "この品物、領収書、配送履歴を削除しますか？",
+    "ko": "이 물품과 영수증, 배송 기록을 삭제할까요?",
+    "de": "Diesen Gegenstand samt Belegen und Sendungsverlauf löschen?",
+    "fr": "Supprimer cet article, ses reçus et son suivi ?",
+    "ru": "Удалить предмет, чеки и историю доставки?"
+  },
+  "删除这场手动记录的比赛？": {
+    "en": "Delete this manually recorded match?",
+    "zh-TW": "刪除此手動記錄的比賽？",
+    "ja": "手動で記録したこの試合を削除しますか？",
+    "ko": "직접 기록한 이 경기를 삭제할까요?",
+    "de": "Dieses manuell erfasste Spiel löschen?",
+    "fr": "Supprimer ce match saisi manuellement ?",
+    "ru": "Удалить этот матч, добавленный вручную?"
+  },
+  "删除这条记录？": {
+    "en": "Delete this record?",
+    "zh-TW": "刪除此筆紀錄？",
+    "ja": "この記録を削除しますか？",
+    "ko": "이 기록을 삭제할까요?",
+    "de": "Diesen Eintrag löschen?",
+    "fr": "Supprimer cet enregistrement ?",
+    "ru": "Удалить эту запись?"
+  },
+  "到期账单在你确认后记入账本。": {
+    "en": "Due bills are posted only after you confirm.",
+    "zh-TW": "到期帳單會在你確認後記入帳本。",
+    "ja": "期限が来た請求は確認後に記帳されます。",
+    "ko": "기한이 된 청구서는 확인 후에만 기록됩니다.",
+    "de": "Fällige Rechnungen werden erst nach deiner Bestätigung gebucht.",
+    "fr": "Les factures échues sont comptabilisées après confirmation.",
+    "ru": "Счета с наступившим сроком учитываются после подтверждения."
+  },
+  "前收": {
+    "en": "Previous close",
+    "zh-TW": "前收",
+    "ja": "前日終値",
+    "ko": "전일 종가",
+    "de": "Vortagesschluss",
+    "fr": "Clôture précédente",
+    "ru": "Предыдущее закрытие"
+  },
+  "剩余 {0} 天": {
+    "en": "{0} days left",
+    "zh-TW": "剩餘 {0} 天",
+    "ja": "残り {0} 日",
+    "ko": "{0}일 남음",
+    "de": "Noch {0} Tage",
+    "fr": "{0} jours restants",
+    "ru": "Осталось дней: {0}"
+  },
+  "加入自选": {
+    "en": "Add to watchlist",
+    "zh-TW": "加入自選",
+    "ja": "ウォッチリストに追加",
+    "ko": "관심 종목 추가",
+    "de": "Zur Watchlist",
+    "fr": "Ajouter aux favoris",
+    "ru": "В список наблюдения"
+  },
+  "原币种": {
+    "en": "From currency",
+    "zh-TW": "原幣別",
+    "ja": "換算元通貨",
+    "ko": "기준 통화",
+    "de": "Ausgangswährung",
+    "fr": "Devise source",
+    "ru": "Исходная валюта"
+  },
+  "参考汇率按日更新，实际兑换金额以交易机构为准。": {
+    "en": "Reference rates update daily. Your exchange provider determines the final amount.",
+    "zh-TW": "參考匯率每日更新，實際兌換金額以交易機構為準。",
+    "ja": "参考レートは日次更新です。実際の両替額は取扱機関により異なります。",
+    "ko": "참고 환율은 매일 갱신됩니다. 실제 환전 금액은 거래 기관에 따라 달라집니다.",
+    "de": "Referenzkurse werden täglich aktualisiert. Den tatsächlichen Betrag bestimmt dein Wechselanbieter.",
+    "fr": "Les taux indicatifs sont quotidiens. Le montant réel dépend de l’établissement de change.",
+    "ru": "Справочные курсы обновляются ежедневно. Итоговую сумму определяет обменная организация."
+  },
+  "取消关注 {0}": {
+    "en": "Unfollow {0}",
+    "zh-TW": "取消追蹤 {0}",
+    "ja": "{0} のフォローを解除",
+    "ko": "{0} 팔로우 해제",
+    "de": "{0} nicht mehr folgen",
+    "fr": "Ne plus suivre {0}",
+    "ru": "Отписаться от {0}"
+  },
+  "取消关注这个球队？": {
+    "en": "Unfollow this team?",
+    "zh-TW": "取消追蹤此球隊？",
+    "ja": "このチームのフォローを解除しますか？",
+    "ko": "이 팀의 팔로우를 해제할까요?",
+    "de": "Diesem Team nicht mehr folgen?",
+    "fr": "Ne plus suivre cette équipe ?",
+    "ru": "Отписаться от этой команды?"
+  },
+  "取消编辑": {
+    "en": "Cancel editing",
+    "zh-TW": "取消編輯",
+    "ja": "編集をキャンセル",
+    "ko": "편집 취소",
+    "de": "Bearbeitung abbrechen",
+    "fr": "Annuler la modification",
+    "ru": "Отменить редактирование"
+  },
+  "名称，可选": {
+    "en": "Name (optional)",
+    "zh-TW": "名稱，選填",
+    "ja": "名前（任意）",
+    "ko": "이름 (선택)",
+    "de": "Name (optional)",
+    "fr": "Nom (facultatif)",
+    "ru": "Название (необязательно)"
+  },
+  "周期账单": {
+    "en": "Recurring bills",
+    "zh-TW": "週期帳單",
+    "ja": "定期請求",
+    "ko": "정기 청구서",
+    "de": "Wiederkehrende Rechnungen",
+    "fr": "Factures récurrentes",
+    "ru": "Регулярные счета"
+  },
+  "商家": {
+    "en": "Merchant",
+    "zh-TW": "商家",
+    "ja": "販売店",
+    "ko": "판매자",
+    "de": "Händler",
+    "fr": "Commerçant",
+    "ru": "Продавец"
+  },
+  "场次": {
+    "en": "Played",
+    "zh-TW": "場次",
+    "ja": "試合数",
+    "ko": "경기 수",
+    "de": "Spiele",
+    "fr": "Matchs",
+    "ru": "Игр"
+  },
+  "备注": {
+    "en": "Note",
+    "zh-TW": "備註",
+    "ja": "メモ",
+    "ko": "메모",
+    "de": "Notiz",
+    "fr": "Note",
+    "ru": "Примечание"
+  },
+  "实时": {
+    "en": "Real-time",
+    "zh-TW": "即時",
+    "ja": "リアルタイム",
+    "ko": "실시간",
+    "de": "Echtzeit",
+    "fr": "Temps réel",
+    "ru": "В реальном времени"
+  },
+  "客队": {
+    "en": "Away team",
+    "zh-TW": "客隊",
+    "ja": "アウェイ",
+    "ko": "원정 팀",
+    "de": "Auswärtsteam",
+    "fr": "Équipe à l’extérieur",
+    "ru": "Гости"
+  },
+  "客队比分": {
+    "en": "Away score",
+    "zh-TW": "客隊比分",
+    "ja": "アウェイの得点",
+    "ko": "원정 팀 점수",
+    "de": "Auswärtspunkte",
+    "fr": "Score à l’extérieur",
+    "ru": "Счёт гостей"
+  },
+  "将到期账单入账": {
+    "en": "Post due bills",
+    "zh-TW": "將到期帳單入帳",
+    "ja": "期限が来た請求を記帳",
+    "ko": "기한이 된 청구서 기록",
+    "de": "Fällige Rechnungen buchen",
+    "fr": "Comptabiliser les factures échues",
+    "ru": "Учесть счета к оплате"
+  },
+  "已下单": {
+    "en": "Ordered",
+    "zh-TW": "已下單",
+    "ja": "注文済み",
+    "ko": "주문 완료",
+    "de": "Bestellt",
+    "fr": "Commandé",
+    "ru": "Заказано"
+  },
+  "已到期": {
+    "en": "Expired",
+    "zh-TW": "已到期",
+    "ja": "期限切れ",
+    "ko": "만료됨",
+    "de": "Abgelaufen",
+    "fr": "Expiré",
+    "ru": "Срок истёк"
+  },
+  "已收货": {
+    "en": "Received",
+    "zh-TW": "已收貨",
+    "ja": "受取済み",
+    "ko": "수령 완료",
+    "de": "Erhalten",
+    "fr": "Reçu",
+    "ru": "Получено"
+  },
+  "已退货": {
+    "en": "Returned",
+    "zh-TW": "已退貨",
+    "ja": "返品済み",
+    "ko": "반품 완료",
+    "de": "Zurückgegeben",
+    "fr": "Retourné",
+    "ru": "Возвращено"
+  },
+  "平": {
+    "en": "Draws",
+    "zh-TW": "和",
+    "ja": "引分",
+    "ko": "무승부",
+    "de": "Unentschieden",
+    "fr": "Nuls",
+    "ru": "Ничьи"
+  },
+  "序列号": {
+    "en": "Serial number",
+    "zh-TW": "序號",
+    "ja": "シリアル番号",
+    "ko": "일련번호",
+    "de": "Seriennummer",
+    "fr": "Numéro de série",
+    "ru": "Серийный номер"
+  },
+  "延迟": {
+    "en": "Delayed",
+    "zh-TW": "延遲",
+    "ja": "遅延",
+    "ko": "지연",
+    "de": "Verzögert",
+    "fr": "Différé",
+    "ru": "С задержкой"
+  },
+  "开盘": {
+    "en": "Open",
+    "zh-TW": "開盤",
+    "ja": "始値",
+    "ko": "시가",
+    "de": "Eröffnung",
+    "fr": "Ouverture",
+    "ru": "Открытие"
+  },
+  "当前使用较早的汇率，可更新后再计算。": {
+    "en": "These saved rates are older. Refresh before calculating if needed.",
+    "zh-TW": "目前使用較早的匯率，可更新後再計算。",
+    "ja": "保存されたレートは古いものです。必要に応じて更新してください。",
+    "ko": "저장된 환율이 오래되었습니다. 필요하면 업데이트 후 계산하세요.",
+    "de": "Die gespeicherten Kurse sind älter. Bei Bedarf vor der Berechnung aktualisieren.",
+    "fr": "Ces taux enregistrés sont anciens. Actualisez-les si nécessaire avant le calcul.",
+    "ru": "Сохранённые курсы устарели. При необходимости обновите их перед расчётом."
+  },
+  "当地时间，可选": {
+    "en": "Local time (optional)",
+    "zh-TW": "當地時間，選填",
+    "ja": "現地時刻（任意）",
+    "ko": "현지 시간 (선택)",
+    "de": "Ortszeit (optional)",
+    "fr": "Heure locale (facultatif)",
+    "ru": "Местное время (необязательно)"
+  },
+  "成交量": {
+    "en": "Volume",
+    "zh-TW": "成交量",
+    "ja": "出来高",
+    "ko": "거래량",
+    "de": "Volumen",
+    "fr": "Volume",
+    "ru": "Объём"
+  },
+  "我的自选": {
+    "en": "My watchlist",
+    "zh-TW": "我的自選",
+    "ja": "マイウォッチリスト",
+    "ko": "내 관심 종목",
+    "de": "Meine Watchlist",
+    "fr": "Mes valeurs suivies",
+    "ru": "Мой список наблюдения"
+  },
+  "手动关注": {
+    "en": "Follow manually",
+    "zh-TW": "手動追蹤",
+    "ja": "手動でフォロー",
+    "ko": "직접 팔로우",
+    "de": "Manuell folgen",
+    "fr": "Suivre manuellement",
+    "ru": "Добавить вручную"
+  },
+  "手动添加比赛": {
+    "en": "Add match manually",
+    "zh-TW": "手動新增比賽",
+    "ja": "試合を手動で追加",
+    "ko": "경기 직접 추가",
+    "de": "Spiel manuell hinzufügen",
+    "fr": "Ajouter un match manuellement",
+    "ru": "Добавить матч вручную"
+  },
+  "手动记录": {
+    "en": "Manual record",
+    "zh-TW": "手動紀錄",
+    "ja": "手動記録",
+    "ko": "수동 기록",
+    "de": "Manueller Eintrag",
+    "fr": "Saisie manuelle",
+    "ru": "Ручная запись"
+  },
+  "按数据源授权": {
+    "en": "As licensed by provider",
+    "zh-TW": "依資料來源授權",
+    "ja": "提供元の契約に準拠",
+    "ko": "데이터 제공업체 권한 기준",
+    "de": "Laut Anbieterberechtigung",
+    "fr": "Selon les droits du fournisseur",
+    "ru": "По лицензии поставщика"
+  },
+  "排名": {
+    "en": "Rank",
+    "zh-TW": "排名",
+    "ja": "順位",
+    "ko": "순위",
+    "de": "Rang",
+    "fr": "Classement",
+    "ru": "Место"
+  },
+  "接口地址用 {number} 代表运单号。接口需返回物流状态和事件列表。": {
+    "en": "Use {number} for the tracking number in the endpoint. It must return a status and an event list.",
+    "zh-TW": "介面地址以 {number} 代表運單號，需回傳物流狀態與事件清單。",
+    "ja": "URL の {number} は追跡番号に置換されます。状態とイベント一覧を返す API を指定してください。",
+    "ko": "주소의 {number}는 운송장 번호로 바뀝니다. 상태와 이벤트 목록을 반환하는 API를 사용하세요.",
+    "de": "{number} steht in der Adresse für die Sendungsnummer. Die API muss Status und Ereignisliste liefern.",
+    "fr": "{number} représente le numéro de suivi dans l’adresse. L’API doit renvoyer un statut et une liste d’événements.",
+    "ru": "{number} в адресе заменяется номером отправления. API должен вернуть статус и список событий."
+  },
+  "搜索球队": {
+    "en": "Search teams",
+    "zh-TW": "搜尋球隊",
+    "ja": "チームを検索",
+    "ko": "팀 검색",
+    "de": "Teams suchen",
+    "fr": "Rechercher des équipes",
+    "ru": "Поиск команд"
+  },
+  "搜索订单与物品": {
+    "en": "Search orders and items",
+    "zh-TW": "搜尋訂單與物品",
+    "ja": "注文と品物を検索",
+    "ko": "주문 및 물품 검색",
+    "de": "Bestellungen und Gegenstände suchen",
+    "fr": "Rechercher commandes et articles",
+    "ru": "Поиск заказов и предметов"
+  },
+  "操作失败，请重试。": {
+    "en": "Could not complete the action. Try again.",
+    "zh-TW": "操作失敗，請重試。",
+    "ja": "操作に失敗しました。もう一度お試しください。",
+    "ko": "작업에 실패했습니다. 다시 시도하세요.",
+    "de": "Aktion fehlgeschlagen. Erneut versuchen.",
+    "fr": "L’opération a échoué. Réessayez.",
+    "ru": "Не удалось выполнить действие. Повторите попытку."
+  },
+  "支出": {
+    "en": "Expense",
+    "zh-TW": "支出",
+    "ja": "支出",
+    "ko": "지출",
+    "de": "Ausgaben",
+    "fr": "Dépenses",
+    "ru": "Расходы"
+  },
+  "收入": {
+    "en": "Income",
+    "zh-TW": "收入",
+    "ja": "収入",
+    "ko": "수입",
+    "de": "Einnahmen",
+    "fr": "Revenus",
+    "ru": "Доходы"
+  },
+  "收据与凭证": {
+    "en": "Receipts and documents",
+    "zh-TW": "收據與憑證",
+    "ja": "領収書と書類",
+    "ko": "영수증 및 증빙",
+    "de": "Belege und Dokumente",
+    "fr": "Reçus et justificatifs",
+    "ru": "Чеки и документы"
+  },
+  "收据支持 PDF、PNG、JPEG、WebP，每个文件不超过 2 MB。": {
+    "en": "Receipts support PDF, PNG, JPEG and WebP, up to 2 MB per file.",
+    "zh-TW": "收據支援 PDF、PNG、JPEG、WebP，每個檔案上限 2 MB。",
+    "ja": "領収書は PDF、PNG、JPEG、WebP に対応し、各ファイルは 2 MB までです。",
+    "ko": "영수증은 PDF, PNG, JPEG, WebP 형식을 지원하며 파일당 2 MB까지입니다.",
+    "de": "Belege: PDF, PNG, JPEG oder WebP, höchstens 2 MB pro Datei.",
+    "fr": "Reçus : PDF, PNG, JPEG ou WebP, 2 Mo maximum par fichier.",
+    "ru": "Чеки: PDF, PNG, JPEG или WebP, не более 2 МБ на файл."
+  },
+  "收支": {
+    "en": "Transactions",
+    "zh-TW": "收支",
+    "ja": "収支",
+    "ko": "수입과 지출",
+    "de": "Buchungen",
+    "fr": "Opérations",
+    "ru": "Операции"
+  },
+  "数据源与显示": {
+    "en": "Data and display",
+    "zh-TW": "資料來源與顯示",
+    "ja": "データと表示",
+    "ko": "데이터 및 표시",
+    "de": "Daten und Anzeige",
+    "fr": "Données et affichage",
+    "ru": "Данные и отображение"
+  },
+  "数据源设置": {
+    "en": "Data source settings",
+    "zh-TW": "資料來源設定",
+    "ja": "データソース設定",
+    "ko": "데이터 원본 설정",
+    "de": "Datenquelleneinstellungen",
+    "fr": "Paramètres de source",
+    "ru": "Настройки источника"
+  },
+  "新列表名称": {
+    "en": "New list name",
+    "zh-TW": "新清單名稱",
+    "ja": "新しいリスト名",
+    "ko": "새 목록 이름",
+    "de": "Neuer Listenname",
+    "fr": "Nom de la nouvelle liste",
+    "ru": "Название нового списка"
+  },
+  "新建列表": {
+    "en": "Create list",
+    "zh-TW": "建立清單",
+    "ja": "リストを作成",
+    "ko": "목록 만들기",
+    "de": "Liste erstellen",
+    "fr": "Créer une liste",
+    "ru": "Создать список"
+  },
+  "日期": {
+    "en": "Date",
+    "zh-TW": "日期",
+    "ja": "日付",
+    "ko": "날짜",
+    "de": "Datum",
+    "fr": "Date",
+    "ru": "Дата"
+  },
+  "日终": {
+    "en": "End of day",
+    "zh-TW": "日終",
+    "ja": "日次終値",
+    "ko": "일일 마감",
+    "de": "Tagesschluss",
+    "fr": "Fin de journée",
+    "ru": "На конец дня"
+  },
+  "时效以数据源为准": {
+    "en": "Timing depends on provider",
+    "zh-TW": "時效以資料來源為準",
+    "ja": "更新時刻は提供元に準拠",
+    "ko": "갱신 시점은 제공업체 기준",
+    "de": "Zeitstand laut Anbieter",
+    "fr": "Délai selon le fournisseur",
+    "ru": "Актуальность зависит от поставщика"
+  },
+  "暂无走势图，更新行情后查看。": {
+    "en": "No chart yet. Refresh market data to view it.",
+    "zh-TW": "暫無走勢圖，更新行情後查看。",
+    "ja": "チャートはまだありません。市場データを更新してください。",
+    "ko": "아직 차트가 없습니다. 시세를 업데이트하세요.",
+    "de": "Noch kein Chart. Marktdaten aktualisieren.",
+    "fr": "Pas encore de graphique. Actualisez les cours.",
+    "ru": "Графика пока нет. Обновите котировки."
+  },
+  "更新时间：{0}": {
+    "en": "Updated: {0}",
+    "zh-TW": "更新時間：{0}",
+    "ja": "更新：{0}",
+    "ko": "업데이트: {0}",
+    "de": "Aktualisiert: {0}",
+    "fr": "Mise à jour : {0}",
+    "ru": "Обновлено: {0}"
+  },
+  "更新汇率": {
+    "en": "Refresh rates",
+    "zh-TW": "更新匯率",
+    "ja": "為替を更新",
+    "ko": "환율 업데이트",
+    "de": "Kurse aktualisieren",
+    "fr": "Actualiser les taux",
+    "ru": "Обновить курсы"
+  },
+  "更新汇率后即可计算，之后可使用已保存的汇率。": {
+    "en": "Refresh rates to start converting. Saved rates remain available offline.",
+    "zh-TW": "更新匯率後即可計算，之後可離線使用已儲存的匯率。",
+    "ja": "為替を更新すると換算できます。保存したレートはオフラインでも使えます。",
+    "ko": "환율을 업데이트하면 계산할 수 있습니다. 저장된 환율은 오프라인에서도 사용할 수 있습니다.",
+    "de": "Zum Umrechnen Kurse aktualisieren. Gespeicherte Kurse sind offline verfügbar.",
+    "fr": "Actualisez les taux pour convertir. Les taux enregistrés restent disponibles hors ligne.",
+    "ru": "Обновите курсы для расчёта. Сохранённые курсы доступны без интернета."
+  },
+  "更新物流": {
+    "en": "Refresh tracking",
+    "zh-TW": "更新物流",
+    "ja": "配送状況を更新",
+    "ko": "배송 업데이트",
+    "de": "Sendung aktualisieren",
+    "fr": "Actualiser le suivi",
+    "ru": "Обновить доставку"
+  },
+  "更新行情": {
+    "en": "Refresh quotes",
+    "zh-TW": "更新行情",
+    "ja": "市場データを更新",
+    "ko": "시세 업데이트",
+    "de": "Kurse aktualisieren",
+    "fr": "Actualiser les cours",
+    "ru": "Обновить котировки"
+  },
+  "更新赛程": {
+    "en": "Refresh schedule",
+    "zh-TW": "更新賽程",
+    "ja": "日程を更新",
+    "ko": "일정 업데이트",
+    "de": "Spielplan aktualisieren",
+    "fr": "Actualiser le calendrier",
+    "ru": "Обновить расписание"
+  },
+  "最低": {
+    "en": "Low",
+    "zh-TW": "最低",
+    "ja": "安値",
+    "ko": "저가",
+    "de": "Tief",
+    "fr": "Plus bas",
+    "ru": "Минимум"
+  },
+  "最高": {
+    "en": "High",
+    "zh-TW": "最高",
+    "ja": "高値",
+    "ko": "고가",
+    "de": "Hoch",
+    "fr": "Plus haut",
+    "ru": "Максимум"
+  },
+  "月份": {
+    "en": "Month",
+    "zh-TW": "月份",
+    "ja": "月",
+    "ko": "월",
+    "de": "Monat",
+    "fr": "Mois",
+    "ru": "Месяц"
+  },
+  "月预算": {
+    "en": "Monthly budget",
+    "zh-TW": "月預算",
+    "ja": "月間予算",
+    "ko": "월 예산",
+    "de": "Monatsbudget",
+    "fr": "Budget mensuel",
+    "ru": "Месячный бюджет"
+  },
+  "期初余额": {
+    "en": "Opening balance",
+    "zh-TW": "期初餘額",
+    "ja": "開始残高",
+    "ko": "기초 잔액",
+    "de": "Anfangssaldo",
+    "fr": "Solde initial",
+    "ru": "Начальный остаток"
+  },
+  "未赛": {
+    "en": "Upcoming",
+    "zh-TW": "未賽",
+    "ja": "未実施",
+    "ko": "경기 전",
+    "de": "Anstehend",
+    "fr": "À venir",
+    "ru": "Предстоящие"
+  },
+  "来源：{0} · 汇率日期：{1} · 获取时间：{2}": {
+    "en": "Source: {0} · Rate date: {1} · Retrieved: {2}",
+    "zh-TW": "來源：{0} · 匯率日期：{1} · 取得時間：{2}",
+    "ja": "提供元：{0} · レート日：{1} · 取得：{2}",
+    "ko": "출처: {0} · 환율 기준일: {1} · 조회: {2}",
+    "de": "Quelle: {0} · Kursdatum: {1} · Abgerufen: {2}",
+    "fr": "Source : {0} · Date du taux : {1} · Récupéré : {2}",
+    "ru": "Источник: {0} · Дата курса: {1} · Получено: {2}"
+  },
+  "正在更新…": {
+    "en": "Updating…",
+    "zh-TW": "正在更新…",
+    "ja": "更新中…",
+    "ko": "업데이트 중…",
+    "de": "Wird aktualisiert…",
+    "fr": "Actualisation…",
+    "ru": "Обновление…"
+  },
+  "每件物品最多 4 个收据文件，全部收据合计不超过 8 MB。": {
+    "en": "Up to 4 receipt files per item and 8 MB of receipts in total.",
+    "zh-TW": "每件物品最多 4 個收據檔案，全部收據合計不超過 8 MB。",
+    "ja": "品物ごとに領収書は 4 ファイルまで、全領収書の合計は 8 MB までです。",
+    "ko": "물품당 영수증 파일은 최대 4개, 전체 영수증은 총 8 MB까지입니다.",
+    "de": "Höchstens 4 Belege pro Gegenstand und insgesamt 8 MB.",
+    "fr": "4 reçus maximum par article, et 8 Mo au total.",
+    "ru": "До 4 чеков на предмет и не более 8 МБ всего."
+  },
+  "每周": {
+    "en": "Weekly",
+    "zh-TW": "每週",
+    "ja": "毎週",
+    "ko": "매주",
+    "de": "Wöchentlich",
+    "fr": "Chaque semaine",
+    "ru": "Еженедельно"
+  },
+  "每年": {
+    "en": "Yearly",
+    "zh-TW": "每年",
+    "ja": "毎年",
+    "ko": "매년",
+    "de": "Jährlich",
+    "fr": "Chaque année",
+    "ru": "Ежегодно"
+  },
+  "每月": {
+    "en": "Monthly",
+    "zh-TW": "每月",
+    "ja": "毎月",
+    "ko": "매월",
+    "de": "Monatlich",
+    "fr": "Chaque mois",
+    "ru": "Ежемесячно"
+  },
+  "比分须为非负整数。": {
+    "en": "Scores must be nonnegative integers.",
+    "zh-TW": "比分須為非負整數。",
+    "ja": "得点は 0 以上の整数で入力してください。",
+    "ko": "점수는 0 이상의 정수여야 합니다.",
+    "de": "Spielstände müssen nichtnegative ganze Zahlen sein.",
+    "fr": "Les scores doivent être des entiers positifs ou nuls.",
+    "ru": "Счёт должен быть целым неотрицательным числом."
+  },
+  "汇率日期": {
+    "en": "Rate date",
+    "zh-TW": "匯率日期",
+    "ja": "レートの日付",
+    "ko": "환율 기준일",
+    "de": "Kursdatum",
+    "fr": "Date du taux",
+    "ru": "Дата курса"
+  },
+  "涨跌颜色": {
+    "en": "Price colors",
+    "zh-TW": "漲跌顏色",
+    "ja": "騰落の色",
+    "ko": "등락 색상",
+    "de": "Kursfarben",
+    "fr": "Couleurs de variation",
+    "ru": "Цвета изменения цены"
+  },
+  "添加常用货币": {
+    "en": "Add a favorite currency",
+    "zh-TW": "新增常用貨幣",
+    "ja": "よく使う通貨を追加",
+    "ko": "자주 쓰는 통화 추가",
+    "de": "Bevorzugte Währung hinzufügen",
+    "fr": "Ajouter une devise favorite",
+    "ru": "Добавить избранную валюту"
+  },
+  "添加物品": {
+    "en": "Add item",
+    "zh-TW": "新增物品",
+    "ja": "品物を追加",
+    "ko": "물품 추가",
+    "de": "Gegenstand hinzufügen",
+    "fr": "Ajouter un article",
+    "ru": "Добавить предмет"
+  },
+  "添加股票代码，建立你的自选列表。": {
+    "en": "Add symbols to build your watchlist.",
+    "zh-TW": "新增股票代碼，建立你的自選清單。",
+    "ja": "銘柄コードを追加してウォッチリストを作成できます。",
+    "ko": "종목 코드를 추가해 관심 목록을 만드세요.",
+    "de": "Füge Symbole hinzu, um deine Watchlist aufzubauen.",
+    "fr": "Ajoutez des symboles pour créer votre liste de suivi.",
+    "ru": "Добавьте тикеры в список наблюдения."
+  },
+  "添加账单": {
+    "en": "Add bill",
+    "zh-TW": "新增帳單",
+    "ja": "請求を追加",
+    "ko": "청구서 추가",
+    "de": "Rechnung hinzufügen",
+    "fr": "Ajouter une facture",
+    "ru": "Добавить счёт к оплате"
+  },
+  "添加账户": {
+    "en": "Add account",
+    "zh-TW": "新增帳戶",
+    "ja": "口座を追加",
+    "ko": "계정 추가",
+    "de": "Konto hinzufügen",
+    "fr": "Ajouter un compte",
+    "ru": "Добавить счёт"
+  },
+  "物品名称": {
+    "en": "Item name",
+    "zh-TW": "物品名稱",
+    "ja": "品物の名前",
+    "ko": "물품 이름",
+    "de": "Gegenstandsname",
+    "fr": "Nom de l’article",
+    "ru": "Название предмета"
+  },
+  "物品已在其他页面更新，请重新打开。": {
+    "en": "This item changed in another page. Reopen it.",
+    "zh-TW": "物品已在其他頁面更新，請重新開啟。",
+    "ja": "別のページで品物が更新されました。開き直してください。",
+    "ko": "다른 페이지에서 물품이 변경되었습니다. 다시 여세요.",
+    "de": "Der Gegenstand wurde auf einer anderen Seite geändert. Erneut öffnen.",
+    "fr": "Cet article a changé dans une autre page. Rouvrez-le.",
+    "ru": "Предмет изменён на другой странице. Откройте его снова."
+  },
+  "物品数量已达上限。": {
+    "en": "The item limit has been reached.",
+    "zh-TW": "物品數量已達上限。",
+    "ja": "品物数が上限に達しました。",
+    "ko": "물품 수가 한도에 도달했습니다.",
+    "de": "Das Gegenstandslimit ist erreicht.",
+    "fr": "La limite d’articles est atteinte.",
+    "ru": "Достигнут лимит предметов."
+  },
+  "物流公司": {
+    "en": "Carrier",
+    "zh-TW": "物流公司",
+    "ja": "配送業者",
+    "ko": "배송업체",
+    "de": "Versanddienst",
+    "fr": "Transporteur",
+    "ru": "Перевозчик"
+  },
+  "物流接口": {
+    "en": "Tracking API",
+    "zh-TW": "物流介面",
+    "ja": "配送 API",
+    "ko": "배송 API",
+    "de": "Sendungsverfolgungs-API",
+    "fr": "API de suivi",
+    "ru": "API отслеживания"
+  },
+  "物流接口地址": {
+    "en": "Tracking endpoint",
+    "zh-TW": "物流介面地址",
+    "ja": "配送 API の URL",
+    "ko": "배송 API 주소",
+    "de": "Tracking-Endpunkt",
+    "fr": "Adresse de l’API de suivi",
+    "ru": "Адрес API отслеживания"
+  },
+  "状态": {
+    "en": "Status",
+    "zh-TW": "狀態",
+    "ja": "状態",
+    "ko": "상태",
+    "de": "Status",
+    "fr": "Statut",
+    "ru": "Статус"
+  },
+  "球队": {
+    "en": "Team",
+    "zh-TW": "球隊",
+    "ja": "チーム",
+    "ko": "팀",
+    "de": "Team",
+    "fr": "Équipe",
+    "ru": "Команда"
+  },
+  "球队名称": {
+    "en": "Team name",
+    "zh-TW": "球隊名稱",
+    "ja": "チーム名",
+    "ko": "팀 이름",
+    "de": "Teamname",
+    "fr": "Nom de l’équipe",
+    "ru": "Название команды"
+  },
+  "球队搜索结果无效。": {
+    "en": "The team search response is invalid.",
+    "zh-TW": "球隊搜尋結果無效。",
+    "ja": "チーム検索結果が無効です。",
+    "ko": "팀 검색 결과가 잘못되었습니다.",
+    "de": "Ungültiges Ergebnis der Teamsuche.",
+    "fr": "La réponse de recherche d’équipe est invalide.",
+    "ru": "Некорректный результат поиска команд."
+  },
+  "球队编号无效。": {
+    "en": "The team ID is invalid.",
+    "zh-TW": "球隊編號無效。",
+    "ja": "チーム ID が無効です。",
+    "ko": "팀 ID가 잘못되었습니다.",
+    "de": "Ungültige Team-ID.",
+    "fr": "L’identifiant d’équipe est invalide.",
+    "ru": "Некорректный идентификатор команды."
+  },
+  "球队编号，可选": {
+    "en": "Team ID (optional)",
+    "zh-TW": "球隊編號，選填",
+    "ja": "チーム ID（任意）",
+    "ko": "팀 ID (선택)",
+    "de": "Team-ID (optional)",
+    "fr": "ID d’équipe (facultatif)",
+    "ru": "ID команды (необязательно)"
+  },
+  "目标币种": {
+    "en": "To currency",
+    "zh-TW": "目標幣別",
+    "ja": "換算先通貨",
+    "ko": "대상 통화",
+    "de": "Zielwährung",
+    "fr": "Devise cible",
+    "ru": "Целевая валюта"
+  },
+  "积分": {
+    "en": "Points",
+    "zh-TW": "積分",
+    "ja": "勝点",
+    "ko": "승점",
+    "de": "Punkte",
+    "fr": "Points",
+    "ru": "Очки"
+  },
+  "积分榜": {
+    "en": "Standings",
+    "zh-TW": "積分榜",
+    "ja": "順位表",
+    "ko": "순위표",
+    "de": "Tabelle",
+    "fr": "Classement",
+    "ru": "Турнирная таблица"
+  },
+  "移除 {0}": {
+    "en": "Remove {0}",
+    "zh-TW": "移除 {0}",
+    "ja": "{0} を削除",
+    "ko": "{0} 제거",
+    "de": "{0} entfernen",
+    "fr": "Retirer {0}",
+    "ru": "Убрать {0}"
+  },
+  "移除这个自选标的？": {
+    "en": "Remove this symbol from the watchlist?",
+    "zh-TW": "移除此自選標的？",
+    "ja": "この銘柄をウォッチリストから削除しますか？",
+    "ko": "이 관심 종목을 제거할까요?",
+    "de": "Diesen Wert aus der Watchlist entfernen?",
+    "fr": "Retirer cette valeur de la liste ?",
+    "ru": "Убрать инструмент из списка наблюдения?"
+  },
+  "空密钥使用 TheSportsDB 公共测试接口，仅支持有限球队搜索和部分赛程、积分榜。完整范围以你的授权为准。": {
+    "en": "An empty key uses TheSportsDB’s public test API, with limited team search, schedules and standings. Your license determines full access.",
+    "zh-TW": "空白密鑰使用 TheSportsDB 公共測試介面，僅支援有限球隊搜尋及部分賽程、積分榜。完整範圍依你的授權。",
+    "ja": "キー未入力時は TheSportsDB の公開テスト API を使います。チーム検索、日程、順位表は限定され、全機能には利用権限が必要です。",
+    "ko": "키가 없으면 TheSportsDB 공개 테스트 API를 사용합니다. 팀 검색, 일정, 순위표가 제한되며 전체 범위는 사용 권한에 따라 달라집니다.",
+    "de": "Ohne Schlüssel wird die öffentliche Test-API von TheSportsDB mit eingeschränkter Teamsuche, Spielplänen und Tabellen verwendet. Vollzugriff hängt von deiner Lizenz ab.",
+    "fr": "Sans clé, l’API de test publique TheSportsDB limite les recherches, calendriers et classements. L’accès complet dépend de vos droits.",
+    "ru": "Без ключа используется тестовый API TheSportsDB с ограниченным поиском, расписанием и таблицами. Полный доступ зависит от лицензии."
+  },
+  "筛选账户": {
+    "en": "Filter account",
+    "zh-TW": "篩選帳戶",
+    "ja": "口座で絞り込む",
+    "ko": "계정 필터",
+    "de": "Konto filtern",
+    "fr": "Filtrer par compte",
+    "ru": "Фильтр по счёту"
+  },
+  "红涨绿跌": {
+    "en": "Red up, green down",
+    "zh-TW": "紅漲綠跌",
+    "ja": "上昇は赤、下落は緑",
+    "ko": "상승 빨강, 하락 초록",
+    "de": "Rot steigend, grün fallend",
+    "fr": "Hausse rouge, baisse verte",
+    "ru": "Рост — красный, падение — зелёный"
+  },
+  "结余": {
+    "en": "Net",
+    "zh-TW": "結餘",
+    "ja": "収支差額",
+    "ko": "잔여 금액",
+    "de": "Saldo",
+    "fr": "Solde",
+    "ru": "Остаток"
+  },
+  "统计货币": {
+    "en": "Summary currency",
+    "zh-TW": "統計貨幣",
+    "ja": "集計通貨",
+    "ko": "통계 통화",
+    "de": "Auswertungswährung",
+    "fr": "Devise du bilan",
+    "ru": "Валюта итогов"
+  },
+  "绿涨红跌": {
+    "en": "Green up, red down",
+    "zh-TW": "綠漲紅跌",
+    "ja": "上昇は緑、下落は赤",
+    "ko": "상승 초록, 하락 빨강",
+    "de": "Grün steigend, rot fallend",
+    "fr": "Hausse verte, baisse rouge",
+    "ru": "Рост — зелёный, падение — красный"
+  },
+  "联赛": {
+    "en": "League",
+    "zh-TW": "聯賽",
+    "ja": "リーグ",
+    "ko": "리그",
+    "de": "Liga",
+    "fr": "Ligue",
+    "ru": "Лига"
+  },
+  "联赛编号无效。": {
+    "en": "The league ID is invalid.",
+    "zh-TW": "聯賽編號無效。",
+    "ja": "リーグ ID が無効です。",
+    "ko": "리그 ID가 잘못되었습니다.",
+    "de": "Ungültige Liga-ID.",
+    "fr": "L’identifiant de ligue est invalide.",
+    "ru": "Некорректный идентификатор лиги."
+  },
+  "联赛编号，可选": {
+    "en": "League ID (optional)",
+    "zh-TW": "聯賽編號，選填",
+    "ja": "リーグ ID（任意）",
+    "ko": "리그 ID (선택)",
+    "de": "Liga-ID (optional)",
+    "fr": "ID de ligue (facultatif)",
+    "ru": "ID лиги (необязательно)"
+  },
+  "股票代码": {
+    "en": "Symbol",
+    "zh-TW": "股票代碼",
+    "ja": "銘柄コード",
+    "ko": "종목 코드",
+    "de": "Symbol",
+    "fr": "Symbole",
+    "ru": "Тикер"
+  },
+  "胜": {
+    "en": "Wins",
+    "zh-TW": "勝",
+    "ja": "勝",
+    "ko": "승리",
+    "de": "Siege",
+    "fr": "Victoires",
+    "ru": "Победы"
+  },
+  "自选列表": {
+    "en": "Watchlist",
+    "zh-TW": "自選清單",
+    "ja": "ウォッチリスト",
+    "ko": "관심 목록",
+    "de": "Watchlist",
+    "fr": "Liste de suivi",
+    "ru": "Список наблюдения"
+  },
+  "自选列表已被移除。": {
+    "en": "This watchlist was removed.",
+    "zh-TW": "自選清單已被移除。",
+    "ja": "このウォッチリストは削除されました。",
+    "ko": "관심 목록이 제거되었습니다.",
+    "de": "Diese Watchlist wurde entfernt.",
+    "fr": "Cette liste de suivi a été supprimée.",
+    "ru": "Список наблюдения удалён."
+  },
+  "自选列表数量已达上限。": {
+    "en": "The watchlist limit has been reached.",
+    "zh-TW": "自選清單數量已達上限。",
+    "ja": "ウォッチリスト数が上限に達しました。",
+    "ko": "관심 목록 수가 한도에 도달했습니다.",
+    "de": "Das Watchlist-Limit ist erreicht.",
+    "fr": "La limite de listes de suivi est atteinte.",
+    "ru": "Достигнут лимит списков наблюдения."
+  },
+  "自选或数据源已变更，请重新更新。": {
+    "en": "The watchlist or provider changed. Refresh again.",
+    "zh-TW": "自選或資料來源已變更，請重新更新。",
+    "ja": "ウォッチリストまたは提供元が変更されました。再度更新してください。",
+    "ko": "관심 목록 또는 제공업체가 변경되었습니다. 다시 업데이트하세요.",
+    "de": "Watchlist oder Datenquelle wurden geändert. Erneut aktualisieren.",
+    "fr": "La liste ou le fournisseur a changé. Actualisez à nouveau.",
+    "ru": "Список или поставщик изменились. Обновите ещё раз."
+  },
+  "自选数量已达上限。": {
+    "en": "The symbol limit has been reached.",
+    "zh-TW": "自選數量已達上限。",
+    "ja": "登録銘柄数が上限に達しました。",
+    "ko": "관심 종목 수가 한도에 도달했습니다.",
+    "de": "Das Wertelimit ist erreicht.",
+    "fr": "La limite de valeurs suivies est atteinte.",
+    "ru": "Достигнут лимит инструментов."
+  },
+  "行情已更新，走势图暂不可用。": {
+    "en": "Quotes updated; the chart is temporarily unavailable.",
+    "zh-TW": "行情已更新，走勢圖暫時無法使用。",
+    "ja": "株価は更新されましたが、チャートは現在利用できません。",
+    "ko": "시세는 업데이트되었으나 차트를 사용할 수 없습니다.",
+    "de": "Kurse aktualisiert; der Chart ist vorübergehend nicht verfügbar.",
+    "fr": "Cours actualisés ; le graphique est temporairement indisponible.",
+    "ru": "Котировки обновлены; график временно недоступен."
+  },
+  "行情时效": {
+    "en": "Data timing",
+    "zh-TW": "行情時效",
+    "ja": "データの更新頻度",
+    "ko": "시세 갱신 시점",
+    "de": "Datenzeitstand",
+    "fr": "Délai des données",
+    "ru": "Актуальность котировок"
+  },
+  "行情服务": {
+    "en": "Market data provider",
+    "zh-TW": "行情服務",
+    "ja": "市場データ提供元",
+    "ko": "시세 제공업체",
+    "de": "Marktdatenanbieter",
+    "fr": "Fournisseur de cours",
+    "ru": "Поставщик котировок"
+  },
+  "订单号": {
+    "en": "Order number",
+    "zh-TW": "訂單編號",
+    "ja": "注文番号",
+    "ko": "주문 번호",
+    "de": "Bestellnummer",
+    "fr": "Numéro de commande",
+    "ru": "Номер заказа"
+  },
+  "记一笔": {
+    "en": "Add transaction",
+    "zh-TW": "記一筆",
+    "ja": "取引を記録",
+    "ko": "거래 기록",
+    "de": "Buchung erfassen",
+    "fr": "Ajouter une opération",
+    "ru": "Добавить операцию"
+  },
+  "该标的已在列表中。": {
+    "en": "This symbol is already in the list.",
+    "zh-TW": "此標的已在清單中。",
+    "ja": "この銘柄はすでにリストにあります。",
+    "ko": "이미 목록에 있는 종목입니다.",
+    "de": "Dieser Wert ist bereits in der Liste.",
+    "fr": "Cette valeur figure déjà dans la liste.",
+    "ru": "Инструмент уже есть в списке."
+  },
+  "请先关注球队，或设置联赛编号。": {
+    "en": "Follow a team or set a league ID first.",
+    "zh-TW": "請先追蹤球隊或設定聯賽編號。",
+    "ja": "先にチームをフォローするか、リーグ ID を設定してください。",
+    "ko": "먼저 팀을 팔로우하거나 리그 ID를 설정하세요.",
+    "de": "Folge zuerst einem Team oder lege eine Liga-ID fest.",
+    "fr": "Suivez d’abord une équipe ou indiquez une ligue.",
+    "ru": "Сначала подпишитесь на команду или укажите ID лиги."
+  },
+  "请填写分类和大于零的预算。": {
+    "en": "Enter a category and a positive budget.",
+    "zh-TW": "請填寫分類和大於零的預算。",
+    "ja": "カテゴリと 0 より大きい予算を入力してください。",
+    "ko": "분류와 0보다 큰 예산을 입력하세요.",
+    "de": "Kategorie und ein Budget größer als null eingeben.",
+    "fr": "Saisissez une catégorie et un budget supérieur à zéro.",
+    "ru": "Укажите категорию и положительный бюджет."
+  },
+  "请填写双方名称和有效日期。": {
+    "en": "Enter both teams and a valid date.",
+    "zh-TW": "請填寫雙方名稱和有效日期。",
+    "ja": "両チーム名と有効な日付を入力してください。",
+    "ko": "양 팀 이름과 올바른 날짜를 입력하세요.",
+    "de": "Beide Teams und ein gültiges Datum eingeben.",
+    "fr": "Saisissez les deux équipes et une date valide.",
+    "ru": "Укажите обе команды и корректную дату."
+  },
+  "请填写物品名称和有效日期。": {
+    "en": "Enter an item name and valid dates.",
+    "zh-TW": "請填寫物品名稱和有效日期。",
+    "ja": "品物名と有効な日付を入力してください。",
+    "ko": "물품 이름과 올바른 날짜를 입력하세요.",
+    "de": "Gegenstandsname und gültige Daten eingeben.",
+    "fr": "Saisissez un nom d’article et des dates valides.",
+    "ru": "Укажите название предмета и корректные даты."
+  },
+  "请填写账单名称。": {
+    "en": "Enter a bill name.",
+    "zh-TW": "請填寫帳單名稱。",
+    "ja": "請求名を入力してください。",
+    "ko": "청구서 이름을 입력하세요.",
+    "de": "Rechnungsnamen eingeben.",
+    "fr": "Saisissez un nom de facture.",
+    "ru": "Укажите название счёта."
+  },
+  "请填写账户名称。": {
+    "en": "Enter an account name.",
+    "zh-TW": "請填寫帳戶名稱。",
+    "ja": "口座名を入力してください。",
+    "ko": "계정 이름을 입력하세요.",
+    "de": "Kontonamen eingeben.",
+    "fr": "Saisissez un nom de compte.",
+    "ru": "Укажите название счёта."
+  },
+  "负": {
+    "en": "Losses",
+    "zh-TW": "負",
+    "ja": "敗",
+    "ko": "패배",
+    "de": "Niederlagen",
+    "fr": "Défaites",
+    "ru": "Поражения"
+  },
+  "账单名称": {
+    "en": "Bill name",
+    "zh-TW": "帳單名稱",
+    "ja": "請求名",
+    "ko": "청구서 이름",
+    "de": "Rechnungsname",
+    "fr": "Nom de facture",
+    "ru": "Название счёта к оплате"
+  },
+  "账户": {
+    "en": "Accounts",
+    "zh-TW": "帳戶",
+    "ja": "口座",
+    "ko": "계정",
+    "de": "Konten",
+    "fr": "Comptes",
+    "ru": "Счета"
+  },
+  "账户仍有流水或周期账单，请先处理关联记录。": {
+    "en": "This account still has transactions or recurring bills. Handle those records first.",
+    "zh-TW": "帳戶仍有流水或週期帳單，請先處理關聯紀錄。",
+    "ja": "この口座には取引または定期請求があります。先に関連記録を処理してください。",
+    "ko": "계정에 거래나 정기 청구서가 남아 있습니다. 관련 기록을 먼저 처리하세요.",
+    "de": "Dieses Konto enthält noch Buchungen oder wiederkehrende Rechnungen. Zuerst die verknüpften Einträge bearbeiten.",
+    "fr": "Ce compte contient encore des opérations ou factures récurrentes. Traitez-les d’abord.",
+    "ru": "На счёте остались операции или регулярные счета. Сначала обработайте связанные записи."
+  },
+  "账户名称": {
+    "en": "Account name",
+    "zh-TW": "帳戶名稱",
+    "ja": "口座名",
+    "ko": "계정 이름",
+    "de": "Kontoname",
+    "fr": "Nom du compte",
+    "ru": "Название счёта"
+  },
+  "账户已变更，请重新选择。": {
+    "en": "The account changed. Select it again.",
+    "zh-TW": "帳戶已變更，請重新選擇。",
+    "ja": "口座が変更されました。選択し直してください。",
+    "ko": "계정이 변경되었습니다. 다시 선택하세요.",
+    "de": "Das Konto wurde geändert. Erneut auswählen.",
+    "fr": "Le compte a changé. Sélectionnez-le à nouveau.",
+    "ru": "Счёт изменился. Выберите его снова."
+  },
+  "账户数量已达上限。": {
+    "en": "The account limit has been reached.",
+    "zh-TW": "帳戶數量已達上限。",
+    "ja": "口座数が上限に達しました。",
+    "ko": "계정 수가 한도에 도달했습니다.",
+    "de": "Das Kontolimit ist erreicht.",
+    "fr": "La limite de comptes est atteinte.",
+    "ru": "Достигнут лимит счетов."
+  },
+  "账本记录过多，请先导出归档。": {
+    "en": "There are too many transactions. Export and archive them first.",
+    "zh-TW": "帳本紀錄過多，請先匯出封存。",
+    "ja": "取引記録が多すぎます。先に書き出して整理してください。",
+    "ko": "거래 기록이 너무 많습니다. 먼저 내보내고 보관하세요.",
+    "de": "Zu viele Buchungen. Zuerst exportieren und archivieren.",
+    "fr": "Trop d’opérations. Exportez-les et archivez-les d’abord.",
+    "ru": "Слишком много операций. Сначала экспортируйте и архивируйте их."
+  },
+  "货币": {
+    "en": "Currency",
+    "zh-TW": "貨幣",
+    "ja": "通貨",
+    "ko": "통화",
+    "de": "Währung",
+    "fr": "Devise",
+    "ru": "Валюта"
+  },
+  "购买日期": {
+    "en": "Purchase date",
+    "zh-TW": "購買日期",
+    "ja": "購入日",
+    "ko": "구매 날짜",
+    "de": "Kaufdatum",
+    "fr": "Date d’achat",
+    "ru": "Дата покупки"
+  },
+  "赛事记录数量已达上限。": {
+    "en": "The match-record limit has been reached.",
+    "zh-TW": "賽事紀錄數量已達上限。",
+    "ja": "試合記録数が上限に達しました。",
+    "ko": "경기 기록 수가 한도에 도달했습니다.",
+    "de": "Das Limit für Spielaufzeichnungen ist erreicht.",
+    "fr": "La limite de matchs enregistrés est atteinte.",
+    "ru": "Достигнут лимит записей матчей."
+  },
+  "赛季，可选": {
+    "en": "Season (optional)",
+    "zh-TW": "賽季，選填",
+    "ja": "シーズン（任意）",
+    "ko": "시즌 (선택)",
+    "de": "Saison (optional)",
+    "fr": "Saison (facultatif)",
+    "ru": "Сезон (необязательно)"
+  },
+  "赛果": {
+    "en": "Results",
+    "zh-TW": "賽果",
+    "ja": "結果",
+    "ko": "결과",
+    "de": "Ergebnisse",
+    "fr": "Résultats",
+    "ru": "Результаты"
+  },
+  "超出预算 {0}": {
+    "en": "Over budget by {0}",
+    "zh-TW": "超出預算 {0}",
+    "ja": "予算を {0} 超過",
+    "ko": "예산 {0} 초과",
+    "de": "Budget um {0} überschritten",
+    "fr": "Budget dépassé de {0}",
+    "ru": "Превышение бюджета: {0}"
+  },
+  "运单号": {
+    "en": "Tracking number",
+    "zh-TW": "運單號",
+    "ja": "追跡番号",
+    "ko": "운송장 번호",
+    "de": "Sendungsnummer",
+    "fr": "Numéro de suivi",
+    "ru": "Номер отправления"
+  },
+  "运单或数据源已变更，请重新更新。": {
+    "en": "The shipment or provider changed. Refresh again.",
+    "zh-TW": "運單或資料來源已變更，請重新更新。",
+    "ja": "配送情報または提供元が変更されました。再度更新してください。",
+    "ko": "운송장 또는 제공업체가 변경되었습니다. 다시 업데이트하세요.",
+    "de": "Sendung oder Datenquelle wurden geändert. Erneut aktualisieren.",
+    "fr": "L’envoi ou le fournisseur a changé. Actualisez à nouveau.",
+    "ru": "Отправление или источник изменились. Обновите ещё раз."
+  },
+  "运输中": {
+    "en": "In transit",
+    "zh-TW": "運送中",
+    "ja": "配送中",
+    "ko": "배송 중",
+    "de": "Unterwegs",
+    "fr": "En transit",
+    "ru": "В пути"
+  },
+  "近三月": {
+    "en": "3 months",
+    "zh-TW": "近三月",
+    "ja": "直近 3 か月",
+    "ko": "최근 3개월",
+    "de": "3 Monate",
+    "fr": "3 mois",
+    "ru": "3 месяца"
+  },
+  "这条记录已在其他页面更新，请重新打开。": {
+    "en": "This record changed in another page. Reopen it.",
+    "zh-TW": "此紀錄已在其他頁面更新，請重新開啟。",
+    "ja": "別のページで記録が更新されました。開き直してください。",
+    "ko": "다른 페이지에서 기록이 변경되었습니다. 다시 여세요.",
+    "de": "Dieser Eintrag wurde auf einer anderen Seite geändert. Erneut öffnen.",
+    "fr": "Cet enregistrement a changé dans une autre page. Rouvrez-le.",
+    "ru": "Запись изменена на другой странице. Откройте её снова."
+  },
+  "退换截止": {
+    "en": "Return deadline",
+    "zh-TW": "退換截止",
+    "ja": "返品期限",
+    "ko": "반품 기한",
+    "de": "Rückgabefrist",
+    "fr": "Date limite de retour",
+    "ru": "Срок возврата"
+  },
+  "部分货币暂无可用汇率，已保留原有数据。": {
+    "en": "Some currencies have no rates available. Previous data was kept.",
+    "zh-TW": "部分貨幣暫無可用匯率，已保留原有資料。",
+    "ja": "一部の通貨のレートが利用できません。以前のデータを保持しました。",
+    "ko": "일부 통화의 환율을 사용할 수 없습니다. 기존 데이터를 유지했습니다.",
+    "de": "Für einige Währungen fehlen Kurse. Vorhandene Daten wurden beibehalten.",
+    "fr": "Certains taux sont indisponibles. Les données précédentes sont conservées.",
+    "ru": "Для некоторых валют курсы недоступны. Предыдущие данные сохранены."
+  },
+  "重命名当前列表": {
+    "en": "Rename current list",
+    "zh-TW": "重新命名目前清單",
+    "ja": "現在のリスト名を変更",
+    "ko": "현재 목록 이름 변경",
+    "de": "Aktuelle Liste umbenennen",
+    "fr": "Renommer la liste actuelle",
+    "ru": "Переименовать текущий список"
+  },
+  "重复": {
+    "en": "Repeat",
+    "zh-TW": "重複",
+    "ja": "繰り返し",
+    "ko": "반복",
+    "de": "Wiederholen",
+    "fr": "Répéter",
+    "ru": "Повтор"
+  },
+  "金额": {
+    "en": "Amount",
+    "zh-TW": "金額",
+    "ja": "金額",
+    "ko": "금액",
+    "de": "Betrag",
+    "fr": "Montant",
+    "ru": "Сумма"
+  },
+  "预算": {
+    "en": "Budgets",
+    "zh-TW": "預算",
+    "ja": "予算",
+    "ko": "예산",
+    "de": "Budgets",
+    "fr": "Budgets",
+    "ru": "Бюджеты"
+  },
+  "请填写三位货币代码。": {
+    "en": "Enter a three-letter currency code.",
+    "zh-TW": "請填寫三位貨幣代碼。",
+    "ja": "3 文字の通貨コードを入力してください。",
+    "ko": "세 글자 통화 코드를 입력하세요.",
+    "de": "Dreistelligen Währungscode eingeben.",
+    "fr": "Saisissez un code de devise à trois lettres.",
+    "ru": "Введите трёхбуквенный код валюты."
+  },
+  "请填写有效金额。": {
+    "en": "Enter a valid amount.",
+    "zh-TW": "請填寫有效金額。",
+    "ja": "有効な金額を入力してください。",
+    "ko": "올바른 금액을 입력하세요.",
+    "de": "Gültigen Betrag eingeben.",
+    "fr": "Saisissez un montant valide.",
+    "ru": "Введите корректную сумму."
+  },
+  "金额的小数位超过该货币支持的精度。": {
+    "en": "The amount has too many decimal places for this currency.",
+    "zh-TW": "金額的小數位超過此貨幣支援的精度。",
+    "ja": "金額の小数桁がこの通貨の精度を超えています。",
+    "ko": "이 통화가 지원하는 금액 소수 자릿수를 초과했습니다.",
+    "de": "Der Betrag hat für diese Währung zu viele Nachkommastellen.",
+    "fr": "Le montant a trop de décimales pour cette devise.",
+    "ru": "Слишком много десятичных знаков для этой валюты."
+  },
+  "金额超出支持范围。": {
+    "en": "The amount is outside the supported range.",
+    "zh-TW": "金額超出支援範圍。",
+    "ja": "金額が対応範囲を超えています。",
+    "ko": "금액이 지원 범위를 벗어났습니다.",
+    "de": "Der Betrag liegt außerhalb des unterstützten Bereichs.",
+    "fr": "Le montant dépasse la plage prise en charge.",
+    "ru": "Сумма вне допустимого диапазона."
+  },
+  "金额无效。": {
+    "en": "The amount is invalid.",
+    "zh-TW": "金額無效。",
+    "ja": "金額が無効です。",
+    "ko": "금액이 잘못되었습니다.",
+    "de": "Ungültiger Betrag.",
+    "fr": "Le montant est invalide.",
+    "ru": "Некорректная сумма."
+  },
+  "汇率或金额格式无效。": {
+    "en": "The exchange rate or amount format is invalid.",
+    "zh-TW": "匯率或金額格式無效。",
+    "ja": "為替レートまたは金額の形式が無効です。",
+    "ko": "환율 또는 금액 형식이 잘못되었습니다.",
+    "de": "Ungültiges Format für Kurs oder Betrag.",
+    "fr": "Le format du taux ou du montant est invalide.",
+    "ru": "Некорректный формат курса или суммы."
+  },
+  "货币精度无效。": {
+    "en": "The currency precision is invalid.",
+    "zh-TW": "貨幣精度無效。",
+    "ja": "通貨の精度が無効です。",
+    "ko": "통화 정밀도가 잘못되었습니다.",
+    "de": "Ungültige Währungsgenauigkeit.",
+    "fr": "La précision monétaire est invalide.",
+    "ru": "Некорректная точность валюты."
+  },
+  "汇率无效。": {
+    "en": "The exchange rate is invalid.",
+    "zh-TW": "匯率無效。",
+    "ja": "為替レートが無効です。",
+    "ko": "환율이 잘못되었습니다.",
+    "de": "Ungültiger Wechselkurs.",
+    "fr": "Le taux de change est invalide.",
+    "ru": "Некорректный курс."
+  },
+  "汇率服务没有返回有效数据。": {
+    "en": "The exchange-rate service returned no valid data.",
+    "zh-TW": "匯率服務未回傳有效資料。",
+    "ja": "為替サービスから有効なデータが返されませんでした。",
+    "ko": "환율 서비스가 유효한 데이터를 반환하지 않았습니다.",
+    "de": "Der Wechselkursdienst hat keine gültigen Daten geliefert.",
+    "fr": "Le service de change n’a renvoyé aucune donnée valide.",
+    "ru": "Сервис курсов не вернул корректных данных."
+  },
+  "汇率服务返回的数据无效。": {
+    "en": "The exchange-rate response is invalid.",
+    "zh-TW": "匯率服務回傳的資料無效。",
+    "ja": "為替サービスの応答が無効です。",
+    "ko": "환율 서비스의 응답이 잘못되었습니다.",
+    "de": "Ungültige Antwort des Wechselkursdiensts.",
+    "fr": "La réponse du service de change est invalide.",
+    "ru": "Некорректный ответ сервиса курсов."
+  },
+  "日期无效。": {
+    "en": "The date is invalid.",
+    "zh-TW": "日期無效。",
+    "ja": "日付が無効です。",
+    "ko": "날짜가 잘못되었습니다.",
+    "de": "Ungültiges Datum.",
+    "fr": "La date est invalide.",
+    "ru": "Некорректная дата."
+  },
+  "请填写有效的股票代码。": {
+    "en": "Enter a valid symbol.",
+    "zh-TW": "請填寫有效的股票代碼。",
+    "ja": "有効な銘柄コードを入力してください。",
+    "ko": "올바른 종목 코드를 입력하세요.",
+    "de": "Gültiges Symbol eingeben.",
+    "fr": "Saisissez un symbole valide.",
+    "ru": "Введите корректный тикер."
+  },
+  "请先保存行情服务和 API Key。": {
+    "en": "Save a market-data provider and API key first.",
+    "zh-TW": "請先儲存行情服務與 API Key。",
+    "ja": "先に市場データ提供元と API キーを保存してください。",
+    "ko": "먼저 시세 제공업체와 API 키를 저장하세요.",
+    "de": "Zuerst Marktdatenanbieter und API-Schlüssel speichern.",
+    "fr": "Enregistrez d’abord un fournisseur de cours et sa clé API.",
+    "ru": "Сначала сохраните поставщика котировок и ключ API."
+  },
+  "行情请求无效。": {
+    "en": "The market-data request is invalid.",
+    "zh-TW": "行情請求無效。",
+    "ja": "市場データのリクエストが無効です。",
+    "ko": "시세 요청이 잘못되었습니다.",
+    "de": "Ungültige Marktdatenanfrage.",
+    "fr": "La requête de cours est invalide.",
+    "ru": "Некорректный запрос котировок."
+  },
+  "行情服务返回的数据无效。": {
+    "en": "The market-data response is invalid.",
+    "zh-TW": "行情服務回傳的資料無效。",
+    "ja": "市場データの応答が無効です。",
+    "ko": "시세 서비스 응답이 잘못되었습니다.",
+    "de": "Ungültige Marktdatenantwort.",
+    "fr": "La réponse du service de cours est invalide.",
+    "ru": "Некорректный ответ сервиса котировок."
+  },
+  "行情服务拒绝了请求，请检查密钥、市场权限或请求频率。": {
+    "en": "The provider rejected the request. Check your key, market access or request frequency.",
+    "zh-TW": "行情服務拒絕請求，請檢查密鑰、市場權限或請求頻率。",
+    "ja": "リクエストが拒否されました。キー、市場へのアクセス権、リクエスト頻度を確認してください。",
+    "ko": "요청이 거부되었습니다. 키, 시장 접근 권한, 요청 빈도를 확인하세요.",
+    "de": "Der Anbieter hat die Anfrage abgelehnt. Schlüssel, Marktzugriff oder Anfragehäufigkeit prüfen.",
+    "fr": "Le fournisseur a refusé la requête. Vérifiez la clé, les droits de marché et la fréquence des requêtes.",
+    "ru": "Поставщик отклонил запрос. Проверьте ключ, доступ к рынку и частоту запросов."
+  },
+  "该标的暂无可用行情，请检查代码与市场权限。": {
+    "en": "No quote is available for this symbol. Check the symbol and market access.",
+    "zh-TW": "此標的暫無可用行情，請檢查代碼與市場權限。",
+    "ja": "この銘柄の株価は利用できません。コードと市場へのアクセス権を確認してください。",
+    "ko": "해당 종목의 시세가 없습니다. 코드와 시장 접근 권한을 확인하세요.",
+    "de": "Für diesen Wert gibt es keinen Kurs. Symbol und Marktzugriff prüfen.",
+    "fr": "Aucun cours pour cette valeur. Vérifiez le symbole et les droits de marché.",
+    "ru": "Котировки инструмента недоступны. Проверьте тикер и доступ к рынку."
+  },
+  "该标的暂无可用走势图。": {
+    "en": "No chart is available for this symbol.",
+    "zh-TW": "此標的暫無可用走勢圖。",
+    "ja": "この銘柄のチャートは利用できません。",
+    "ko": "해당 종목의 차트가 없습니다.",
+    "de": "Für diesen Wert ist kein Chart verfügbar.",
+    "fr": "Aucun graphique disponible pour cette valeur.",
+    "ru": "График инструмента недоступен."
+  },
+  "走势图数据无效。": {
+    "en": "The chart data is invalid.",
+    "zh-TW": "走勢圖資料無效。",
+    "ja": "チャートデータが無効です。",
+    "ko": "차트 데이터가 잘못되었습니다.",
+    "de": "Ungültige Chartdaten.",
+    "fr": "Les données du graphique sont invalides.",
+    "ru": "Некорректные данные графика."
+  },
+  "周期账单日期无效。": {
+    "en": "The recurring bill date is invalid.",
+    "zh-TW": "週期帳單日期無效。",
+    "ja": "定期請求の日付が無効です。",
+    "ko": "정기 청구서 날짜가 잘못되었습니다.",
+    "de": "Ungültiges Datum der wiederkehrenden Rechnung.",
+    "fr": "La date de facture récurrente est invalide.",
+    "ru": "Некорректная дата регулярного счёта."
+  },
+  "月份无效。": {
+    "en": "The month is invalid.",
+    "zh-TW": "月份無效。",
+    "ja": "月が無効です。",
+    "ko": "월이 잘못되었습니다.",
+    "de": "Ungültiger Monat.",
+    "fr": "Le mois est invalide.",
+    "ru": "Некорректный месяц."
+  },
+  "账本金额无效。": {
+    "en": "A ledger amount is invalid.",
+    "zh-TW": "帳本金額無效。",
+    "ja": "帳簿の金額が無効です。",
+    "ko": "장부 금액이 잘못되었습니다.",
+    "de": "Ungültiger Buchungsbetrag.",
+    "fr": "Un montant du registre est invalide.",
+    "ru": "Некорректная сумма в журнале."
+  },
+  "账本类型无效。": {
+    "en": "The transaction type is invalid.",
+    "zh-TW": "帳本類型無效。",
+    "ja": "取引の種類が無効です。",
+    "ko": "거래 유형이 잘못되었습니다.",
+    "de": "Ungültiger Buchungstyp.",
+    "fr": "Le type d’opération est invalide.",
+    "ru": "Некорректный тип операции."
+  },
+  "账本金额超出支持范围。": {
+    "en": "The ledger total exceeds the supported range.",
+    "zh-TW": "帳本金額超出支援範圍。",
+    "ja": "帳簿の合計金額が対応範囲を超えています。",
+    "ko": "장부 합계가 지원 범위를 초과했습니다.",
+    "de": "Die Buchungssumme überschreitet den unterstützten Bereich.",
+    "fr": "Le total du registre dépasse la plage prise en charge.",
+    "ru": "Сумма журнала выходит за допустимый диапазон."
+  },
+  "请先选择账户。": {
+    "en": "Select an account first.",
+    "zh-TW": "請先選擇帳戶。",
+    "ja": "先に口座を選択してください。",
+    "ko": "먼저 계정을 선택하세요.",
+    "de": "Zuerst ein Konto auswählen.",
+    "fr": "Sélectionnez d’abord un compte.",
+    "ru": "Сначала выберите счёт."
+  },
+  "收支类型或日期无效。": {
+    "en": "The transaction type or date is invalid.",
+    "zh-TW": "收支類型或日期無效。",
+    "ja": "収支の種類または日付が無効です。",
+    "ko": "거래 유형 또는 날짜가 잘못되었습니다.",
+    "de": "Ungültiger Buchungstyp oder ungültiges Datum.",
+    "fr": "Le type ou la date d’opération est invalide.",
+    "ru": "Некорректный тип или дата операции."
+  },
+  "金额必须大于零。": {
+    "en": "The amount must be greater than zero.",
+    "zh-TW": "金額必須大於零。",
+    "ja": "金額は 0 より大きくしてください。",
+    "ko": "금액은 0보다 커야 합니다.",
+    "de": "Der Betrag muss größer als null sein.",
+    "fr": "Le montant doit être supérieur à zéro.",
+    "ru": "Сумма должна быть больше нуля."
+  },
+  "请填写分类。": {
+    "en": "Enter a category.",
+    "zh-TW": "請填寫分類。",
+    "ja": "カテゴリを入力してください。",
+    "ko": "분류를 입력하세요.",
+    "de": "Kategorie eingeben.",
+    "fr": "Saisissez une catégorie.",
+    "ru": "Укажите категорию."
+  },
+  "待入账周期过多，请先调整账单日期。": {
+    "en": "Too many periods are due. Adjust the bill date first.",
+    "zh-TW": "待入帳週期過多，請先調整帳單日期。",
+    "ja": "未記帳の期間が多すぎます。先に請求日を調整してください。",
+    "ko": "처리할 기간이 너무 많습니다. 먼저 청구서 날짜를 조정하세요.",
+    "de": "Zu viele fällige Zeiträume. Zuerst das Rechnungsdatum anpassen.",
+    "fr": "Trop de périodes à comptabiliser. Ajustez d’abord la date.",
+    "ru": "Слишком много периодов к учёту. Сначала измените дату счёта."
+  },
+  "周期账单无效。": {
+    "en": "The recurring bill is invalid.",
+    "zh-TW": "週期帳單無效。",
+    "ja": "定期請求が無効です。",
+    "ko": "정기 청구서가 잘못되었습니다.",
+    "de": "Ungültige wiederkehrende Rechnung.",
+    "fr": "La facture récurrente est invalide.",
+    "ru": "Некорректный регулярный счёт."
+  },
+  "周期账单的账户已变更，请重新设置。": {
+    "en": "The recurring bill account changed. Set it up again.",
+    "zh-TW": "週期帳單的帳戶已變更，請重新設定。",
+    "ja": "定期請求の口座が変更されました。設定し直してください。",
+    "ko": "정기 청구서의 계정이 변경되었습니다. 다시 설정하세요.",
+    "de": "Das Konto der wiederkehrenden Rechnung wurde geändert. Erneut einrichten.",
+    "fr": "Le compte de la facture récurrente a changé. Configurez-le à nouveau.",
+    "ru": "Счёт регулярного платежа изменился. Настройте его снова."
+  },
+  "请设置含 {number} 的物流接口地址。": {
+    "en": "Set a tracking endpoint containing {number}.",
+    "zh-TW": "請設定包含 {number} 的物流介面地址。",
+    "ja": "{number} を含む配送 API の URL を設定してください。",
+    "ko": "{number}가 포함된 배송 API 주소를 설정하세요.",
+    "de": "Tracking-Adresse mit {number} festlegen.",
+    "fr": "Définissez une adresse de suivi contenant {number}.",
+    "ru": "Укажите адрес отслеживания с {number}."
+  },
+  "物流接口须使用不含账号密码的 HTTPS 地址。": {
+    "en": "The tracking endpoint must use HTTPS without embedded credentials.",
+    "zh-TW": "物流介面須使用不含帳號密碼的 HTTPS 地址。",
+    "ja": "配送 API は認証情報を含まない HTTPS URL を使用してください。",
+    "ko": "배송 API는 계정 정보가 포함되지 않은 HTTPS 주소여야 합니다.",
+    "de": "Der Tracking-Endpunkt muss HTTPS ohne eingebettete Zugangsdaten verwenden.",
+    "fr": "L’adresse de suivi doit utiliser HTTPS sans identifiants intégrés.",
+    "ru": "Адрес отслеживания должен использовать HTTPS без учётных данных в URL."
+  },
+  "物流服务返回的数据格式不受支持。": {
+    "en": "The tracking response format is unsupported.",
+    "zh-TW": "物流服務回傳的資料格式不受支援。",
+    "ja": "配送サービスの応答形式に対応していません。",
+    "ko": "배송 서비스 응답 형식을 지원하지 않습니다.",
+    "de": "Nicht unterstütztes Antwortformat der Sendungsverfolgung.",
+    "fr": "Le format de réponse du suivi n’est pas pris en charge.",
+    "ru": "Формат ответа сервиса отслеживания не поддерживается."
+  },
+  "物流记录无效。": {
+    "en": "The tracking event is invalid.",
+    "zh-TW": "物流紀錄無效。",
+    "ja": "配送記録が無効です。",
+    "ko": "배송 기록이 잘못되었습니다.",
+    "de": "Ungültiger Sendungseintrag.",
+    "fr": "L’événement de suivi est invalide.",
+    "ru": "Некорректное событие доставки."
+  },
+  "赛事请求无效。": {
+    "en": "The sports request is invalid.",
+    "zh-TW": "賽事請求無效。",
+    "ja": "スポーツデータのリクエストが無効です。",
+    "ko": "스포츠 데이터 요청이 잘못되었습니다.",
+    "de": "Ungültige Sportdatenanfrage.",
+    "fr": "La requête sportive est invalide.",
+    "ru": "Некорректный запрос спортивных данных."
+  },
+  "赛事 API Key 无效。": {
+    "en": "The sports API key is invalid.",
+    "zh-TW": "賽事 API Key 無效。",
+    "ja": "スポーツ API キーが無効です。",
+    "ko": "스포츠 API 키가 잘못되었습니다.",
+    "de": "Ungültiger Sport-API-Schlüssel.",
+    "fr": "La clé API sportive est invalide.",
+    "ru": "Некорректный ключ спортивного API."
+  },
+  "赛程数据无效。": {
+    "en": "The schedule data is invalid.",
+    "zh-TW": "賽程資料無效。",
+    "ja": "試合日程のデータが無効です。",
+    "ko": "일정 데이터가 잘못되었습니다.",
+    "de": "Ungültige Spielplandaten.",
+    "fr": "Les données du calendrier sont invalides.",
+    "ru": "Некорректные данные расписания."
+  },
+  "积分榜数据无效。": {
+    "en": "The standings data is invalid.",
+    "zh-TW": "積分榜資料無效。",
+    "ja": "順位表のデータが無効です。",
+    "ko": "순위표 데이터가 잘못되었습니다.",
+    "de": "Ungültige Tabellendaten.",
+    "fr": "Les données du classement sont invalides.",
+    "ru": "Некорректные данные турнирной таблицы."
+  },
+  "扩展数据格式无效。": {
+    "en": "The extension data format is invalid.",
+    "zh-TW": "擴充功能資料格式無效。",
+    "ja": "拡張機能のデータ形式が無効です。",
+    "ko": "확장 프로그램 데이터 형식이 잘못되었습니다.",
+    "de": "Ungültiges Erweiterungsdatenformat.",
+    "fr": "Le format des données de l’extension est invalide.",
+    "ru": "Некорректный формат данных расширения."
+  },
+  "下载 {0}": {
+    "en": "Download {0}",
+    "zh-TW": "下載 {0}",
+    "ja": "{0} をダウンロード",
+    "ko": "{0} 다운로드",
+    "de": "{0} herunterladen",
+    "fr": "Télécharger {0}",
+    "ru": "Скачать {0}"
+  },
+  "为这个月设置预算": {
+    "en": "Set a budget for this month",
+    "zh-TW": "設定本月預算",
+    "ja": "今月の予算を設定",
+    "ko": "이번 달 예산 설정",
+    "de": "Budget für diesen Monat festlegen",
+    "fr": "Définir le budget du mois",
+    "ru": "Задайте бюджет на этот месяц"
+  },
+  "今天": {
+    "en": "Today",
+    "zh-TW": "今天",
+    "ja": "今日",
+    "ko": "오늘",
+    "de": "Heute",
+    "fr": "Aujourd’hui",
+    "ru": "Сегодня"
+  },
+  "从自选列表开始": {
+    "en": "Start with a watchlist",
+    "zh-TW": "從自選清單開始",
+    "ja": "ウォッチリストから始める",
+    "ko": "관심 목록에서 시작",
+    "de": "Mit einer Watchlist beginnen",
+    "fr": "Commencez par une liste de suivi",
+    "ru": "Начните со списка наблюдения"
+  },
+  "使用最新汇率": {
+    "en": "Use latest rates",
+    "zh-TW": "使用最新匯率",
+    "ja": "最新レートを使用",
+    "ko": "최신 환율 사용",
+    "de": "Aktuelle Kurse verwenden",
+    "fr": "Utiliser les derniers taux",
+    "ru": "Использовать свежие курсы"
+  },
+  "保修中": {
+    "en": "Under warranty",
+    "zh-TW": "保固中",
+    "ja": "保証期間内",
+    "ko": "보증 기간 중",
+    "de": "Unter Garantie",
+    "fr": "Sous garantie",
+    "ru": "На гарантии"
+  },
+  "保存你的订单与物品": {
+    "en": "Keep your orders and items",
+    "zh-TW": "儲存訂單與物品",
+    "ja": "注文と持ち物を管理",
+    "ko": "주문과 물품 보관",
+    "de": "Bestellungen und Gegenstände aufbewahren",
+    "fr": "Conservez vos commandes et objets",
+    "ru": "Сохраняйте заказы и вещи"
+  },
+  "先在数据源与显示中连接行情服务。": {
+    "en": "Connect a provider in Data source and display.",
+    "zh-TW": "請先在資料來源與顯示中連接行情服務。",
+    "ja": "データ提供元と表示の設定でサービスに接続してください。",
+    "ko": "데이터 소스 및 표시 설정에서 시세 서비스를 연결하세요.",
+    "de": "Verbinde einen Anbieter unter Datenquelle und Anzeige.",
+    "fr": "Connectez un fournisseur dans Source et affichage.",
+    "ru": "Подключите поставщика в настройках источника и отображения."
+  },
+  "全部比赛": {
+    "en": "All matches",
+    "zh-TW": "全部比賽",
+    "ja": "すべての試合",
+    "ko": "모든 경기",
+    "de": "Alle Spiele",
+    "fr": "Tous les matchs",
+    "ru": "Все матчи"
+  },
+  "关注球队": {
+    "en": "Follow a team",
+    "zh-TW": "追蹤球隊",
+    "ja": "チームをフォロー",
+    "ko": "팀 팔로우",
+    "de": "Team folgen",
+    "fr": "Suivre une équipe",
+    "ru": "Подписаться на команду"
+  },
+  "关闭面板": {
+    "en": "Close panel",
+    "zh-TW": "關閉面板",
+    "ja": "パネルを閉じる",
+    "ko": "패널 닫기",
+    "de": "Bereich schließen",
+    "fr": "Fermer le panneau",
+    "ru": "Закрыть панель"
+  },
+  "凭证": {
+    "en": "Documents",
+    "zh-TW": "憑證",
+    "ja": "証憑",
+    "ko": "증빙",
+    "de": "Belege",
+    "fr": "Justificatifs",
+    "ru": "Документы"
+  },
+  "删除比赛": {
+    "en": "Delete match",
+    "zh-TW": "刪除比賽",
+    "ja": "試合を削除",
+    "ko": "경기 삭제",
+    "de": "Spiel löschen",
+    "fr": "Supprimer le match",
+    "ru": "Удалить матч"
+  },
+  "删除物品": {
+    "en": "Delete item",
+    "zh-TW": "刪除物品",
+    "ja": "アイテムを削除",
+    "ko": "물품 삭제",
+    "de": "Gegenstand löschen",
+    "fr": "Supprimer l’objet",
+    "ru": "Удалить вещь"
+  },
+  "删除记录": {
+    "en": "Delete entry",
+    "zh-TW": "刪除記錄",
+    "ja": "記録を削除",
+    "ko": "기록 삭제",
+    "de": "Eintrag löschen",
+    "fr": "Supprimer l’écriture",
+    "ru": "Удалить запись"
+  },
+  "删除账单": {
+    "en": "Delete bill",
+    "zh-TW": "刪除帳單",
+    "ja": "請求を削除",
+    "ko": "청구서 삭제",
+    "de": "Rechnung löschen",
+    "fr": "Supprimer la facture",
+    "ru": "Удалить платёж"
+  },
+  "删除账户": {
+    "en": "Delete account",
+    "zh-TW": "刪除帳戶",
+    "ja": "口座を削除",
+    "ko": "계정 삭제",
+    "de": "Konto löschen",
+    "fr": "Supprimer le compte",
+    "ru": "Удалить счёт"
+  },
+  "删除预算": {
+    "en": "Delete budget",
+    "zh-TW": "刪除預算",
+    "ja": "予算を削除",
+    "ko": "예산 삭제",
+    "de": "Budget löschen",
+    "fr": "Supprimer le budget",
+    "ru": "Удалить бюджет"
+  },
+  "前一天": {
+    "en": "Previous day",
+    "zh-TW": "前一天",
+    "ja": "前日",
+    "ko": "이전 날짜",
+    "de": "Vorheriger Tag",
+    "fr": "Jour précédent",
+    "ru": "Предыдущий день"
+  },
+  "剩余 {0}": {
+    "en": "{0} remaining",
+    "zh-TW": "剩餘 {0}",
+    "ja": "残り {0}",
+    "ko": "{0} 남음",
+    "de": "{0} übrig",
+    "fr": "Reste : {0}",
+    "ru": "Осталось: {0}"
+  },
+  "历史汇率": {
+    "en": "Historical rates",
+    "zh-TW": "歷史匯率",
+    "ja": "過去のレート",
+    "ko": "과거 환율",
+    "de": "Historische Kurse",
+    "fr": "Taux historiques",
+    "ru": "Исторические курсы"
+  },
+  "历史汇率与来源": {
+    "en": "Historical rates and source",
+    "zh-TW": "歷史匯率與來源",
+    "ja": "過去のレートと提供元",
+    "ko": "과거 환율 및 출처",
+    "de": "Historische Kurse und Quelle",
+    "fr": "Historique des taux et source",
+    "ru": "История курсов и источник"
+  },
+  "可退换": {
+    "en": "Return eligible",
+    "zh-TW": "可退換",
+    "ja": "返品可能",
+    "ko": "반품 가능",
+    "de": "Rückgabe möglich",
+    "fr": "Retour possible",
+    "ru": "Можно вернуть"
+  },
+  "后一天": {
+    "en": "Next day",
+    "zh-TW": "後一天",
+    "ja": "翌日",
+    "ko": "다음 날짜",
+    "de": "Nächster Tag",
+    "fr": "Jour suivant",
+    "ru": "Следующий день"
+  },
+  "填写运单号": {
+    "en": "Add tracking number",
+    "zh-TW": "填寫運單號",
+    "ja": "追跡番号を入力",
+    "ko": "운송장 번호 입력",
+    "de": "Sendungsnummer ergänzen",
+    "fr": "Ajouter le numéro de suivi",
+    "ru": "Указать трек-номер"
+  },
+  "已推迟": {
+    "en": "Postponed",
+    "zh-TW": "已延後",
+    "ja": "延期",
+    "ko": "연기됨",
+    "de": "Verschoben",
+    "fr": "Reporté",
+    "ru": "Отложен"
+  },
+  "已结束": {
+    "en": "Finished",
+    "zh-TW": "已結束",
+    "ja": "終了",
+    "ko": "종료",
+    "de": "Beendet",
+    "fr": "Terminé",
+    "ru": "Завершён"
+  },
+  "常用货币": {
+    "en": "Favorite currencies",
+    "zh-TW": "常用貨幣",
+    "ja": "よく使う通貨",
+    "ko": "즐겨찾는 통화",
+    "de": "Bevorzugte Währungen",
+    "fr": "Devises favorites",
+    "ru": "Избранные валюты"
+  },
+  "常用货币数量已达上限。": {
+    "en": "Favorite currency limit reached.",
+    "zh-TW": "常用貨幣數量已達上限。",
+    "ja": "登録できる通貨数の上限に達しました。",
+    "ko": "즐겨찾는 통화 수가 한도에 도달했습니다.",
+    "de": "Das Limit bevorzugter Währungen ist erreicht.",
+    "fr": "La limite de devises favorites est atteinte.",
+    "ru": "Достигнут предел избранных валют."
+  },
+  "建立你的自选": {
+    "en": "Build your watchlist",
+    "zh-TW": "建立自選清單",
+    "ja": "ウォッチリストを作成",
+    "ko": "관심 목록 만들기",
+    "de": "Erstelle deine Watchlist",
+    "fr": "Créez votre liste de suivi",
+    "ru": "Создайте список наблюдения"
+  },
+  "当天暂无比赛": {
+    "en": "No matches on this day",
+    "zh-TW": "當天暫無比賽",
+    "ja": "この日の試合はありません",
+    "ko": "이 날짜에 경기가 없습니다",
+    "de": "Keine Spiele an diesem Tag",
+    "fr": "Aucun match ce jour-là",
+    "ru": "В этот день матчей нет"
+  },
+  "待收货": {
+    "en": "Awaiting delivery",
+    "zh-TW": "待收貨",
+    "ja": "配達待ち",
+    "ko": "배송 대기",
+    "de": "Lieferung ausstehend",
+    "fr": "En attente de livraison",
+    "ru": "Ожидается доставка"
+  },
+  "我的关注": {
+    "en": "Following",
+    "zh-TW": "我的追蹤",
+    "ja": "フォロー中",
+    "ko": "팔로우 중",
+    "de": "Gefolgte Teams",
+    "fr": "Mes équipes",
+    "ru": "Подписки"
+  },
+  "指定交易所": {
+    "en": "Specify exchange",
+    "zh-TW": "指定交易所",
+    "ja": "取引所を指定",
+    "ko": "거래소 지정",
+    "de": "Börse angeben",
+    "fr": "Préciser la bourse",
+    "ru": "Указать биржу"
+  },
+  "搜索自选": {
+    "en": "Search watchlist",
+    "zh-TW": "搜尋自選",
+    "ja": "ウォッチリストを検索",
+    "ko": "관심 목록 검색",
+    "de": "Watchlist durchsuchen",
+    "fr": "Rechercher dans le suivi",
+    "ru": "Поиск в списке"
+  },
+  "整理": {
+    "en": "Organize",
+    "zh-TW": "整理",
+    "ja": "整理",
+    "ko": "정리",
+    "de": "Ordnen",
+    "fr": "Organiser",
+    "ru": "Упорядочить"
+  },
+  "暂无待进行的比赛": {
+    "en": "No upcoming matches",
+    "zh-TW": "暫無待進行的比賽",
+    "ja": "今後の試合はありません",
+    "ko": "예정된 경기가 없습니다",
+    "de": "Keine bevorstehenden Spiele",
+    "fr": "Aucun match à venir",
+    "ru": "Предстоящих матчей нет"
+  },
+  "暂无收据与凭证": {
+    "en": "No receipts or documents yet",
+    "zh-TW": "暫無收據與憑證",
+    "ja": "領収書や証憑はありません",
+    "ko": "아직 영수증이나 증빙이 없습니다",
+    "de": "Noch keine Belege oder Dokumente",
+    "fr": "Aucun reçu ni justificatif",
+    "ru": "Пока нет чеков и документов"
+  },
+  "暂无物流动态": {
+    "en": "No tracking updates yet",
+    "zh-TW": "暫無物流動態",
+    "ja": "配送状況はまだありません",
+    "ko": "아직 배송 내역이 없습니다",
+    "de": "Noch keine Sendungsverfolgung",
+    "fr": "Aucune mise à jour de livraison",
+    "ru": "Пока нет данных доставки"
+  },
+  "暂无积分榜": {
+    "en": "No standings yet",
+    "zh-TW": "暫無積分榜",
+    "ja": "順位表はまだありません",
+    "ko": "아직 순위표가 없습니다",
+    "de": "Noch keine Tabelle",
+    "fr": "Aucun classement disponible",
+    "ru": "Турнирной таблицы пока нет"
+  },
+  "暂无赛果": {
+    "en": "No results yet",
+    "zh-TW": "暫無賽果",
+    "ja": "結果はまだありません",
+    "ko": "아직 경기 결과가 없습니다",
+    "de": "Noch keine Ergebnisse",
+    "fr": "Aucun résultat disponible",
+    "ru": "Результатов пока нет"
+  },
+  "暂无走势图": {
+    "en": "No chart yet",
+    "zh-TW": "暫無走勢圖",
+    "ja": "チャートはまだありません",
+    "ko": "아직 차트가 없습니다",
+    "de": "Noch kein Kursdiagramm",
+    "fr": "Aucun graphique disponible",
+    "ru": "Графика пока нет"
+  },
+  "更新汇率后即可计算": {
+    "en": "Refresh rates to calculate",
+    "zh-TW": "更新匯率後即可計算",
+    "ja": "レートを更新すると換算できます",
+    "ko": "환율을 업데이트하면 계산할 수 있습니다",
+    "de": "Kurse zum Berechnen aktualisieren",
+    "fr": "Actualisez les taux pour calculer",
+    "ru": "Обновите курсы для расчёта"
+  },
+  "更新行情后查看。": {
+    "en": "Refresh market data to view the chart.",
+    "zh-TW": "更新行情後查看。",
+    "ja": "相場を更新すると表示されます。",
+    "ko": "시세를 업데이트하면 확인할 수 있습니다.",
+    "de": "Marktdaten zum Anzeigen aktualisieren.",
+    "fr": "Actualisez les cours pour afficher le graphique.",
+    "ru": "Обновите котировки для просмотра."
+  },
+  "更新赛程，或记录一场比赛。": {
+    "en": "Refresh the schedule or record a match.",
+    "zh-TW": "更新賽程，或記錄一場比賽。",
+    "ja": "日程を更新するか、試合を記録してください。",
+    "ko": "일정을 업데이트하거나 경기를 기록하세요.",
+    "de": "Aktualisiere den Spielplan oder erfasse ein Spiel.",
+    "fr": "Actualisez le calendrier ou notez un match.",
+    "ru": "Обновите расписание или запишите матч."
+  },
+  "查看流水": {
+    "en": "View transactions",
+    "zh-TW": "查看明細",
+    "ja": "取引履歴を表示",
+    "ko": "거래 내역 보기",
+    "de": "Buchungen anzeigen",
+    "fr": "Voir les opérations",
+    "ru": "Посмотреть операции"
+  },
+  "概览": {
+    "en": "Overview",
+    "zh-TW": "概覽",
+    "ja": "概要",
+    "ko": "개요",
+    "de": "Übersicht",
+    "fr": "Vue d’ensemble",
+    "ru": "Обзор"
+  },
+  "正在搜索…": {
+    "en": "Searching…",
+    "zh-TW": "正在搜尋…",
+    "ja": "検索中…",
+    "ko": "검색 중…",
+    "de": "Suche läuft…",
+    "fr": "Recherche…",
+    "ru": "Поиск…"
+  },
+  "比赛": {
+    "en": "Matches",
+    "zh-TW": "比賽",
+    "ja": "試合",
+    "ko": "경기",
+    "de": "Spiele",
+    "fr": "Matchs",
+    "ru": "Матчи"
+  },
+  "比赛日期": {
+    "en": "Match date",
+    "zh-TW": "比賽日期",
+    "ja": "試合日",
+    "ko": "경기 날짜",
+    "de": "Spieldatum",
+    "fr": "Date du match",
+    "ru": "Дата матча"
+  },
+  "没有符合条件的物品": {
+    "en": "No matching items",
+    "zh-TW": "沒有符合條件的物品",
+    "ja": "一致するアイテムはありません",
+    "ko": "일치하는 물품이 없습니다",
+    "de": "Keine passenden Gegenstände",
+    "fr": "Aucun objet correspondant",
+    "ru": "Подходящих вещей нет"
+  },
+  "添加凭证": {
+    "en": "Add document",
+    "zh-TW": "新增憑證",
+    "ja": "証憑を追加",
+    "ko": "증빙 추가",
+    "de": "Beleg hinzufügen",
+    "fr": "Ajouter un justificatif",
+    "ru": "Добавить документ"
+  },
+  "添加第一个账户": {
+    "en": "Add your first account",
+    "zh-TW": "新增第一個帳戶",
+    "ja": "最初の口座を追加",
+    "ko": "첫 계정 추가",
+    "de": "Erstes Konto hinzufügen",
+    "fr": "Ajoutez votre premier compte",
+    "ru": "Добавьте первый счёт"
+  },
+  "物品已归档": {
+    "en": "Item filed",
+    "zh-TW": "物品已歸檔",
+    "ja": "アイテムを保管済み",
+    "ko": "물품 보관됨",
+    "de": "Gegenstand abgelegt",
+    "fr": "Objet archivé",
+    "ru": "Вещь сохранена"
+  },
+  "物品详情": {
+    "en": "Item details",
+    "zh-TW": "物品詳情",
+    "ja": "アイテムの詳細",
+    "ko": "물품 상세",
+    "de": "Gegenstandsdetails",
+    "fr": "Détails de l’objet",
+    "ru": "Сведения о вещи"
+  },
+  "物流": {
+    "en": "Delivery",
+    "zh-TW": "物流",
+    "ja": "配送",
+    "ko": "배송",
+    "de": "Lieferung",
+    "fr": "Livraison",
+    "ru": "Доставка"
+  },
+  "筛选球队": {
+    "en": "Filter teams",
+    "zh-TW": "篩選球隊",
+    "ja": "チームで絞り込み",
+    "ko": "팀 필터",
+    "de": "Teams filtern",
+    "fr": "Filtrer les équipes",
+    "ru": "Фильтр команд"
+  },
+  "管理固定收支": {
+    "en": "Manage recurring payments",
+    "zh-TW": "管理固定收支",
+    "ja": "定期的な収支を管理",
+    "ko": "정기 수입·지출 관리",
+    "de": "Regelmäßige Zahlungen verwalten",
+    "fr": "Gérer les paiements récurrents",
+    "ru": "Управляйте регулярными платежами"
+  },
+  "管理自选列表": {
+    "en": "Manage watchlists",
+    "zh-TW": "管理自選清單",
+    "ja": "ウォッチリストを管理",
+    "ko": "관심 목록 관리",
+    "de": "Watchlists verwalten",
+    "fr": "Gérer les listes de suivi",
+    "ru": "Управление списками наблюдения"
+  },
+  "编辑比赛": {
+    "en": "Edit match",
+    "zh-TW": "編輯比賽",
+    "ja": "試合を編集",
+    "ko": "경기 수정",
+    "de": "Spiel bearbeiten",
+    "fr": "Modifier le match",
+    "ru": "Изменить матч"
+  },
+  "编辑物品": {
+    "en": "Edit item",
+    "zh-TW": "編輯物品",
+    "ja": "アイテムを編集",
+    "ko": "물품 수정",
+    "de": "Gegenstand bearbeiten",
+    "fr": "Modifier l’objet",
+    "ru": "Изменить вещь"
+  },
+  "编辑记录": {
+    "en": "Edit entry",
+    "zh-TW": "編輯記錄",
+    "ja": "記録を編集",
+    "ko": "기록 수정",
+    "de": "Eintrag bearbeiten",
+    "fr": "Modifier l’écriture",
+    "ru": "Изменить запись"
+  },
+  "编辑退换与保修信息": {
+    "en": "Edit return and warranty details",
+    "zh-TW": "編輯退換與保固資訊",
+    "ja": "返品・保証情報を編集",
+    "ko": "반품 및 보증 정보 수정",
+    "de": "Rückgabe und Garantie bearbeiten",
+    "fr": "Modifier le retour et la garantie",
+    "ru": "Изменить сведения о возврате и гарантии"
+  },
+  "获取时间：{0}": {
+    "en": "Fetched: {0}",
+    "zh-TW": "取得時間：{0}",
+    "ja": "取得日時：{0}",
+    "ko": "가져온 시간: {0}",
+    "de": "Abgerufen: {0}",
+    "fr": "Récupéré : {0}",
+    "ru": "Получено: {0}"
+  },
+  "补充物品资料": {
+    "en": "Add item details",
+    "zh-TW": "補充物品資料",
+    "ja": "アイテム情報を追加",
+    "ko": "물품 정보 추가",
+    "de": "Gegenstandsdetails ergänzen",
+    "fr": "Compléter les informations",
+    "ru": "Дополнить сведения о вещи"
+  },
+  "订单、凭证与保修，一处查找": {
+    "en": "Orders, documents and warranties together",
+    "zh-TW": "訂單、憑證與保固，一處查找",
+    "ja": "注文・証憑・保証をひとまとめに",
+    "ko": "주문, 증빙, 보증을 한곳에서",
+    "de": "Bestellungen, Belege und Garantien an einem Ort",
+    "fr": "Commandes, justificatifs et garanties réunis",
+    "ru": "Заказы, документы и гарантии в одном месте"
+  },
+  "订单与物流": {
+    "en": "Order and delivery",
+    "zh-TW": "訂單與物流",
+    "ja": "注文と配送",
+    "ko": "주문 및 배송",
+    "de": "Bestellung und Lieferung",
+    "fr": "Commande et livraison",
+    "ru": "Заказ и доставка"
+  },
+  "设置联赛与赛季": {
+    "en": "Set league and season",
+    "zh-TW": "設定聯賽與賽季",
+    "ja": "リーグとシーズンを設定",
+    "ko": "리그와 시즌 설정",
+    "de": "Liga und Saison festlegen",
+    "fr": "Définir la ligue et la saison",
+    "ru": "Указать лигу и сезон"
+  },
+  "账户余额": {
+    "en": "Account balance",
+    "zh-TW": "帳戶餘額",
+    "ja": "口座残高",
+    "ko": "계정 잔액",
+    "de": "Kontostand",
+    "fr": "Solde du compte",
+    "ru": "Остаток на счёте"
+  },
+  "账本": {
+    "en": "Ledger",
+    "zh-TW": "帳本",
+    "ja": "家計簿",
+    "ko": "가계부",
+    "de": "Haushaltsbuch",
+    "fr": "Comptes",
+    "ru": "Учёт финансов"
+  },
+  "赛事": {
+    "en": "Sports",
+    "zh-TW": "賽事",
+    "ja": "スポーツ",
+    "ko": "스포츠",
+    "de": "Sport",
+    "fr": "Sports",
+    "ru": "Спорт"
+  },
+  "赛事视图": {
+    "en": "Sports views",
+    "zh-TW": "賽事檢視",
+    "ja": "試合の表示",
+    "ko": "경기 보기",
+    "de": "Sportansichten",
+    "fr": "Vues des matchs",
+    "ru": "Виды соревнований"
+  },
+  "赛程": {
+    "en": "Schedule",
+    "zh-TW": "賽程",
+    "ja": "日程",
+    "ko": "일정",
+    "de": "Spielplan",
+    "fr": "Calendrier",
+    "ru": "Расписание"
+  },
+  "走势范围": {
+    "en": "Chart range",
+    "zh-TW": "走勢範圍",
+    "ja": "チャート期間",
+    "ko": "차트 기간",
+    "de": "Diagrammzeitraum",
+    "fr": "Période du graphique",
+    "ru": "Период графика"
+  },
+  "返回物品列表": {
+    "en": "Back to items",
+    "zh-TW": "返回物品清單",
+    "ja": "アイテム一覧に戻る",
+    "ko": "물품 목록으로",
+    "de": "Zurück zu Gegenständen",
+    "fr": "Retour aux objets",
+    "ru": "К списку вещей"
+  },
+  "返回自选": {
+    "en": "Back to watchlist",
+    "zh-TW": "返回自選",
+    "ja": "ウォッチリストに戻る",
+    "ko": "관심 목록으로",
+    "de": "Zurück zur Watchlist",
+    "fr": "Retour au suivi",
+    "ru": "К списку наблюдения"
+  },
+  "这个月还没有收支": {
+    "en": "No transactions this month",
+    "zh-TW": "這個月還沒有收支",
+    "ja": "今月の収支はまだありません",
+    "ko": "이번 달 수입·지출이 없습니다",
+    "de": "Diesen Monat noch keine Buchungen",
+    "fr": "Aucune opération ce mois-ci",
+    "ru": "В этом месяце операций ещё нет"
+  },
+  "这场比赛已被移除。": {
+    "en": "This match has been removed.",
+    "zh-TW": "這場比賽已被移除。",
+    "ja": "この試合は削除されています。",
+    "ko": "이 경기는 삭제되었습니다.",
+    "de": "Dieses Spiel wurde entfernt.",
+    "fr": "Ce match a été supprimé.",
+    "ru": "Этот матч удалён."
+  },
+  "进行中": {
+    "en": "Live",
+    "zh-TW": "進行中",
+    "ja": "試合中",
+    "ko": "진행 중",
+    "de": "Live",
+    "fr": "En direct",
+    "ru": "В прямом эфире"
+  },
+  "退换与保修": {
+    "en": "Returns and warranty",
+    "zh-TW": "退換與保固",
+    "ja": "返品と保証",
+    "ko": "반품 및 보증",
+    "de": "Rückgabe und Garantie",
+    "fr": "Retour et garantie",
+    "ru": "Возврат и гарантия"
+  },
+  "配置物流接口": {
+    "en": "Set up tracking service",
+    "zh-TW": "設定物流介面",
+    "ja": "配送APIを設定",
+    "ko": "배송 API 설정",
+    "de": "Sendungsverfolgung einrichten",
+    "fr": "Configurer le suivi",
+    "ru": "Настроить службу отслеживания"
+  },
+  "MOEX 代码（如 SBER.ME）可获取官方延迟行情，仅供个人参考。其它市场打开行情网站。": {
+    "en": "MOEX tickers such as SBER.ME use official delayed data for personal reference. Other markets open a quote website.",
+    "zh-TW": "MOEX 代碼（如 SBER.ME）可取得官方延遲行情，僅供個人參考。其他市場開啟行情網站。",
+    "ja": "SBER.ME などの MOEX 銘柄は個人閲覧用の公式遅延データを取得します。他市場は相場サイトを開きます。",
+    "ko": "SBER.ME 같은 MOEX 종목은 개인 참고용 공식 지연 시세를 사용합니다. 다른 시장은 시세 사이트를 엽니다.",
+    "de": "MOEX-Kürzel wie SBER.ME nutzen offizielle verzögerte Daten zur persönlichen Information. Andere Märkte öffnen eine Kurswebsite.",
+    "fr": "Les symboles MOEX comme SBER.ME utilisent les cours officiels différés à titre personnel. Les autres marchés ouvrent un site de cotations.",
+    "ru": "Тикеры MOEX, например SBER.ME, используют официальные задержанные данные для личного ознакомления. Для других рынков открывается сайт котировок."
+  },
+  "OpenLigaDB（免密钥）": {
+    "en": "OpenLigaDB (no key)",
+    "zh-TW": "OpenLigaDB（免金鑰）",
+    "ja": "OpenLigaDB（キー不要）",
+    "ko": "OpenLigaDB (키 불필요)",
+    "de": "OpenLigaDB (ohne Schlüssel)",
+    "fr": "OpenLigaDB (sans clé)",
+    "ru": "OpenLigaDB (без ключа)"
+  },
+  "TheSportsDB（自有授权）": {
+    "en": "TheSportsDB (your own access)",
+    "zh-TW": "TheSportsDB（自有授權）",
+    "ja": "TheSportsDB（自身の利用権限）",
+    "ko": "TheSportsDB (직접 승인한 이용 권한)",
+    "de": "TheSportsDB (eigene Lizenz)",
+    "fr": "TheSportsDB (votre autorisation)",
+    "ru": "TheSportsDB (собственный доступ)"
+  },
+  "仅使用你已获得发布与数据访问授权的服务。": {
+    "en": "Use a service you are licensed to access and display in published apps.",
+    "zh-TW": "僅使用你已取得發布與資料存取授權的服務。",
+    "ja": "公開アプリでの表示とデータ利用が許可されたサービスをご利用ください。",
+    "ko": "게시 앱의 표시 및 데이터 접근 권한을 받은 서비스만 사용하세요.",
+    "de": "Nutze einen Dienst mit Lizenz für Datenzugriff und Anzeige in veröffentlichten Apps.",
+    "fr": "Utilisez un service autorisant l’accès aux données et leur affichage dans une application publiée.",
+    "ru": "Используйте сервис с разрешением на доступ к данным и их отображение в опубликованном приложении."
+  },
+  "公开源以德国足球等社区联赛为主，覆盖与更新取决于维护者。": {
+    "en": "The public source mainly covers German football and community leagues. Coverage and updates depend on contributors.",
+    "zh-TW": "公開來源以德國足球等社群聯賽為主，範圍與更新取決於維護者。",
+    "ja": "公開データは主にドイツのサッカーとコミュニティリーグを対象とし、範囲と更新は提供者によります。",
+    "ko": "공개 소스는 주로 독일 축구 및 커뮤니티 리그를 다룹니다. 범위와 업데이트는 기여자에 따라 다릅니다.",
+    "de": "Die öffentliche Quelle umfasst vor allem deutschen Fußball und Community-Ligen. Abdeckung und Aktualität hängen von Mitwirkenden ab.",
+    "fr": "La source publique couvre surtout le football allemand et les ligues communautaires. La couverture et les mises à jour dépendent des contributeurs.",
+    "ru": "Открытый источник в основном охватывает немецкий футбол и любительские лиги. Полнота и обновления зависят от участников."
+  },
+  "公开社区联赛": {
+    "en": "Public community leagues",
+    "zh-TW": "公開社群聯賽",
+    "ja": "公開コミュニティリーグ",
+    "ko": "공개 커뮤니티 리그",
+    "de": "Öffentliche Community-Ligen",
+    "fr": "Ligues communautaires publiques",
+    "ru": "Открытые общественные лиги"
+  },
+  "公开联赛": {
+    "en": "Public league",
+    "zh-TW": "公開聯賽",
+    "ja": "公開リーグ",
+    "ko": "공개 리그",
+    "de": "Öffentliche Liga",
+    "fr": "Ligue publique",
+    "ru": "Открытая лига"
+  },
+  "公开联赛暂无赛程，请选择其他联赛或赛季。": {
+    "en": "No schedule is available for this public league. Choose another league or season.",
+    "zh-TW": "公開聯賽暫無賽程，請選擇其他聯賽或賽季。",
+    "ja": "この公開リーグの日程はありません。別のリーグまたはシーズンを選択してください。",
+    "ko": "이 공개 리그의 일정이 없습니다. 다른 리그나 시즌을 선택하세요.",
+    "de": "Für diese öffentliche Liga ist kein Spielplan verfügbar. Wähle eine andere Liga oder Saison.",
+    "fr": "Aucun calendrier pour cette ligue publique. Choisissez une autre ligue ou saison.",
+    "ru": "Для этой открытой лиги расписание недоступно. Выберите другую лигу или сезон."
+  },
+  "公开行情（免密钥）": {
+    "en": "Public quotes (no key)",
+    "zh-TW": "公開行情（免金鑰）",
+    "ja": "公開相場（キー不要）",
+    "ko": "공개 시세 (키 불필요)",
+    "de": "Öffentliche Kurse (ohne Schlüssel)",
+    "fr": "Cours publics (sans clé)",
+    "ru": "Открытые котировки (без ключа)"
+  },
+  "其他物流公司": {
+    "en": "Other carrier",
+    "zh-TW": "其他物流公司",
+    "ja": "その他の配送会社",
+    "ko": "다른 배송업체",
+    "de": "Anderer Versanddienst",
+    "fr": "Autre transporteur",
+    "ru": "Другой перевозчик"
+  },
+  "其他社区联赛": {
+    "en": "Other community leagues",
+    "zh-TW": "其他社群聯賽",
+    "ja": "その他のコミュニティリーグ",
+    "ko": "다른 커뮤니티 리그",
+    "de": "Weitere Community-Ligen",
+    "fr": "Autres ligues communautaires",
+    "ru": "Другие общественные лиги"
+  },
+  "到承运商官网查询": {
+    "en": "Track on carrier website",
+    "zh-TW": "至承運商官網查詢",
+    "ja": "配送会社の公式サイトで確認",
+    "ko": "배송업체 공식 사이트에서 조회",
+    "de": "Beim Versanddienst verfolgen",
+    "fr": "Suivre sur le site du transporteur",
+    "ru": "Проверить на сайте перевозчика"
+  },
+  "复制运单号": {
+    "en": "Copy tracking number",
+    "zh-TW": "複製運單號",
+    "ja": "追跡番号をコピー",
+    "ko": "운송장 번호 복사",
+    "de": "Sendungsnummer kopieren",
+    "fr": "Copier le numéro de suivi",
+    "ru": "Скопировать трек-номер"
+  },
+  "官网查询无需配置接口或密钥。自动更新可使用你自己的物流服务。": {
+    "en": "Official tracking needs no API or key. Automatic updates can use your own tracking service.",
+    "zh-TW": "官網查詢不需設定介面或金鑰。自動更新可使用你自己的物流服務。",
+    "ja": "公式サイトでの確認に API やキーは不要です。自動更新には自身の配送サービスを利用できます。",
+    "ko": "공식 사이트 조회에는 API나 키가 필요하지 않습니다. 자동 업데이트에는 본인의 배송 서비스를 사용할 수 있습니다.",
+    "de": "Die offizielle Sendungsverfolgung benötigt keine API und keinen Schlüssel. Automatische Updates können deinen eigenen Dienst nutzen.",
+    "fr": "Le suivi officiel ne nécessite ni API ni clé. Les mises à jour automatiques peuvent utiliser votre propre service.",
+    "ru": "Для проверки на официальном сайте не нужны API и ключ. Автообновление может использовать ваш сервис отслеживания."
+  },
+  "当前公开联赛中没有匹配球队，可更换联赛或手动关注。": {
+    "en": "No matching team in this public league. Change leagues or follow a team manually.",
+    "zh-TW": "目前公開聯賽中沒有符合的球隊，可更換聯賽或手動追蹤。",
+    "ja": "この公開リーグに一致するチームはありません。リーグを変更するか手動でフォローしてください。",
+    "ko": "현재 공개 리그에 일치하는 팀이 없습니다. 리그를 바꾸거나 직접 팔로우하세요.",
+    "de": "Kein passendes Team in dieser öffentlichen Liga. Wechsle die Liga oder folge einem Team manuell.",
+    "fr": "Aucune équipe correspondante dans cette ligue. Changez de ligue ou suivez une équipe manuellement.",
+    "ru": "В этой открытой лиге команда не найдена. Смените лигу или добавьте команду вручную."
+  },
+  "德国丙级联赛": {
+    "en": "German 3. Liga",
+    "zh-TW": "德國丙級聯賽",
+    "ja": "ドイツ3部リーグ",
+    "ko": "독일 3부 리그",
+    "de": "3. Liga",
+    "fr": "3. Liga allemande",
+    "ru": "Третья лига Германии"
+  },
+  "德国乙级联赛": {
+    "en": "German 2. Bundesliga",
+    "zh-TW": "德國乙級聯賽",
+    "ja": "ドイツ2部リーグ",
+    "ko": "독일 2부 리그",
+    "de": "2. Bundesliga",
+    "fr": "2. Bundesliga allemande",
+    "ru": "Вторая Бундеслига"
+  },
+  "德国甲级联赛": {
+    "en": "German Bundesliga",
+    "zh-TW": "德國甲級聯賽",
+    "ja": "ドイツ・ブンデスリーガ",
+    "ko": "독일 분데스리가",
+    "de": "Bundesliga",
+    "fr": "Bundesliga allemande",
+    "ru": "Бундеслига Германии"
+  },
+  "查看行情": {
+    "en": "View quote",
+    "zh-TW": "查看行情",
+    "ja": "相場を見る",
+    "ko": "시세 보기",
+    "de": "Kurs ansehen",
+    "fr": "Voir le cours",
+    "ru": "Посмотреть котировку"
+  },
+  "此公开行情源不支持该代码。": {
+    "en": "This ticker is not supported by the public source.",
+    "zh-TW": "此公開行情來源不支援該代碼。",
+    "ja": "この公開データ提供元はこの銘柄に対応していません。",
+    "ko": "공개 소스에서 지원하지 않는 종목입니다.",
+    "de": "Diese öffentliche Quelle unterstützt das Kürzel nicht.",
+    "fr": "Ce symbole n’est pas pris en charge par la source publique.",
+    "ru": "Открытый источник не поддерживает этот тикер."
+  },
+  "此市场可在行情网站查看，或选择已授权的数据源。": {
+    "en": "View this market on a quote website or choose a licensed data source.",
+    "zh-TW": "此市場可在行情網站查看，或選擇已授權的資料來源。",
+    "ja": "この市場は相場サイトで閲覧するか、利用権限のあるデータ提供元を選択してください。",
+    "ko": "이 시장은 시세 사이트에서 확인하거나 승인된 데이터 소스를 선택하세요.",
+    "de": "Sieh diesen Markt auf einer Kurswebsite an oder wähle eine lizenzierte Datenquelle.",
+    "fr": "Consultez ce marché sur un site de cotations ou choisissez une source autorisée.",
+    "ru": "Просмотрите этот рынок на сайте котировок или выберите лицензированный источник."
+  },
+  "此市场可直接打开行情网站查看。": {
+    "en": "Open the quote website to view this market.",
+    "zh-TW": "此市場可直接開啟行情網站查看。",
+    "ja": "相場サイトを開くとこの市場を閲覧できます。",
+    "ko": "시세 사이트를 열어 이 시장을 확인할 수 있습니다.",
+    "de": "Öffne die Kurswebsite für diesen Markt.",
+    "fr": "Ouvrez le site de cotations pour consulter ce marché.",
+    "ru": "Откройте сайт котировок для просмотра этого рынка."
+  },
+  "此数据源需要你已授权的 API Key，可改用公开联赛。": {
+    "en": "This source requires your licensed API key. You can use public leagues instead.",
+    "zh-TW": "此資料來源需要你已授權的 API Key，可改用公開聯賽。",
+    "ja": "この提供元には自身の利用権限のある API キーが必要です。公開リーグも利用できます。",
+    "ko": "이 소스는 이용 권한이 있는 API 키가 필요합니다. 공개 리그로 바꿀 수 있습니다.",
+    "de": "Diese Quelle benötigt deinen lizenzierten API-Schlüssel. Alternativ stehen öffentliche Ligen bereit.",
+    "fr": "Cette source nécessite votre clé API autorisée. Vous pouvez utiliser les ligues publiques.",
+    "ru": "Для этого источника нужен ваш лицензированный API-ключ. Можно выбрать открытые лиги."
+  },
+  "联赛代码": {
+    "en": "League code",
+    "zh-TW": "聯賽代碼",
+    "ja": "リーグコード",
+    "ko": "리그 코드",
+    "de": "Ligakürzel",
+    "fr": "Code de ligue",
+    "ru": "Код лиги"
+  },
+  "联赛代码无效。": {
+    "en": "Invalid league code.",
+    "zh-TW": "聯賽代碼無效。",
+    "ja": "リーグコードが無効です。",
+    "ko": "리그 코드가 올바르지 않습니다.",
+    "de": "Ungültiges Ligakürzel.",
+    "fr": "Code de ligue invalide.",
+    "ru": "Неверный код лиги."
+  },
+  "自动物流接口（高级）": {
+    "en": "Automatic tracking API (advanced)",
+    "zh-TW": "自動物流介面（進階）",
+    "ja": "配送の自動更新 API（詳細設定）",
+    "ko": "자동 배송 API (고급)",
+    "de": "Automatische Tracking-API (erweitert)",
+    "fr": "API de suivi automatique (avancé)",
+    "ru": "API автоотслеживания (расширенные настройки)"
+  },
+  "赛季起始年份": {
+    "en": "Season start year",
+    "zh-TW": "賽季起始年份",
+    "ja": "シーズン開始年",
+    "ko": "시즌 시작 연도",
+    "de": "Startjahr der Saison",
+    "fr": "Année de début de saison",
+    "ru": "Год начала сезона"
+  },
+  "赛程来源": {
+    "en": "Schedule source",
+    "zh-TW": "賽程來源",
+    "ja": "日程の提供元",
+    "ko": "일정 소스",
+    "de": "Spielplanquelle",
+    "fr": "Source du calendrier",
+    "ru": "Источник расписания"
+  },
+  "选择承运商": {
+    "en": "Choose carrier",
+    "zh-TW": "選擇承運商",
+    "ja": "配送会社を選択",
+    "ko": "배송업체 선택",
+    "de": "Versanddienst wählen",
+    "fr": "Choisir un transporteur",
+    "ru": "Выбрать перевозчика"
+  }
+}

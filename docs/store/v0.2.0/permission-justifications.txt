@@ -1,0 +1,70 @@
+Covelet v0.2.0 — Chrome Privacy practices 填表文案
+日期：2026-10-22。依据当前 Manifest 和源码；未执行功能测试。
+
+【Single purpose description / 单一用途】
+Provide a customizable new-tab workspace for accessing the user's saved websites and searching with the browser's existing default provider. Folders, multi-screen layout, appearance, packaged desktop widgets, user-initiated tab snapshots and optional configuration sync support this single new-tab purpose. No Covelet account, advertising or browsing surveillance is included.
+
+【storage】
+Store shortcuts, folders, search templates, appearance, layout and local tool records on the user's device. Use chrome.storage.sync for portable configuration only when explicitly enabled. User-configured storage credentials and the sync password use storage.session, not persistent navigation or synced configuration.
+
+【search】
+Use chrome.search.query to submit a default search through the browser's existing search provider without reading or changing the browser's default search settings. Other providers are used only when explicitly selected by the user.
+
+【favicon】
+Read the browser's already-cached favicon for a user-selected shortcut or search-provider origin as an image fallback. This does not enumerate browsing history and does not request persistent page access.
+
+【activeTab】
+When the user explicitly clicks the Covelet toolbar icon, read the invoked page's URL, title and icon declarations to prefill an editable Add Website or Read Later form. Persist the edited entry only on Save; Cancel stores nothing. Do not monitor other pages or tabs.
+
+【scripting】
+Execute a packaged, bounded function on the user-invoked active tab to read title and head icon metadata for the toolbar Add form. No remote scripts are executed or installed, and no persistent content script monitors navigation.
+
+【alarms】
+Schedule local countdown-completion events so a configured countdown can complete while the new-tab page is not foregrounded. This is not a dedicated alarm-clock feature and does not access remote time or location services.
+
+【notifications / optional】
+Request only when the user explicitly enables countdown reminders. Display a local system notification when a configured countdown completes. No notification contents or user records are uploaded to the developer.
+
+【tabs / optional】
+Request only during a user-initiated Save Current Window snapshot action. Read HTTP(S) tab URLs, titles and pinned state from that window, excluding incognito and browser-internal tabs. Store snapshots locally and restore only user-selected links after confirmation in a new window. Do not read page bodies or install passive browsing-history listeners.
+
+【readingList / optional】
+Request only when the user explicitly imports the browser Reading List into Covelet Read Later. Read and merge the records locally without modifying or deleting the browser's original reading list.
+
+【https://www.bing.com/*】
+Retrieve Bing daily-background metadata and its image from the declared Bing host, cache the image on-device and display credits. Requests omit cookies/referrers and contain no shortcuts, search queries, tool contents or sync credentials. Color backgrounds stop subsequent Bing background requests.
+
+【http://*/* and https://*/* / optional host permissions】
+Support arbitrary user-chosen website recognition, a configured public GitHub contribution calendar and user-configured storage endpoints. Request only the concrete origin needed by an explicit user action, reusing existing grants. The optional host declaration does not grant all-site access at installation. Website metadata is bounded inert data; GitHub reads only the configured public calendar; custom-storage requests carry encrypted configuration directly to the chosen service. No bulk crawl of imported/restored/synced shortcuts and no remote executable code.
+
+如后台把所有主机权限合并成一个 Host permission justification 字段，将上面 Bing 和 optional host permissions 两段一起填入。可选权限是否分别出现，以后台实际字段为准。
+
+【Remote code】
+Select: No, I am not using remote code.
+Explanation if requested: All JavaScript and WASM modules ship inside the extension ZIP. Remote website metadata, images, public calendar records and encrypted storage records are processed as data only, never loaded as executable modules. No remote or user-uploaded scripts/WASM are supported.
+
+【Privacy policy URL】
+https://sites.google.com/view/covelet-privacy
+
+【Data usage / 数据使用：按当前实际功能建议披露】
+1. Personally identifiable information / 个人身份信息：勾选。用户可配置 GitHub 用户名及存储账户标识；同步还有随机设备标识。没有 Covelet 注册账户，不代表完全不处理标识信息。
+2. Authentication information / 身份验证信息：勾选。自定义同步接收用户主动输入的 API Token、访问密钥、WebDAV 应用密码与同步密码，使用 storage.session 保留，并连接用户指定服务。开发者不接收这些秘密。
+3. Web history / 网络历史记录：勾选。处理保存/导入的网址、用户主动读取的当前页网址及手动标签快照的网址；不申请 history 权限，也不被动监控全部浏览记录。
+4. Website content / 网站内容：勾选。处理用户选择页面的标题/图标声明、公开 GitHub 贡献数据、用户保存的便笺等内容。
+
+当前没有金融/支付、健康、个人通信、位置或行为追踪的专门收集功能，不因网站连接必然带有 IP 就宣称扩展读取了定位数据。不要把普通编辑/拖拽交互写成使用行为分析。若你后来修改了功能，按实际实现重新判断。
+
+若有说明字段，可填：
+User-selected site URLs/titles, icon metadata, manually captured tab collections and local notes are used only for the disclosed new-tab tools. User-supplied GitHub/storage identifiers and storage authentication secrets support optional configuration only. Native sync is opt-in; custom-storage configuration is encrypted and sent directly to the selected service. Credentials use storage.session. Notes, read-later items and snapshot contents remain local unless explicitly exported. No developer backend, advertising, analytics or passive browsing surveillance is used.
+
+本地处理也需要披露，不能因为开发者没有服务器而全部不勾选。
+
+【数据用途承诺】
+当前实现没有出售用户数据，没有把数据用于披露的单一用途以外目的，也没有用于信用评估或贷款决定。后台对应的三项声明可在你确认文案与实际发行内容一致后勾选。
+
+【Distribution】
+此版本未接入订阅/支付：使用免费分发；Includes in-app purchases / 包含应用内购买商品选择 No。保留你当前需要的发布地区和可见性。
+
+官方参考：
+https://developer.chrome.com/docs/webstore/cws-dashboard-privacy
+https://developer.chrome.com/docs/webstore/program-policies/user-data-faq

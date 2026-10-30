@@ -1,7 +1,7 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { canReadSite, siteOrigin } from './site-info.js';
 import { normalizeIconAddress, guessIconFit } from './site-icons.js';
-import { navigationIcon } from './navigation-icon-cache.js';
+import { navigationIcon, readCachedNavigationIcon, getNavigationIconFailure } from './navigation-icon-cache.js';
 
 const HTML_LIMIT = 512 * 1024, MANIFEST_LIMIT = 64 * 1024;
 const attributes = (tag) => Object.fromEntries([...tag.matchAll(/([a-z-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s<>]+))/gi)].map((match) => [match[1].toLowerCase(), (match[2] ?? match[3] ?? match[4]).replace(/&amp;/g, '&')]));
@@ -58,35 +58,26 @@ async function readBounded(url, limit, signal, prefix = false) {
   } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
 }
 
-async function imageSize(url, signal, candidate) {
-  const local = await navigationIcon(url, { force: true });
+async function imageSize(url, signal, { loadIcon, cachedIcon, forceIcon }) {
+  const local = (!forceIcon && await cachedIcon(url)) || await loadIcon(url, { force: true, signal });
   if (signal?.aborted) throw new DOMException(tr("已取消"), 'AbortError');
   if (local) {
-    if (!candidate.ico && !local.vector && Math.min(local.width, local.height) < 96) throw Error(tr("图标分辨率不合适。"));
     return { width: local.width, height: local.height, vector: local.vector, adaptive: local.adaptive };
   }
-  if (candidate.vector) throw Error(tr("图标不可用。"));
-  return new Promise((resolve, reject) => {
-    const image = new Image(), cleanup = () => { clearTimeout(timer); signal?.removeEventListener('abort', abort); image.onload = null; image.onerror = null; };
-    const fail = () => { cleanup(); image.removeAttribute('src'); reject(Error(tr("图标不可用。"))); };
-    const abort = fail, timer = setTimeout(fail, 4000);
-    signal?.addEventListener('abort', abort, { once: true });
-    if (signal?.aborted) { fail(); return; }
-    image.referrerPolicy = 'no-referrer'; image.crossOrigin = 'anonymous'; image.decoding = 'async';
-    image.onload = () => {
-      const width = image.naturalWidth, height = image.naturalHeight; cleanup();
-      if (Math.min(width, height) < (candidate.ico || candidate.vector ? 1 : 96) || Math.max(width, height) > 4096 || width * height > 4_000_000) reject(Error(tr("图标分辨率不合适。")));
-      else resolve({ width, height, vector: candidate.vector, adaptive: false });
-    };
-    image.onerror = fail; image.src = url;
-  });
+  // An <img> can display a CORS-protected image whose bytes cannot be saved.
+  // Do not report that as successful discovery and re-download it on every tab.
+  throw Object.assign(Error(tr("图标不可用。")), getNavigationIconFailure(url) || {}, { source: url });
 }
 
-async function discoverIcon(input, { api = globalThis.chrome, links, activeTab = false, signal } = {}) {
+async function discoverIcon(input, { api = globalThis.chrome, links, activeTab = false, signal, forceIcon = false,
+  loadIcon = navigationIcon, cachedIcon = readCachedNavigationIcon } = {}) {
   const origin = siteOrigin(input);
   if (!links) {
-    if (!await canReadSite(origin, { api })) throw Error(tr("请允许读取这个网站的图标信息。"));
-    links = publishedIconLinks(await readBounded(`${origin}/`, HTML_LIMIT, signal, true), origin);
+    links = [];
+    if (await canReadSite(origin, { api })) {
+      try { links = publishedIconLinks(await readBounded(`${origin}/`, HTML_LIMIT, signal, true), origin); }
+      catch { /* An unavailable homepage must not hide its usable favicon. */ }
+    }
   }
   const candidates = [];
   function add(url, scheme, score, fit, type = '') {
@@ -94,10 +85,21 @@ async function discoverIcon(input, { api = globalThis.chrome, links, activeTab =
     const ico = /image\/(?:x-icon|vnd\.microsoft\.icon)/i.test(type) || /\.ico(?:[?#]|$)/i.test(url);
     candidates.push({ url, scheme, score, fit: vector ? 'contain' : fit, vector, ico });
   }
+  const decoded = new Map(), failures = [];
+  const decode = (url) => {
+    if (!decoded.has(url)) decoded.set(url, imageSize(url, signal, { loadIcon, cachedIcon, forceIcon }));
+    return decoded.get(url);
+  };
+  // Obtain a usable ordinary image before spending time on manifests and HD
+  // probes. Quality upgrades can fail without discarding this saved baseline.
+  const baselineUrl = `${origin}/favicon.ico`;
+  let baseline = null;
+  try { baseline = { url: baselineUrl, fit: 'contain', ...await decode(baselineUrl) }; }
+  catch (error) { failures.push(error); }
   const edgeSize = (sizes) => Math.max(0, ...String(sizes || '').split(/\s+/).map((size) => { const match = size.match(/^(\d+)x(\d+)$/i); return match ? Math.min(Number(match[1]), Number(match[2])) : 0; }));
   let manifests = 0;
   for (const link of links.slice(0, 24)) {
-    if (signal?.aborted) throw new DOMException(tr("已取消"), 'AbortError');
+    if (signal?.aborted) break;
     const url = urlAt(link.url, origin), scheme = iconScheme(link.media);
     if (!url || !scheme) continue;
     if (/manifest/i.test(link.rel)) {
@@ -120,7 +122,6 @@ async function discoverIcon(input, { api = globalThis.chrome, links, activeTab =
   // background crawl of the desktop. No additional host permission is requested.
   for (const path of ['/apple-touch-icon.png', '/apple-touch-icon-precomposed.png', '/android-chrome-192x192.png']) add(`${origin}${path}`, 'any', 50, 'cover');
   add(`${origin}/favicon.ico`, 'any', -100, 'contain');
-  const decoded = new Map();
   async function bestFor(predicate, limit, adaptiveOnly = false) {
     const seen = new Set(); let best = null;
     for (const candidate of candidates.filter(predicate).sort((a, b) => b.score - a.score)) {
@@ -131,14 +132,14 @@ async function discoverIcon(input, { api = globalThis.chrome, links, activeTab =
         if (!decoded.has(candidate.url)) {
           // Reserve the last two decode slots for ordinary ICO fallback.
           if (decoded.size >= (candidate.ico ? 9 : 7)) continue;
-          decoded.set(candidate.url, imageSize(candidate.url, signal, candidate));
+          decode(candidate.url);
         }
         const size = await decoded.get(candidate.url), edge = Math.min(size.width, size.height), square = edge / Math.max(size.width, size.height);
         if (adaptiveOnly && !size.adaptive) continue;
         const quality = (size.vector ? 512 : Math.min(512, edge)) * square + Math.min(1700, candidate.score) / 30;
         if (!best || quality > best.quality) best = { url: candidate.url, fit: candidate.fit, ...size, quality };
         if ((size.vector || edge >= 512) && square > .95) break;
-      } catch { /* Try another declared raster, within this group's budget. */ }
+      } catch (error) { failures.push(error); }
     }
     if (best) { const { quality: _quality, ...result } = best; return result; }
     return null;
@@ -156,18 +157,30 @@ async function discoverIcon(input, { api = globalThis.chrome, links, activeTab =
     light: { url: adaptive.url, fit: adaptive.fit }, dark: { url: adaptive.url, fit: adaptive.fit },
   } };
   const ordinary = await bestFor((item) => !item.ico && ['any', 'light'].includes(item.scheme), 5);
-  const best = ordinary || light || await bestFor((item) => item.ico && item.scheme === 'any', 2);
-  if (signal?.aborted) throw new DOMException(tr("已取消"), 'AbortError');
+  const other = ordinary || light || await bestFor((item) => item.ico && item.scheme === 'any', 2);
+  const quality = (item) => item ? (item.vector ? 512 : Math.min(512, Math.min(item.width, item.height))) * Math.min(item.width, item.height) / Math.max(item.width, item.height) : -1;
+  const best = quality(other) >= quality(baseline) ? other : baseline;
   if (best) return best;
-  throw Error(tr("网站未提供可用的高清图标，已保留原图。"));
+  const failure = failures.find((error) => error.code === 'ACCESS') || failures.find((error) => error.code && error.code !== 'CANCELLED');
+  throw Object.assign(Error(tr("图标不可用。")), failure ? { code: failure.code, source: failure.source,
+    ...(Number.isInteger(failure.httpStatus) ? { httpStatus: failure.httpStatus } : {}) } : {});
 }
 
 export async function discoverHighResolutionIcon(input, options = {}) {
   const controller = new AbortController(), abort = () => controller.abort();
-  const timer = setTimeout(abort, 12000);
+  const duration = Number.isFinite(options.timeoutMs) ? Math.max(1, Math.min(12000, options.timeoutMs)) : 12000;
+  const timer = setTimeout(abort, duration);
   options.signal?.addEventListener('abort', abort, { once: true });
   if (options.signal?.aborted) controller.abort();
-  try { return await discoverIcon(input, { ...options, signal: controller.signal }); }
+  try {
+    const result = await discoverIcon(input, { ...options, signal: controller.signal });
+    if (options.signal?.aborted) throw new DOMException(tr("已取消"), 'AbortError');
+    return result;
+  }
+  catch (error) {
+    if (options.signal?.aborted) throw new DOMException(tr('已取消'), 'AbortError');
+    throw error;
+  }
   finally { clearTimeout(timer); options.signal?.removeEventListener('abort', abort); }
 }
 

@@ -48,6 +48,27 @@ export function siteIconAddress(entry) {
   catch { return faviconAddress(entry.url); }
 }
 
+// A local upload/native image remains the primary source until the caller
+// confirms its asset is missing. Only its explicitly saved URL is eligible
+// for a local-cache fallback; never guess a website favicon for that asset.
+export function navigationIconDisplaySources(entry, scheme = 'light', visualEnabled = true) {
+  const result = { primary: '', fallback: '', localAssetId: '', explicitFallback: '' };
+  if (entry?.type !== 'site') return result;
+  if (entry.icon?.kind === 'image') {
+    result.localAssetId = entry.icon.value;
+    try { result.explicitFallback = normalizeIconAddress(entry.iconUrl); } catch { /* The asset may have no portable source. */ }
+    return result;
+  }
+  const base = siteIconAddress(entry);
+  const variants = visualEnabled && entry.iconVariants?.light && entry.iconVariants?.dark ? entry.iconVariants : null;
+  let selected = '';
+  try { if (variants) selected = normalizeIconAddress(variants[scheme === 'dark' ? 'dark' : 'light'].url); }
+  catch { /* A malformed variant must not hide the valid base picture. */ }
+  result.primary = selected || base;
+  result.fallback = selected && selected !== base ? base : '';
+  return result;
+}
+
 export function preferredIconAddress(input) { return faviconAddress(input); }
 export function guessIconFit(address) {
   if (/monochrome/i.test(address)) return 'contain';

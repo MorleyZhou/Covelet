@@ -1,12 +1,17 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { Inflate, zipSync, strToU8 } from 'fflate';
 import { createEmptyState, createInitialState, validateState, migrateNavigationState } from './model.js';
-import { browserSyncStore, createReplica, validateReplica, combineReplicas, recordChanges, portableState, materializeState, syncConflicts, readReplicas, publishReplica } from './sync.js';
+import { localData, createEncryptedStore } from './local-data.js';
+import { migrateLegacyIndexedDb } from './legacy-indexed-data.js';
+import { normalizeIconAddress, siteIconAddress } from './site-icons.js';
+import { readNavigationIconResource, restoreNavigationIconResource, retainNavigationIconResources } from './navigation-icon-cache.js';
+import { prepareImportedNavigationIcons } from './navigation-icon-intake.js';
+import { ICON_IMAGE_LIMIT } from './icon-image-format.js';
 
 const STORE_KEY = 'owntab.local.v1';
 const LOCK_NAME = 'owntab.local.write.v1';
 const MiB = 1024 * 1024;
-const LIMITS = { archive: 30 * MiB, expanded: 80 * MiB, image: 10 * MiB, json: 2 * MiB, entries: 2200, pixels: 40_000_000 };
+const LIMITS = { archive: 30 * MiB, expanded: 80 * MiB, image: 10 * MiB, icon: ICON_IMAGE_LIMIT, json: 2 * MiB, entries: 14002, pixels: 40_000_000 };
 const MIME_EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 const decoder = new TextDecoder('utf-8', { fatal: true });
 
@@ -23,6 +28,29 @@ function assetReferences(state) {
   if (state.settings.background.kind === 'image') ids.add(state.settings.background.value);
   for (const entry of state.entries) if (entry.icon?.kind === 'image') ids.add(entry.icon.value);
   return ids;
+}
+function iconReferences(state) {
+  return new Set(state.entries.filter((entry) => entry.type === 'site' && entry.icon?.kind !== 'image').flatMap((entry) => [
+    siteIconAddress(entry), entry.iconVariants?.light?.url, entry.iconVariants?.dark?.url,
+  ]).filter(Boolean).map(normalizeIconAddress));
+}
+
+async function verifyIconResource(record, tools) {
+  if (!record || typeof record !== 'object' || Array.isArray(record)
+    || Object.keys(record).some((key) => !['url', 'blob', 'darkBlob', 'width', 'height', 'vector', 'adaptive', 'updatedAt'].includes(key))
+    || normalizeIconAddress(record.url) !== record.url || !Number.isInteger(record.width) || !Number.isInteger(record.height)
+    || record.width < 1 || record.height < 1 || record.width > 4096 || record.height > 4096 || record.width * record.height > 4_000_000
+    || typeof record.vector !== 'boolean' || typeof record.adaptive !== 'boolean' || !Number.isFinite(record.updatedAt) || record.updatedAt < 0
+    || (!record.adaptive && record.darkBlob !== undefined)) fail(tr('备份资源清单无效。'));
+  const result = [];
+  for (const blob of [record.blob, ...(record.adaptive ? [record.darkBlob] : [])]) {
+    if (!(blob instanceof Blob) || blob.size > LIMITS.icon) fail(tr('备份资源清单无效。'));
+    const bytes = await verifyImage(blob, tools), header = imageHeader(bytes, blob.type);
+    if (!((header.width === record.width && header.height === record.height)
+      || (header.width === record.height && header.height === record.width))) fail(tr('图片尺寸信息不一致。'));
+    result.push(bytes);
+  }
+  return result;
 }
 
 function remapAssets(state, ids) {
@@ -133,52 +161,24 @@ async function verifyImage(blob, tools) {
   return bytes;
 }
 
-function chromeAvailable() { return Boolean(globalThis.chrome?.storage?.local && globalThis.chrome?.runtime?.id); }
 function extensionPage() { return ['chrome-extension:', 'moz-extension:'].includes(globalThis.location?.protocol); }
 
 function browserConfig() {
-  const chromeMode = chromeAvailable();
-  if (!chromeMode && extensionPage()) fail(tr("扩展本地存储不可用，未切换到预览存储。"), 'STORAGE_UNAVAILABLE');
   const listeners = new Set();
-  const storage = chromeMode ? globalThis.chrome.storage : null;
   const notify = (value) => { for (const listener of listeners) listener(value?.state ? clone(value.state) : null); };
   let stopExternal;
-  const chromeCall = (method, argument) => new Promise((resolve, reject) => {
-    try {
-      storage.local[method](argument, (result) => {
-        const error = globalThis.chrome.runtime.lastError;
-        if (error) reject(new Error(error.message));
-        else resolve(result);
-      });
-    } catch (error) { reject(error); }
-  });
   return {
-    requireLocks: chromeMode,
+    requireLocks: Boolean(globalThis.chrome?.runtime?.id) || extensionPage(),
     async read() {
-      if (chromeMode) return (await chromeCall('get', STORE_KEY))[STORE_KEY] ?? null;
-      const value = globalThis.localStorage.getItem(STORE_KEY);
-      return value ? JSON.parse(value) : null;
+      return (await localData.get(STORE_KEY))[STORE_KEY] ?? null;
     },
     async write(envelope) {
-      if (chromeMode) await chromeCall('set', { [STORE_KEY]: envelope });
-      else { globalThis.localStorage.setItem(STORE_KEY, JSON.stringify(envelope)); notify(envelope); }
+      await localData.set({ [STORE_KEY]: envelope });
     },
     subscribe(callback) {
       listeners.add(callback);
       if (!stopExternal) {
-        if (chromeMode) {
-          const listener = (changes, area) => { if (area === 'local' && changes[STORE_KEY]) notify(changes[STORE_KEY].newValue); };
-          storage.onChanged.addListener(listener);
-          stopExternal = () => storage.onChanged.removeListener(listener);
-        } else {
-          const listener = (event) => {
-            if (event.key === STORE_KEY && event.storageArea === globalThis.localStorage) {
-              try { notify(event.newValue ? JSON.parse(event.newValue) : null); } catch { /* Ignore malformed external events. */ }
-            }
-          };
-          globalThis.addEventListener('storage', listener);
-          stopExternal = () => globalThis.removeEventListener('storage', listener);
-        }
+        stopExternal = localData.subscribe((changes) => { if (changes[STORE_KEY]) notify(changes[STORE_KEY].newValue); });
       }
       return () => {
         listeners.delete(callback);
@@ -188,32 +188,22 @@ function browserConfig() {
   };
 }
 
-function indexedAssets() {
-  let pending;
-  const open = () => pending ??= new Promise((resolve, reject) => {
-    if (!globalThis.indexedDB) { reject(new Error(tr("本地图片存储不可用。"))); return; }
-    const request = indexedDB.open('owntab-assets', 1);
-    request.onupgradeneeded = () => request.result.createObjectStore('assets', { keyPath: 'id' });
-    request.onsuccess = () => { request.result.onversionchange = () => { request.result.close(); pending = undefined; }; resolve(request.result); };
-    request.onerror = () => { pending = undefined; reject(request.error); };
-    request.onblocked = () => reject(new Error(tr("请关闭旧版本 Covelet 标签页后重试。")));
-  });
-  const run = async (mode, action) => {
-    const db = await open();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('assets', mode);
-      const request = action(transaction.objectStore('assets'));
-      let result;
-      request.onsuccess = () => { result = request.result; };
-      transaction.oncomplete = () => resolve(result);
-      transaction.onerror = () => reject(transaction.error || request.error);
-      transaction.onabort = () => reject(transaction.error || request.error || new Error(tr("图片存储已取消。")));
-    });
-  };
+function encryptedAssets() {
+  const records = createEncryptedStore('assets');
+  const ready = () => migrateLegacyIndexedDb('owntab-assets', 'assets', records, (record) => record.id);
+  const mutate = (action) => globalThis.navigator?.locks?.request
+    ? navigator.locks.request('covelet.assets.write.v1', action) : action();
   return {
-    get: (id) => run('readonly', (store) => store.get(id)),
-    add: (record) => run('readwrite', (store) => store.add(record)),
-    delete: (id) => run('readwrite', (store) => store.delete(id)),
+    async get(id) { await ready(); return records.get(id); },
+    async add(record) {
+      await ready();
+      return mutate(async () => {
+        const existing = await records.get(record.id);
+        if (existing !== undefined && existing !== null) throw new DOMException('Key already exists in the object store.', 'ConstraintError');
+        await records.set(record.id, record);
+      });
+    },
+    async delete(id) { await ready(); return mutate(() => records.remove(id)); },
   };
 }
 
@@ -247,9 +237,9 @@ function zipDirectory(bytes) {
     const local = u32(offset + 42);
     if (offset + 46 + nameLength + extraLength + commentLength > end) fail(tr("ZIP 条目越界。"));
     const name = decoder.decode(bytes.subarray(offset + 46, offset + 46 + nameLength));
-    if (!/^(manifest\.json|data\.json|assets\/[A-Za-z0-9_-]{1,80}\.(png|jpg|webp))$/.test(name) || names.has(name)) fail(tr("备份包含未知、重复或不安全的文件路径。"));
+    if (!/^(manifest\.json|data\.json|(?:assets|icons)\/[A-Za-z0-9_-]{1,80}\.(png|jpg|webp))$/.test(name) || names.has(name)) fail(tr("备份包含未知、重复或不安全的文件路径。"));
     if ((flags & ~0x0808) || ![0, 8].includes(method) || u16(offset + 34) || (u32(offset + 38) >>> 16 & 0xf000) === 0xa000) fail(tr("备份包含不支持的 ZIP 条目。"));
-    const limit = name.startsWith('assets/') ? LIMITS.image : LIMITS.json;
+    const limit = name.startsWith('assets/') ? LIMITS.image : name.startsWith('icons/') ? LIMITS.icon : LIMITS.json;
     if (!original || original > limit || compressed > LIMITS.archive || (method === 0 && compressed !== original)) fail(tr("备份条目超出大小限制。"));
     expanded += original;
     if (expanded > LIMITS.expanded) fail(tr("备份解压后超过 80 MiB。"));
@@ -315,46 +305,21 @@ function parseJson(bytes) {
 }
 
 // Adapters make backup and transaction tests independent of a real browser database.
-export function createStorage({ configStore, assetStore, locks, syncStore, initialState = createEmptyState, syncDelay = 1500, syncMinInterval = 10000, imageTools = browserImages, uuid = () => crypto.randomUUID() } = {}) {
+export function createStorage({ configStore, assetStore, iconResources = { read: readNavigationIconResource, restore: restoreNavigationIconResource,
+  prepare: prepareImportedNavigationIcons, retain: retainNavigationIconResources }, locks, initialState = createEmptyState, imageTools = browserImages, uuid = () => crypto.randomUUID() } = {}) {
   let config;
   let assets;
   let serial = Promise.resolve();
-  let nativeSync;
-  let syncTimer;
-  let syncFlight;
-  let started = false;
-  let lastEnabled = false;
-  let lastBlockedError = null;
-  let initialSync;
-  let status = { enabled: false, phase: 'disabled', message: tr("浏览器同步尚未开启；数据仅保存在本机。") };
-  const statusListeners = new Set();
-  const getNativeSync = () => nativeSync === undefined ? (nativeSync = syncStore === undefined ? browserSyncStore() : syncStore) : nativeSync;
-  const setStatus = (next) => { status = next; for (const listener of statusListeners) { try { listener(clone(status)); } catch { /* A view subscriber cannot abort persistence. */ } } return clone(status); };
-  const syncMetadata = (value, fresh = false) => {
-    if (!value) {
-      if (!initialSync) {
-        const baseline = fresh ? checkedState(initialState()) : createEmptyState();
-        // Track the initial sites locally before sync is enabled, so removing
-        // one before the first sync still produces a deletion, not a reseed.
-        const document = recordChanges(createReplica(uuid()), createEmptyState(), baseline);
-        initialSync = { version: 1, enabled: false, document, documents: {}, base: portableState(baseline), dirty: false, lastPublishedAt: 0, blockedError: null };
-      }
-      return clone(initialSync);
-    }
-    if (value.version !== 1 || typeof value.enabled !== 'boolean' || typeof value.dirty !== 'boolean') fail(tr("本地同步元数据无效。"), 'SYNC_INVALID');
-    const document = validateReplica(value.document);
-    return { version: 1, enabled: value.enabled, dirty: value.dirty, document,
-      lastPublishedAt: Number.isFinite(value.lastPublishedAt) ? Math.max(0, value.lastPublishedAt) : 0,
-      blockedError: typeof value.blockedError === 'string' ? value.blockedError.slice(0, 1000) : null,
-      documents: combineReplicas(value.documents, { [document.actor]: document }), base: portableState(value.base) };
-  };
+  const retiredSyncStatus = () => ({ enabled: false, phase: 'disabled', message: tr("浏览器同步已停用，请使用自选存储同步。") });
   const getConfig = () => config ??= configStore || browserConfig();
-  const getAssets = () => assets ??= assetStore || indexedAssets();
+  const getAssets = () => assets ??= assetStore || encryptedAssets();
   const readEnvelope = async () => {
     const envelope = await getConfig().read();
-    if (!envelope) return { version: 1, state: checkedState(initialState()), snapshots: [], sync: syncMetadata(undefined, true) };
+    if (!envelope) return { version: 1, state: checkedState(initialState()), snapshots: [] };
     if (envelope.version !== 1 || !Array.isArray(envelope.snapshots) || envelope.snapshots.length > 3) fail(tr("本地配置版本无效；请先导出数据后再处理。"), 'INVALID_STORAGE');
-    return { version: 1, state: migrateNavigationState(envelope.state), snapshots: envelope.snapshots.map(checkedState), sync: syncMetadata(envelope.sync) };
+    // Retired browser-sync metadata is retained verbatim for compatibility.
+    // It is no longer interpreted, updated or allowed to limit local saves.
+    return { ...clone(envelope), state: migrateNavigationState(envelope.state), snapshots: envelope.snapshots.map(checkedState) };
   };
   const exclusive = (action) => {
     const manager = locks || globalThis.navigator?.locks;
@@ -364,67 +329,25 @@ export function createStorage({ configStore, assetStore, locks, syncStore, initi
     serial = next.catch(() => {});
     return next;
   };
-  const queueSync = () => {
-    if (!lastEnabled || !getNativeSync()) return;
-    clearTimeout(syncTimer);
-    if (lastBlockedError) {
-      setStatus({ enabled: true, phase: 'error', message: tr("同步已暂停：{0} 本地修改已保存，可导出 ZIP 备份。", [lastBlockedError]) });
-      return;
-    }
-    setStatus({ enabled: true, phase: 'pending', message: tr("本地数据已保存，等待写入浏览器同步区。") });
-    syncTimer = setTimeout(() => { api.syncNow().catch(() => {}); }, syncDelay);
-    syncTimer.unref?.();
-  };
-  const start = () => {
-    if (started) return;
-    started = true;
-    getConfig().subscribe(() => {
-      readEnvelope().then((envelope) => {
-        lastEnabled = envelope.sync.enabled;
-        lastBlockedError = envelope.sync.blockedError;
-        if (lastEnabled) queueSync();
-        else setStatus({ enabled: false, phase: getNativeSync() ? 'disabled' : 'preview', message: getNativeSync() ? tr("浏览器同步已关闭；本地数据和已有同步区数据均保留。") : tr("网页预览不支持浏览器同步，请加载扩展后使用。") });
-      }).catch((cause) => setStatus({ enabled: lastEnabled, phase: 'error', message: cause.message }));
-    });
-    getNativeSync()?.subscribe(queueSync);
-  };
-  const updateLocalReplica = (metadata, before, after, forced) => {
-    if (!metadata.enabled) return metadata;
-    try {
-      const documents = combineReplicas(metadata.documents, { [metadata.document.actor]: metadata.document });
-      const document = recordChanges(metadata.document, metadata.blockedError ? metadata.base : before, after, documents, forced);
-      return { ...metadata, document, documents: combineReplicas(documents, { [document.actor]: document }), base: portableState(after),
-        dirty: metadata.dirty || document.clock !== metadata.document.clock, blockedError: null };
-    } catch (cause) {
-      // Protocol limits must not reject an otherwise valid local edit. Keep the
-      // old baseline so a later retry accounts for every untracked local change.
-      return { ...metadata, blockedError: cause.message || tr("同步记录无法生成。") };
-    }
-  };
   const writeState = async (next, expectedRevision) => {
     if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0) fail(tr("保存时缺少有效的数据版本。"), 'REVISION_CONFLICT');
     const envelope = await readEnvelope();
     if (envelope.state.revision !== expectedRevision) fail(tr("数据已在另一个标签页更新，请重新加载后再试。"), 'REVISION_CONFLICT');
     const saved = migrateNavigationState({ ...clone(next), revision: expectedRevision + 1 });
     if (strToU8(JSON.stringify(saved)).length > LIMITS.json) fail(tr("配置数据超过 2 MiB。"), 'STORAGE_LIMIT');
-    const sync = updateLocalReplica(envelope.sync, envelope.state, saved);
-    await getConfig().write({ version: 1, state: saved, snapshots: [envelope.state, ...envelope.snapshots].slice(0, 3), sync });
-    lastEnabled = sync.enabled;
-    lastBlockedError = sync.blockedError;
-    queueSync();
+    await getConfig().write({ ...envelope, state: saved, snapshots: [envelope.state, ...envelope.snapshots].slice(0, 3) });
     return clone(saved);
   };
+  const prepareIcons = async (state, options) => {
+    if (options.hydrateIcons === false || !iconResources.prepare) return;
+    const entryIds = Array.isArray(options.iconEntryIds) ? new Set(options.iconEntryIds) : null;
+    const report = await iconResources.prepare(entryIds ? { ...state, entries: state.entries.filter((entry) => entryIds.has(entry.id)) } : state, options);
+    if (report?.cancelled) fail(tr('数据已更新，已停止本次图标补齐，请重试。'), 'REVISION_CONFLICT');
+    try { options.onIconResult?.(report); } catch { /* UI observers cannot interrupt a validated restoration. */ }
+  };
   const api = {
-    async loadState() {
-      start();
-      const envelope = await readEnvelope();
-      lastEnabled = envelope.sync.enabled;
-      lastBlockedError = envelope.sync.blockedError;
-      if (!getNativeSync()) setStatus({ enabled: false, phase: 'preview', message: tr("网页预览不支持浏览器同步，请加载扩展后使用。") });
-      else if (lastEnabled) queueSync();
-      return envelope.state;
-    },
-    saveState(next, expectedRevision) { start(); return exclusive(() => writeState(next, expectedRevision)); },
+    async loadState() { return (await readEnvelope()).state; },
+    saveState(next, expectedRevision) { return exclusive(() => writeState(next, expectedRevision)); },
     subscribeState(callback) {
       return getConfig().subscribe((state) => {
         try { callback(state ? migrateNavigationState(state) : checkedState(createEmptyState())); }
@@ -443,6 +366,7 @@ export function createStorage({ configStore, assetStore, locks, syncStore, initi
     async getAssetUrl(id) {
       const asset = await getAssets().get(id);
       if (!asset?.blob) fail(tr("本地图片不存在，请重新选择图片或恢复完整备份。"), 'MISSING_ASSET');
+      await verifyImage(asset.blob, imageTools);
       return URL.createObjectURL(asset.blob);
     },
     async exportBackup(state) {
@@ -452,7 +376,7 @@ export function createStorage({ configStore, assetStore, locks, syncStore, initi
       const files = Object.create(null);
       files['data.json'] = strToU8(JSON.stringify(data));
       if (files['data.json'].length > LIMITS.json) fail(tr("配置数据超过 2 MiB。"));
-      const manifest = { format: 'owntab-backup', version: 1, createdAt: new Date().toISOString(), assets: [] };
+      const manifest = { format: 'owntab-backup', version: 2, createdAt: new Date().toISOString(), assets: [], icons: [] };
       let total = files['data.json'].length;
       for (const [index, id] of references.entries()) {
         const asset = await getAssets().get(id);
@@ -463,6 +387,25 @@ export function createStorage({ configStore, assetStore, locks, syncStore, initi
         files[path] = bytes;
         total += bytes.length;
         if (total > LIMITS.expanded) fail(tr("备份解压后超过 80 MiB。"));
+      }
+      // URL configuration alone cannot restore images while offline. Include
+      // only referenced persistent originals, including both adaptive schemes;
+      // exporting never discovers sites or downloads missing artwork.
+      for (const source of iconReferences(data)) {
+        const record = await iconResources.read(source);
+        if (!record) continue;
+        let blobs;
+        try { blobs = await verifyIconResource(record, imageTools); } catch { continue; }
+        if (record.url !== source) fail(tr('备份资源清单无效。'));
+        const item = { url: source, width: record.width, height: record.height, vector: record.vector, adaptive: record.adaptive, updatedAt: record.updatedAt };
+        for (const [index, bytes] of blobs.entries()) {
+          const field = index ? 'darkBlob' : 'blob', blob = record[field];
+          const path = `icons/${manifest.icons.length}${index ? '-dark' : ''}.${MIME_EXT[blob.type]}`;
+          item[field] = { path, mime: blob.type, bytes: bytes.length, sha256: await sha256(bytes) };
+          files[path] = bytes; total += bytes.length;
+          if (total > LIMITS.expanded || Object.keys(files).length + 1 > LIMITS.entries) fail(tr('备份清单或资源超出限制。'));
+        }
+        manifest.icons.push(item);
       }
       files['manifest.json'] = strToU8(JSON.stringify(manifest));
       if (files['manifest.json'].length > LIMITS.json || total + files['manifest.json'].length > LIMITS.expanded) fail(tr("备份清单或资源超出限制。"));
@@ -475,7 +418,9 @@ export function createStorage({ configStore, assetStore, locks, syncStore, initi
       const raw = new Uint8Array(await file.arrayBuffer());
       const files = extractZip(raw, zipDirectory(raw));
       const manifest = parseJson(files.get('manifest.json'));
-      if (manifest?.format !== 'owntab-backup' || manifest.version !== 1 || !Array.isArray(manifest.assets) || manifest.assets.length + 2 !== files.size) fail(tr("备份格式或版本不受支持。"));
+      if (manifest?.format !== 'owntab-backup' || ![1, 2].includes(manifest.version) || !Array.isArray(manifest.assets)
+        || manifest.version === 2 && !Array.isArray(manifest.icons)
+        || manifest.version === 1 && Object.hasOwn(manifest, 'icons')) fail(tr("备份格式或版本不受支持。"));
       const state = checkedState(parseJson(files.get('data.json')));
       const references = assetReferences(state);
       const restoredAssets = new Map();
@@ -489,22 +434,66 @@ export function createStorage({ configStore, assetStore, locks, syncStore, initi
         restoredAssets.set(asset.id, { blob, mime: asset.mime, sha256: asset.sha256 });
         paths.add(asset.path);
       }
+      const restoredIcons = new Map(), sourceReferences = iconReferences(state);
+      if ((manifest.icons?.length || 0) > sourceReferences.size) fail(tr('备份资源清单无效。'));
+      for (const item of manifest.icons || []) {
+        if (!item || typeof item !== 'object' || Array.isArray(item) || !sourceReferences.has(item.url) || restoredIcons.has(item.url)
+          || Object.keys(item).some((key) => !['url', 'blob', 'darkBlob', 'width', 'height', 'vector', 'adaptive', 'updatedAt'].includes(key))) fail(tr('备份资源清单无效。'));
+        const record = { ...item };
+        for (const field of ['blob', ...(item.adaptive ? ['darkBlob'] : [])]) {
+          const resource = item[field];
+          if (!resource || typeof resource !== 'object' || Array.isArray(resource) || Object.keys(resource).length !== 4
+            || Object.keys(resource).some((key) => !['path', 'mime', 'bytes', 'sha256'].includes(key))
+            || !MIME_EXT[resource.mime] || typeof resource.path !== 'string' || !/^icons\/[A-Za-z0-9_-]{1,80}\.(png|jpg|webp)$/.test(resource.path)
+            || paths.has(resource.path) || !Number.isSafeInteger(resource.bytes) || !/^[a-f0-9]{64}$/.test(resource.sha256)) fail(tr('备份资源清单无效。'));
+          const bytes = files.get(resource.path);
+          if (!bytes || bytes.length !== resource.bytes || resource.path.split('.').at(-1) !== MIME_EXT[resource.mime]
+            || await sha256(bytes) !== resource.sha256) fail(tr('备份图片缺失、大小或哈希校验不一致。'));
+          record[field] = new Blob([bytes], { type: resource.mime }); paths.add(resource.path);
+        }
+        await verifyIconResource(record, imageTools); restoredIcons.set(item.url, record);
+      }
       if (references.size !== restoredAssets.size || paths.size !== files.size) fail(tr("备份未完整包含所有图片资源。"));
-      return { state, assets: restoredAssets, summary: { sites: state.entries.filter((entry) => entry.type !== 'folder').length, folders: state.entries.filter((entry) => entry.type === 'folder').length, groups: state.groups.length, assets: restoredAssets.size, bytes: raw.length } };
+      return { state, assets: restoredAssets, icons: restoredIcons, summary: { sites: state.entries.filter((entry) => entry.type !== 'folder').length, folders: state.entries.filter((entry) => entry.type === 'folder').length, groups: state.groups.length, assets: restoredAssets.size, bytes: raw.length } };
     },
-    async restoreBackup(plan, currentRevision) {
-      const legacyState = checkedState(plan?.state);
+    async validateBackupPlan(plan) {
+      const legacyState = checkedState(plan?.state), state = migrateNavigationState(legacyState);
+      if (!(plan.assets instanceof Map)) fail(tr('请先检查备份文件。'));
+      const references = assetReferences(state);
+      if (assetReferences(legacyState).size !== plan.assets.size || [...references].some((id) => !plan.assets.has(id))) fail(tr('备份图片引用不完整。'));
+      for (const id of assetReferences(legacyState)) {
+        const asset = plan.assets.get(id);
+        if (!asset?.blob || await sha256(await verifyImage(asset.blob, imageTools)) !== asset.sha256) fail(tr('恢复前的图片校验失败。'));
+      }
+      const icons = plan.icons === undefined ? new Map() : plan.icons;
+      if (!(icons instanceof Map)) fail(tr('备份资源清单无效。'));
+      const sources = iconReferences(legacyState);
+      for (const [source, record] of icons) {
+        if (!sources.has(source) || record?.url !== source) fail(tr('备份资源清单无效。'));
+        await verifyIconResource(record, imageTools);
+      }
+      return { ...plan, state: legacyState, assets: new Map(plan.assets), icons: new Map(icons) };
+    },
+    async restoreBackup(plan, currentRevision, options = {}) {
+      if (!Number.isSafeInteger(currentRevision) || (await readEnvelope()).state.revision !== currentRevision) fail(tr('数据已在另一个标签页更新，请重新加载后再试。'), 'REVISION_CONFLICT');
+      const checked = await api.validateBackupPlan(plan);
+      const legacyState = checked.state;
       const state = migrateNavigationState(legacyState);
       if (!(plan.assets instanceof Map)) fail(tr("请先检查备份文件。"));
       const references = assetReferences(state);
       if (assetReferences(legacyState).size !== plan.assets.size || [...references].some((id) => !plan.assets.has(id))) fail(tr("备份图片引用不完整。"));
       const ids = new Map();
       const staged = [];
+      const releaseIcons = iconResources.retain?.(state);
       try {
         for (const id of assetReferences(legacyState)) {
           const asset = plan.assets.get(id);
           if (!asset?.blob || await sha256(await verifyImage(asset.blob, imageTools)) !== asset.sha256) fail(tr("恢复前的图片校验失败。"));
         }
+        for (const record of checked.icons.values()) {
+          if (!await iconResources.restore(record)) fail(tr('图片保存失败。'), 'MISSING_ASSET');
+        }
+        await prepareIcons(state, options);
         for (const id of references) {
           const asset = plan.assets.get(id);
           const nextId = uuid();
@@ -516,123 +505,38 @@ export function createStorage({ configStore, assetStore, locks, syncStore, initi
       } catch (error) {
         await Promise.allSettled(staged.map((id) => getAssets().delete(id)));
         throw error;
-      }
+      } finally { releaseIcons?.(); }
     },
-    restoreSnapshot(expectedRevision) {
-      return exclusive(async () => {
-        const envelope = await readEnvelope();
-        if (envelope.state.revision !== expectedRevision) fail(tr("数据已在另一个标签页更新。"), 'REVISION_CONFLICT');
-        const previous = envelope.snapshots[0] && migrateNavigationState(envelope.snapshots[0]);
-        if (!previous) fail(tr("还没有可恢复的本地快照。"), 'NO_SNAPSHOT');
-        for (const id of assetReferences(previous)) if (!(await getAssets().get(id))?.blob) fail(tr("快照依赖的图片不存在，未改变当前数据。"), 'MISSING_ASSET');
-        return writeState(previous, expectedRevision);
-      });
+    async restoreSnapshot(expectedRevision, options = {}) {
+      const envelope = await readEnvelope();
+      if (envelope.state.revision !== expectedRevision) fail(tr("数据已在另一个标签页更新。"), 'REVISION_CONFLICT');
+      const previous = envelope.snapshots[0] && migrateNavigationState(envelope.snapshots[0]);
+      if (!previous) fail(tr("还没有可恢复的本地快照。"), 'NO_SNAPSHOT');
+      for (const id of assetReferences(previous)) if (!(await getAssets().get(id))?.blob) fail(tr("快照依赖的图片不存在，未改变当前数据。"), 'MISSING_ASSET');
+      // Image preparation may involve an explicit one-time download. Leave
+      // ordinary navigation writes available and recheck the revision at CAS.
+      const releaseIcons = iconResources.retain?.(previous);
+      try {
+        await prepareIcons(previous, options);
+        return await api.saveState(previous, expectedRevision);
+      } finally { releaseIcons?.(); }
     },
-    getSyncStatus() { return clone(status); },
-    subscribeSyncStatus(callback) { statusListeners.add(callback); callback(clone(status)); return () => statusListeners.delete(callback); },
+    // Compatibility for already-open callers. These APIs never read or write
+    // browser-native sync, create timers, or claim a successful remote sync.
+    getSyncStatus() { return retiredSyncStatus(); },
+    subscribeSyncStatus(callback) { callback(retiredSyncStatus()); return () => {}; },
     async setSyncEnabled(enabled) {
       if (typeof enabled !== 'boolean') fail(tr("同步开关值无效。"), 'SYNC_INVALID');
-      start();
-      if (enabled && !getNativeSync()) { setStatus({ enabled: false, phase: 'preview', message: tr("网页预览不支持浏览器同步，请加载扩展后使用。") }); fail(tr("请在 Chrome 或 Edge 扩展中开启浏览器同步。"), 'SYNC_UNAVAILABLE'); }
-      await exclusive(async () => {
-        const envelope = await readEnvelope();
-        envelope.sync.enabled = enabled;
-        if (enabled) envelope.sync = updateLocalReplica(envelope.sync, envelope.sync.base, envelope.state);
-        await getConfig().write(envelope);
-        lastEnabled = enabled;
-        lastBlockedError = envelope.sync.blockedError;
-      });
-      if (!enabled) {
-        clearTimeout(syncTimer);
-        return setStatus({ enabled: false, phase: 'disabled', message: tr("浏览器同步已关闭；本地数据和已有同步区数据均保留。") });
-      }
-      return api.syncNow();
+      if (enabled) fail(retiredSyncStatus().message, 'SYNC_UNAVAILABLE');
+      return retiredSyncStatus();
     },
-    async syncNow() {
-      start();
-      clearTimeout(syncTimer);
-      if (syncFlight) return syncFlight;
-      syncFlight = exclusive(async () => {
-        let envelope = await readEnvelope();
-        lastEnabled = envelope.sync.enabled;
-        lastBlockedError = envelope.sync.blockedError;
-        if (!lastEnabled) return setStatus({ enabled: false, phase: getNativeSync() ? 'disabled' : 'preview', message: getNativeSync() ? tr("浏览器同步尚未开启。") : tr("网页预览不支持浏览器同步，请加载扩展后使用。") });
-        const remote = getNativeSync();
-        if (!remote) throw Object.assign(new Error(tr("浏览器同步存储不可用；本地数据已保留。")), { code: 'SYNC_UNAVAILABLE' });
-        if (envelope.sync.blockedError) {
-          const repaired = updateLocalReplica(envelope.sync, envelope.sync.base, envelope.state);
-          lastBlockedError = repaired.blockedError;
-          if (repaired.blockedError) return setStatus({ enabled: true, phase: 'error', message: tr("同步已暂停：{0} 本地修改已保存，可导出 ZIP 备份。", [repaired.blockedError]) });
-          envelope.sync = repaired;
-          await getConfig().write(envelope);
-        }
-        setStatus({ enabled: true, phase: 'pending', message: tr("正在合并并写入浏览器同步区。") });
-        const items = await remote.get();
-        const incoming = await readReplicas(items);
-        const documents = combineReplicas(envelope.sync.documents, incoming.documents, { [envelope.sync.document.actor]: envelope.sync.document });
-        const own = documents[envelope.sync.document.actor];
-        const merged = migrateNavigationState(materializeState(documents, envelope.state));
-        const stateChanged = JSON.stringify(merged) !== JSON.stringify(envelope.state);
-        const sync = { ...envelope.sync, document: own, documents, base: portableState(merged) };
-        envelope = { ...envelope, sync };
-        if (stateChanged) {
-          merged.revision = envelope.state.revision + 1;
-          envelope = { ...envelope, state: merged, snapshots: [envelope.state, ...envelope.snapshots].slice(0, 3) };
-        }
-        // Persist received records and conflicts locally before publishing. Network
-        // or browser quota failures cannot roll back already saved local work.
-        const previous = await getConfig().read();
-        if (stateChanged || JSON.stringify(previous?.sync) !== JSON.stringify(sync)) await getConfig().write(envelope);
-        let used = Object.entries(items).reduce((sum, [key, value]) => sum + new TextEncoder().encode(key + JSON.stringify(value)).length, 0);
-        const head = `${'owntab.sync.v1.'}${own.actor}.head`;
-        if (sync.dirty || !items[head] || items[head].clock !== own.clock || incoming.incomplete.includes(own.actor)) {
-          // A generation can use three write calls (chunks, commit, old cleanup).
-          // Persist the throttle across pages so sustained editing stays below
-          // Chrome's hourly write quota, in addition to the 1.5 s debounce.
-          const remaining = Math.min(syncMinInterval, sync.lastPublishedAt + syncMinInterval - Date.now());
-          if (remaining > 0) {
-            clearTimeout(syncTimer);
-            syncTimer = setTimeout(() => { api.syncNow().catch(() => {}); }, remaining);
-            syncTimer.unref?.();
-            return setStatus({ enabled: true, phase: 'pending', bytes: used, message: tr("本地数据已保存；浏览器同步写入已排队，正在等待写入间隔。") });
-          }
-          const result = await publishReplica(remote, own, items);
-          used = result.bytes;
-          if (sync.dirty || result.written) { envelope.sync.dirty = false; if (result.written) envelope.sync.lastPublishedAt = Date.now(); await getConfig().write(envelope); }
-        }
-        const conflicts = syncConflicts(documents).length;
-        return setStatus({ enabled: true, phase: incoming.incomplete.length ? 'pending' : 'saved', bytes: used,
-          message: incoming.incomplete.length ? tr("部分同步分片尚未到齐；已保留本地完整数据，等待浏览器传入剩余分片或稍后手动重试。")
-            : tr("已写入浏览器同步区，跨设备传输由浏览器管理。{0}", [conflicts ? tr("有 {0} 个并发版本可在冲突列表恢复。", [conflicts]) : '']) });
-      }).catch((cause) => setStatus({ enabled: lastEnabled, phase: 'error', message: tr("{0} 本地数据仍然保留。", [cause.message]) })).finally(() => { syncFlight = undefined; });
-      return syncFlight;
-    },
-    async getSyncConflicts() {
-      const envelope = await readEnvelope();
-      return syncConflicts(combineReplicas(envelope.sync.documents, { [envelope.sync.document.actor]: envelope.sync.document }));
-    },
-    async restoreSyncConflict(id) {
-      start();
-      return exclusive(async () => {
-        const envelope = await readEnvelope();
-        if (!envelope.sync.enabled) fail(tr("请先开启同步，再恢复并发版本。"), 'SYNC_DISABLED');
-        const documents = combineReplicas(envelope.sync.documents, { [envelope.sync.document.actor]: envelope.sync.document });
-        const conflict = syncConflicts(documents).find((item) => item.id === id);
-        if (!conflict) fail(tr("此并发版本已处理，请刷新冲突列表。"), 'SYNC_CONFLICT_MISSING');
-        const sync = updateLocalReplica(envelope.sync, envelope.state, envelope.state, { [conflict.key]: conflict.value });
-        if (sync.blockedError) fail(tr("此并发版本尚未恢复：{0}", [sync.blockedError]), 'SYNC_BLOCKED');
-        const saved = migrateNavigationState(materializeState(sync.documents, envelope.state));
-        saved.revision = envelope.state.revision + 1;
-        sync.base = portableState(saved);
-        await getConfig().write({ ...envelope, state: saved, snapshots: [envelope.state, ...envelope.snapshots].slice(0, 3), sync });
-        queueSync();
-        return saved;
-      });
-    },
+    async syncNow() { return retiredSyncStatus(); },
+    async getSyncConflicts() { return []; },
+    async restoreSyncConflict() { fail(retiredSyncStatus().message, 'SYNC_UNAVAILABLE'); },
   };
   return api;
 }
 
 const storage = createStorage({ initialState: createInitialState });
-export const { loadState, saveState, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, restoreBackup, restoreSnapshot,
+export const { loadState, saveState, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, validateBackupPlan, restoreBackup, restoreSnapshot,
   getSyncStatus, subscribeSyncStatus, setSyncEnabled, syncNow, getSyncConflicts, restoreSyncConflict } = storage;

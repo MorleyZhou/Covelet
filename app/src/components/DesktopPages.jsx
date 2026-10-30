@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CaretLeft, CaretRight, Plus } from '@phosphor-icons/react';
 import { DESKTOP_ROWS, desktopFootprint, layoutDesktop, nextDesktopPage } from '../lib/desktop-layout.js';
 import './desktop-pages.css';
+import { Button } from './ui/button.jsx';
 
 export default function DesktopPages({ settings, entries, activeKey, draftPage, drag, editing = false, onActiveChange, onNewPage, onScreenChange, renderTiles }) {
   const viewport = useRef(null), swipe = useRef(null), suppressSwipeClick = useRef(false), wheelTime = useRef(0), wheelSum = useRef(0), wheelContext = useRef(null);
@@ -149,13 +150,13 @@ export default function DesktopPages({ settings, entries, activeKey, draftPage, 
       </>}
     </div>
     <nav className="desktop-page-controls" aria-label={tr("主屏幕分页")} data-layout-control={editing ? '' : undefined}>
-      <button type="button" className="desktop-page-arrow" aria-label={tr("上一屏")} disabled={active === 0} onClick={() => change(active - 1)} {...dropAttributes(screens[active - 1], 'previous')}><CaretLeft size={17} /></button>
+      <Button variant="unstyled" size="unstyled" type="button" className="desktop-page-arrow" aria-label={tr("上一屏")} disabled={active === 0} onClick={() => change(active - 1)} {...dropAttributes(screens[active - 1], 'previous')}><CaretLeft size={17} /></Button>
       <div className="desktop-page-dots">
-        {nearby.map(({ screen, index }) => <button key={screen.key} type="button" className="desktop-page-dot" aria-label={tr("第 {0} 屏", [index + 1])}
-          aria-current={index === active ? 'page' : undefined} onClick={() => change(index)} {...dropAttributes(screen, screen.key)}><span /></button>)}
+        {nearby.map(({ screen, index }) => <Button variant="unstyled" size="unstyled" key={screen.key} type="button" className="desktop-page-dot" aria-label={tr("第 {0} 屏", [index + 1])}
+          aria-current={index === active ? 'page' : undefined} onClick={() => change(index)} {...dropAttributes(screen, screen.key)}><span /></Button>)}
       </div>
-      <button type="button" className="desktop-page-arrow" aria-label={tr("下一屏")} disabled={active === screens.length - 1} onClick={() => change(active + 1)} {...dropAttributes(screens[active + 1], 'next')}><CaretRight size={17} /></button>
-      {editing && nextPage !== null && <button type="button" className="desktop-page-add" aria-label={tr("添加一屏")} title={tr("添加一屏")} data-layout-control onClick={() => onNewPage(nextPage)} {...dropAttributes(null, 'new')}><Plus size={17} /></button>}
+      <Button variant="unstyled" size="unstyled" type="button" className="desktop-page-arrow" aria-label={tr("下一屏")} disabled={active === screens.length - 1} onClick={() => change(active + 1)} {...dropAttributes(screens[active + 1], 'next')}><CaretRight size={17} /></Button>
+      {editing && nextPage !== null && <Button variant="unstyled" size="unstyled" type="button" className="desktop-page-add" aria-label={tr("添加一屏")} title={tr("添加一屏")} data-layout-control onClick={() => onNewPage(nextPage)} {...dropAttributes(null, 'new')}><Plus size={17} /></Button>}
     </nav>
   </div>;
 }

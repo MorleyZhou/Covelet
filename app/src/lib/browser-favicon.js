@@ -1,4 +1,5 @@
 import { siteOrigin, validateIconBytes, convertIcon } from './site-info.js';
+import { sniffIconMime } from './icon-image-format.js';
 
 const LIMIT = 1024 * 1024;
 const SIZE = '256';
@@ -77,9 +78,9 @@ async function fetchIcon(fetcher, url, signal) {
   });
   ensureActive(signal);
   if (!response.ok || response.redirected || response.type === 'opaqueredirect' || response.url && response.url !== url) throw new Error('Invalid native favicon response.');
-  const mime = (response.headers.get('content-type') ?? '').split(';', 1)[0].trim().toLowerCase();
-  if (!INPUT_MIMES.has(mime)) throw new Error('Unsupported favicon format.');
   const bytes = await boundedBody(response, signal);
+  const mime = sniffIconMime(bytes);
+  if (!INPUT_MIMES.has(mime)) throw new Error('Unsupported favicon format.');
   validateIconBytes(bytes, mime);
   return { bytes, mime };
 }

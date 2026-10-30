@@ -1,66 +1,37 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef, useState } from 'react';
 import { tr } from '../i18n/index.js';
-import { useDialogSurface } from './DialogSurface.jsx';
+import { useFloatingContainer } from './DialogSurface.jsx';
+import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel } from './ui/alert-dialog.jsx';
+import { Button } from './ui/button.jsx';
 import './prompt-dialog.css';
 
 const stop = (event) => event.stopPropagation();
 
-// Use another native top-layer dialog so a confirmation never changes its
-// owner's layout or escapes the owner's theme/keyboard event boundary.
-export default function PromptDialog({ children, title = tr('确认操作'), action, onConfirm, onCancel, busy = false, confirmDisabled = false, destructive = false }) {
-  const surface = useDialogSurface();
-  const container = surface === null ? null : surface || globalThis.document?.body;
-  const dialog = useRef(null), cancel = useRef(null), outside = useRef(false);
-  const titleId = useId(), messageId = useId();
-  useEffect(() => {
-    const element = dialog.current;
-    if (!element || !container) return;
-    const owner = container.closest('dialog'), document = element.ownerDocument;
-    let opener = null;
-    const show = () => {
-      if (!element.isConnected || element.open || owner && !owner.open) return;
-      opener = document.activeElement;
-      element.showModal();
-      cancel.current?.focus({ preventScroll: true });
-    };
-    // An error may already exist when the owning modal first mounts. Wait
-    // until that modal opens so it cannot cover this prompt in the top layer.
-    const observer = owner ? new MutationObserver(show) : null;
-    observer?.observe(owner, { attributes: true, attributeFilter: ['open'] });
-    show();
-    return () => {
-      observer?.disconnect();
-      if (element.open) element.close();
-      if (opener?.isConnected && !opener.matches(':disabled') && (!owner || owner.open)) opener.focus({ preventScroll: true });
-    };
-  }, [container]);
+export default function PromptDialog({ children, title = tr('确认操作'), action, onConfirm, onCancel, busy = false, confirmDisabled = false, destructive = false, privacySafe = false }) {
+  const surface = useFloatingContainer(), cancel = useRef(null);
+  const container = privacySafe && surface?.closest('[inert]') ? surface.closest('dialog,[data-ui-modal]') || surface : surface;
+  const opener = useRef(globalThis.document?.activeElement);
   const dismiss = () => { if (!busy) onCancel(); };
-  return container && createPortal(<dialog ref={dialog} className="prompt-dialog" role="alertdialog" aria-modal="true"
-    aria-labelledby={titleId} aria-describedby={messageId} aria-busy={busy || undefined}
-    onCancel={(event) => { event.preventDefault(); event.stopPropagation(); dismiss(); }} onClose={stop}
-    onPointerDown={(event) => {
-      event.stopPropagation();
-      const box = event.currentTarget.getBoundingClientRect();
-      outside.current = event.target === event.currentTarget && (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom);
-    }} onPointerMove={stop} onPointerUp={stop} onContextMenu={stop} onKeyDown={stop}
-    onClick={(event) => {
-      event.stopPropagation();
-      if (event.target !== event.currentTarget || !outside.current) return;
-      const box = event.currentTarget.getBoundingClientRect();
-      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dismiss();
-    }}>
-    <h2 id={titleId}>{title}</h2>
-    <div className="prompt-dialog-message" id={messageId}>{children}</div>
-    <div className="prompt-dialog-actions">
-      <button ref={cancel} type="button" className={`button ${onConfirm ? 'quiet' : 'primary'}`} disabled={busy} onClick={dismiss}>{onConfirm ? tr('取消') : tr('关闭')}</button>
-      {onConfirm && <button type="button" className={`button ${destructive ? 'danger' : 'primary'}`} disabled={busy || confirmDisabled} onClick={onConfirm}>{action}</button>}
-    </div>
-  </dialog>, container);
+  return container && <AlertDialog open onOpenChange={(open) => { if (!open) dismiss(); }}>
+    <AlertDialogContent container={container} className="prompt-dialog" aria-busy={busy || undefined}
+      onOpenAutoFocus={(event) => { event.preventDefault(); cancel.current?.focus({ preventScroll: true }); }}
+      onCloseAutoFocus={(event) => {
+        event.preventDefault();
+        if (container.isConnected && opener.current?.isConnected && !opener.current.matches(':disabled')) opener.current.focus({ preventScroll: true });
+      }}
+      onEscapeKeyDown={(event) => { event.stopPropagation(); if (busy) event.preventDefault(); }}
+      onContextMenu={stop} onKeyDown={stop}>
+      <AlertDialogTitle>{title}</AlertDialogTitle>
+      <AlertDialogDescription asChild><div className="prompt-dialog-message">{children}</div></AlertDialogDescription>
+      <div className="prompt-dialog-actions">
+        <AlertDialogCancel asChild><Button ref={cancel} type="button" variant={onConfirm ? 'ghost' : 'default'} disabled={busy}>{onConfirm ? tr('取消') : tr('关闭')}</Button></AlertDialogCancel>
+        {onConfirm && <Button type="button" variant={destructive ? 'destructive' : 'default'} disabled={busy || confirmDisabled} onClick={onConfirm}>{action}</Button>}
+      </div>
+    </AlertDialogContent>
+  </AlertDialog>;
 }
 
-// Keep persistent errors dismissible without repeatedly reopening on every
-// render. Clearing the message permits a later attempt to report it again.
+// A persistent error can be dismissed until a new attempt produces a new message.
 export function MessageDialog({ message, title = tr('提示'), onClose }) {
   const [dismissed, setDismissed] = useState(null);
   useEffect(() => { if (!message) setDismissed(null); }, [message]);

@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef, useState } from 'react';
 
 // The local contrast worker selects a surface independently for each tile.
 // Update only when polarity changes, without observing our own style writes.
-export function useIconScheme() {
-  const ref = useRef(null), [scheme, setScheme] = useState('light');
+export function useIconScheme(initialScheme = 'light') {
+  const ref = useRef(null), [scheme, setScheme] = useState(initialScheme === 'dark' ? 'dark' : 'light');
   useLayoutEffect(() => {
     const node = ref.current;
     const update = ({ detail }) => { if (['light', 'dark'].includes(detail)) setScheme(detail); };

@@ -1,0 +1,72 @@
+Covelet v0.2.0 — Chrome 手动更新指南
+准备日期：2026-10-22
+当前交接状态：发布包、五张截图及文案已完成；Google Sites 隐私政策已更新；Chrome 上传和审核提交尚未完成。
+
+一、打开现有项目
+Chrome 开发者后台：https://chrome.google.com/webstore/devconsole
+选择已有 Covelet 项目，扩展 ID：clkholbmabommppnlpcnhdgmibibblgb。
+如果后台因正在审核而锁住编辑，使用该项目菜单的“取消审核 / Cancel review”恢复草稿，再更新本次版本。
+
+二、上传版本包
+进入“软件包 / Package”，点击“上传新软件包 / Upload new package”。
+上传整个 ZIP，保持压缩包原样：
+C:\Users\zhoub\Code\Future-Element\OwnTab\releases\v0.2.0\covelet-0.2.0.zip
+
+等待后台处理成功，确认识别到版本 0.2.0。
+文件大小：3,618,387 字节。
+SHA-256：6183f843a9acc710549a201e3314dfa804f8e7537a6ad9d2742add680442931d
+
+三、更新商品详情
+进入“商品详情 / Store listing”。保留标题 Covelet；在简体中文商品说明中粘贴下列文件全文：
+C:\Users\zhoub\Code\Future-Element\OwnTab\docs\store\v0.2.0\listing-zh-CN.txt
+
+本版无需 Covelet 登录，订阅/支付尚未接入。商品说明无需填写未来 $6/年的定价。
+可继续使用现有 Covelet 商店图标及品牌宣传图。
+支持邮箱：support@mudong17.com
+隐私政策：https://sites.google.com/view/covelet-privacy
+
+四、替换五张截图
+在商品详情“屏幕截图 / Screenshots”区域删除旧版截图，再按下列顺序上传：
+C:\Users\zhoub\Code\Future-Element\OwnTab\docs\store\assets\v0.2.0\01-home.png
+C:\Users\zhoub\Code\Future-Element\OwnTab\docs\store\assets\v0.2.0\02-folders.png
+C:\Users\zhoub\Code\Future-Element\OwnTab\docs\store\assets\v0.2.0\03-notes.png
+C:\Users\zhoub\Code\Future-Element\OwnTab\docs\store\assets\v0.2.0\04-extensions.png
+C:\Users\zhoub\Code\Future-Element\OwnTab\docs\store\assets\v0.2.0\05-world-clocks.png
+
+对应：首页、文件夹、便笺、扩展中心、世界时钟。均为 1280×800 RGB PNG，使用真实网站图标、独立演示数据和原创颜色背景。若后台有语言切换，在本次编辑的商品语言下替换截图。
+保存商品详情。
+
+五、更新隐私权惯例
+进入“隐私权惯例 / Privacy practices”，逐项复制：
+C:\Users\zhoub\Code\Future-Element\OwnTab\docs\store\v0.2.0\permission-justifications.txt
+
+该文件包含：单一用途、6 个必需权限、3 个可选权限、Bing 与具体来源主机理由、远程代码声明和数据类别说明。
+重点：
+- 远程代码选择 No。随安装包提供的 WASM 不属于远程代码。
+- 隐私网址填写 https://sites.google.com/view/covelet-privacy。
+- 按当前实现披露个人身份信息、身份验证信息、网络历史记录及网站内容；具体理由见文件。
+- 本地处理、可选自定义存储和用户自填凭据也需要披露，不能因为没有开发者服务器就全部不勾选。
+- 根据实际实现确认并勾选不出售数据、不用于无关目的、不用于信用或贷款决定的三项承诺。
+保存隐私权惯例。
+本次使用 v0.2.0 目录中的资料；docs/store/商店提交材料.md 保留的是旧版历史说明。
+
+六、审核说明及分发
+如后台有“测试说明 / Test instructions / Reviewer notes”，粘贴：
+C:\Users\zhoub\Code\Future-Element\OwnTab\docs\store\v0.2.0\reviewer-notes.txt
+
+本版不需要测试账号或密码。GitHub 组件使用公开用户名，云存储是用户可选配置。
+在“分发 / Distribution”保持所需地区和可见性；本版免费，包含应用内购买商品选择 No。
+如果账号身份、联系邮箱等仍有验证提醒，由你本人按真实资料完成。
+
+七、提交审核
+保存所有页面后，点击“提交审核 / Submit for review”。
+确认窗口选择“审核通过后自动发布 / Automatically publish after review”，然后确认提交。
+看到“待审核 / Pending review / In review”表示已经提交，尚未代表公开上架。
+审核通过并显示“已发布 / Published”，且商店版本为 0.2.0 后，才是新版正式上线。
+
+八、边界记录
+按你的要求，本版本未额外运行功能测试、WASM/扩展检查或浏览器功能验收。构建成功、宣传截图和上传回执分别代表打包、素材与平台处理状态，不代表全部功能已测试通过。
+
+官方流程：https://developer.chrome.com/docs/webstore/update
+截图规格：https://developer.chrome.com/docs/webstore/images
+隐私字段：https://developer.chrome.com/docs/webstore/cws-dashboard-privacy

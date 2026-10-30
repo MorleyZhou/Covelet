@@ -1,0 +1,35 @@
+.bookmark-import { min-height: 0; }
+.bookmark-import-scroll { min-height: 0; max-height: min(72dvh, 760px); overflow-y: auto; padding: 1px 4px 8px 1px; }
+.bookmark-import-paste { display: grid; gap: 8px; }
+.bookmark-import-paste > span { font-size: 13px; font-weight: 600; }
+.bookmark-import-paste textarea { min-height: 100px; resize: vertical; }
+.bookmark-import-source-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.bookmark-import-source-actions button { gap: 6px; }
+.bookmark-import-target { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.bookmark-import-check { display: flex; align-items: center; gap: 9px; font-size: 13px; line-height: 1.5; cursor: pointer; }
+.bookmark-import-summary { font-size: 13px; line-height: 1.6; }
+.bookmark-import-filter { display: flex; align-items: center; gap: 8px; }
+.bookmark-import-filter input { flex: 1; min-width: 0; }
+.bookmark-import-list { max-height: 330px; overflow: auto; border: 1px solid var(--line, #8883); border-radius: 10px; }
+.bookmark-import-group + .bookmark-import-group { border-top: 1px solid var(--line, #8883); }
+.bookmark-import-group-heading { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--panel-solid, var(--panel, #f4f4f6)); cursor: pointer; font-size: 12px; }
+.bookmark-import-group-heading strong { flex: 1; overflow-wrap: anywhere; }
+.bookmark-import-group-heading small { opacity: .65; }
+.bookmark-import-row { display: flex; align-items: center; gap: 10px; padding: 11px 12px; cursor: pointer; }
+.bookmark-import-row + .bookmark-import-row { border-top: 1px solid var(--line, #8882); }
+.bookmark-import-row > span { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.bookmark-import-row strong { font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+.bookmark-import-row small { font-size: 11px; opacity: .65; overflow-wrap: anywhere; }
+.bookmark-import-row em { flex-shrink: 0; font-size: 11px; font-style: normal; opacity: .65; }
+.bookmark-import-row.is-skipped > span { opacity: .55; }
+.bookmark-import-empty { padding: 24px 12px; text-align: center; font-size: 13px; opacity: .65; }
+.bookmark-import-invalid { font-size: 12px; }
+.bookmark-import-invalid summary { cursor: pointer; }
+.bookmark-import-invalid ul { max-height: 150px; overflow: auto; padding-left: 20px; }
+.bookmark-import-invalid li { margin-top: 8px; overflow-wrap: anywhere; }
+.bookmark-import-invalid li small { display: block; opacity: .65; }
+@media (max-width: 520px) {
+  .bookmark-import-target { grid-template-columns: 1fr; }
+  .bookmark-import-row { gap: 8px; }
+  .bookmark-import-row em { max-width: 64px; text-align: right; }
+}

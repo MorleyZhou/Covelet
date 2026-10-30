@@ -70,6 +70,24 @@ test('Bing provider restricts requests, caches one daily image and disposes only
   assert.deepEqual(subject.revoked, [result.url]);
 });
 
+test('sync replaces an older wallpaper record without prematurely revoking the displayed URL', async () => {
+  const subject = harness(), current = await subject.provider.load();
+  const incoming = structuredClone(subject.stored);
+  incoming.attemptAt--;
+  incoming.metadata.title = '同步背景';
+  subject.stored = incoming;
+  subject.provider.invalidate();
+  const next = await subject.provider.load();
+  assert.equal(next.title, '同步背景');
+  assert.equal(next.status, 'cached');
+  assert.equal(subject.calls.length, 2, 'valid synchronized daily pixels do not need a new network fetch');
+  assert.deepEqual(subject.revoked, [], 'the mounted consumer still owns the old image URL');
+  assert.notEqual(next.url, current.url);
+  subject.provider.dispose(current);
+  assert.deepEqual(subject.revoked, [current.url]);
+  subject.provider.dispose(next);
+});
+
 test('image allowlist rejects arbitrary hosts, endpoints, credentials and unexpected parameters', () => {
   const invalid = [
     'https://example.com/th?id=OHR.Foo_1920x1080.jpg',

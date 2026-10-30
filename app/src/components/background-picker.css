@@ -8,13 +8,12 @@ button.background-choice {
 .background-choice.selected { outline: 2px solid var(--accent); outline-offset: 2px; }
 .background-choice-swatch { width: 31px; height: 31px; border-radius: 50%; }
 .background-color-panel {
-  position: fixed; inset: auto; z-index: 1100; margin: 0; padding: 0;
+  width: min(360px, calc(100vw - 24px)); margin: 0; padding: 0;
   border: 0; border-radius: 18px; overflow: hidden;
   background: var(--panel, #fff); color: var(--ink, #1d1d1f);
   box-shadow: 0 8px 28px #0000001a; font-size: 13px; line-height: 1.5;
 }
-.background-color-panel:popover-open { display: flex; flex-direction: column; }
-.background-color-panel::backdrop { background: transparent; }
+.background-color-panel[data-state=open] { display: flex; flex-direction: column; max-height: var(--radix-popover-content-available-height); }
 .background-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 10px; flex-shrink: 0; }
 .background-panel-header h3 { margin: 0; font-size: 15px; font-weight: 600; }
 .background-panel-header h3:focus { outline: 0; }
@@ -30,21 +29,22 @@ button.background-choice {
 .background-color-picker { display: flex; flex-direction: column; gap: 13px; }
 button.color-plane { position: relative; width: 100%; height: 112px; padding: 0; border: 0; border-radius: 10px; touch-action: none; cursor: crosshair; background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), var(--color-hue); }
 .color-plane-point { position: absolute; width: 13px; height: 13px; border-radius: 50%; transform: translate(-50%, -50%); border: 2px solid white; box-shadow: 0 0 0 1px #0006; pointer-events: none; }
-input.color-hue { appearance: none; width: 100%; height: 14px; margin: 0; border-radius: 8px; background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); cursor: pointer; }
-input.color-hue::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; border: 2px solid white; border-radius: 50%; background: transparent; box-shadow: 0 0 0 1px #0005; }
-input.color-hue::-moz-range-thumb { width: 14px; height: 14px; border: 2px solid white; border-radius: 50%; background: transparent; box-shadow: 0 0 0 1px #0005; }
+.color-hue.ui-slider { width: 100%; min-height: 24px; margin: 0; cursor: pointer; }
+.color-hue .ui-slider-track { height: 12px; background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+.color-hue .ui-slider-range { background: transparent; }
+.color-hue .ui-slider-thumb { width: 18px; height: 18px; border: 2px solid white; background: transparent; box-shadow: 0 0 0 1px #0005; }
 .background-color-panel label.color-hex-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; }
 .color-hex-row > span { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: .03em; }
 .background-color-panel .color-hex-row > input { width: 116px; min-height: 34px; height: 34px; padding: 6px 10px; font: inherit; font-variant-numeric: tabular-nums; border: 0; border-radius: 8px; color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, transparent); }
 .gradient-preview { height: 20px; flex-shrink: 0; border-radius: 6px; }
 .background-color-panel label.gradient-direction { display: flex; flex-direction: column; gap: 5px; }
-.gradient-direction > span { display: flex; align-items: center; justify-content: space-between; }
+.gradient-direction > span:not(.ui-slider) { display: flex; align-items: center; justify-content: space-between; }
 .gradient-direction output { color: var(--muted); font-variant-numeric: tabular-nums; }
 .gradient-direction input { margin: 0; width: 100%; accent-color: var(--accent); }
 .gradient-curve-editor { display: flex; flex-direction: column; gap: 10px; }
 .gradient-curve-editor .own-select { flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; }
 .gradient-curve-editor .own-select-label { font: inherit; }
-.gradient-curve-editor .own-select-trigger { width: 126px; min-height: 34px; padding: 6px 10px; border-radius: 8px; font-size: 13px; }
+.gradient-curve-editor .ui-select-trigger { width: 126px; min-height: 34px; padding: 6px 10px; border-radius: 8px; font-size: 13px; }
 .gradient-curve-graph { position: relative; height: 100px; border-radius: 10px; background: color-mix(in srgb, var(--ink) 4%, transparent); }
 .gradient-curve-graph svg { position: absolute; inset: 14px; width: calc(100% - 28px); height: calc(100% - 28px); overflow: visible; }
 .gradient-curve-graph path { fill: none; vector-effect: non-scaling-stroke; }

@@ -1,52 +1,46 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { canReadSite, readSiteInfo, siteOrigin, validateIconBytes } from './site-info.js';
 import { readBrowserFavicon } from './browser-favicon.js';
+import { createEncryptedStore } from './local-data.js';
+import { migrateLegacyIndexedDb } from './legacy-indexed-data.js';
+import { subscribeSyncedData } from './use-synced-data.js';
 
 const DATABASE = 'owntab.provider-icons.v1';
 const STORE = 'icons';
 const MAX_CACHED_ORIGINS = 32;
 const RASTER_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp']);
+const providerIconRecords = createEncryptedStore('provider-icons');
+const CACHE_LOCK = 'covelet.provider-icons.cache.v1';
+let cacheWrites = Promise.resolve();
 
-// This cache is deliberately separate from configuration and navigation assets:
-// neither browser sync nor ZIP backups include search-provider image bytes.
-function indexedProviderIcons() {
-  let opening;
-  const open = () => opening ??= new Promise((resolve, reject) => {
-    if (!globalThis.indexedDB) { reject(new Error(tr("本地图标缓存不可用。"))); return; }
-    const request = globalThis.indexedDB.open(DATABASE, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(STORE, { keyPath: 'origin' });
-    request.onerror = () => reject(request.error || new Error(tr("无法打开本地图标缓存。")));
-    request.onblocked = () => reject(new Error(tr("本地图标缓存暂不可用。")));
-    request.onsuccess = () => {
-      const database = request.result;
-      database.onversionchange = () => { database.close(); opening = undefined; };
-      resolve(database);
-    };
-  }).catch((cause) => { opening = undefined; throw cause; });
+export function migrateProviderIconCache() {
+  return migrateLegacyIndexedDb(DATABASE, STORE, providerIconRecords, (record, key) => record?.origin || key);
+}
+
+// Provider images keep their own namespace and join full encrypted sync.
+function encryptedProviderIcons() {
   return {
     async get(origin) {
-      const database = await open();
-      return new Promise((resolve, reject) => {
-        const transaction = database.transaction(STORE, 'readonly');
-        const request = transaction.objectStore(STORE).get(origin);
-        transaction.oncomplete = () => resolve(request.result?.blob ?? null);
-        transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error(tr("无法读取本地图标缓存。")));
-      });
+      await migrateProviderIconCache();
+      return (await providerIconRecords.get(origin))?.blob ?? null;
     },
-    async set(origin, blob) {
-      const database = await open();
-      return new Promise((resolve, reject) => {
-        const transaction = database.transaction(STORE, 'readwrite');
-        const store = transaction.objectStore(STORE);
-        store.put({ origin, blob, updatedAt: Date.now() });
-        const request = store.getAll();
-        request.onsuccess = () => {
-          const records = request.result.sort((a, b) => a.updatedAt - b.updatedAt || a.origin.localeCompare(b.origin));
-          for (const record of records.slice(0, Math.max(0, records.length - MAX_CACHED_ORIGINS))) store.delete(record.origin);
-        };
-        transaction.oncomplete = () => resolve();
-        transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error(tr("无法保存本地图标缓存。")));
-      });
+    async set(origin, blob, { shouldWrite = () => true } = {}) {
+      await migrateProviderIconCache();
+      const write = async () => {
+        if (!shouldWrite()) return;
+        await providerIconRecords.set(origin, { origin, blob, updatedAt: Date.now() }, { shouldWrite });
+        if (!shouldWrite()) return;
+        const records = (await providerIconRecords.entries()).sort(([keyA, a], [keyB, b]) =>
+          (Number(a?.updatedAt) || 0) - (Number(b?.updatedAt) || 0) || keyA.localeCompare(keyB));
+        for (const [key] of records.slice(0, Math.max(0, records.length - MAX_CACHED_ORIGINS))) {
+          if (!shouldWrite()) return;
+          await providerIconRecords.remove(key);
+        }
+      };
+      if (globalThis.navigator?.locks?.request) return navigator.locks.request(CACHE_LOCK, { mode: 'exclusive' }, write);
+      const work = cacheWrites.then(write, write);
+      cacheWrites = work.catch(() => {});
+      return work;
     },
   };
 }
@@ -57,9 +51,10 @@ async function validatedRaster(blob) {
   return blob;
 }
 
-export function createProviderIconCache({ cacheStore = indexedProviderIcons(), api, fetcher, timeoutMs, convert, browserIcon = readBrowserFavicon } = {}) {
+export function createProviderIconCache({ cacheStore = encryptedProviderIcons(), api, fetcher, timeoutMs, convert, browserIcon = readBrowserFavicon } = {}) {
   const inFlight = new Map();
   const session = new Map();
+  let revision = 0;
   const remember = (origin, blob) => {
     session.delete(origin);
     session.set(origin, blob);
@@ -67,14 +62,18 @@ export function createProviderIconCache({ cacheStore = indexedProviderIcons(), a
     return blob;
   };
   async function readCached(input) {
+    const started = revision;
     try {
       const origin = siteOrigin(input);
       if (session.has(origin)) return remember(origin, session.get(origin));
       const blob = await validatedRaster(await cacheStore.get(origin));
-      return blob ? remember(origin, blob) : null;
+      return started === revision && blob ? remember(origin, blob) : null;
     } catch { return null; }
   }
   return {
+    // Active image URLs belong to their rendering hooks, which release them
+    // only after switching to the imported bytes. Invalidation touches no disk.
+    invalidate() { revision++; session.clear(); inFlight.clear(); },
     // Rendering an existing engine must never request permission or start a
     // network request, even if its icon has not been cached on this device.
     readCached,
@@ -84,24 +83,28 @@ export function createProviderIconCache({ cacheStore = indexedProviderIcons(), a
       let origin;
       try { origin = siteOrigin(input); } catch { return Promise.resolve(null); }
       if (inFlight.has(origin)) return inFlight.get(origin);
+      const started = revision;
       const work = (async () => {
           const cached = await readCached(origin);
+          if (started !== revision) return null;
           if (cached) return cached;
           let icon;
           try { icon = await browserIcon(origin, { api, fetcher, timeoutMs, convert }); } catch { /* Try an existing site grant. */ }
+          if (started !== revision) return null;
           if (!icon && await canReadSite(origin, { api })) {
             const result = await readSiteInfo(origin, { api, fetcher, timeoutMs, convert });
             icon = result.icon;
           }
           const blob = await validatedRaster(icon);
+          if (started !== revision) return null;
           if (!blob) return null;
           // Keep the current session usable even when IndexedDB is full or
           // unavailable; subsequent rendering still remains entirely offline.
           remember(origin, blob);
-          try { await cacheStore.set(origin, blob); }
+          try { await cacheStore.set(origin, blob, { shouldWrite: () => started === revision }); }
           catch { /* A local cache failure must not block saving the engine. */ }
-          return blob;
-      })().catch(() => null).finally(() => { inFlight.delete(origin); });
+          return started === revision ? blob : null;
+      })().catch(() => null).finally(() => { if (inFlight.get(origin) === work) inFlight.delete(origin); });
       inFlight.set(origin, work);
       return work;
     },
@@ -109,5 +112,6 @@ export function createProviderIconCache({ cacheStore = indexedProviderIcons(), a
 }
 
 const providerIcons = createProviderIconCache();
+subscribeSyncedData(() => providerIcons.invalidate());
 export const readCachedProviderIcon = (input) => providerIcons.readCached(input);
 export const fetchProviderIconForSave = (input) => providerIcons.fetchForSave(input);

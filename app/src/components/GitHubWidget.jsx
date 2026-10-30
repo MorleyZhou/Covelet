@@ -1,27 +1,33 @@
 import { tr, getLocale, formatNumber } from '../i18n/index.js';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ArrowsClockwise, GithubLogo } from '@phosphor-icons/react';
+import { ArrowsClockwise, GithubLogo, GearSix, ArrowLeft } from '@phosphor-icons/react';
+import { createPortal } from 'react-dom';
 import { githubContributions, requestGitHubAccess } from '../lib/github-contributions.js';
+import { useSyncedDataRevision } from '../lib/use-synced-data.js';
 import { analyzeGitHubCalendar } from '../lib/github-wasm.js';
-import { validateWidgetConfig, GITHUB_WIDGET_ID, WIDGET_SIZE_OPTIONS } from '../lib/widget-model.js';
+import { validateWidgetConfig, normalizeGitHubUsername, GITHUB_WIDGET_ID, WIDGET_SIZE_OPTIONS } from '../lib/widget-model.js';
 import { githubWidgetCalendar } from '../lib/github-layout.js';
 import previewCalendar from '../assets/github-preview.json';
 import Select from './Select.jsx';
-import { MessageDialog } from './PromptDialog.jsx';
+import Confirm, { MessageDialog } from './PromptDialog.jsx';
 import './github-widget.css';
+import { Input } from './ui/input.jsx';
+import { Button } from './ui/button.jsx';
 
 // Calendar dates are date-only values; formatting in UTC preserves the day.
 const contributionDate = (date) => new Date(`${date}T00:00:00Z`).toLocaleDateString(getLocale(), { timeZone: 'UTC', year: 'numeric', month: 'short', day: 'numeric' });
 
-export function GitHubWidgetSettings({ entry, onUse, onBusyChange, introduction }) {
+export function GitHubWidgetSettings({ entry, onUse, onBusyChange, onDirtyChange, introduction, internal = false }) {
   const [username, setUsername] = useState(entry?.config.username || '');
   const [size, setSize] = useState(entry?.config.size || 'medium');
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const initial = useRef(username);
+  useEffect(() => { onDirtyChange?.(username !== initial.current); return () => onDirtyChange?.(false); }, [username, onDirtyChange]);
   function save(event) {
     event.preventDefault();
     if (busy || event.nativeEvent?.isComposing) return;
     let config;
-    try { config = validateWidgetConfig(GITHUB_WIDGET_ID, { username, size }); }
+    try { config = validateWidgetConfig(GITHUB_WIDGET_ID, { username: normalizeGitHubUsername(username), size }); }
     catch (reason) { setError(reason.message); return; }
     const permission = requestGitHubAccess();
     setBusy(true); onBusyChange(true); setError('');
@@ -36,16 +42,16 @@ export function GitHubWidgetSettings({ entry, onUse, onBusyChange, introduction 
   return <form className="form-stack widget-config-form" onSubmit={save}>
     <div className="settings-scroll form-stack">
       {introduction}
-      <label>{tr('GitHub 用户名')}<input value={username} onChange={(event) => setUsername(event.target.value)}
+      <label>{tr('GitHub 用户名')}<Input value={username} onChange={(event) => setUsername(event.target.value)}
         autoComplete="off" spellCheck={false} maxLength={40} placeholder="username" disabled={busy}
         aria-describedby="github-widget-access" /></label>
-      <Select label={tr('尺寸')} value={size} onChange={setSize} disabled={busy} options={WIDGET_SIZE_OPTIONS} />
+      {!internal && <Select label={tr('尺寸')} value={size} onChange={setSize} disabled={busy} options={WIDGET_SIZE_OPTIONS} />}
       <p className="hint" id="github-widget-access">{tr('使用时需要访问 github.com，读取该用户公开展示的贡献日历。')}</p>
       <MessageDialog message={error} onClose={() => setError('')} />
     </div>
-    <div className="settings-footer"><button type="submit" className="button primary" disabled={busy}>
+    <div className="settings-footer"><Button variant="default" type="submit" className="button primary" disabled={busy}>
       {entry && !entry.detached ? tr('保存') : tr('使用')}
-    </button></div>
+    </Button></div>
   </form>;
 }
 
@@ -100,13 +106,17 @@ export function GitHubWidgetPreview() {
   </figure>;
 }
 
-export default function GitHubWidget({ entry }) {
+export default function GitHubWidget({ entry, open = false, onOpen, onClose, onSaveConfig, Dialog, portalTarget }) {
+  const syncRevision = useSyncedDataRevision();
   const { username, size } = entry.config;
   const sequence = useRef(0);
   const [source, setSource] = useState(null), [computed, setCalendar] = useState(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const [configuring, setConfiguring] = useState(false), [configBusy, setConfigBusy] = useState(false), [configDirty, setConfigDirty] = useState(false), [discarding, setDiscarding] = useState(null);
+  const close = () => { if (configBusy) return; if (configDirty) setDiscarding('window'); else { setConfiguring(false); onClose(); } };
   const calendar = computed?.username === username ? computed : null;
   useEffect(() => {
+    if (!username) { setSource(null); setCalendar(null); setError(''); return; }
     let active = true;
     const refresh = async () => {
       if (document.visibilityState === 'hidden') return;
@@ -123,7 +133,7 @@ export default function GitHubWidget({ entry }) {
     const timer = setInterval(refresh, 60 * 60 * 1000);
     document.addEventListener('visibilitychange', refresh);
     return () => { active = false; ++sequence.current; clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
-  }, [username]);
+  }, [username, syncRevision]);
   useEffect(() => {
     if (source?.username !== username) return;
     let active = true;
@@ -149,14 +159,21 @@ export default function GitHubWidget({ entry }) {
       finally { if (sequence.current === current) setBusy(false); }
     })();
   }
-  return <article className={`github-widget github-widget-${size}`} id={`widget-title-${entry.id}`} tabIndex={-1}
+  return <><article className={`github-widget github-widget-${size}`} id={`widget-title-${entry.id}`} tabIndex={-1}
     data-widget-surface aria-label={tr('GitHub 贡献：{0}', [username])} aria-busy={busy}
-    title={error ? `${tr(error)}${calendar ? tr(' 正在显示缓存。') : ''}` : undefined}>
+    title={error ? `${tr(error)}${calendar ? tr(' 正在显示上次更新的内容。') : ''}` : undefined}>
     {calendar ? <ContributionCalendar calendar={calendar} size={size} />
       : <div className="github-widget-placeholder"><GithubLogo size={size === 'mini' ? 22 : 28} weight="fill" aria-hidden="true" />
         <span>{tr(error) || (busy ? tr('正在读取…') : tr('暂无贡献数据'))}</span></div>}
-    <button type="button" className={`github-refresh ${error ? 'has-error' : ''}`} aria-label={tr('刷新 GitHub 贡献')}
-      title={tr('刷新')} disabled={busy} onClick={refresh}><ArrowsClockwise size={15} /></button>
-    <span className="visually-hidden" role="status">{error ? `${tr(error)}${calendar ? tr(' 正在显示缓存。') : ''}` : ''}</span>
-  </article>;
+    <Button variant="unstyled" size="unstyled" type="button" className="github-open" aria-label={tr('打开 GitHub 贡献')} aria-haspopup="dialog" aria-expanded={open} onClick={onOpen} />
+    {username && <Button variant="unstyled" size="unstyled" type="button" className={`github-refresh ${error ? 'has-error' : ''}`} aria-label={tr('刷新 GitHub 贡献')}
+      title={tr('刷新')} disabled={busy} onClick={refresh}><ArrowsClockwise size={15} /></Button>}
+    <span className="visually-hidden" role="status">{error ? `${tr(error)}${calendar ? tr(' 正在显示上次更新的内容。') : ''}` : ''}</span>
+  </article>{open && Dialog && portalTarget && createPortal(<div onPointerDown={(event) => event.stopPropagation()} onPointerMove={(event) => event.stopPropagation()} onPointerUp={(event) => event.stopPropagation()}><Dialog title={tr('GitHub 贡献')} className="github-tools-modal" wide maximizable privacyKeys={[`widget:${entry.id}`]} closeDisabled={configBusy} onClose={close}>
+    <section className="github-tools"><div className="github-tools-toolbar">{configuring && username ? <Button type="button" variant="ghost" disabled={configBusy} onClick={() => { if (configDirty) setDiscarding('settings'); else setConfiguring(false); }}><ArrowLeft size={16} />{tr('返回')}</Button> : <strong>{username ? `@${username}` : ''}</strong>}{username && !configuring && <div><Button type="button" variant="ghost" disabled={busy} onClick={refresh}><ArrowsClockwise size={17} />{busy ? tr('正在读取…') : tr('刷新')}</Button><Button type="button" variant="ghost" size="icon" aria-label={tr('设置')} onClick={() => setConfiguring(true)}><GearSix size={18} /></Button></div>}</div>
+      {configuring || !username ? <GitHubWidgetSettings internal entry={entry} onDirtyChange={setConfigDirty} onBusyChange={setConfigBusy} onUse={async (config) => { await onSaveConfig(config); setConfiguring(false); }} /> : <><div className="github-full-calendar">{calendar ? <ContributionCalendar calendar={calendar} size="large" /> : <p className="app-empty">{busy ? tr('正在读取…') : tr('暂无贡献数据')}</p>}</div>{calendar && <div className="github-calendar-stats"><strong>{formatNumber(source.days.reduce((sum, day) => sum + day.count, 0))}</strong><span>{tr('次贡献')}</span></div>}</>}
+      <MessageDialog message={error} onClose={() => setError('')} />
+      {discarding && <Confirm action={tr('放弃修改')} onCancel={() => setDiscarding(null)} onConfirm={() => { const target = discarding; setDiscarding(null); setConfigDirty(false); setConfiguring(false); if (target === 'window') onClose(); }}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
+    </section>
+  </Dialog></div>, portalTarget)}</>;
 }

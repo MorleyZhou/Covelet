@@ -39,7 +39,7 @@ test('new sites use internal favicon URLs without host permission or private URL
   for (const { url: input, options } of calls) {
     const url = new URL(input);
     assert.equal(url.protocol, 'chrome-extension:'); assert.equal(url.hostname, value.runtime.id);
-    assert.equal(url.pathname, '/_favicon/'); assert.equal(url.searchParams.get('size'), '64');
+    assert.equal(url.pathname, '/_favicon/'); assert.equal(url.searchParams.get('size'), '256');
     assert.deepEqual([...url.searchParams.keys()], ['pageUrl', 'size']);
     pages.push(url.searchParams.get('pageUrl'));
     assert.equal(options.credentials, 'omit'); assert.equal(options.referrerPolicy, 'no-referrer');

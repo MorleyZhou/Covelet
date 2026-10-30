@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAdaptiveAppearance, contrastRatio } from './adaptive-appearance.js';
 
-test('adaptive appearance preserves manual shade as a floor without mutating wallpaper statistics', () => {
+test('adaptive appearance preserves the exact manual shade without global automatic dimming or palette mutation', () => {
   const palette = { accent: '#58aabb', brightness: 0.5, p10: 0.03, p90: 0.85 };
   const original = structuredClone(palette);
   const style = createAdaptiveAppearance(palette, 72);
   assert.equal(style.shade, 72);
   assert.equal(style.style['--adaptive-page-ink'], '#ffffff');
   assert.deepEqual(palette, original);
-  assert(createAdaptiveAppearance(palette, 0).shade > 0);
+  assert.equal(createAdaptiveAppearance(palette, 0).shade, 0);
 });
 
 test('uniformly bright wallpaper uses dark foreground while dark wallpaper stays white without extra dimming', () => {

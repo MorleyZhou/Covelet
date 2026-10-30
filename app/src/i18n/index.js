@@ -1,4 +1,6 @@
 import messages from './messages.js';
+import { localData } from '../lib/local-data.js';
+import { appDefinition } from '../lib/app-catalog.js';
 
 export const LANGUAGES = Object.freeze([
   { value: 'en', label: 'English' }, { value: 'zh-CN', label: '简体中文' }, { value: 'zh-TW', label: '繁體中文' },
@@ -43,21 +45,15 @@ function apply(value) {
 }
 export function initializeLanguage() {
   if (!initialization) initialization = (async () => {
-    if (native()) {
-      chrome.storage.onChanged.addListener((items, area) => { if (area === 'local' && items[KEY]) apply(items[KEY].newValue); });
-      const value = (await chrome.storage.local.get(KEY))[KEY]; apply(value);
-    } else {
-      let value; try { value = globalThis.localStorage?.getItem(KEY); } catch { /* Browser language remains usable without storage. */ }
-      apply(value);
-      globalThis.addEventListener?.('storage', (event) => { if (event.key === KEY) apply(event.newValue); });
-    }
+    localData.subscribe((items) => { if (items[KEY]) apply(items[KEY].newValue); });
+    const value = (await localData.get(KEY))[KEY]; apply(value);
     globalThis.addEventListener?.('languagechange', () => { if (preference === 'auto') apply('auto'); });
   })().catch(() => apply('auto'));
   return initialization;
 }
 export async function setLanguagePreference(value) {
   if (!validPreference(value)) throw Error(tr('语言设置无效。'));
-  try { if (native()) await chrome.storage.local.set({ [KEY]: value }); else globalThis.localStorage?.setItem(KEY, value); }
+  try { await localData.set({ [KEY]: value }); }
   catch { throw Error(tr('语言设置未保存，请重试。')); }
   apply(value);
 }
@@ -83,7 +79,7 @@ export function tr(key, values = []) {
 }
 export const formatNumber = (value, options) => new Intl.NumberFormat(locale, options).format(value);
 export function builtinName(id, savedName) {
-  const key = ({ clock: '时钟', 'github-contributions': 'GitHub 贡献', notes: '便笺', 'read-later': '稍后读' })[id];
+  const key = ({ clock: '时钟', 'github-contributions': 'GitHub 贡献', notes: '便笺', 'read-later': '稍后读' })[id] || appDefinition(id)?.title;
   if (!key) return savedName;
   const variants = [key, ...Object.values(messages[key] || {})];
   return variants.includes(savedName) ? tr(key) : savedName;

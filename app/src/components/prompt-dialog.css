@@ -4,15 +4,14 @@
   border: 0; border-radius: 22px; background: var(--panel); color: var(--ink);
   box-shadow: none; overflow: auto; overscroll-behavior: contain;
 }
-.prompt-dialog[open] { display: flex; flex-direction: column; gap: 16px; }
-.prompt-dialog::backdrop { background: #00000042; backdrop-filter: blur(2px); }
+.prompt-dialog[data-state=open] { display: flex; flex-direction: column; gap: 16px; }
 .prompt-dialog > h2 { margin: 0; font-size: 17px; font-weight: 600; overflow-wrap: anywhere; }
-.prompt-dialog-message { min-width: 0; font-size: 14px; line-height: 1.65; overflow-wrap: anywhere; white-space: pre-wrap; }
+.prompt-dialog-message { min-width: 0; color: var(--ink); font-size: 14px; line-height: 1.65; overflow-wrap: anywhere; white-space: pre-wrap; }
 .prompt-dialog-message p { margin: 0; }
 .prompt-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 6px; }
-.prompt-dialog-actions .button { min-width: 72px; justify-content: center; white-space: normal; overflow-wrap: anywhere; }
-.prompt-dialog-actions .button:focus-visible { outline: none; box-shadow: none; text-decoration: underline; text-underline-offset: 4px; }
+.prompt-dialog-actions .ui-button { min-width: 72px; justify-content: center; white-space: normal; overflow-wrap: anywhere; }
+.prompt-dialog-actions .ui-button:focus-visible { outline: none; box-shadow: none; text-decoration: underline; text-underline-offset: 4px; }
 @media (forced-colors: active) {
   .prompt-dialog { border: 1px solid CanvasText; }
-  .prompt-dialog-actions .button:focus-visible { outline: 1px solid Highlight; outline-offset: -2px; }
+  .prompt-dialog-actions .ui-button:focus-visible { outline: 1px solid Highlight; outline-offset: -2px; }
 }

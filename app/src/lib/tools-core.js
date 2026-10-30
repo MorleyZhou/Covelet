@@ -5,7 +5,7 @@ const encoder = new TextEncoder(), CAPACITY = 262144;
 let pending;
 export function loadToolsCore() {
   if (!pending) pending = (async () => {
-    const response = await fetch(binaryUrl, { credentials: 'omit' });
+    const response = await globalThis.fetch(binaryUrl, { credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'error' });
     if (!response.ok) throw Error(tr("无法加载工具模块。"));
     const bytes = await response.arrayBuffer();
     if (bytes.byteLength > 64 * 1024) throw Error(tr("工具模块大小无效。"));

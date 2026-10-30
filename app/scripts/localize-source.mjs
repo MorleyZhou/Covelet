@@ -18,6 +18,13 @@ if (mode === '--catalog') {
       catalog[key] = Object.fromEntries(locales.slice(0, values.length).map((locale, index) => [locale, values[index]]));
     }
   }
+  for (const file of ['apps-daily.json', 'apps-market.json', 'apps-processing.json', 'apps-connected.json']) {
+    const additions = JSON.parse(await readFile(resolve(sourceRoot, 'i18n', file), 'utf8'));
+    for (const [key, row] of Object.entries(additions)) {
+      if (!key || locales.some((locale) => typeof row[locale] !== 'string' || !row[locale].trim())) throw Error(`Missing packaged translation: ${file}: ${key}`);
+      catalog[key] = row;
+    }
+  }
   const inventory = JSON.parse(await readFile(resolve(root, 'scripts/i18n-source.json'), 'utf8'));
   const missing = inventory.filter((entry) => !catalog[entry.key]?.en).map((entry) => entry.key);
   if (missing.length) throw Error(`Add English source translations before generating:\n${missing.join('\n')}`);
@@ -28,7 +35,7 @@ if (mode === '--catalog') {
     const read = (key) => locale === 'zh-CN' ? key : catalog[key][locale] || catalog[key].en;
     await writeFile(resolve(directory, 'messages.json'), `${JSON.stringify({
       extensionName: { message: 'Covelet' },
-      extensionDescription: { message: locale === 'zh-CN' ? '私密新标签页，提供网站导航、搜索、外观、小组件、浏览器同步与 Bing 每日壁纸。' : read('扩展简介') },
+      extensionDescription: { message: locale === 'zh-CN' ? '私密新标签页，提供网站导航、搜索、外观、小组件、加密同步与 Bing 每日壁纸。' : read('扩展简介') },
       actionTitle: { message: read('添加到 Covelet') },
     }, null, 2)}\n`);
   }

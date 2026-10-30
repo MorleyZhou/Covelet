@@ -18,9 +18,10 @@ export function useNavigationContrast({ rootRef, wallpaperRef, enabled, backgrou
   useEffect(() => {
     const root = rootRef.current, wallpaper = wallpaperRef.current;
     if (!enabled || !root || !wallpaper) return;
-    let disposed = false, timer, frame, retryTimer, retryAt = 0, generation = 0, controller, scene, sceneKey, lastGeometry;
-    let patchCache = new WeakMap();
-    const originals = new Map(), previous = new WeakMap(), iconSchemes = new WeakMap();
+    let disposed = false, suspended = document.visibilityState === 'hidden', timer, frame, retryTimer, retryAt = 0, generation = 0, controller, scene, sceneKey, lastGeometry;
+    let patchCache = new WeakMap(), previous = new WeakMap(), iconSchemes = new WeakMap();
+    const originals = new Map();
+    const inactive = () => suspended || document.visibilityState === 'hidden';
     function restore(node, values) {
       for (const [name, value, priority] of values) {
         if (value) node.style.setProperty(name, value, priority);
@@ -28,11 +29,32 @@ export function useNavigationContrast({ rootRef, wallpaperRef, enabled, backgrou
       }
     }
     function reset() { for (const [node, values] of originals) restore(node, values); originals.clear(); lastGeometry = null; }
+    function cancelPending() {
+      generation++;
+      controller?.abort(); controller = null;
+      clearTimeout(timer); timer = null;
+      cancelAnimationFrame(frame); frame = null;
+      clearTimeout(retryTimer); retryTimer = null;
+    }
+    function suspend() { suspended = true; cancelPending(); }
+    function resume() {
+      if (disposed) return;
+      suspended = false;
+      if (inactive()) return;
+      cancelPending();
+      // Canvas/layout state can be discarded or changed during a frozen tab.
+      // Force fresh patches and polarity rather than reusing geometry alone.
+      scene = null; sceneKey = null; lastGeometry = null; retryAt = 0;
+      patchCache = new WeakMap(); previous = new WeakMap(); iconSchemes = new WeakMap();
+      schedule();
+    }
+    const visibility = () => document.visibilityState === 'hidden' ? suspend() : resume();
     async function update() {
       frame = null;
-      if (disposed || Date.now() < retryAt) return;
+      if (disposed || inactive() || Date.now() < retryAt) return;
       const version = generation, options = latest.current, box = wallpaper.getBoundingClientRect();
       const viewportWidth = window.innerWidth, viewportHeight = window.innerHeight;
+      if (box.width <= 0 || box.height <= 0 || viewportWidth <= 0 || viewportHeight <= 0) { lastGeometry = null; return; }
       const key = [options.background?.kind, options.background?.value, options.sample, options.shade, options.blur, options.theme, viewportWidth, viewportHeight, window.devicePixelRatio, box.left, box.top, box.width, box.height];
       const changedScene = !same(sceneKey, key);
       try {
@@ -41,7 +63,9 @@ export function useNavigationContrast({ rootRef, wallpaperRef, enabled, backgrou
           sceneKey = key;
           lastGeometry = null; patchCache = new WeakMap();
         }
-        if (!scene) { reset(); return; }
+        // A photo's new local sample may still be decoding on return. Keep the
+        // last valid styles until it is ready instead of flashing default ink.
+        if (!scene) { lastGeometry = null; return; }
         // Caption and surface budgets are separate so large desktops do not
         // consume their text budget on icon-background samples.
         const nodes = [...root.querySelectorAll(TARGETS), ...root.querySelectorAll(ICON_TARGETS), ...root.querySelectorAll(WIDGET_TARGETS)];
@@ -78,7 +102,7 @@ export function useNavigationContrast({ rootRef, wallpaperRef, enabled, backgrou
         });
         controller = new AbortController();
         const captions = await analyzeNavigationContrast(patches, controller.signal);
-        if (disposed || version !== generation) return;
+        if (disposed || inactive() || version !== generation) return;
         lastGeometry = geometry;
         for (const result of captions) {
           if (!Number.isInteger(result.index)) continue;
@@ -117,15 +141,17 @@ export function useNavigationContrast({ rootRef, wallpaperRef, enabled, backgrou
         const activeNodes = new Set(targets.map(({ node }) => node));
         for (const [node, values] of originals) if (!node.isConnected || !activeNodes.has(node)) { if (node.isConnected) restore(node, values); originals.delete(node); }
       } catch (error) {
-        if (!disposed && version === generation && error?.name !== 'AbortError') {
-          scene = null; sceneKey = null; reset();
+        if (!disposed && !inactive() && version === generation && error?.name !== 'AbortError') {
+          // A throttled/timed-out worker must not erase an already legible
+          // page. Resume bypasses this retry delay and requests a fresh pass.
+          scene = null; sceneKey = null; lastGeometry = null;
           retryAt = Date.now() + 30000;
           clearTimeout(retryTimer); retryTimer = setTimeout(schedule, 30000);
         }
       }
     }
     function schedule() {
-      if (disposed) return;
+      if (disposed || inactive()) return;
       generation++;
       controller?.abort();
       if (timer || frame) return;
@@ -140,6 +166,12 @@ export function useNavigationContrast({ rootRef, wallpaperRef, enabled, backgrou
     mutations.observe(root, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['data-icon-surface', 'data-icon-ink', 'data-widget-surface'] });
     window.addEventListener('resize', schedule);
     window.addEventListener('scroll', schedule, { passive: true, capture: true });
+    document.addEventListener('visibilitychange', visibility);
+    document.addEventListener('freeze', suspend);
+    document.addEventListener('resume', resume);
+    window.addEventListener('pagehide', suspend);
+    window.addEventListener('pageshow', resume);
+    window.addEventListener('focus', resume);
     const fontChange = () => { patchCache = new WeakMap(); lastGeometry = null; schedule(); };
     const viewport = window.visualViewport;
     viewport?.addEventListener('resize', fontChange);
@@ -155,9 +187,15 @@ export function useNavigationContrast({ rootRef, wallpaperRef, enabled, backgrou
     schedule();
     return () => {
       disposed = true; scheduleRef.current = null;
-      clearTimeout(timer); clearTimeout(retryTimer); cancelAnimationFrame(frame); controller?.abort();
+      cancelPending();
       resize.disconnect(); mutations.disconnect();
       window.removeEventListener('resize', schedule); window.removeEventListener('scroll', schedule, true);
+      document.removeEventListener('visibilitychange', visibility);
+      document.removeEventListener('freeze', suspend);
+      document.removeEventListener('resume', resume);
+      window.removeEventListener('pagehide', suspend);
+      window.removeEventListener('pageshow', resume);
+      window.removeEventListener('focus', resume);
       viewport?.removeEventListener('resize', fontChange); viewport?.removeEventListener('scroll', schedule);
       document.fonts?.removeEventListener('loadingdone', fontChange);
       root.removeEventListener('transitionend', transitionFinished);

@@ -44,6 +44,10 @@ function device(remote, id, options = {}) {
   let state = createEmptyState();
   const configStore = options.configStore || memory();
   const sessionStore = options.sessionStore || memory();
+  // Every new tab shares this device's tool-sync settings too. Production now
+  // persists them in encrypted IndexedDB, which these isolated replica tests
+  // deliberately replace along with the navigation/session stores.
+  const toolSyncStore = options.toolSyncStore || memory();
   const subscribers = new Set();
   let race = false;
   const stateStore = {
@@ -57,7 +61,9 @@ function device(remote, id, options = {}) {
     },
     subscribeState(listener) { subscribers.add(listener); return () => subscribers.delete(listener); },
   };
-  const make = () => createCloudSync({ stateStore, configStore, sessionStore, providerFactory: remote.factory, signer, hasPermission: async () => true,
+  // These cases retain coverage of the legacy navigation protocol used for
+  // upgrade imports. Unified encrypted namespaces have their own round trips.
+  const make = () => createCloudSync({ fullData: false, stateStore, configStore, sessionStore, toolSyncStore, providerFactory: remote.factory, signer, hasPermission: async () => true,
     uuid: () => actor(id), eventWindow: null, eventDocument: null, ...options });
   return { api: make(), make, configStore, sessionStore, stateStore, get state() { return clone(state); },
     edit(update) { const next = clone(state); update(next); next.revision++; state = next; for (const listener of subscribers) listener(clone(state)); },
@@ -89,12 +95,12 @@ test('two devices merge portable navigation, keep original local icons and never
   const remote = cloud();
   const a = device(remote, 'a'), b = device(remote, 'b');
   await configure(a); await configure(b);
-  a.edit((state) => { state.entries.push({ ...site('alpha'), icon: { kind: 'image', value: 'original-image-only-on-a' }, iconBackground: '#123456' }); state.settings.adaptiveWallpaper = true; });
+  a.edit((state) => { state.entries.push({ ...site('alpha'), icon: { kind: 'image', value: 'original-image-only-on-a' }, iconBackground: '#123456' }); state.settings.visualEnhancement = false; });
   assert.equal((await a.api.syncCloudNow()).phase, 'saved');
   assert.equal((await b.api.syncCloudNow()).phase, 'saved');
   assert.equal(b.state.entries[0].name, 'alpha');
-  assert.equal(b.state.entries[0].icon.kind, 'letter');
-  assert.equal(b.state.settings.adaptiveWallpaper, true);
+  assert.deepEqual(b.state.entries[0].icon, { kind: 'url', value: 'https://alpha.example/favicon.ico' });
+  assert.equal(b.state.settings.visualEnhancement, false);
   a.edit((state) => { state.entries.push(site('local-a', 1)); });
   b.edit((state) => { state.entries.push(site('local-b', 1)); });
   await a.api.syncCloudNow(); await b.api.syncCloudNow(); await a.api.syncCloudNow();
