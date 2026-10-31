@@ -1457,6 +1457,72 @@
   "WebDAV 站点访问权限不可用，请重新授权。": {
     "en": "WebDAV site access is unavailable. Grant access again."
   },
+  "WebDAV 地址无效：请填写 HTTPS 基目录地址，不要使用分享链接、查询参数或带密码的地址。": {
+    "en": "Invalid WebDAV URL. Enter an HTTPS base directory, without share links, query parameters or embedded passwords."
+  },
+  "WebDAV 登录失败（401）：请检查用户名和应用密码，不要使用网页登录密码。": {
+    "en": "WebDAV login failed (401). Check your username and app password; do not use your website login password."
+  },
+  "WebDAV 拒绝访问（403）：请确认账号已启用 WebDAV，并有此目录的读写权限。": {
+    "en": "WebDAV access denied (403). Enable WebDAV for this account and check directory read/write permissions."
+  },
+  "WebDAV 路径不存在（404/409）：请检查基目录地址，并先创建填写的保存目录。": {
+    "en": "WebDAV path not found (404/409). Check the base URL and create the selected save directory first."
+  },
+  "网络已断开，请联网后重新测试 WebDAV。": {
+    "en": "You are offline. Reconnect and test WebDAV again."
+  },
+  "WebDAV 安全连接失败，请检查服务器 HTTPS 证书和设备时间。": {
+    "en": "The secure WebDAV connection failed. Check the HTTPS certificate and your device clock."
+  },
+  "找不到或无法访问 WebDAV 服务器，请检查域名、端口和服务是否运行。": {
+    "en": "The WebDAV server cannot be found or reached. Check the hostname, port and running service."
+  },
+  "无法连接 WebDAV：请检查网络、服务器地址、HTTPS 证书和站点访问权限；浏览器可能未提供具体原因。": {
+    "en": "Cannot connect to WebDAV. Check your network, server URL, HTTPS certificate and site access. The browser may not report the exact cause."
+  },
+  "冲突预览已过期或数据已更新，请重新查看两侧内容后选择。": {
+    "en": "The conflict preview expired or data changed. Review both sides again before choosing."
+  },
+  "WebDAV 为本轮加固渠道，真实云账号验收仍待完成；R2、OSS、GitHub、GitLab 已实现但均为 Beta。": {
+    "en": "WebDAV is the hardened path in this update; real-account acceptance is still pending. R2, OSS, GitHub and GitLab are implemented as Beta providers."
+  },
+  "最近连接测试通过：{0}": {
+    "en": "Last connection test passed: {0}"
+  },
+  "配置已保存；当前凭据的连接尚未验证。": {
+    "en": "Settings saved; the connection with the current credentials is unverified."
+  },
+  "测试只检查登录和目录读取，不验证写入或同步密码。保存配置不会执行连接测试。": {
+    "en": "Testing checks login and directory reading only, not writes or the sync password. Saving does not run a connection test."
+  },
+  "冲突内容保留本机版本，等待你选择。请查看两侧内容，整条采用本机或一个远端版本；不会合并记录内部字段。": {
+    "en": "Conflicting content keeps the local version until you choose. Review both sides and select one complete local or remote record. Fields within a record are never merged."
+  },
+  "远端版本 {0}": {
+    "en": "Remote version {0}"
+  },
+  "此操作会替换这一整条记录，并在下次同步时上传。记录内其他修改也会一起替换，请确认已选对版本。": {
+    "en": "This replaces the entire record and uploads it on the next sync. Other edits within this record will also be replaced. Check your selection."
+  },
+  "此版本已删除整条记录。": {
+    "en": "This version deletes the entire record."
+  },
+  "二进制内容：{0} 字节，类型 {1}": {
+    "en": "Binary content: {0} bytes, type {1}"
+  },
+  "内容较长，预览已截短；选择时仍会采用完整记录。": {
+    "en": "This preview is shortened. Your choice still applies the complete record."
+  },
+  "加密同步桌面、扩展和图标。WebDAV 为加固渠道，其他渠道为 Beta。": {
+    "en": "Encrypt and sync your desktop, extensions and icons. WebDAV is the hardened path; other providers are Beta."
+  },
+  "最近连接测试未通过，请检查后重试。": {
+    "en": "The latest connection test did not pass. Check the settings and try again."
+  },
+  "此删除版本会移除当前隐藏内容的标记，请先在本机解除隐藏，再重新选择。": {
+    "en": "This deleted version removes markings for currently hidden content. Unlock hidden content on this device, then choose again."
+  },
   "开始写作...": {
     "en": "Start writing…",
     "zh-TW": "開始寫作…",
@@ -10916,29 +10982,536 @@
     "fr": "Coller des liens",
     "ru": "Вставить ссылки"
   },
-  "WebDAV 地址无效：请填写 HTTPS 基目录地址，不要使用分享链接、查询参数或带密码的地址。": {
-    "en": "Invalid WebDAV URL. Enter an HTTPS base directory, without share links, query parameters or embedded passwords."
+  "授权状态未知": {
+    "en": "Grant status unknown",
+    "zh-TW": "授權狀態未知",
+    "ja": "許可状態は不明",
+    "ko": "권한 상태 알 수 없음",
+    "de": "Berechtigungsstatus unbekannt",
+    "fr": "Autorisation inconnue",
+    "ru": "Статус доступа неизвестен"
   },
-  "WebDAV 登录失败（401）：请检查用户名和应用密码，不要使用网页登录密码。": {
-    "en": "WebDAV login failed (401). Check your username and app password; do not use your website login password."
+  "已授予": {
+    "en": "Granted",
+    "zh-TW": "已授予",
+    "ja": "許可済み",
+    "ko": "허용됨",
+    "de": "Gewährt",
+    "fr": "Accordée",
+    "ru": "Предоставлено"
   },
-  "WebDAV 拒绝访问（403）：请确认账号已启用 WebDAV，并有此目录的读写权限。": {
-    "en": "WebDAV access denied (403). Enable WebDAV for this account and check directory read/write permissions."
+  "未授予": {
+    "en": "Not granted",
+    "zh-TW": "未授予",
+    "ja": "未許可",
+    "ko": "허용되지 않음",
+    "de": "Nicht gewährt",
+    "fr": "Non accordée",
+    "ru": "Не предоставлено"
   },
-  "WebDAV 路径不存在（404/409）：请检查基目录地址，并先创建填写的保存目录。": {
-    "en": "WebDAV path not found (404/409). Check the base URL and create the selected save directory first."
+  "近 7 天的外部请求": {
+    "en": "External requests over the last 7 days",
+    "zh-TW": "近 7 天的外部請求",
+    "ja": "過去7日間の外部リクエスト",
+    "ko": "최근 7일간 외부 요청",
+    "de": "Externe Anfragen der letzten 7 Tage",
+    "fr": "Requêtes externes des 7 derniers jours",
+    "ru": "Внешние запросы за последние 7 дней"
   },
-  "网络已断开，请联网后重新测试 WebDAV。": {
-    "en": "You are offline. Reconnect and test WebDAV again."
+  "同步状态暂时无法读取。": {
+    "en": "Sync status is temporarily unavailable.",
+    "zh-TW": "同步狀態暫時無法讀取。",
+    "ja": "同期状態を現在読み取れません。",
+    "ko": "현재 동기화 상태를 읽을 수 없습니다.",
+    "de": "Der Synchronisierungsstatus ist derzeit nicht verfügbar.",
+    "fr": "L’état de synchronisation est temporairement indisponible.",
+    "ru": "Статус синхронизации временно недоступен."
   },
-  "WebDAV 安全连接失败，请检查服务器 HTTPS 证书和设备时间。": {
-    "en": "The secure WebDAV connection failed. Check the HTTPS certificate and your device clock."
+  "当前同步未连接；不会自动发送同步数据。": {
+    "en": "Sync is currently disconnected; no sync data is sent automatically.",
+    "zh-TW": "目前同步未連線；不會自動傳送同步資料。",
+    "ja": "同期は未接続です。同期データは自動送信されません。",
+    "ko": "동기화가 연결되지 않아 동기화 데이터가 자동 전송되지 않습니다.",
+    "de": "Synchronisierung ist getrennt; Synchronisierungsdaten werden nicht automatisch gesendet.",
+    "fr": "La synchronisation est déconnectée ; aucune donnée de synchronisation n’est envoyée automatiquement.",
+    "ru": "Синхронизация отключена; её данные не отправляются автоматически."
   },
-  "找不到或无法访问 WebDAV 服务器，请检查域名、端口和服务是否运行。": {
-    "en": "The WebDAV server cannot be found or reached. Check the hostname, port and running service."
+  "当前同步已解锁，自动同步已开启。": {
+    "en": "Sync is unlocked and automatic sync is on.",
+    "zh-TW": "目前同步已解鎖，自動同步已開啟。",
+    "ja": "同期はロック解除済みで、自動同期は有効です。",
+    "ko": "동기화 잠금이 해제되었으며 자동 동기화가 켜져 있습니다.",
+    "de": "Synchronisierung ist entsperrt, automatische Synchronisierung ist an.",
+    "fr": "La synchronisation est déverrouillée et automatique.",
+    "ru": "Синхронизация разблокирована, автосинхронизация включена."
   },
-  "无法连接 WebDAV：请检查网络、服务器地址、HTTPS 证书和站点访问权限；浏览器可能未提供具体原因。": {
-    "en": "Cannot connect to WebDAV. Check your network, server URL, HTTPS certificate and site access. The browser may not report the exact cause."
+  "当前同步已解锁，自动同步未开启。": {
+    "en": "Sync is unlocked and automatic sync is off.",
+    "zh-TW": "目前同步已解鎖，自動同步未開啟。",
+    "ja": "同期はロック解除済みで、自動同期は無効です。",
+    "ko": "동기화 잠금이 해제되었으며 자동 동기화는 꺼져 있습니다.",
+    "de": "Synchronisierung ist entsperrt, automatische Synchronisierung ist aus.",
+    "fr": "La synchronisation est déverrouillée, mais non automatique.",
+    "ru": "Синхронизация разблокирована, автосинхронизация выключена."
+  },
+  "配置的同步来源：{0}": {
+    "en": "Configured sync origin: {0}",
+    "zh-TW": "設定的同步來源：{0}",
+    "ja": "設定した同期先：{0}",
+    "ko": "설정된 동기화 출처: {0}",
+    "de": "Konfigurierter Synchronisierungsursprung: {0}",
+    "fr": "Origine de synchronisation configurée : {0}",
+    "ru": "Настроенный адрес синхронизации: {0}"
+  },
+  "当前权限与用途": {
+    "en": "Current permissions and their uses",
+    "zh-TW": "目前權限與用途",
+    "ja": "現在の権限と用途",
+    "ko": "현재 권한 및 용도",
+    "de": "Aktuelle Berechtigungen und ihr Zweck",
+    "fr": "Autorisations actuelles et leur usage",
+    "ru": "Текущие разрешения и их назначение"
+  },
+  "正在读取权限…": {
+    "en": "Reading permissions…",
+    "zh-TW": "正在讀取權限…",
+    "ja": "権限を読み取り中…",
+    "ko": "권한을 읽는 중…",
+    "de": "Berechtigungen werden gelesen…",
+    "fr": "Lecture des autorisations…",
+    "ru": "Чтение разрешений…"
+  },
+  "必需": {
+    "en": "Required",
+    "zh-TW": "必要",
+    "ja": "必須",
+    "ko": "필수",
+    "de": "Erforderlich",
+    "fr": "Obligatoire",
+    "ru": "Обязательно"
+  },
+  "可选": {
+    "en": "Optional",
+    "zh-TW": "選用",
+    "ja": "任意",
+    "ko": "선택 사항",
+    "de": "Optional",
+    "fr": "Facultatif",
+    "ru": "Необязательно"
+  },
+  "网站访问范围": {
+    "en": "Website access scope",
+    "zh-TW": "網站存取範圍",
+    "ja": "サイトへのアクセス範囲",
+    "ko": "웹사이트 접근 범위",
+    "de": "Umfang des Websitezugriffs",
+    "fr": "Périmètre d’accès aux sites",
+    "ru": "Область доступа к сайтам"
+  },
+  "固定来源": {
+    "en": "Fixed origin",
+    "zh-TW": "固定來源",
+    "ja": "固定の接続先",
+    "ko": "고정 출처",
+    "de": "Fester Ursprung",
+    "fr": "Origine fixe",
+    "ru": "Постоянный источник"
+  },
+  "额外授权来源": {
+    "en": "Additional granted origin",
+    "zh-TW": "額外授權來源",
+    "ja": "追加で許可した接続先",
+    "ko": "추가로 허용된 출처",
+    "de": "Zusätzlich erlaubter Ursprung",
+    "fr": "Origine supplémentaire autorisée",
+    "ru": "Дополнительно разрешённый источник"
+  },
+  "用于 Bing 每日壁纸。": {
+    "en": "Used for Bing daily wallpaper.",
+    "zh-TW": "用於 Bing 每日桌布。",
+    "ja": "Bingの日替わり壁紙に使用します。",
+    "ko": "Bing 일일 배경화면에 사용합니다.",
+    "de": "Für das tägliche Bing-Hintergrundbild.",
+    "fr": "Utilisée pour le fond d’écran quotidien Bing.",
+    "ru": "Для ежедневных обоев Bing."
+  },
+  "数据存放在哪里": {
+    "en": "Where your data lives",
+    "zh-TW": "資料存放在哪裡",
+    "ja": "データの保存場所",
+    "ko": "데이터 저장 위치",
+    "de": "Wo Ihre Daten liegen",
+    "fr": "Où vos données sont stockées",
+    "ru": "Где хранятся ваши данные"
+  },
+  "本机 IndexedDB": {
+    "en": "Local IndexedDB",
+    "zh-TW": "本機 IndexedDB",
+    "ja": "ローカルのIndexedDB",
+    "ko": "로컬 IndexedDB",
+    "de": "Lokale IndexedDB",
+    "fr": "IndexedDB locale",
+    "ru": "Локальная IndexedDB"
+  },
+  "浏览器会话存储": {
+    "en": "Browser session storage",
+    "zh-TW": "瀏覽器工作階段儲存",
+    "ja": "ブラウザーのセッションストレージ",
+    "ko": "브라우저 세션 저장소",
+    "de": "Browsersitzungsspeicher",
+    "fr": "Stockage de session du navigateur",
+    "ru": "Хранилище сеанса браузера"
+  },
+  "你选择的存储端点": {
+    "en": "Your chosen storage endpoint",
+    "zh-TW": "你選擇的儲存端點",
+    "ja": "選択したストレージ接続先",
+    "ko": "선택한 저장소 엔드포인트",
+    "de": "Ihr gewählter Speicherendpunkt",
+    "fr": "Le point de stockage choisi",
+    "ru": "Выбранный вами сервер хранения"
+  },
+  "备份与旧副本": {
+    "en": "Backups and older copies",
+    "zh-TW": "備份與舊副本",
+    "ja": "バックアップと古いコピー",
+    "ko": "백업 및 이전 사본",
+    "de": "Sicherungen und ältere Kopien",
+    "fr": "Sauvegardes et anciennes copies",
+    "ru": "Резервные и старые копии"
+  },
+  "正在读取同步设置…": {
+    "en": "Loading sync settings…",
+    "zh-TW": "正在讀取同步設定…",
+    "ja": "同期設定を読み込み中…",
+    "ko": "동기화 설정을 읽는 중…",
+    "de": "Synchronisierungseinstellungen werden geladen…",
+    "fr": "Chargement des paramètres de synchronisation…",
+    "ru": "Загрузка настроек синхронизации…"
+  },
+  "同步设置步骤": {
+    "en": "Sync setup steps",
+    "zh-TW": "同步設定步驟",
+    "ja": "同期の設定手順",
+    "ko": "동기화 설정 단계",
+    "de": "Schritte zur Synchronisierung",
+    "fr": "Étapes de configuration de la synchronisation",
+    "ru": "Этапы настройки синхронизации"
+  },
+  "选择渠道": {
+    "en": "Choose a provider",
+    "zh-TW": "選擇管道",
+    "ja": "サービスを選択",
+    "ko": "서비스 선택",
+    "de": "Anbieter wählen",
+    "fr": "Choisir un service",
+    "ru": "Выбрать сервис"
+  },
+  "密码与首次同步": {
+    "en": "Password and first sync",
+    "zh-TW": "密碼與首次同步",
+    "ja": "パスワードと初回同期",
+    "ko": "비밀번호 및 첫 동기화",
+    "de": "Passwort und erste Synchronisierung",
+    "fr": "Mot de passe et première synchronisation",
+    "ru": "Пароль и первая синхронизация"
+  },
+  "推荐": {
+    "en": "Recommended",
+    "zh-TW": "推薦",
+    "ja": "推奨",
+    "ko": "권장",
+    "de": "Empfohlen",
+    "fr": "Recommandé",
+    "ru": "Рекомендуется"
+  },
+  "仅在本机使用": {
+    "en": "Use locally only",
+    "zh-TW": "僅在本機使用",
+    "ja": "このデバイスのみで使用",
+    "ko": "이 기기에서만 사용",
+    "de": "Nur lokal verwenden",
+    "fr": "Utiliser uniquement en local",
+    "ru": "Использовать только локально"
+  },
+  "上一步": {
+    "en": "Back",
+    "zh-TW": "上一步",
+    "ja": "戻る",
+    "ko": "이전",
+    "de": "Zurück",
+    "fr": "Retour",
+    "ru": "Назад"
+  },
+  "保存并首次同步": {
+    "en": "Save and run first sync",
+    "zh-TW": "儲存並首次同步",
+    "ja": "保存して初回同期",
+    "ko": "저장 후 첫 동기화",
+    "de": "Speichern und erstmals synchronisieren",
+    "fr": "Enregistrer et lancer la première synchronisation",
+    "ru": "Сохранить и синхронизировать впервые"
+  },
+  "下一步": {
+    "en": "Next",
+    "zh-TW": "下一步",
+    "ja": "次へ",
+    "ko": "다음",
+    "de": "Weiter",
+    "fr": "Suivant",
+    "ru": "Далее"
+  },
+  "已关闭同步，仅在本机保存数据。": {
+    "en": "Sync is off. Data is saved on this device only.",
+    "zh-TW": "已關閉同步，僅在本機儲存資料。",
+    "ja": "同期を停止しました。データはこのデバイスにのみ保存されます。",
+    "ko": "동기화가 꺼졌습니다. 데이터는 이 기기에만 저장됩니다.",
+    "de": "Synchronisierung ist aus. Daten werden nur auf diesem Gerät gespeichert.",
+    "fr": "Synchronisation désactivée. Les données sont conservées uniquement sur cet appareil.",
+    "ru": "Синхронизация выключена. Данные сохраняются только на этом устройстве."
+  },
+  "隐私自查": {
+    "en": "Privacy checkup",
+    "zh-TW": "隱私自查",
+    "ja": "プライバシーチェック",
+    "ko": "개인정보 점검",
+    "de": "Datenschutzprüfung",
+    "fr": "Bilan de confidentialité",
+    "ru": "Проверка конфиденциальности"
+  },
+  "本机构建：无第三方分析、广告或自动日志上传。": {
+    "en": "This build has no third-party analytics, ads or automatic log uploads.",
+    "zh-TW": "本機建置：無第三方分析、廣告或自動日誌上傳。",
+    "ja": "このビルドにはサードパーティー分析、広告、ログの自動送信はありません。",
+    "ko": "이 빌드에는 타사 분석, 광고 또는 자동 로그 업로드가 없습니다.",
+    "de": "Dieser Build enthält keine Drittanbieteranalysen, Werbung oder automatischen Protokolluploads.",
+    "fr": "Cette version ne contient ni analyse tierce, ni publicité, ni envoi automatique de journaux.",
+    "ru": "В этой сборке нет сторонней аналитики, рекламы или автоматической отправки журналов."
+  },
+  "此版本未记录网络请求历史，无法统计近 7 天的请求次数。以下为可能联网的功能。": {
+    "en": "This version does not log network requests, so no request count is available for the last 7 days. The features below may connect to the network.",
+    "zh-TW": "此版本未記錄網路請求歷史，無法統計近 7 天的請求次數。以下為可能連網的功能。",
+    "ja": "このバージョンは通信履歴を記録しないため、過去7日間のリクエスト数は集計できません。以下の機能は通信する場合があります。",
+    "ko": "이 버전은 네트워크 요청 기록을 남기지 않아 최근 7일간의 요청 수를 집계할 수 없습니다. 다음 기능은 네트워크에 연결될 수 있습니다.",
+    "de": "Diese Version protokolliert keine Netzwerkanfragen; eine Anzahl für die letzten 7 Tage ist daher nicht verfügbar. Folgende Funktionen können sich verbinden.",
+    "fr": "Cette version ne journalise pas les requêtes réseau ; leur nombre sur les 7 derniers jours est donc indisponible. Les fonctions suivantes peuvent se connecter.",
+    "ru": "Эта версия не записывает сетевые запросы, поэтому их количество за последние 7 дней неизвестно. Следующие функции могут обращаться к сети."
+  },
+  "同步：仅在你测试连接或解锁同步后，请求你配置的存储端点；自动同步需要单独开启。": {
+    "en": "Sync contacts only your configured storage endpoint when you test the connection or unlock sync. Automatic sync requires a separate opt-in.",
+    "zh-TW": "同步：僅在你測試連線或解鎖同步後，請求你設定的儲存端點；自動同步需要另行開啟。",
+    "ja": "同期は接続テスト時またはロック解除後に、設定したストレージ接続先にのみ通信します。自動同期は別途有効にする必要があります。",
+    "ko": "동기화는 연결 테스트 또는 잠금 해제 후 설정한 저장소 엔드포인트에만 요청합니다. 자동 동기화는 별도로 켜야 합니다.",
+    "de": "Synchronisierung kontaktiert nur Ihren Speicherendpunkt beim Verbindungstest oder nach dem Entsperren. Automatische Synchronisierung muss separat aktiviert werden.",
+    "fr": "La synchronisation contacte uniquement le stockage configuré, lors du test ou après déverrouillage. La synchronisation automatique exige une activation distincte.",
+    "ru": "Синхронизация обращается только к настроенному серверу при проверке подключения или после разблокировки. Автосинхронизация включается отдельно."
+  },
+  "Bing 每日壁纸：获取图片及元数据；改用颜色或渐变可停止每日壁纸请求。": {
+    "en": "Bing daily wallpaper fetches images and metadata. Choose a color or gradient to stop daily wallpaper requests.",
+    "zh-TW": "Bing 每日桌布：取得圖片及中繼資料；改用顏色或漸層可停止每日桌布請求。",
+    "ja": "Bingの日替わり壁紙は画像とメタデータを取得します。色またはグラデーションに変更すると、この通信を停止できます。",
+    "ko": "Bing 일일 배경화면은 이미지와 메타데이터를 가져옵니다. 색상 또는 그라데이션을 선택하면 일일 배경화면 요청이 중단됩니다.",
+    "de": "Das tägliche Bing-Hintergrundbild lädt Bilder und Metadaten. Wählen Sie eine Farbe oder einen Verlauf, um diese Anfragen zu stoppen.",
+    "fr": "Le fond quotidien Bing récupère des images et métadonnées. Choisissez une couleur ou un dégradé pour arrêter ces requêtes.",
+    "ru": "Ежедневные обои Bing загружают изображения и метаданные. Выберите цвет или градиент, чтобы прекратить эти запросы."
+  },
+  "手动获取网站信息、图片及导入修复：可能请求你选择的网站或图片来源；普通导航显示读取本机缓存。": {
+    "en": "Manual site information, image retrieval and import repair may contact your selected sites or image sources. Ordinary navigation uses the local cache.",
+    "zh-TW": "手動取得網站資訊、圖片及匯入修復：可能請求你選擇的網站或圖片來源；一般導覽顯示讀取本機快取。",
+    "ja": "サイト情報や画像の手動取得、取り込みの修復では、選択したサイトや画像元に通信する場合があります。通常のナビゲーション表示はローカルキャッシュを使用します。",
+    "ko": "사이트 정보 및 이미지 수동 가져오기와 가져오기 복구는 선택한 사이트나 이미지 출처에 요청할 수 있습니다. 일반 탐색 화면은 로컬 캐시를 사용합니다.",
+    "de": "Manuelle Websiteinformationen, Bildabrufe und Importreparaturen können gewählte Websites oder Bildquellen kontaktieren. Die normale Navigation nutzt den lokalen Cache.",
+    "fr": "La récupération manuelle d’informations, d’images et la réparation d’import peuvent contacter les sites ou sources choisis. La navigation habituelle utilise le cache local.",
+    "ru": "Ручная загрузка сведений, изображений и исправление импорта могут обращаться к выбранным сайтам или источникам изображений. Обычная навигация использует локальный кеш."
+  },
+  "GitHub 贡献组件：授权后读取所选账号的公开贡献日历。": {
+    "en": "The GitHub contribution widget reads the chosen account’s public contribution calendar after access is granted.",
+    "zh-TW": "GitHub 貢獻元件：授權後讀取所選帳號的公開貢獻日曆。",
+    "ja": "GitHub貢献ウィジェットは、許可後に選択したアカウントの公開貢献カレンダーを取得します。",
+    "ko": "GitHub 기여 위젯은 접근 허용 후 선택한 계정의 공개 기여 달력을 읽습니다.",
+    "de": "Das GitHub-Beitragswidget liest nach Erlaubnis den öffentlichen Beitragskalender des gewählten Kontos.",
+    "fr": "Le widget de contributions GitHub lit le calendrier public du compte choisi après autorisation.",
+    "ru": "Виджет вкладов GitHub после разрешения читает открытый календарь вкладов выбранного аккаунта."
+  },
+  "搜索会前往所选搜索引擎；便笺中的远程图片可能连接图片来源。": {
+    "en": "Searches go to the chosen search engine. Remote images in notes may contact their image hosts.",
+    "zh-TW": "搜尋會前往所選搜尋引擎；便箋中的遠端圖片可能連線至圖片來源。",
+    "ja": "検索は選択した検索エンジンに送信されます。メモ内のリモート画像は画像元に接続する場合があります。",
+    "ko": "검색은 선택한 검색 엔진으로 이동합니다. 메모의 원격 이미지는 이미지 호스트에 연결될 수 있습니다.",
+    "de": "Suchanfragen gehen an die gewählte Suchmaschine. Externe Bilder in Notizen können ihre Bildserver kontaktieren.",
+    "fr": "Les recherches vont au moteur choisi. Les images distantes dans les notes peuvent contacter leurs hébergeurs.",
+    "ru": "Поисковые запросы направляются в выбранную систему. Внешние изображения в заметках могут обращаться к своим серверам."
+  },
+  "无法读取浏览器当前授权，以下仅为安装清单声明。": {
+    "en": "Current browser grants could not be read. Only manifest declarations are shown below.",
+    "zh-TW": "無法讀取瀏覽器目前授權，以下僅為安裝清單宣告。",
+    "ja": "現在のブラウザーの許可状態を読み取れません。以下はマニフェストの宣言のみです。",
+    "ko": "현재 브라우저 권한을 읽을 수 없습니다. 아래에는 매니페스트 선언만 표시됩니다.",
+    "de": "Aktuelle Browserberechtigungen konnten nicht gelesen werden. Unten stehen nur Manifestdeklarationen.",
+    "fr": "Impossible de lire les autorisations actuelles du navigateur. Seules les déclarations du manifeste figurent ci-dessous.",
+    "ru": "Не удалось прочитать текущие разрешения браузера. Ниже показаны только объявления манифеста."
+  },
+  "允许读取此范围内的内容，用于你选择的网站信息、图片、GitHub 或自定义存储服务。": {
+    "en": "Allows reading content in this scope for your chosen site information, images, GitHub or custom storage service.",
+    "zh-TW": "允許讀取此範圍內的內容，用於你選擇的網站資訊、圖片、GitHub 或自訂儲存服務。",
+    "ja": "この範囲のコンテンツを、選択したサイト情報、画像、GitHub、カスタムストレージのために読み取れます。",
+    "ko": "선택한 사이트 정보, 이미지, GitHub 또는 사용자 지정 저장소를 위해 이 범위의 콘텐츠를 읽도록 허용합니다.",
+    "de": "Erlaubt das Lesen in diesem Bereich für gewählte Websiteinformationen, Bilder, GitHub oder eigenen Speicher.",
+    "fr": "Autorise la lecture dans ce périmètre pour les informations de sites, images, GitHub ou le stockage choisis.",
+    "ru": "Разрешает чтение в этой области для выбранных сведений о сайтах, изображений, GitHub или собственного хранилища."
+  },
+  "可申请范围：{0}。这只是按需授权范围，不代表已获准访问所有网站。": {
+    "en": "Requestable scope: {0}. This is the scope for on-demand grants, not permission to access every site.",
+    "zh-TW": "可申請範圍：{0}。這只是按需授權範圍，不代表已獲准存取所有網站。",
+    "ja": "申請可能な範囲：{0}。必要時に許可を申請する範囲であり、全サイトへのアクセス許可ではありません。",
+    "ko": "요청 가능한 범위: {0}. 필요에 따라 권한을 요청할 수 있는 범위이며, 모든 사이트에 대한 접근 허용을 의미하지 않습니다.",
+    "de": "Anfragbarer Bereich: {0}. Dies ist nur der Rahmen für bedarfsbezogene Erlaubnisse, kein Zugriff auf alle Websites.",
+    "fr": "Périmètre demandable : {0}. Il sert aux autorisations à la demande et ne donne pas accès à tous les sites.",
+    "ru": "Запрашиваемая область: {0}. Это область для разрешений по запросу, а не доступ ко всем сайтам."
+  },
+  "可在浏览器的扩展详情中管理网站访问和通知权限。activeTab 仅在点击工具栏时临时生效。": {
+    "en": "Manage site access and notification permissions in your browser’s extension details. activeTab is temporary and activated by a toolbar click.",
+    "zh-TW": "可在瀏覽器的擴充功能詳細資訊中管理網站存取和通知權限。activeTab 僅在點擊工具列時暫時生效。",
+    "ja": "サイトへのアクセスと通知権限はブラウザーの拡張機能詳細で管理できます。activeTabはツールバーをクリックした際の一時的な権限です。",
+    "ko": "브라우저 확장 프로그램 세부정보에서 사이트 접근 및 알림 권한을 관리할 수 있습니다. activeTab은 도구 모음 클릭 시에만 일시적으로 적용됩니다.",
+    "de": "Websitezugriff und Benachrichtigungen lassen sich in den Erweiterungsdetails verwalten. activeTab gilt vorübergehend nach einem Klick auf die Symbolleiste.",
+    "fr": "Gérez les accès et notifications dans les détails de l’extension du navigateur. activeTab s’active temporairement par un clic sur la barre d’outils.",
+    "ru": "Управляйте доступом к сайтам и уведомлениями в настройках расширения. activeTab действует временно после нажатия на панели инструментов."
+  },
+  "导航、便笺、稍后读、图片和设置主要保存在本机加密 IndexedDB。设备密钥不可导出；同源应用仍可使用它，加密不能替代设备安全。": {
+    "en": "Navigation, notes, Read Later, images and settings primarily live in locally encrypted IndexedDB. The device key is non-extractable but usable by same-origin code; encryption does not replace device security.",
+    "zh-TW": "導覽、便箋、稍後讀、圖片和設定主要儲存在本機加密 IndexedDB。裝置金鑰不可匯出；同源應用程式仍可使用它，加密不能取代裝置安全。",
+    "ja": "ナビゲーション、メモ、後で読む、画像、設定は主にローカルの暗号化IndexedDBに保存されます。デバイスキーは抽出できませんが、同一オリジンのコードは使用できます。暗号化はデバイスの安全対策の代わりにはなりません。",
+    "ko": "탐색, 메모, 나중에 읽기, 이미지 및 설정은 주로 로컬 암호화 IndexedDB에 저장됩니다. 기기 키는 내보낼 수 없지만 동일 출처 코드는 사용할 수 있습니다. 암호화는 기기 보안을 대신하지 않습니다.",
+    "de": "Navigation, Notizen, Später lesen, Bilder und Einstellungen liegen überwiegend in lokal verschlüsselter IndexedDB. Der Geräteschlüssel ist nicht exportierbar, aber von Code desselben Ursprungs nutzbar; Verschlüsselung ersetzt keine Gerätesicherheit.",
+    "fr": "Navigation, notes, À lire plus tard, images et paramètres résident surtout dans IndexedDB chiffrée localement. La clé de l’appareil n’est pas exportable, mais le code de même origine peut l’utiliser ; le chiffrement ne remplace pas la sécurité de l’appareil.",
+    "ru": "Навигация, заметки, отложенное чтение, изображения и настройки в основном хранятся в локальной зашифрованной IndexedDB. Ключ устройства нельзя извлечь, но код того же источника может его использовать; шифрование не заменяет защиту устройства."
+  },
+  "同步连接凭据和同步密码仅保留在 chrome.storage.session；锁定或退出浏览器会清除，业务备份和同步不包含这些凭据。": {
+    "en": "Sync credentials and the sync password stay only in chrome.storage.session. Locking or quitting the browser clears them; business backups and sync exclude these credentials.",
+    "zh-TW": "同步連線憑證和同步密碼僅保留在 chrome.storage.session；鎖定或退出瀏覽器會清除，業務備份和同步不包含這些憑證。",
+    "ja": "同期の認証情報とパスワードはchrome.storage.sessionにのみ保持されます。ロックまたはブラウザー終了で消去され、業務データのバックアップや同期には含まれません。",
+    "ko": "동기화 자격 증명과 비밀번호는 chrome.storage.session에만 보관됩니다. 잠그거나 브라우저를 종료하면 지워지며, 데이터 백업 및 동기화에는 포함되지 않습니다.",
+    "de": "Zugangsdaten und Synchronisierungspasswort bleiben nur in chrome.storage.session. Sperren oder Beenden des Browsers löscht sie; Datensicherungen und Synchronisierung enthalten sie nicht.",
+    "fr": "Les identifiants et le mot de passe de synchronisation restent uniquement dans chrome.storage.session. Le verrouillage ou la fermeture du navigateur les efface ; sauvegardes et synchronisation de contenu les excluent.",
+    "ru": "Данные доступа и пароль синхронизации хранятся только в chrome.storage.session. Блокировка или выход из браузера удаляет их; резервные копии и синхронизация содержимого их не включают."
+  },
+  "同步开启后，业务数据和图片使用独立同步密码加密，直接发送到你配置的服务。服务商仍可看到路径、请求时间和网络元数据。": {
+    "en": "When sync is enabled, business data and images are encrypted with a separate sync password and sent directly to your configured service. The provider can still see paths, request times and network metadata.",
+    "zh-TW": "同步開啟後，業務資料和圖片使用獨立同步密碼加密，直接傳送到你設定的服務。服務商仍可看到路徑、請求時間和網路中繼資料。",
+    "ja": "同期を有効にすると、データと画像は独立した同期パスワードで暗号化され、設定したサービスに直接送信されます。サービス側にはパス、リクエスト時刻、通信メタデータが見えます。",
+    "ko": "동기화를 켜면 데이터와 이미지는 별도의 동기화 비밀번호로 암호화되어 설정한 서비스로 직접 전송됩니다. 제공업체는 경로, 요청 시간 및 네트워크 메타데이터를 볼 수 있습니다.",
+    "de": "Bei aktivierter Synchronisierung werden Daten und Bilder mit einem eigenen Passwort verschlüsselt und direkt an Ihren Dienst gesendet. Der Anbieter sieht weiterhin Pfade, Anfragezeiten und Netzwerkmetadaten.",
+    "fr": "Quand la synchronisation est activée, données et images sont chiffrées avec un mot de passe distinct puis envoyées directement au service configuré. Le fournisseur voit toujours chemins, horaires et métadonnées réseau.",
+    "ru": "При включённой синхронизации данные и изображения шифруются отдельным паролем и отправляются прямо настроенному сервису. Провайдер всё равно видит пути, время запросов и сетевые метаданные."
+  },
+  "导出的 JSON/ZIP 备份不是密码加密文件。浏览器原生同步已停用；旧云端副本、其他设备和恢复点可能仍保留数据。": {
+    "en": "Exported JSON/ZIP backups are not password-encrypted. Browser-native sync is disabled; older cloud copies, other devices and recovery points may still retain data.",
+    "zh-TW": "匯出的 JSON/ZIP 備份不是密碼加密檔案。瀏覽器原生同步已停用；舊雲端副本、其他裝置和還原點可能仍保留資料。",
+    "ja": "エクスポートしたJSON/ZIPバックアップはパスワード暗号化されません。ブラウザー標準の同期は無効ですが、古いクラウドコピー、他のデバイス、復元ポイントにはデータが残る場合があります。",
+    "ko": "내보낸 JSON/ZIP 백업은 비밀번호로 암호화되지 않습니다. 브라우저 기본 동기화는 꺼져 있지만 이전 클라우드 사본, 다른 기기 및 복구 지점에 데이터가 남아 있을 수 있습니다.",
+    "de": "Exportierte JSON/ZIP-Sicherungen sind nicht passwortverschlüsselt. Die Browsersynchronisierung ist deaktiviert; ältere Cloudkopien, andere Geräte und Wiederherstellungspunkte können Daten behalten.",
+    "fr": "Les sauvegardes JSON/ZIP exportées ne sont pas chiffrées par mot de passe. La synchronisation native est désactivée ; d’anciennes copies cloud, d’autres appareils ou points de restauration peuvent conserver des données.",
+    "ru": "Экспортированные копии JSON/ZIP не зашифрованы паролем. Встроенная синхронизация браузера отключена; старые облачные копии, другие устройства и точки восстановления могут сохранять данные."
+  },
+  "迁移设备设置并保存会话状态；业务数据使用本机加密 IndexedDB，不启用浏览器原生同步。": {
+    "en": "Migrates device settings and stores session state. Business data uses local encrypted IndexedDB; browser-native sync is disabled.",
+    "zh-TW": "移轉裝置設定並儲存工作階段狀態；業務資料使用本機加密 IndexedDB，不啟用瀏覽器原生同步。",
+    "ja": "デバイス設定の移行とセッション状態の保存に使用します。データはローカルの暗号化IndexedDBを使用し、ブラウザー標準の同期は無効です。",
+    "ko": "기기 설정을 이전하고 세션 상태를 저장합니다. 데이터는 로컬 암호화 IndexedDB를 사용하며 브라우저 기본 동기화는 꺼져 있습니다.",
+    "de": "Migriert Geräteeinstellungen und speichert Sitzungszustände. Daten nutzen lokal verschlüsselte IndexedDB; Browsersynchronisierung ist deaktiviert.",
+    "fr": "Migre les paramètres de l’appareil et stocke l’état de session. Les données utilisent IndexedDB chiffrée localement ; la synchronisation native est désactivée.",
+    "ru": "Переносит настройки устройства и хранит состояние сеанса. Данные используют локальную зашифрованную IndexedDB; встроенная синхронизация браузера отключена."
+  },
+  "按浏览器默认设置执行搜索，不更改默认搜索引擎。": {
+    "en": "Runs searches using browser defaults without changing the default search engine.",
+    "zh-TW": "依瀏覽器預設設定執行搜尋，不變更預設搜尋引擎。",
+    "ja": "ブラウザーの既定設定で検索し、既定の検索エンジンは変更しません。",
+    "ko": "기본 검색 엔진을 변경하지 않고 브라우저 기본 설정으로 검색합니다.",
+    "de": "Sucht mit den Browserstandards, ohne die Standardsuchmaschine zu ändern.",
+    "fr": "Effectue les recherches selon les paramètres du navigateur sans changer le moteur par défaut.",
+    "ru": "Выполняет поиск по настройкам браузера, не меняя поисковую систему по умолчанию."
+  },
+  "显式添加或导入网站时读取浏览器已有图标。": {
+    "en": "Reads icons already stored by the browser when you explicitly add or import sites.",
+    "zh-TW": "明確新增或匯入網站時讀取瀏覽器已有圖示。",
+    "ja": "サイトを明示的に追加・取り込みする際、ブラウザーに保存済みのアイコンを読み取ります。",
+    "ko": "사이트를 명시적으로 추가하거나 가져올 때 브라우저에 저장된 아이콘을 읽습니다.",
+    "de": "Liest vorhandene Browsersymbole beim ausdrücklichen Hinzufügen oder Importieren von Websites.",
+    "fr": "Lit les icônes déjà stockées par le navigateur lors d’un ajout ou import explicite de sites.",
+    "ru": "Читает сохранённые браузером значки при явном добавлении или импорте сайтов."
+  },
+  "点击工具栏后临时读取当前页面的地址、标题和图标声明。": {
+    "en": "Temporarily reads the current page’s URL, title and icon declarations after a toolbar click.",
+    "zh-TW": "點擊工具列後暫時讀取目前頁面的位址、標題和圖示宣告。",
+    "ja": "ツールバーのクリック後、現在のページのURL、タイトル、アイコン宣言を一時的に読み取ります。",
+    "ko": "도구 모음 클릭 후 현재 페이지의 주소, 제목 및 아이콘 선언을 일시적으로 읽습니다.",
+    "de": "Liest nach einem Klick auf die Symbolleiste vorübergehend URL, Titel und Symbolangaben der aktuellen Seite.",
+    "fr": "Lit temporairement l’adresse, le titre et les déclarations d’icônes de la page après un clic sur la barre d’outils.",
+    "ru": "Временно читает адрес, заголовок и объявления значков текущей страницы после нажатия на панели инструментов."
+  },
+  "点击工具栏后运行随扩展打包的页面信息读取代码。": {
+    "en": "Runs packaged page-information code after a toolbar click.",
+    "zh-TW": "點擊工具列後執行隨擴充功能封裝的頁面資訊讀取程式碼。",
+    "ja": "ツールバーのクリック後、拡張機能に同梱されたページ情報取得コードを実行します。",
+    "ko": "도구 모음 클릭 후 확장 프로그램에 포함된 페이지 정보 읽기 코드를 실행합니다.",
+    "de": "Führt nach einem Klick auf die Symbolleiste mitgelieferten Code zum Lesen von Seiteninformationen aus.",
+    "fr": "Exécute le code intégré de lecture des informations de page après un clic sur la barre d’outils.",
+    "ru": "Запускает встроенный код чтения сведений о странице после нажатия на панели инструментов."
+  },
+  "调度本机倒计时，送达时间受浏览器运行状态限制。": {
+    "en": "Schedules local countdowns. Delivery timing depends on the browser’s running state.",
+    "zh-TW": "排程本機倒數計時，送達時間受瀏覽器執行狀態限制。",
+    "ja": "ローカルのカウントダウンを予約します。通知時刻はブラウザーの実行状態に左右されます。",
+    "ko": "로컬 카운트다운을 예약합니다. 전달 시간은 브라우저 실행 상태에 따라 달라집니다.",
+    "de": "Plant lokale Countdowns. Die Zustellzeit hängt vom Browserzustand ab.",
+    "fr": "Programme les comptes à rebours locaux. Leur déclenchement dépend de l’état du navigateur.",
+    "ru": "Планирует локальные таймеры. Время срабатывания зависит от состояния браузера."
+  },
+  "仅在你启用后显示倒计时完成通知。": {
+    "en": "Shows countdown completion notifications only after you enable them.",
+    "zh-TW": "僅在你啟用後顯示倒數計時完成通知。",
+    "ja": "有効にした場合のみ、カウントダウン完了通知を表示します。",
+    "ko": "사용자가 켠 경우에만 카운트다운 완료 알림을 표시합니다.",
+    "de": "Zeigt Countdown-Abschlussbenachrichtigungen nur nach Ihrer Aktivierung.",
+    "fr": "Affiche les notifications de fin de compte à rebours uniquement après activation.",
+    "ru": "Показывает уведомления об окончании таймера только после вашего включения."
+  },
+  "此权限由当前扩展声明；请在浏览器扩展详情中核对用途。": {
+    "en": "This permission is declared by the current extension. Check its purpose in the browser’s extension details.",
+    "zh-TW": "此權限由目前擴充功能宣告；請在瀏覽器擴充功能詳細資訊中核對用途。",
+    "ja": "この権限は現在の拡張機能で宣言されています。用途はブラウザーの拡張機能詳細で確認してください。",
+    "ko": "현재 확장 프로그램이 선언한 권한입니다. 브라우저 확장 프로그램 세부정보에서 용도를 확인하세요.",
+    "de": "Diese Berechtigung wird von der Erweiterung deklariert. Prüfen Sie ihren Zweck in den Erweiterungsdetails.",
+    "fr": "Cette autorisation est déclarée par l’extension actuelle. Vérifiez son usage dans les détails de l’extension.",
+    "ru": "Это разрешение объявлено текущим расширением. Проверьте его назначение в настройках расширения."
+  },
+  "首次同步会检查写入权限和同步密码；失败后可重试，或仅在本机使用。": {
+    "en": "First sync checks write access and the sync password. If it fails, retry or use this device locally.",
+    "zh-TW": "首次同步會檢查寫入權限和同步密碼；失敗後可重試，或僅在本機使用。",
+    "ja": "初回同期で書き込み権限と同期パスワードを確認します。失敗した場合は再試行するか、このデバイスのみで使用できます。",
+    "ko": "첫 동기화는 쓰기 권한과 동기화 비밀번호를 확인합니다. 실패하면 다시 시도하거나 이 기기에서만 사용할 수 있습니다.",
+    "de": "Die erste Synchronisierung prüft Schreibzugriff und Passwort. Bei Fehlern erneut versuchen oder nur lokal arbeiten.",
+    "fr": "La première synchronisation vérifie l’accès en écriture et le mot de passe. En cas d’échec, réessayez ou utilisez uniquement cet appareil.",
+    "ru": "Первая синхронизация проверяет доступ на запись и пароль. При сбое можно повторить или работать только локально."
+  },
+  "测试时仅申请所选存储地址的访问权限。": {
+    "en": "Testing requests access only to the selected storage origin.",
+    "zh-TW": "測試時僅申請所選儲存位址的存取權限。",
+    "ja": "テスト時は選択したストレージの接続先への権限のみを申請します。",
+    "ko": "테스트 시 선택한 저장소 출처에 대한 접근 권한만 요청합니다.",
+    "de": "Der Test fordert nur Zugriff auf den gewählten Speicherursprung an.",
+    "fr": "Le test demande l’accès uniquement à l’origine de stockage choisie.",
+    "ru": "Проверка запрашивает доступ только к выбранному источнику хранения."
+  },
+  "仅保存配置不会验证连接、开启自动同步或执行首次同步。": {
+    "en": "Saving alone does not verify the connection, enable automatic sync or run the first sync.",
+    "zh-TW": "僅儲存設定不會驗證連線、開啟自動同步或執行首次同步。",
+    "ja": "設定の保存だけでは接続の検証、自動同期の有効化、初回同期は実行されません。",
+    "ko": "설정만 저장하면 연결 검증, 자동 동기화 켜기 또는 첫 동기화를 실행하지 않습니다.",
+    "de": "Nur Speichern prüft weder die Verbindung noch aktiviert es automatische oder erstmalige Synchronisierung.",
+    "fr": "Enregistrer seul ne vérifie pas la connexion et n’active ni la synchronisation automatique ni la première synchronisation.",
+    "ru": "Одно сохранение настроек не проверяет подключение, не включает автосинхронизацию и не запускает первую синхронизацию."
   },
   "{0}（Beta）": {
     "en": "{0} (Beta)",
@@ -10949,18 +11522,6 @@
     "fr": "{0} (bêta)",
     "ru": "{0} (бета)"
   },
-  "冲突预览已过期或数据已更新，请重新查看两侧内容后选择。": {
-    "en": "The conflict preview expired or data changed. Review both sides again before choosing."
-  },
-  "WebDAV 为本轮加固渠道，真实云账号验收仍待完成；R2、OSS、GitHub、GitLab 已实现但均为 Beta。": {
-    "en": "WebDAV is the hardened path in this update; real-account acceptance is still pending. R2, OSS, GitHub and GitLab are implemented as Beta providers."
-  },
-  "最近连接测试通过：{0}": {
-    "en": "Last connection test passed: {0}"
-  },
-  "配置已保存；当前凭据的连接尚未验证。": {
-    "en": "Settings saved; the connection with the current credentials is unverified."
-  },
   "连接尚未验证。": {
     "en": "Connection unverified.",
     "zh-TW": "連線尚未驗證。",
@@ -10969,15 +11530,6 @@
     "de": "Verbindung ungeprüft.",
     "fr": "Connexion non vérifiée.",
     "ru": "Подключение не проверено."
-  },
-  "测试只检查登录和目录读取，不验证写入或同步密码。保存配置不会执行连接测试。": {
-    "en": "Testing checks login and directory reading only, not writes or the sync password. Saving does not run a connection test."
-  },
-  "冲突内容保留本机版本，等待你选择。请查看两侧内容，整条采用本机或一个远端版本；不会合并记录内部字段。": {
-    "en": "Conflicting content keeps the local version until you choose. Review both sides and select one complete local or remote record. Fields within a record are never merged."
-  },
-  "远端版本 {0}": {
-    "en": "Remote version {0}"
   },
   "查看并选择版本": {
     "en": "Review and choose a version",
@@ -11015,9 +11567,6 @@
     "fr": "Conserver tout l’enregistrement local",
     "ru": "Сохранить полную локальную запись"
   },
-  "此操作会替换这一整条记录，并在下次同步时上传。记录内其他修改也会一起替换，请确认已选对版本。": {
-    "en": "This replaces the entire record and uploads it on the next sync. Other edits within this record will also be replaced. Check your selection."
-  },
   "本机版本": {
     "en": "Local version",
     "zh-TW": "本機版本",
@@ -11035,9 +11584,6 @@
     "de": "Remote-Version",
     "fr": "Version distante",
     "ru": "Удалённая версия"
-  },
-  "此版本已删除整条记录。": {
-    "en": "This version deletes the entire record."
   },
   "正在测试连接…": {
     "en": "Testing connection…",
@@ -11057,19 +11603,13 @@
     "fr": "Tester la connexion",
     "ru": "Проверить подключение"
   },
-  "二进制内容：{0} 字节，类型 {1}": {
-    "en": "Binary content: {0} bytes, type {1}"
-  },
-  "内容较长，预览已截短；选择时仍会采用完整记录。": {
-    "en": "This preview is shortened. Your choice still applies the complete record."
-  },
-  "加密同步桌面、扩展和图标。WebDAV 为加固渠道，其他渠道为 Beta。": {
-    "en": "Encrypt and sync your desktop, extensions and icons. WebDAV is the hardened path; other providers are Beta."
-  },
-  "最近连接测试未通过，请检查后重试。": {
-    "en": "The latest connection test did not pass. Check the settings and try again."
-  },
-  "此删除版本会移除当前隐藏内容的标记，请先在本机解除隐藏，再重新选择。": {
-    "en": "This deleted version removes markings for currently hidden content. Unlock hidden content on this device, then choose again."
+  "首次同步成功后自动同步": {
+    "en": "Sync automatically after the first successful sync",
+    "zh-TW": "首次同步成功後自動同步",
+    "ja": "初回同期の成功後に自動同期",
+    "ko": "첫 동기화 성공 후 자동 동기화",
+    "de": "Nach erfolgreicher erster Synchronisierung automatisch synchronisieren",
+    "fr": "Synchroniser automatiquement après une première synchronisation réussie",
+    "ru": "Синхронизировать автоматически после первой успешной синхронизации"
   }
 }

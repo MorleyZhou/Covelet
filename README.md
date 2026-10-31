@@ -10,6 +10,8 @@ Chrome 当前线上版本为 **v0.2.0**，扩展 ID：`clkholbmabommppnlpcnhdgmi
 
 0.3 P0 源码加固以 **WebDAV** 为主要路径，提供独立连接测试、中文错误提示和整条记录二选一的冲突处理；真实坚果云／Nextcloud 账号验收仍待完成。R2、OSS、GitHub、GitLab 已实现但均为 **Beta**，尚未通过真实云账号验收。本 PR 不提升商店包版本。
 
+0.3 设置引导位于「设置 → 数据 → 自定义存储同步」（原扩展入口仍可用）：选择渠道 → 填写最少连接字段并测试 → 设置同步密码并首次同步。失败可转为仅本机使用；仅保存配置不会验证连接或启动同步。「设置 → 隐私自查」展示当前权限与用途、已知联网场景及数据位置；没有近 7 天请求日志，页面不虚构次数，也不添加分析服务。
+
 在 `app/` 中运行 `npm ci`、`npm test`、`npm run build:extension`。解压输出为 `app/dist/extension/`，候选 ZIP 为 `app/dist/covelet-0.2.1.zip`。构建与静态检查不能替代实际浏览器验收或商店审核。
 
 支持及隐私联系：support@morley.work。

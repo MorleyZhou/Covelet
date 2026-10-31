@@ -9,6 +9,7 @@
     "build": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node scripts/clock-wasm.mjs --check && node scripts/build-tools-wasm.mjs --check && vite build && node scripts/prepare-sites-build.mjs",
     "preview": "vite preview",
     "test:sites": "node --test tests/sites-worker.test.mjs",
+    "test:onboarding": "node tests/onboarding-extension.mjs",
     "test": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node --import ./tests/test-language.mjs --test src/lib/*.test.js",
     "check:wasm": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node scripts/clock-wasm.mjs --check && node scripts/build-tools-wasm.mjs --check",
     "generate:clock-wasm": "node scripts/clock-wasm.mjs --write",

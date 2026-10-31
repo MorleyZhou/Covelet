@@ -74,6 +74,36 @@ function device(remote, id, options = {}) {
 
 async function configure(subject, options = {}) { return subject.api.saveCloudSyncSettings(profile, secrets, password, options); }
 
+test('local-only fallback clears shared secrets and auto sync while preserving pending ciphertext and local data', async () => {
+  const remote = cloud(), subject = device(remote, 'a');
+  await configure(subject, { autoSync: true });
+  subject.edit(state => state.entries.push(site('offline')));
+  remote.failWrites = true;
+  assert.equal((await subject.api.syncCloudNow()).phase, 'error');
+  const before = subject.configStore.value, local = subject.state, calls = remote.calls.length;
+  assert.ok(before.metadata.pending);
+  const fallback = await subject.api.useLocalOnlyCloudSync();
+  assert.equal(fallback.autoSync, false);
+  assert.equal(fallback.unlocked, false);
+  assert.equal(fallback.connectionTest, null);
+  assert.equal(subject.sessionStore.value, null);
+  assert.deepEqual(subject.state, local);
+  assert.deepEqual(subject.configStore.value, { ...before, autoSync: false });
+  assert.equal(remote.calls.length, calls, 'fallback must not contact the failed provider');
+  assert.equal((await subject.make().loadCloudSyncSettings()).unlocked, false, 'other tabs cannot reuse cleared credentials');
+  assert.equal((await subject.api.syncCloudNow()).code, 'CLOUD_LOCKED');
+  assert.equal(remote.calls.length, calls);
+});
+
+test('local-only fallback works before any connection has been saved and is repeatable', async () => {
+  const remote = cloud(), subject = device(remote, 'a');
+  await subject.api.useLocalOnlyCloudSync();
+  const result = await subject.api.useLocalOnlyCloudSync();
+  assert.equal(result.configured, false);
+  assert.equal(result.autoSync, false);
+  assert.equal(remote.calls.length, 0);
+});
+
 test('cloud settings persist only a nonsecret target and independent off-by-default controls; extension tabs share session unlock', async () => {
   const remote = cloud();
   const subject = device(remote, 'a');

@@ -503,6 +503,18 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       fullSync?.clearFullDataConflictPreview();
       try { await sessionStore.clear(); return await inspectSettings(); } catch (cause) { throw publicError(cause); }
     },
+    async useLocalOnlyCloudSync() {
+      // Clear access immediately, including checks in already-running work.
+      // Keep the target, pending ciphertext and conflicts for an explicit retry.
+      await api.lockCloudSync();
+      try {
+        await exclusive(async () => {
+          const config = await read();
+          await persist({ ...config, autoSync: false });
+        });
+        return await inspectSettings();
+      } catch (cause) { throw publicError(cause); }
+    },
     getCloudSyncStatus() { return clone(status); },
     subscribeCloudSyncStatus(listener) { listeners.add(listener); listener(clone(status)); return () => listeners.delete(listener); },
     clearCloudHistoryPreview(token) { if (historyPreview?.token === token) historyPreview = undefined; },
@@ -718,7 +730,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
 }
 
 const cloud = createCloudSync();
-export const { loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, syncCloudNow, getCloudSyncStatus,
+export const { loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, useLocalOnlyCloudSync, syncCloudNow, getCloudSyncStatus,
   subscribeCloudSyncStatus, startCloudSync, stopCloudSync, getCloudSyncConflicts, previewCloudSyncConflict, restoreCloudSyncConflict,
   listCloudHistory, previewCloudHistory, restoreCloudHistory, clearCloudHistoryPreview,
   loadToolSyncSettings, setToolSyncEnabled, getToolSyncStatus, subscribeToolSyncStatus, getToolSyncConflicts, useToolSyncConflict, syncToolCloudNow } = cloud;

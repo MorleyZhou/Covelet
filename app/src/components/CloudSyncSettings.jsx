@@ -1,16 +1,16 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { useEffect, useRef, useState } from 'react';
 import { LockKey, ArrowsClockwise } from '@phosphor-icons/react';
-import Select from './Select.jsx';
 import { Disclosure } from './ui/disclosure.jsx';
 import CloudHistory from './CloudHistory.jsx';
 import PromptDialog, { MessageDialog } from './PromptDialog.jsx';
 import { validateCloudConfig, cloudOrigin } from '../lib/cloud-providers.js';
-import { cloudProviderLabel, SYNC_PROVIDERS } from '../lib/cloud-connection.js';
+import { cloudProviderLabel, SYNC_PROVIDERS, finishCloudSetup } from '../lib/cloud-connection.js';
+import { validateCloudPassword } from '../lib/cloud-crypto.js';
 import { conflictRecordPreview } from '../lib/cloud-conflict-preview.js';
 import { requestSiteAccess } from '../lib/site-info.js';
 import {
-  loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync,
+  loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, useLocalOnlyCloudSync,
   syncCloudNow, supportsCloudSync, getCloudSyncStatus, subscribeCloudSyncStatus,
   getCloudSyncConflicts, previewCloudSyncConflict, restoreCloudSyncConflict,
 } from '../lib/cloud-sync.js';
@@ -53,7 +53,7 @@ export function CloudSyncSummary({ id, extension, metadata, demo = false, onOpen
   </Button>;
 }
 
-export default function CloudSyncSettings({ demo = false, onBusyChange = () => {}, introduction }) {
+export default function CloudSyncSettings({ demo = false, onBusyChange = () => {}, introduction, onLocalOnly = () => {} }) {
   const [draft, setDraft] = useState(blank), [secrets, setSecrets] = useState(emptySecrets);
   const [password, setPassword] = useState(''), [autoSync, setAutoSync] = useState(false);
   const [saved, setSaved] = useState(null), [status, setStatus] = useState(() => getCloudSyncStatus());
@@ -61,23 +61,25 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
   const [draftTest, setDraftTest] = useState(null), [testing, setTesting] = useState(false), [testFailed, setTestFailed] = useState(false);
   const [conflicts, setConflicts] = useState([]);
   const [conflictChoice, setConflictChoice] = useState(null);
-  const [editing, setEditing] = useState(false);
+  const [step, setStep] = useState(demo ? 1 : null), [loaded, setLoaded] = useState(demo);
   const wasUnlocked = useRef(status.unlocked);
+  const fieldsRef = useRef(null);
+  useEffect(() => { if (fieldsRef.current) fieldsRef.current.scrollTop = 0; }, [step]);
   const available = supportsCloudSync();
-  const connectionMatches = (() => {
-    try { return Boolean(saved?.profile) && JSON.stringify(profileOf(draft)) === JSON.stringify(saved.profile); }
-    catch { return false; }
-  })();
+  let currentProfile = null;
+  try { currentProfile = profileOf(draft); } catch { /* Incomplete connection draft. */ }
+  const connectionMatches = Boolean(saved?.profile) && JSON.stringify(currentProfile) === JSON.stringify(saved.profile);
   useEffect(() => {
     if (demo) return;
     let active = true;
     loadCloudSyncSettings().then((value) => {
       if (!active) return;
       setSaved(value);
+      setStep(value.profile ? null : 1); setLoaded(true);
       if (value.profile) setDraft({ ...blank, ...value.profile });
       setAutoSync(value.autoSync);
       getCloudSyncConflicts().then((items) => { if (active) setConflicts(items); }).catch(() => {});
-    }).catch(() => { if (active) setError(tr("暂时无法读取同步连接设置。")); });
+    }).catch(() => { if (active) { setError(tr("暂时无法读取同步连接设置。")); setLoaded(true); } });
     const off = subscribeCloudSyncStatus((value) => {
       if (active) {
         setStatus(value);
@@ -96,21 +98,22 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     catch (reason) { setError(reason?.message || tr("同步操作未完成，本机数据已保留。")); }
     finally { setBusy(false); onBusyChange(false); }
   }
-  function saveConnection() {
+  function saveConnection(firstSync = false) {
     if (busy || demo) return;
     let profile;
     try {
       profile = profileOf(draft);
-      if (password.length < 12) throw new Error(tr("请设置至少 12 个字符的同步密码。"));
+      validateCloudPassword(password);
     } catch (reason) { setError(reason.message); return; }
     // Request the concrete origin directly in the user's click, before any await.
     const access = available ? requestSiteAccess(cloudOrigin(profile)) : Promise.resolve(true);
     run(async () => {
       if (!await access) throw new Error(tr("未获得此存储地址的访问权限，连接未保存。"));
-      const value = await saveCloudSyncSettings(profile, secrets, password, { autoSync });
-      setSaved(value); setDraft({ ...blank, ...value.profile });
-      setSecrets(emptySecrets); setPassword('');
-      setEditing(false);
+      try {
+        const value = await finishCloudSetup({ profile, secrets, password, autoSync, firstSync }, { saveCloudSyncSettings, syncCloudNow });
+        setSaved(value); setDraft({ ...blank, ...value.profile });
+        setSecrets(emptySecrets); setPassword(''); setDraftTest(null); setStep(null);
+      } finally { setSaved(await loadCloudSyncSettings()); }
     });
   }
   function testConnection() {
@@ -131,7 +134,20 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     return <label>{label}{optional ? tr("（可选）") : ''}<Input type={type} value={secrets[key]} autoComplete="off" spellCheck={false}
       maxLength={key === 'sessionToken' ? 8192 : 2048} onChange={(event) => { setTestFailed(false); setDraftTest(null); setSecrets((current) => ({ ...current, [key]: event.target.value })); }} disabled={busy || demo} /></label>;
   }
-  const configuring = !saved?.profile || editing;
+  const configuring = step !== null;
+  function localOnly() {
+    if (busy) return;
+    run(async () => {
+      if (!demo) setSaved(await useLocalOnlyCloudSync());
+      setSecrets(emptySecrets); setPassword(''); setDraftTest(null); setTestFailed(false); setAutoSync(false);
+      onLocalOnly();
+    });
+  }
+  function chooseProvider(provider) {
+    if (provider === draft.provider) return;
+    patch({ provider, endpoint: provider === 'gitlab' ? 'https://gitlab.com' : '' });
+    setSecrets(emptySecrets); setPassword('');
+  }
   function unlock() {
     if (busy || !connectionMatches) return;
     run(async () => { setSaved(await unlockCloudSync(secrets, password)); setDraftTest(null); setSecrets(emptySecrets); setPassword(''); });
@@ -150,26 +166,40 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
   const connectionTest = !testFailed && (configuring || !status.unlocked ? draftTest : saved?.connectionTest);
   return <form className="cloud-sync-form form-stack" onSubmit={(event) => {
     event.preventDefault();
-    if (event.nativeEvent?.isComposing) return;
-    if (configuring) saveConnection();
-    else if (!status.unlocked) unlock();
+    if (event.nativeEvent?.isComposing || busy || !loaded) return;
+    if (configuring) {
+      if (step === 1) setStep(2);
+      else if (step === 2 && draftTest && !testFailed) setStep(3);
+      else if (step === 3) saveConnection(true);
+    } else if (!status.unlocked) unlock();
   }}>
-    <div className="settings-scroll cloud-sync-fields">
+    <div ref={fieldsRef} className="settings-scroll cloud-sync-fields">
       {introduction}
-      {saved?.profile && <div className="cloud-connection-summary">
+      {!loaded && <p className="hint" role="status">{tr('正在读取同步设置…')}</p>}
+      {configuring && <ol className="cloud-setup-steps" aria-label={tr('同步设置步骤')}>
+        {[tr('选择渠道'), tr('测试连接'), tr('密码与首次同步')].map((label, index) => <li key={index} aria-current={step === index + 1 ? 'step' : undefined}>
+          <span aria-hidden="true">{index + 1}</span>{label}
+        </li>)}
+      </ol>}
+      {step === 3 && currentProfile && <p className="cloud-sync-target">{cloudProviderLabel(currentProfile.provider)} · {targetLabel(currentProfile)}</p>}
+      {saved?.profile && !configuring && <div className="cloud-connection-summary">
         <div><strong>{cloudProviderLabel(saved.profile.provider)}</strong><span className="connection-state">{status.unlocked ? tr("已解锁") : tr("需解锁")}</span></div>
         <p className="cloud-sync-target">{targetLabel(saved.profile)}</p>
         <p className="hint">{tr("浏览器重启后需重新输入凭据和同步密码。")}</p>
-        {!configuring && <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => { setEditing(true); setDraftTest(null); setError(''); }}>{tr("修改配置")}</Button>}
+        <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => { setStep(1); setDraftTest(null); setError(''); }}>{tr("修改配置")}</Button>
       </div>}
       <p className="hint">{tr('WebDAV 为本轮加固渠道，真实云账号验收仍待完成；R2、OSS、GitHub、GitLab 已实现但均为 Beta。')}</p>
-      <div className="cloud-connection-test" role="status" aria-live="polite">
+      {(step === 2 || step === 3 || saved?.profile && !configuring) && <div className="cloud-connection-test" role="status" aria-live="polite">
         <p className="hint">{testing ? tr('正在测试连接…') : testFailed ? tr('最近连接测试未通过，请检查后重试。') : connectionTest ? tr('最近连接测试通过：{0}', [new Date(connectionTest.testedAt).toLocaleString(getLocale())]) : saved?.profile && !configuring ? tr('配置已保存；当前凭据的连接尚未验证。') : tr('连接尚未验证。')}</p>
         <p className="hint">{tr('测试只检查登录和目录读取，不验证写入或同步密码。保存配置不会执行连接测试。')}</p>
-      </div>
-      {configuring && <>
-      <Select label={tr("存储服务")} value={draft.provider} disabled={busy || demo} onChange={(provider) => { patch({ provider, endpoint: provider === 'gitlab' ? 'https://gitlab.com' : '' }); setSecrets(emptySecrets); setPassword(''); }}
-        options={SYNC_PROVIDERS.map(provider => ({ value: provider, label: cloudProviderLabel(provider) }))} />
+      </div>}
+      {step === 1 && <div className="cloud-channel-options" role="group" aria-label={tr('选择渠道')}>
+        {SYNC_PROVIDERS.map(provider => <Button key={provider} type="button" variant="secondary" className="cloud-channel-option" aria-pressed={draft.provider === provider} disabled={busy || demo} onClick={() => chooseProvider(provider)}>
+          <strong>{cloudProviderLabel(provider)}</strong>{provider === 'webdav' && <span>{tr('推荐')}</span>}
+        </Button>)}
+      </div>}
+      {step === 2 && <>
+      <strong>{cloudProviderLabel(draft.provider)}</strong>
       {draft.provider === 'github' ? <>
         <label>{tr("仓库所有者")}<Input value={draft.owner} maxLength={100} spellCheck={false} disabled={busy || demo} onChange={(e) => patch({ owner: e.target.value })} /></label>
         <label>{tr("仓库名称")}<Input value={draft.repo} maxLength={100} spellCheck={false} disabled={busy || demo} onChange={(e) => patch({ repo: e.target.value })} /></label>
@@ -188,30 +218,34 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       </>}
       <label>{tr("保存目录")}<Input value={draft.prefix} maxLength={300} spellCheck={false} disabled={busy || demo} onChange={(e) => patch({ prefix: e.target.value })} /></label>
       </>}
-      {(configuring || !status.unlocked) && <>
+      {(step === 2 || !configuring && saved?.profile && !status.unlocked) && <>
       {['github', 'gitlab'].includes(draft.provider) ? credentialField(tr("{0} 访问令牌", [draft.provider === 'github' ? 'GitHub' : 'GitLab']), 'token') : draft.provider === 'webdav' ? <>
         {credentialField(tr("WebDAV 用户名"), 'username', 'text')}
         {credentialField(tr("WebDAV 应用密码"), 'appPassword')}
       </> : <>
         {credentialField('Access Key ID', 'accessKeyId', 'text')}
         {credentialField('Secret Access Key', 'secretAccessKey')}
-        {credentialField(tr("临时安全令牌"), 'sessionToken', 'password', true)}
+        <Disclosure className="context-help" title={tr('临时安全令牌')}>{credentialField(tr("临时安全令牌"), 'sessionToken', 'password', true)}</Disclosure>
       </>}
+      </>}
+      {(step === 3 || !configuring && saved?.profile && !status.unlocked) && <>
       <label>{tr("同步密码")}<Input type="password" value={password} maxLength={1024} autoComplete={configuring ? 'new-password' : 'current-password'} aria-describedby="cloud-password-help" disabled={busy || demo} onChange={(e) => setPassword(e.target.value)} /></label>
       <p className="hint" id="cloud-password-help">{tr("至少 12 个字符。密码无法找回，其他设备须使用相同密码。")}</p>
       </>}
-      {configuring && <>
-      <label className="check-label"><Switch checked={autoSync} disabled={busy || demo} onCheckedChange={(nextChecked) => setAutoSync(nextChecked)} />{tr("解锁后自动同步")}</label>
+      {step === 3 && <>
+      <p className="hint">{tr('首次同步会检查写入权限和同步密码；失败后可重试，或仅在本机使用。')}</p>
+      <label className="check-label"><Switch checked={autoSync} disabled={busy || demo} onCheckedChange={(nextChecked) => setAutoSync(nextChecked)} />{tr('首次同步成功后自动同步')}</label>
       <p className="hint">{tr("自动同步仅在 Covelet 页面打开且已解锁时运行。")}</p>
-      <Disclosure className="context-help" title={tr("连接要求")}>
+      </>}
+      {step === 2 && <Disclosure className="context-help" title={tr("连接要求")}>
       {draft.provider === 'r2' && <p className="hint">{tr("创建专用 Bucket，并使用仅限该 Bucket 对象读写的 API 凭据。")}</p>}
       {draft.provider === 'github' && <p className="hint">{tr("建议使用私有仓库及仅限该仓库 Contents 读写的令牌；同步会生成仓库提交。")}</p>}
       {draft.provider === 'gitlab' && <p className="hint">{tr("先创建私有项目和分支，使用具备 API 写权限的专用令牌；同步会生成仓库提交。")}</p>}
       {draft.provider === 'webdav' && <p className="hint">{tr("支持坚果云、Nextcloud 等 HTTPS WebDAV。请先在基目录内建好保存目录，并使用应用密码。免费服务可能限制流量、请求频率和文件数量。")}</p>}
       {draft.provider === 'oss' && <p className="hint">{tr("使用专用 RAM 凭据或临时令牌；部分 OSS 账号需要自己的 HTTPS 域名。")}</p>}
-      </Disclosure>
-      <p className="hint">{tr("保存时将请求访问所选存储地址。")}</p>
-      </>}
+      </Disclosure>}
+      {step === 2 && <p className="hint">{tr('测试时仅申请所选存储地址的访问权限。')}</p>}
+      {step === 3 && <p className="hint">{tr('仅保存配置不会验证连接、开启自动同步或执行首次同步。')}</p>}
       {!configuring && saved?.autoSync && <p className="hint">{tr("自动同步已开启，仅在 Covelet 页面打开且已解锁时运行。")}</p>}
       <Disclosure className="context-help" title={tr("同步内容与隐私")}>
         <p className="hint">{tr('同步桌面、内置扩展、图片和图标。')}</p>
@@ -219,7 +253,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
         <p className="hint">{tr('首次同步会迁入旧版导航与便笺同步内容。其他设备请升级到支持全量同步的版本，使用相同目录和同步密码。')}</p>
       </Disclosure>
       {demo ? <p className="hint" role="status">{tr("演示模式无法连接存储。")}</p> : !available && <p className="hint" role="status">{tr("请在 Chrome 或 Edge 扩展中连接存储。")}</p>}
-      <MessageDialog message={error || (status.phase === 'error' ? status.message : '')} onClose={() => { setError(''); }} />
+      {!configuring && <MessageDialog message={error || (status.phase === 'error' ? status.message : '')} onClose={() => { setError(''); }} />}
       {status.lastSync > 0 && <p className="hint">{tr("最近同步：")}{new Date(status.lastSync).toLocaleString(getLocale())}</p>}
       {saved?.profile && !configuring && <section className="cloud-tool-sync" aria-label={tr('全部数据加密同步')}>
         <strong>{tr('全部数据加密同步')}</strong>
@@ -253,17 +287,21 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
         <CloudHistory disabled={busy || demo || !available} unlocked={status.unlocked} onBusyChange={(value) => { setBusy(value); onBusyChange(value); }} />
       </Disclosure>}
     </div>
+    {configuring && error && <p className="form-error cloud-setup-error" role="alert">{error}</p>}
     <div className="settings-footer cloud-sync-actions">
-      <Button variant="secondary" type="button" className="button" disabled={busy || demo || !available} onClick={testConnection}>{testing ? tr('正在测试连接…') : tr('测试连接')}</Button>
+      <Button variant="ghost" type="button" className="button quiet" disabled={busy || !loaded} onClick={localOnly}>{tr('仅在本机使用')}</Button>
+      {(step === 2 || !configuring && saved?.profile) && <Button variant="secondary" type="button" className="button" disabled={busy || demo || !available} onClick={testConnection}>{testing ? tr('正在测试连接…') : tr('测试连接')}</Button>}
       {configuring ? <>
-        {saved?.profile && <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => { setDraft({ ...blank, ...saved.profile }); setAutoSync(saved.autoSync); setSecrets(emptySecrets); setPassword(''); setEditing(false); setDraftTest(null); setError(''); }}>{tr("取消修改")}</Button>}
-        <Button variant="default" type="submit" className="button primary" disabled={busy || demo || !available}>{busy && !testing ? tr("正在保存…") : tr("保存配置")}</Button>
-      </> : <>
+        {step > 1 && <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => { setStep(step - 1); setError(''); }}>{tr('上一步')}</Button>}
+        {saved?.profile && <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => { setDraft({ ...blank, ...saved.profile }); setAutoSync(saved.autoSync); setSecrets(emptySecrets); setPassword(''); setStep(null); setDraftTest(null); setError(''); }}>{tr("取消修改")}</Button>}
+        {step === 3 && <Button variant="secondary" type="button" className="button" disabled={busy || demo || !available} onClick={() => saveConnection(false)}>{tr('保存配置')}</Button>}
+        <Button variant="default" type="submit" className="button primary" disabled={busy || demo || !available || step === 2 && (!draftTest || testFailed)}>{busy && !testing ? tr('正在同步…') : step === 3 ? tr('保存并首次同步') : tr('下一步')}</Button>
+      </> : saved?.profile ? <>
         {status.unlocked ? <>
           <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => run(lockCloudSync)}><LockKey size={16} />{tr("锁定")}</Button>
           <Button variant="default" type="button" className="button primary" disabled={busy || demo || !available || !connectionMatches} onClick={() => run(async () => { await syncCloudNow(); setConflicts(await getCloudSyncConflicts()); })}><ArrowsClockwise size={16} />{busy ? tr("正在同步…") : tr("立即同步")}</Button>
         </> : <Button variant="default" type="submit" className="button primary" disabled={busy || demo || !available || !connectionMatches}>{busy ? tr("正在解锁…") : tr("解锁")}</Button>}
-      </>}
+      </> : null}
     </div>
   </form>;
 }
