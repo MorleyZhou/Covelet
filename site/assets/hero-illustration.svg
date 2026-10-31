@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" fill="none">
+  <!-- orbits -->
+  <ellipse cx="300" cy="210" rx="190" ry="150" stroke="#0A0A0A" stroke-width="3"/>
+  <ellipse cx="300" cy="210" rx="140" ry="110" stroke="#0A0A0A" stroke-width="2.5" stroke-dasharray="8 10"/>
+  <!-- stars -->
+  <path d="M90 80l6 14 16 2-12 10 3 15-13-8-13 8 3-15-12-10 16-2z" fill="#0A0A0A"/>
+  <path d="M430 70l5 12 13 2-10 8 2 12-10-6-10 6 2-12-10-8 13-2z" fill="#B9FF66" stroke="#0A0A0A" stroke-width="2"/>
+  <path d="M460 250l4 10 11 1-8 7 2 10-9-5-9 5 2-10-8-7 11-1z" fill="#0A0A0A"/>
+  <!-- browser window -->
+  <rect x="140" y="110" width="280" height="200" rx="28" fill="#fff" stroke="#0A0A0A" stroke-width="5"/>
+  <rect x="140" y="110" width="280" height="44" rx="28" fill="#F3F3F3" stroke="#0A0A0A" stroke-width="5"/>
+  <rect x="140" y="132" width="280" height="22" fill="#F3F3F3"/>
+  <circle cx="168" cy="132" r="6" fill="#0A0A0A"/>
+  <circle cx="190" cy="132" r="6" fill="#0A0A0A"/>
+  <circle cx="212" cy="132" r="6" fill="#B9FF66" stroke="#0A0A0A" stroke-width="2"/>
+  <!-- search -->
+  <rect x="176" y="180" width="208" height="36" rx="18" fill="#fff" stroke="#0A0A0A" stroke-width="3.5"/>
+  <circle cx="196" cy="198" r="7" stroke="#0A0A0A" stroke-width="3"/>
+  <path d="M201 203l8 8" stroke="#0A0A0A" stroke-width="3" stroke-linecap="round"/>
+  <!-- plus tile -->
+  <rect x="248" y="236" width="44" height="44" rx="12" fill="#B9FF66" stroke="#0A0A0A" stroke-width="3.5"/>
+  <path d="M270 248v20M260 258h20" stroke="#0A0A0A" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- lock badge -->
+  <g transform="translate(360 250)">
+    <circle cx="28" cy="28" r="28" fill="#0A0A0A"/>
+    <rect x="16" y="26" width="24" height="18" rx="4" fill="#B9FF66"/>
+    <path d="M20 26v-6a8 8 0 0 1 16 0v6" stroke="#B9FF66" stroke-width="3" fill="none"/>
+  </g>
+  <!-- spark -->
+  <circle cx="120" cy="300" r="10" fill="#B9FF66" stroke="#0A0A0A" stroke-width="3"/>
+  <circle cx="70" cy="200" r="6" fill="#0A0A0A"/>
+</svg>
