@@ -2,7 +2,7 @@
   'use strict';
 
   // Locale codes match app/src/i18n/index.js. Only approved final copy ships.
-  const locales = new Set(['zh-CN', 'en']);
+  const locales = new Set(['zh-CN', 'en', 'zh-TW', 'ja', 'ko', 'de', 'fr', 'ru']);
   const select = document.querySelector('#language');
   const status = document.querySelector('#language-status');
   const cache = new Map();
