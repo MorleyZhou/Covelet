@@ -6,7 +6,6 @@ import { loadPersonalTools, validatePersonalTools, replacePersonalTools } from '
 import { loadContentPreferences, validateContentPreferences, replaceContentPreferences } from './content-preferences.js';
 import { loadDesktopTemplateEnvelope, validateSavedDesktopTemplates, replaceDesktopTemplates } from './desktop-templates.js';
 import { navigationIconSources } from './navigation-icon-intake.js';
-import { appBackupDomain } from './app-backup.js';
 
 const FORMAT = 'covelet-complete-backup';
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -31,14 +30,13 @@ const checkpointStore = {
   async write(value) { await localData.set({ [KEY]: value }); },
 };
 
-export const RECOVERY_CATEGORIES = ['navigation', 'notes', 'reading', 'snapshots', 'trash', 'templates', 'preferences', 'apps'];
+export const RECOVERY_CATEGORIES = ['navigation', 'notes', 'reading', 'trash', 'templates', 'preferences'];
 const summary = (data) => ({
   navigation: data.navigation?.state.entries.length ?? 0,
   notes: data.tools?.notes.length ?? 0, reading: data.tools?.reading.length ?? 0,
-  snapshots: data.tools?.snapshots.length ?? 0, trash: data.tools?.trash?.length ?? 0,
+  trash: data.tools?.trash?.filter((item) => ['notes', 'reading'].includes(item.kind)).length ?? 0,
   templates: data.templates?.templates.length ?? 0,
   preferences: data.preferences ? new Set([...Object.keys(data.preferences.aliases), ...data.preferences.privateKeys]).size : 0,
-  apps: Object.keys(data.apps || {}).length,
 });
 
 // Each data domain retains its own revision lock. A durable recovery point is
@@ -46,12 +44,12 @@ const summary = (data) => ({
 export function createRecoveryCenter({ nav = navigation, tools = { read: loadPersonalTools, validate: validatePersonalTools, write: replacePersonalTools },
   preferences = { read: loadContentPreferences, validate: validateContentPreferences, write: replaceContentPreferences },
   templates = { read: loadDesktopTemplateEnvelope, validate: validateSavedDesktopTemplates, write: replaceDesktopTemplates },
-  points = checkpointStore, apps = null, locks = globalThis.navigator?.locks } = {}) {
+  points = checkpointStore, locks = globalThis.navigator?.locks } = {}) {
   const readDomains = async () => {
     const [state, toolData, prefs, schemes] = await Promise.all([nav.loadState(), tools.read(), preferences.read(), templates.read()]);
-    return { state, tools: toolData, preferences: prefs, templates: schemes, ...(apps ? { apps: await apps.read() } : {}) };
+    return { state, tools: toolData, preferences: prefs, templates: schemes };
   };
-  const versions = (value) => ({ navigation: value.state.revision, tools: value.tools.revision, preferences: value.preferences.revision, templates: value.templates.revision, ...(apps ? { apps: value.apps.revision } : {}) });
+  const versions = (value) => ({ navigation: value.state.revision, tools: value.tools.revision, preferences: value.preferences.revision, templates: value.templates.revision });
   const pointRecord = (point) => { const { previous: _previous, ...value } = point; return value; };
   const findPoint = (point, id) => !id || point?.id === id ? point : point?.previous?.id === id ? point.previous : null;
   const pointInfo = (point) => point ? { id: point.id, createdAt: point.createdAt, status: point.status } : null;
@@ -60,9 +58,9 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     for (let attempt = 0; attempt < 3; attempt++) {
       const before = await readDomains(), blob = await nav.exportBackup(before.state), after = await readDomains();
       if (JSON.stringify(versions(before)) !== JSON.stringify(versions(after))) continue;
-      const data = { format: FORMAT, version: apps ? 2 : 1, createdAt: new Date().toISOString(),
+      const data = { format: FORMAT, version: 1, createdAt: new Date().toISOString(),
         navigation: toBase64(new Uint8Array(await blob.arrayBuffer())),
-        tools: tools.validate(before.tools), preferences: preferences.validate({ ...before.preferences, presentation: false }), templates: templates.validate(before.templates), ...(apps ? { apps: await apps.encode(before.apps.records) } : {}) };
+        tools: tools.validate(before.tools), preferences: preferences.validate({ ...before.preferences, presentation: false }), templates: templates.validate(before.templates) };
       if (encodedBytes(data) > MAX_BYTES) fail(tr('完整备份超过 50 MiB，请先清理不需要的内容。'));
       return { data, current: before };
     }
@@ -80,16 +78,16 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     try { input = JSON.parse(await file.text()); } catch { fail(tr('备份文件无法读取。')); }
     if (input?.format === 'covelet-personal-tools' && [1, 2, 3].includes(input.version) && input.data?.version === input.version) {
       const checked = tools.validate(input.data), result = { format: 'legacy-tools', createdAt: typeof input.exportedAt === 'string' && Number.isFinite(Date.parse(input.exportedAt)) ? input.exportedAt : null, navigation: null,
-        tools: checked, preferences: null, templates: null, categories: ['notes', 'reading', 'snapshots', 'trash'], source: null };
+        tools: checked, preferences: null, templates: null, categories: ['notes', 'reading', 'trash'], source: null };
       return { ...result, summary: summary(result) };
     }
-    const required = ['format', 'version', 'createdAt', 'navigation', 'tools', 'preferences', 'templates', ...(input?.version === 2 ? ['apps'] : [])];
-    if (!fields(input, required) || required.some((key) => !Object.hasOwn(input, key) || input[key] == null) || input.format !== FORMAT || ![1, 2].includes(input.version) || input.version === 2 && !apps
+    const required = ['format', 'version', 'createdAt', 'navigation', 'tools', 'preferences', 'templates'];
+    if (!fields(input, required) || required.some((key) => !Object.hasOwn(input, key) || input[key] == null) || input.format !== FORMAT || input.version !== 1
       || typeof input.createdAt !== 'string' || !Number.isFinite(Date.parse(input.createdAt))) fail(tr('完整备份格式或版本不受支持。'));
     const result = { format: FORMAT, createdAt: input.createdAt, source: copy(input),
       navigation: await nav.inspectBackup(new Blob([fromBase64(input.navigation)], { type: 'application/zip' })),
       tools: tools.validate(input.tools), preferences: preferences.validate(input.preferences), templates: templates.validate(input.templates),
-      ...(input.version === 2 ? { apps: await apps.validate(apps.decode(input.apps)) } : {}), categories: RECOVERY_CATEGORIES.filter((key) => key !== 'apps' || input.version === 2) };
+      categories: RECOVERY_CATEGORIES };
     return { ...result, summary: summary(result) };
   }
   async function preview(file) {
@@ -98,13 +96,14 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
   }
   function selectedTools(current, incoming, selected, mode) {
     const next = copy(current);
-    for (const kind of ['notes', 'reading', 'snapshots', 'trash']) {
+    for (const kind of ['notes', 'reading', 'trash']) {
       if (!selected.includes(kind)) continue;
-      if (mode === 'replace') next[kind] = copy(incoming[kind] || []);
+      const records = (incoming[kind] || []).filter((item) => kind !== 'trash' || ['notes', 'reading'].includes(item.kind));
+      if (mode === 'replace') next[kind] = [...(kind === 'trash' ? current.trash.filter((item) => item.kind === 'snapshots') : []), ...copy(records)];
       else {
         const ids = new Set([...next.notes, ...next.reading, ...next.snapshots, ...(next.trash || [])].map((item) => item.id));
         const urls = new Set(next.reading.map((item) => item.url));
-        for (const item of incoming[kind] || []) {
+        for (const item of records) {
           if (ids.has(item.id) || kind === 'reading' && urls.has(item.url)) continue;
           (next[kind] ??= []).push(copy(item)); ids.add(item.id); if (kind === 'reading') urls.add(item.url);
         }
@@ -145,7 +144,7 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     return { state: migrateNavigationState(state), assets, icons };
   }
   async function restore(plan, { selected = plan.categories, mode = 'replace', onIconProgress, onIconResult } = {}) {
-    if (!plan?.expected || !['replace', 'append'].includes(mode) || !Array.isArray(selected) || !selected.length || selected.some((key) => !plan.categories.includes(key))) fail(tr('请选择有效的恢复类别。'));
+    if (!plan?.expected || !['replace', 'append'].includes(mode) || !Array.isArray(selected) || !selected.length || selected.some((key) => !RECOVERY_CATEGORIES.includes(key) || !plan.categories.includes(key))) fail(tr('请选择有效的恢复类别。'));
     const action = async () => {
       const snapshot = await capture(), before = snapshot.current, expected = versions(before);
       if (Object.keys(expected).some((key) => expected[key] !== plan.expected[key])) conflict();
@@ -155,17 +154,15 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       // Re-validate mutable preview values before any persistence.
       const next = {};
       if (selected.includes('navigation')) next.navigation = mode === 'append' ? await mergeNavigation(before.state, plan.navigation) : plan.navigation;
-      if (selected.some((key) => ['notes', 'reading', 'snapshots', 'trash'].includes(key))) next.tools = selectedTools(before.tools, plan.tools, selected, mode);
+      if (selected.some((key) => ['notes', 'reading', 'trash'].includes(key))) next.tools = selectedTools(before.tools, plan.tools, selected, mode);
       if (selected.includes('templates')) {
         const list = mode === 'append' ? [...before.templates.templates, ...plan.templates.templates.filter((item) => !before.templates.templates.some((old) => old.id === item.id))] : plan.templates.templates;
         next.templates = templates.validate({ ...before.templates, templates: list });
       }
       if (selected.includes('preferences')) next.preferences = preferences.validate(mode === 'append'
         ? { ...before.preferences, aliases: { ...plan.preferences.aliases, ...before.preferences.aliases }, privateKeys: [...new Set([...before.preferences.privateKeys, ...plan.preferences.privateKeys])] } : plan.preferences);
-      if (selected.includes('apps')) next.apps = mode === 'append' ? apps.merge(before.apps.records, plan.apps) : plan.apps;
       // Validation includes archive resources before the checkpoint and writes.
       if (next.navigation) next.navigation = await nav.validateBackupPlan(next.navigation);
-      if (next.apps) await apps.validate(next.apps);
       const point = { version: 1, id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: 'applying', data: snapshot.data, selected, mode,
         ...(sourcePoint || existingPoint ? { previous: pointRecord(sourcePoint || existingPoint) } : {}) };
       await points.write(point); // Failure here means nothing has changed.
@@ -175,10 +172,10 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       const iconOptions = { onIconProgress, onIconResult: (report) => { iconReport = report; onIconResult?.(report); },
         ...(mode === 'append' && next.navigation ? { iconEntryIds: next.navigation.state.entries.filter((entry) => !existingIds.has(entry.id)).map((entry) => entry.id) } : {}) };
       try {
-        for (const domain of ['navigation', 'tools', 'templates', 'preferences', 'apps']) {
+        for (const domain of ['navigation', 'tools', 'templates', 'preferences']) {
           if (!next[domain]) continue;
           saved[domain] = domain === 'navigation' ? await nav.restoreBackup(next.navigation, expected.navigation, iconOptions)
-            : await ({ tools, templates, preferences, apps })[domain].write(next[domain], { expectedRevision: expected[domain] });
+            : await ({ tools, templates, preferences })[domain].write(next[domain], { expectedRevision: expected[domain] });
           completed.push(domain);
         }
         await points.write({ ...point, status: 'complete' });
@@ -190,7 +187,7 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
             if (domain === 'navigation') {
               const original = await nav.inspectBackup(new Blob([fromBase64(snapshot.data.navigation)]));
               await nav.restoreBackup(original, saved.navigation.revision, { hydrateIcons: false });
-            } else await ({ tools, templates, preferences, apps })[domain].write(before[domain], { expectedRevision: saved[domain].revision });
+            } else await ({ tools, templates, preferences })[domain].write(before[domain], { expectedRevision: saved[domain].revision });
           } catch { rollbackFailed.push(domain); }
         }
         await points.write({ ...point, status: rollbackFailed.length ? 'needs-recovery' : 'rolled-back', failedDomains: rollbackFailed }).catch(() => {});
@@ -215,4 +212,4 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     },
   };
 }
-export const recoveryCenter = createRecoveryCenter({ apps: appBackupDomain });
+export const recoveryCenter = createRecoveryCenter();

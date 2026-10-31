@@ -10,7 +10,7 @@ import { Checkbox } from './ui/checkbox.jsx';
 import Select from './Select.jsx';
 import './recovery-center.css';
 
-const labels = () => ({ navigation: tr('导航、文件夹与外观'), notes: tr('便笺'), reading: tr('稍后读'), snapshots: tr('标签快照'), trash: tr('工具回收站'), templates: tr('桌面方案'), preferences: tr('别名与隐私标记'), apps: tr('内置扩展内容') });
+const labels = () => ({ navigation: tr('导航、文件夹与外观'), notes: tr('便笺'), reading: tr('稍后读'), trash: tr('工具回收站'), templates: tr('桌面方案'), preferences: tr('别名与隐私标记') });
 const formatDateTime = (date) => new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 export function downloadRecoveryFile(blob, name) {
   const url = URL.createObjectURL(blob), anchor = document.createElement('a');

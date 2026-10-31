@@ -1,6 +1,6 @@
 {
   "name": "covelet",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "build": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node scripts/clock-wasm.mjs --check && node scripts/build-tools-wasm.mjs --check && vite build && node scripts/prepare-sites-build.mjs",
     "preview": "vite preview",
     "test:sites": "node --test tests/sites-worker.test.mjs",
-    "test": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node --test src/lib/*.test.js",
+    "test": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node --import ./tests/test-language.mjs --test src/lib/*.test.js",
     "check:wasm": "node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node scripts/clock-wasm.mjs --check && node scripts/build-tools-wasm.mjs --check",
     "generate:clock-wasm": "node scripts/clock-wasm.mjs --write",
     "build:wasm": "node scripts/build-wasm.mjs --rebuild",
@@ -40,16 +40,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fflate": "^0.8.3",
-    "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^6.4.299",
-    "prettier": "^3.9.10",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1",
-    "sql-formatter": "^15.9.0",
-    "vite": "6.4.2",
-    "yaml": "^2.9.1"
+    "vite": "6.4.2"
   },
   "devDependencies": {
     "wxt": "0.21.4"

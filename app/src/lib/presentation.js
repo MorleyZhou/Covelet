@@ -6,7 +6,7 @@ export function usePresentedTools(data) {
   return useMemo(() => !active || !data ? data : { ...data,
     notes: data.notes.filter((item) => !hiddenKeys.has(`note:${item.id}`)),
     reading: data.reading.filter((item) => !hiddenKeys.has(`reading:${item.id}`)),
-    trash: (data.trash || []).filter((item) => !hiddenKeys.has(`${item.kind === 'notes' ? 'note' : item.kind === 'reading' ? 'reading' : 'snapshot'}:${item.record.id}`)),
+    trash: (data.trash || []).filter((item) => ['notes', 'reading'].includes(item.kind) && !hiddenKeys.has(`${item.kind === 'notes' ? 'note' : 'reading'}:${item.record.id}`)),
   }, [data, active, hiddenKeys]);
 }
 

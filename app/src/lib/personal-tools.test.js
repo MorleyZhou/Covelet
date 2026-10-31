@@ -42,10 +42,10 @@ test('v1/v2 tools migrate to v3 and trash records are strictly bounded and valid
   assert.throws(() => validatePersonalTools({ version: 2, revision: 0, notes: [], reading: [], snapshots: [], trash: [] }));
 });
 
-test('deleting and restoring notes, reading and popup snapshots preserves IDs and content', async () => {
+test('deleting and restoring notes and reading preserves IDs and content', async () => {
   const initial = state({ notes: [note()], reading: [reading()], snapshots: [snapshot()] });
   await replacePersonalTools(initial, { expectedRevision: 0 });
-  for (const kind of ['notes', 'reading', 'snapshots']) {
+  for (const kind of ['notes', 'reading']) {
     const record = initial[kind][0];
     await deletePersonalRecord(kind, record.id, record.revision);
     const deleted = await loadPersonalTools(), item = deleted.trash.find((item) => item.kind === kind);
@@ -169,4 +169,21 @@ test('parallel local mutations share a queue and record deletion rejects a stale
   const data = await loadPersonalTools(); assert.equal(data.reading.length, 2); assert.equal(data.revision, 2);
   await assert.rejects(deletePersonalRecord('reading', data.reading[0].id, 2), /其他页面修改/);
   assert.equal((await loadPersonalTools()).reading.length, 2);
+});
+
+
+test('A+ retains legacy snapshot bytes for export but blocks import and record restoration', async () => {
+  const legacyTrash = { id: 'legacy-snapshot-trash', kind: 'snapshots', deletedAt: now, record: snapshot() };
+  await replacePersonalTools(state({ snapshots: [snapshot()], trash: [legacyTrash] }));
+  await assert.rejects(async () => deletePersonalRecord('snapshots', 'snapshot-a', 1));
+  await assert.rejects(restoreTrashedPersonalRecord(legacyTrash.id));
+  const exported = await exportPersonalTools();
+  assert.deepEqual(JSON.parse(await exported.text()).data.snapshots, [snapshot()]);
+  values.clear();
+  await importPersonalTools(exported);
+  let data = await loadPersonalTools();
+  assert.deepEqual(data.snapshots, []); assert.deepEqual(data.trash, []);
+  await mergePersonalTools(state({ snapshots: [snapshot()], trash: [legacyTrash], notes: [note()] }));
+  data = await loadPersonalTools();
+  assert.deepEqual(data.snapshots, []); assert.deepEqual(data.trash, []); assert.equal(data.notes.length, 1);
 });

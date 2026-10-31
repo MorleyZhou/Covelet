@@ -1,7 +1,9 @@
+> 历史开发／发布资料，不是 0.2.1 A+ 功能或权限说明。A+ 移除标签快照、浏览器阅读清单导入和 17 项工具；无原生同步，自选存储加密同步默认关闭。Chrome 线上为 0.2.0，0.2.1 尚未提交；当前材料见 docs/store/v0.2.1/ 和 docs/store/发布状态.md。
+
 Covelet 隐私政策 / Privacy Policy
 发布者 / Publisher: Morley
 更新 / Updated: 2026-10-22 · v0.2.0
-联系 / Contact: support@mudong17.com
+联系 / Contact: support@morley.work
 
 Covelet 提供可整理的新标签页、搜索、外观、布局及随包扩展。本政策适用于 v0.2.0；旧版本可能不包含下述可选功能。无需 Covelet 账号，没有广告、推广跳转、遥测、使用统计或自动崩溃上报，开发者没有接收扩展数据的业务服务器。本机处理及用户选择的第三方服务仍会涉及数据，具体如下。
 
@@ -38,11 +40,11 @@ Bing 每日背景默认启用，各设备直接从 www.bing.com/HPImageArchive.a
 书签 HTML 导入只在本机解析用户选择的文件，不执行其中脚本或读取浏览器书签库。导航 ZIP 保存配置及兼容的被引用本地图标，不保存壁纸、GitHub 日历缓存、搜索图标缓存、工具正文或秘密。恢复前校验文件并确认替换。导入和恢复后的配置按用户已经开启的同步和背景设置工作。
 必需权限为 storage（设备保存/可选同步）、search（浏览器默认搜索）、favicon（已有图标）、activeTab/scripting（用户点击后的当前页添加）、alarms（倒计时调度）以及 www.bing.com 背景主机。可选 notifications、tabs、readingList 仅用于上述主动功能。HTTP/HTTPS 可选主机范围用于用户选择的站点、GitHub 或存储服务，只按需申请具体来源，不在安装时取得所有网站内容读取权。
 用户可编辑/删除条目、关闭同步、更换背景、撤销来源权限、导出/导入工具记录及备份。快照、冲突版本、缓存、其他设备、仓库历史及导出文件可能保留旧内容；清除本机数据不等同删除所有副本。卸载前应保存需要保留的本机内容。
-不出售用户数据，不用于广告、画像、无关分析或信用决定。数据仅用于已披露的新标签页和用户主动选择的功能，遵守 Chrome Web Store User Data Policy，包括 Limited Use 要求。反馈只由用户主动发送，不自动附送日志、图片或备份。联系：support@mudong17.com。
+不出售用户数据，不用于广告、画像、无关分析或信用决定。数据仅用于已披露的新标签页和用户主动选择的功能，遵守 Chrome Web Store User Data Policy，包括 Limited Use 要求。反馈只由用户主动发送，不自动附送日志、图片或备份。联系：support@morley.work。
 本政策由 Google Sites 托管，访问页面的信息由 Google 按其政策处理：https://policies.google.com/privacy。这与扩展本身的数据处理分开。
 
 English privacy policy
-Updated October 22, 2026. Version 0.2.0. Publisher: Morley. Contact: support@mudong17.com.
+Updated October 22, 2026. Version 0.2.0. Publisher: Morley. Contact: support@morley.work.
 
 Covelet is a customizable new-tab extension with packaged tools. Older versions may not contain every optional feature below. No Covelet account, ads, affiliate redirects, analytics, telemetry or automatic crash uploads are included. The developer has no backend receiving your shortcuts, queries, images or tool contents. Local processing and the third-party connections below still involve data.
 
@@ -59,4 +61,4 @@ Optional tools: GitHub widgets fetch only the configured public contribution cal
 
 Files/permissions/control: bookmark HTML import parses only a chosen local file without scripts or bookmark-library access. Navigation ZIPs contain configuration and compatible referenced local website icons, not wallpapers, tool contents, secrets or transient caches. Restore validates and confirms replacement. Required permissions are storage, search, favicon, activeTab, scripting, alarms and Bing's background host. Optional notifications/tabs/readingList and exact HTTP(S) origin grants are used only for the disclosed user-selected features; the declared optional host range is not blanket access at installation. No browsing-history, geolocation or bookmark-library permission is requested. Users can edit/delete content, disable sync, change backgrounds, revoke access and export/restore records. Snapshots, caches, other devices and backups can retain older copies; local deletion is not deletion everywhere. Preserve needed local contents before uninstalling.
 
-We do not sell data or use it for advertising, profiling, unrelated analytics or credit decisions. Use is limited to the disclosed new-tab features and complies with the Chrome Web Store User Data Policy, including Limited Use. Feedback is user-initiated without automatic log/backup attachments. Contact: support@mudong17.com. Google Sites hosts this policy and processes page visits under https://policies.google.com/privacy, separately from the extension.
+We do not sell data or use it for advertising, profiling, unrelated analytics or credit decisions. Use is limited to the disclosed new-tab features and complies with the Chrome Web Store User Data Policy, including Limited Use. Feedback is user-initiated without automatic log/backup attachments. Contact: support@morley.work. Google Sites hosts this policy and processes page visits under https://policies.google.com/privacy, separately from the extension.

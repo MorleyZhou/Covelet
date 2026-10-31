@@ -1,3 +1,5 @@
+> 历史开发／发布资料，不是 0.2.1 A+ 功能或权限说明。A+ 移除标签快照、浏览器阅读清单导入和 17 项工具；无原生同步，自选存储加密同步默认关闭。Chrome 线上为 0.2.0，0.2.1 尚未提交；当前材料见 docs/store/v0.2.1/ 和 docs/store/发布状态.md。
+
 Covelet，让新标签页成为自己的空间。
 
 把常用网站、搜索和日常记录放在手边。没有广告、推广链接或 Covelet 账号，没有开发者遥测与使用统计。
@@ -27,4 +29,4 @@ Covelet，让新标签页成为自己的空间。
 Bing、图标来源、GitHub 和用户选择的搜索/存储服务可能收到正常连接请求，详见隐私政策。所有执行代码和 WASM 随包提供，不加载远程执行模块。无需 Covelet 登录；此版本尚未接入订阅或支付。
 
 隐私政策：https://sites.google.com/view/covelet-privacy
-支持：support@mudong17.com
+支持：support@morley.work

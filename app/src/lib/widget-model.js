@@ -1,11 +1,10 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { normalizeTimeZone } from './time-zones.js';
-import { APP_DEFINITIONS, isAppId } from './app-catalog.js';
 export const GITHUB_WIDGET_ID = 'github-contributions';
 export const CLOCK_WIDGET_ID = 'clock';
 export const NOTES_WIDGET_ID = 'notes';
 export const READING_WIDGET_ID = 'read-later';
-export const WIDGET_NAMES = Object.freeze(Object.defineProperties({ get clock() { return tr("时钟"); }, get 'github-contributions'() { return tr("GitHub 贡献"); }, get notes() { return tr("便笺"); }, get 'read-later'() { return tr("稍后读"); } }, Object.fromEntries(APP_DEFINITIONS.map((app) => [app.id, { enumerable: true, get: () => app.name }]))));
+export const WIDGET_NAMES = Object.freeze({ get clock() { return tr("时钟"); }, get 'github-contributions'() { return tr("GitHub 贡献"); }, get notes() { return tr("便笺"); }, get 'read-later'() { return tr("稍后读"); } } );
 export const WIDGET_SIZE_OPTIONS = Object.freeze([
   Object.freeze({ value: 'mini', get label() { return tr("迷你 · 1×1"); } }),
   Object.freeze({ value: 'small', get label() { return tr("小 · 2×2"); } }),
@@ -41,7 +40,7 @@ export function validateWidgetConfig(extensionId, input) {
     if (input.timeZone !== undefined) config.timeZone = input.timeZone === 'local' ? 'local' : normalizeTimeZone(input.timeZone);
     return config;
   }
-  if ([NOTES_WIDGET_ID, READING_WIDGET_ID].includes(extensionId) || isAppId(extensionId)) {
+  if ([NOTES_WIDGET_ID, READING_WIDGET_ID].includes(extensionId)) {
     if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some((key) => key !== 'size')
       || !WIDGET_SIZE_OPTIONS.some(({ value }) => value === input.size)) throw Error(tr("组件配置无效。"));
     return { size: input.size };

@@ -1,0 +1,48 @@
+# Covelet 隐私说明 / Privacy policy
+
+更新日期：2026-10-31。适用于 **0.2.1 A+ 候选补丁**，尚未提交审核。Chrome 线上版本仍为 0.2.0。本文件是仓库内政策草稿；本轮没有更新托管隐私页或商店。
+
+发布者：Morley。支持／隐私联系：support@morley.work。
+
+Covelet 提供新标签页导航、搜索、布局与外观，以及时钟、便笺、手动稍后读、GitHub 贡献组件和可选自定义存储同步。没有 Covelet 账号、广告、遥测、自动日志上传或 Covelet 数据服务器。17 项扩展工具包不包含在本候选中；不提供窗口标签快照或浏览器阅读清单导入，不请求对应权限，不被动收集浏览历史。
+
+导航、网址、便笺、稍后读、图片、外观、隐私标记和组件记录主要保存在设备的加密 IndexedDB 中。设备 AES-GCM 密钥不可导出，但同源应用可使用它；这不能替代设备锁屏或防止已获浏览器配置访问能力者读取内容。隐藏密码用于本机显示控制，与静态加密密钥及自选同步密码不同。历史记录为兼容可能保留在已有本机数据、备份或同步副本中，不恢复已移除的功能入口。
+
+浏览器原生配置同步已停用，不使用 storage.sync 发送新数据，也不声称旧浏览器云端副本已经删除。可选自定义存储同步默认关闭，用户配置并解锁后，以独立密码加密业务数据和图片，直接发送至其选择的 R2、OSS、GitHub、GitLab 或 HTTPS WebDAV。服务商接收加密内容、目标路径、请求时间和网络元数据，并按其规则处理。设备密钥、隐藏密码、当前隐藏状态和同步连接凭据不随业务数据传播；连接凭据及同步密码只保留在浏览器会话。自动同步需要用户启用。其他设备、并发版本、恢复点和备份可能保留旧内容，删除本机内容不代表删除所有副本。
+
+新安装的 Bing 每日壁纸会连接 https://www.bing.com 获取图片元数据和图片，Bing 接收 IP 等连接信息；请求省略 Cookie 和 referrer，图片缓存在本机，并提供内置背景回退。选择内置颜色／渐变背景不需要每日图片。搜索由浏览器默认搜索 API 或用户选定搜索引擎处理，查询由对应服务接收，Covelet 不收集查询。
+
+网站信息和图片获取在用户添加／编辑、点击获取或确认导入／修复时进行。仅按需申请实际网站／图片来源的访问权限，不扫描浏览历史；普通导航显示、刷新和文件夹浏览使用本机图片缓存。被请求的站点接收所需地址及连接元数据。工具栏由用户点击触发 activeTab，只读取被调用页面的地址、标题和图标声明，保存前可修改或取消。不会读取整个窗口的标签集合。用户在便笺中插入远程图片时，显示图片可能连接图片来源。
+
+GitHub 贡献组件在用户授权 github.com 后，按明确操作读取所配置账号的公开贡献日历，使用本机缓存；不读取私有仓库或登录令牌。GitHub 接收用户名及连接元数据。世界时钟／时区对照使用设备和 Intl 数据，不请求定位或网络校时。倒计时由浏览器调度，可选通知仅在用户启用后使用，送达受浏览器运行状态限制。
+
+权限与用途：
+
+| 类型 | 权限／来源 | 用途 |
+| --- | --- | --- |
+| 必需 | storage | 迁移及设备／会话状态，业务记录保存到加密 IndexedDB；不启用浏览器原生同步 |
+| 必需 | search | 按浏览器默认设置执行搜索，不修改默认搜索提供者 |
+| 必需 | favicon | 显式添加／导入时读取浏览器已有图标 |
+| 必需 | activeTab、scripting | 用户点击工具栏后读取当前页面元数据；不持续注入或遍历其他标签 |
+| 必需 | alarms | 倒计时调度 |
+| 固定主机 | https://www.bing.com/* | 每日壁纸 |
+| 可选 | notifications | 用户启用的倒计时完成通知 |
+| 可选主机范围 | http://*/*、https://*/* | 仅为实际选择的网站、图片、GitHub 或存储服务逐来源申请；不在安装时授予全部网站权限 |
+
+不请求浏览历史、浏览器书签库或地理位置权限。书签 HTML 导入只解析用户选取的本机文件。完整备份、导航 ZIP、工具 JSON 和恢复点有不同范围；导出文件可能包含完整私人网址、图片和正文，不是密码加密文件，请勿公开分享。恢复先校验并确认，保留恢复前副本；旧标签集合仅可作为历史数据保留／导出，不提供打开标签或单独恢复入口。
+
+用户可编辑／删除内容、禁用同步、选择背景、撤销来源或通知权限并导出备份。卸载前请保存所需内容。反馈仅由用户主动发送，不自动附带日志、网址、图片或备份。不出售数据，不用于广告、画像、无关分析或信用决定；数据使用限于已披露功能，并遵守 Chrome Web Store User Data Policy（包括 Limited Use）。公开政策网址为 https://sites.google.com/view/covelet-privacy；本地修改不等于该托管页面已经更新。Google Sites 的页面访问由 Google 独立处理。
+
+## English
+
+Updated October 31, 2026 for the unsubmitted 0.2.1 A+ candidate. Chrome live remains 0.2.0. This repository policy draft has not been published to the hosted policy page. Publisher: Morley. Contact: support@morley.work.
+
+Covelet provides new-tab navigation, search, appearance, clocks, notes, manual Read Later, public GitHub contributions and optional custom-storage sync. No Covelet account, advertising, telemetry, automatic log upload or Covelet data server is included. The 17-tool pack, window tab capture/restore and browser Reading List import are removed. No corresponding permissions or passive browsing-history collection are included.
+
+Persistent business records and images primarily use locally encrypted IndexedDB. The non-extractable device key can still be used by same-origin application code; encryption is not a substitute for device security. Local hiding, device encryption and portable sync use separate controls. Browser-native sync is disabled; old browser-cloud copies are not automatically deleted. Optional custom sync is off by default, encrypts business data/images with the user's sync password, and connects directly to user-selected R2, OSS, GitHub, GitLab or HTTPS WebDAV. Providers receive ciphertext, paths and network metadata. Device keys, hiding passwords/state and connection credentials are excluded from portable business data. Sync credentials/passwords remain browser-session-only. Automatic sync requires opt-in.
+
+Bing daily wallpapers contact www.bing.com for metadata/images with cookies/referrers omitted, cache locally and have a packaged fallback. Searches go to the browser's default or explicitly selected search provider. Explicit website/icon acquisition and confirmed import/repair may contact the selected origins after origin-specific grants; ordinary icon rendering uses local cached bytes. Clicking the toolbar grants temporary activeTab access to that invoked page's URL/title/icon declarations and a packaged scripting function, with editable fields and Save/Cancel. No window-wide tab collection is performed. User-inserted remote note images may contact their hosts.
+
+GitHub widgets request only the configured public contribution calendar after authorization; no private repositories or login tokens are read. Clocks use local time-zone data; countdowns use alarms and optional notifications, subject to browser scheduling. Required permissions are storage, search, favicon, activeTab, scripting and alarms, with the fixed Bing host. Only notifications is an optional named permission. The optional HTTP(S) host ranges support exact-origin grants for selected websites/images, GitHub and storage providers; they do not grant blanket access at installation. No history, bookmark-library or geolocation permission is requested.
+
+User-selected bookmark HTML is parsed locally. Exported JSON/ZIP backups are not password-encrypted and can contain private URLs, text and images; protect them. Legacy removed-feature records may remain in existing data/exports without restoring their browser actions. Other devices, conflicts, recovery points and backups may retain older copies. Local deletion is not deletion everywhere. Users can edit/delete content, disable sync, change backgrounds, revoke permissions and export data before uninstalling. Feedback is voluntary with no automatic attachments. Data is not sold or used for advertising, profiling, unrelated analytics or credit decisions. Use is limited to disclosed features and follows the Chrome Web Store User Data Policy, including Limited Use. The hosted policy URL is https://sites.google.com/view/covelet-privacy; Google Sites processes policy-page visits separately.

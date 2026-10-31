@@ -29,7 +29,7 @@ for (const locale of ['en', 'zh_CN', 'zh_TW', 'ja', 'ko', 'de', 'fr', 'ru']) {
 }
 assert.deepEqual(manifest.chrome_url_overrides, { newtab: "newtab.html" });
 assert.deepEqual([...manifest.permissions].sort(), ["activeTab", "alarms", "favicon", "scripting", "search", "storage"]);
-assert.deepEqual(manifest.optional_permissions, ['notifications', 'tabs', 'readingList']);
+assert.deepEqual(manifest.optional_permissions, ['notifications']);
 assert.deepEqual(manifest.action, { default_title: '__MSG_actionTitle__', default_popup: 'popup.html' });
 assert.deepEqual(manifest.background, { service_worker: 'background.js', type: 'module' });
 assert.deepEqual(manifest.host_permissions, ["https://www.bing.com/*"], "Only the fixed Bing wallpaper host may be accessed.");
@@ -39,6 +39,17 @@ assert.deepEqual(manifest.icons, expectedIcons, "Release icons must use all four
 const packageMetadata = JSON.parse(readFileSync(path.join(appRoot, "package.json"), "utf8"));
 assert.equal(packageMetadata.name, "covelet", "Package branding must match Covelet.");
 assert.equal(packageMetadata.version, manifest.version, "Package and extension versions must agree.");
+for (const removed of ['src/components/apps', 'src/lib/app-catalog.js', 'src/lib/tab-snapshot-runtime.js', 'src/components/TabSnapshotsPopup.jsx']) {
+  assert(!existsSync(path.join(appRoot, removed)), `Removed tool or tab runtime returned: ${removed}`);
+}
+const personalToolsSource = readFileSync(path.join(appRoot, 'src/lib/personal-tools.js'), 'utf8');
+const backgroundSource = readFileSync(path.join(appRoot, 'entrypoints/background.js'), 'utf8');
+assert(!/importBrowserReadingList|chrome\.readingList|captureTabSnapshot|restoreTabSnapshot|tab-snapshot-runtime/.test(personalToolsSource + backgroundSource), 'Removed browser capture/import runtime returned.');
+assert(!hasToolDependencies(packageMetadata), 'Tool-only production dependencies returned.');
+function hasToolDependencies(metadata) {
+  return ['pdf-lib', 'pdfjs-dist', 'prettier', 'sql-formatter', 'react-markdown', 'remark-gfm', 'yaml'].some((name) => Object.hasOwn(metadata.dependencies || {}, name));
+}
+
 assert.deepEqual(Object.keys(manifest).sort(), [
   "chrome_url_overrides", "content_security_policy", "default_locale", "description", "icons", "manifest_version",
   "minimum_chrome_version", "name", "permissions", "host_permissions", "optional_host_permissions", "optional_permissions", "action", "background", "version",
@@ -173,15 +184,6 @@ for (const file of files) {
 
 // Inspect the readable execution bridge, rather than relying on Vite's minified
 // variable names. Custom provider templates belong in configuration, not here.
-const appNetworkBridge = path.join(appRoot, 'src', 'lib', 'app-network.js');
-const appNetworkSource = readFileSync(appNetworkBridge, 'utf8');
-assert.match(appNetworkSource, /permissions\s*\.\s*contains/, 'App network requests require an exact-origin grant.');
-assert.match(appNetworkSource, /permissions\s*\.\s*request/, 'App access must be requested explicitly.');
-assert.match(appNetworkSource, /credentials:\s*'omit'/, 'App requests must omit cookies.');
-assert.match(appNetworkSource, /referrerPolicy:\s*'no-referrer'/, 'App requests must omit referrers.');
-assert.match(appNetworkSource, /redirect:\s*'error'/, 'App requests must reject redirects.');
-assert.match(appNetworkSource, /AbortSignal\.timeout/, 'App requests must have a deadline.');
-assert.match(appNetworkSource, /size > maxBytes/, 'App responses must have a byte limit.');
 const searchBridge = path.join(appRoot, "src", "lib", "search.js");
 assert(existsSync(searchBridge), "Missing readable search execution bridge: src/lib/search.js");
 const searchSource = readFileSync(searchBridge, "utf8");
@@ -293,7 +295,7 @@ function checkSourceNetworking(directory) {
       assert(!/\b(?:XMLHttpRequest|WebSocket|EventSource)\b/.test(source), `Unexpected source network API in ${absolute}`);
       const calls = [...source.matchAll(/(?:(?<![\w$.])fetch\s*\(|\bglobalThis\s*\.\s*fetch\s*\()/g)];
       if (calls.length) {
-        assert([wallpaperBridge, siteInfoBridge, visualImageBridge, visualWasmBridge, cloudBridge, webdavBridge, syncWasmBridge, faviconBridge, githubBridge, githubWasmBridge, clockWasmBridge, hdIconBridge, navigationIconBridge, toolsWasmBridge, appNetworkBridge].includes(absolute), `Fetch must remain in reviewed network or fixed local-resource bridges: ${absolute}`);
+        assert([wallpaperBridge, siteInfoBridge, visualImageBridge, visualWasmBridge, cloudBridge, webdavBridge, syncWasmBridge, faviconBridge, githubBridge, githubWasmBridge, clockWasmBridge, hdIconBridge, navigationIconBridge, toolsWasmBridge].includes(absolute), `Fetch must remain in reviewed network or fixed local-resource bridges: ${absolute}`);
         assert(calls.every((match) => /^globalThis\s*\.\s*fetch/.test(match[0])), "Only the reviewed globalThis.fetch bridge is allowed.");
         sourceFetchCalls += calls.length;
       }
@@ -301,7 +303,7 @@ function checkSourceNetworking(directory) {
   }
 }
 checkSourceNetworking(path.join(appRoot, "src"));
-assert.equal(sourceFetchCalls, 16, 'Expected sixteen reviewed fetch call sites, including the permission-gated app provider bridge.');
+assert.equal(sourceFetchCalls, 15, 'Expected fifteen reviewed fetch call sites after removing the tool-pack provider bridge.');
 
 console.log(`Extension static checks passed: ${files.length} files, ${htmlCount} HTML, ${jsCount} JS, ${cssCount} CSS.`);
 console.log("Checked Covelet branding/version, four PNG icon sizes, manifest scope, fixed Bing host, optional per-site access/CSP, packaged resources, common remote-code/network patterns and source search/wallpaper/site metadata bridges.");

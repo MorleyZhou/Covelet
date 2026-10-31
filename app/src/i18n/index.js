@@ -1,6 +1,5 @@
 import messages from './messages.js';
 import { localData } from '../lib/local-data.js';
-import { appDefinition } from '../lib/app-catalog.js';
 
 export const LANGUAGES = Object.freeze([
   { value: 'en', label: 'English' }, { value: 'zh-CN', label: '简体中文' }, { value: 'zh-TW', label: '繁體中文' },
@@ -79,7 +78,7 @@ export function tr(key, values = []) {
 }
 export const formatNumber = (value, options) => new Intl.NumberFormat(locale, options).format(value);
 export function builtinName(id, savedName) {
-  const key = ({ clock: '时钟', 'github-contributions': 'GitHub 贡献', notes: '便笺', 'read-later': '稍后读' })[id] || appDefinition(id)?.title;
+  const key = ({ clock: '时钟', 'github-contributions': 'GitHub 贡献', notes: '便笺', 'read-later': '稍后读' })[id];
   if (!key) return savedName;
   const variants = [key, ...Object.values(messages[key] || {})];
   return variants.includes(savedName) ? tr(key) : savedName;

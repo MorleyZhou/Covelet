@@ -6,10 +6,10 @@ const PREFERENCES = 'covelet.content.preferences.v1';
 const NAVIGATION = 'owntab.local.v1';
 const TOOLS = 'covelet.tools.v1';
 const TEMPLATES = 'covelet.desktop-templates.v1';
-export const isSyncRecord = (namespace, key) => namespace !== 'full-data-pending' && (namespace !== 'preferences' || !DEVICE_KEYS.has(key));
+export const isSyncRecord = (namespace, key) => namespace !== 'full-data-pending' && (namespace !== 'preferences' || !DEVICE_KEYS.has(key) && !key.startsWith('covelet.app.v1.'));
 const clone = (value) => structuredClone(value);
 const object = (value) => value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Blob);
-const revisioned = (namespace, key) => namespace === 'preferences' && (key === PREFERENCES || key === TOOLS || key === TEMPLATES || key.startsWith('covelet.clock.v1.') || key.startsWith('covelet.app.v1.'));
+const revisioned = (namespace, key) => namespace === 'preferences' && (key === PREFERENCES || key === TOOLS || key === TEMPLATES || key.startsWith('covelet.clock.v1.'));
 const fail = () => { throw Object.assign(Error('Synchronized extension data is invalid; local data was preserved.'), { code: 'LOCAL_DATA_INVALID' }); };
 function canonical(value) {
   if (value instanceof Blob || value === null || typeof value !== 'object') return value;
@@ -72,9 +72,7 @@ export function prepareSyncValue(namespace, key, input, previous) {
 export async function validateSyncValue(namespace, key, value) {
   if (namespace === 'preferences') {
     if (key.startsWith('covelet.app.v1.')) {
-      const { validateAppEnvelope, validateAppDomainData } = await import('./app-data.js'); validateAppEnvelope(value);
-      const { isAppId } = await import('./app-catalog.js'); if (!isAppId(key.slice('covelet.app.v1.'.length))) fail();
-      await validateAppDomainData(key.slice('covelet.app.v1.'.length), value.data);
+      fail(); // Removed tool-pack namespaces cannot enter an A+ sync snapshot.
     } else if (key === NAVIGATION) {
       if (!object(value) || value.version !== 1 || !Array.isArray(value.snapshots) || value.snapshots.length > 3
         || Object.keys(value).some((field) => !['version', 'state', 'snapshots', 'sync'].includes(field))) fail();

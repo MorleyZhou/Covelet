@@ -1,0 +1,15 @@
+Covelet 0.2.1 A+ — unsubmitted candidate
+
+Single purpose: a customizable new-tab workspace for saved websites, search, appearance and packaged core widgets. No 17-tool pack, window tab capture/restore, browser Reading List import or passive history collection.
+
+storage: migration and device/session metadata; persistent business records use encrypted IndexedDB. Browser-native sync is disabled.
+search: invoke the existing browser-default search provider without changing it.
+favicon: acquire the browser's cached website icon during explicit add/import actions.
+activeTab: temporary access to the single page invoked by clicking the toolbar. chrome.tabs.query({active:true,currentWindow:true}) identifies that page under activeTab; it does not require the broad tabs permission or collect a window's tabs.
+scripting: run a packaged metadata reader in that invoked page for icon declarations; no persistent content script.
+alarms: countdown scheduling.
+https://www.bing.com/*: daily wallpaper metadata and image acquisition, with local cache/fallback.
+notifications (the only optional named permission): countdown completion after opt-in.
+http://*/* and https://*/* (optional host ranges): request only the actual selected website/image, github.com contribution source or configured storage service origin. No blanket host grant at installation.
+
+No remote executable code. Five reviewed WASM cores and all scripts ship in the extension. No analytics, ads or Covelet server. Support: support@morley.work.

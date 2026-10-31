@@ -205,3 +205,19 @@ test('an unresolved recovery point cannot be replaced by a new ordinary import',
   await assert.rejects(subject.center.restore(await subject.center.preview(file)), /未完成/);
   assert.equal(subject.pointWrites, count);
 });
+
+
+test('A+ recovery excludes legacy snapshots and preserves existing historical collections', async () => {
+  const subject = harness(), other = harness();
+  const record = { id: 'legacy-tabs', title: 'legacy', revision: 1, createdAt: 1, updatedAt: 1, tabs: [{ url: 'https://example.com/', title: 'Example', pinned: false }] };
+  const item = { id: 'legacy-trash', kind: 'snapshots', record, deletedAt: Date.now() };
+  subject.tools.change({ snapshots: [record], trash: [item] });
+  other.tools.change({ notes: [note('incoming')], snapshots: [{ ...record, id: 'other-tabs' }], trash: [{ ...item, id: 'other-trash' }] });
+  const plan = await subject.center.preview(await other.center.exportCompleteBackup());
+  assert.equal(plan.categories.includes('snapshots'), false); assert.equal(plan.summary.trash, 0);
+  await assert.rejects(subject.center.restore({ ...plan, categories: [...plan.categories, 'snapshots'] }, { selected: ['snapshots'] }));
+  assert.equal(subject.pointWrites, 0);
+  await subject.center.restore(plan, { selected: ['notes', 'trash'], mode: 'replace' });
+  const saved = await subject.tools.read();
+  assert.deepEqual(saved.snapshots, [record]); assert.deepEqual(saved.trash, [item]); assert.equal(saved.notes[0].body, 'incoming');
+});

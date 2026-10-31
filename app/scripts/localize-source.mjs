@@ -18,13 +18,6 @@ if (mode === '--catalog') {
       catalog[key] = Object.fromEntries(locales.slice(0, values.length).map((locale, index) => [locale, values[index]]));
     }
   }
-  for (const file of ['apps-daily.json', 'apps-market.json', 'apps-processing.json', 'apps-connected.json']) {
-    const additions = JSON.parse(await readFile(resolve(sourceRoot, 'i18n', file), 'utf8'));
-    for (const [key, row] of Object.entries(additions)) {
-      if (!key || locales.some((locale) => typeof row[locale] !== 'string' || !row[locale].trim())) throw Error(`Missing packaged translation: ${file}: ${key}`);
-      catalog[key] = row;
-    }
-  }
   const inventory = JSON.parse(await readFile(resolve(root, 'scripts/i18n-source.json'), 'utf8'));
   const missing = inventory.filter((entry) => !catalog[entry.key]?.en).map((entry) => entry.key);
   if (missing.length) throw Error(`Add English source translations before generating:\n${missing.join('\n')}`);
