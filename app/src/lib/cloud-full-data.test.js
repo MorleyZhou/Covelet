@@ -226,3 +226,92 @@ test('a blocked active-privacy deletion leaves conflict clocks unresolved, then 
   assert.equal((await a.api.getCloudSyncConflicts()).length, 0);
   await a.close(); await b.close();
 });
+
+// Real WebDAV adapter, independent encrypted devices, in-memory HTTPS responses.
+function strictWebdav() {
+  const base = 'https://dav.example.test/dav/', prefix = 'acceptance';
+  const directories = new Set([new URL(prefix + '/', base).pathname]), objects = new Map(), calls = [];
+  let unknownPut = false;
+  const row = (path, bytes) => `<d:response><d:href>${path}</d:href><d:propstat><d:prop><d:resourcetype>${bytes ? '' : '<d:collection/>'}</d:resourcetype>${bytes ? `<d:getcontentlength>${bytes.length}</d:getcontentlength>` : ''}</d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>`;
+  const fetcher = async (address, request) => {
+    const url = new URL(address), name = url.pathname;
+    calls.push({ url: address, method: request.method, body: request.body?.slice() });
+    assert.equal(url.origin, 'https://dav.example.test');
+    assert.equal(request.credentials, 'omit'); assert.equal(request.redirect, 'error'); assert.equal(request.referrer, '');
+    if (request.method === 'PROPFIND') {
+      if (!directories.has(name)) return new Response('', { status: 404 });
+      let rows = row(name);
+      if (request.headers.depth === '1') {
+        for (const [path, bytes] of objects) if (path.startsWith(name) && !path.slice(name.length).includes('/')) rows += row(path, bytes);
+        for (const path of directories) if (path !== name && path.startsWith(name) && !path.slice(name.length, -1).includes('/')) rows += row(path);
+      }
+      return new Response(`<d:multistatus xmlns:d="DAV:">${rows}</d:multistatus>`, { status: 207 });
+    }
+    if (request.method === 'MKCOL') {
+      if (directories.has(name)) return new Response('', { status: 405 });
+      if (!directories.has(name.slice(0, -1).replace(/[^/]+$/, ''))) return new Response('', { status: 409 });
+      directories.add(name); return new Response('', { status: 201 });
+    }
+    if (request.method === 'GET') return new Response(objects.get(name) || '', { status: objects.has(name) ? 200 : 404 });
+    assert.equal(request.method, 'PUT'); assert.equal(request.headers['if-none-match'], '*');
+    if (!directories.has(name.replace(/[^/]+$/, ''))) return new Response('', { status: 409 });
+    if (objects.has(name)) return new Response('', { status: 412 });
+    objects.set(name, request.body.slice());
+    if (unknownPut) { unknownPut = false; throw new TypeError('synthetic response lost after server commit'); }
+    return new Response('', { status: 201 });
+  };
+  return { calls, objects, profile: { provider: 'webdav', endpoint: base, prefix },
+    secrets: { username: 'SYNTHETIC-USER', appPassword: 'SYNTHETIC-APP-PASSWORD' },
+    factory: (profile, secrets, options) => createWebdavProvider(profile, secrets, { ...options, fetcher }),
+    set unknownPut(value) { unknownPut = value; } };
+}
+
+test('two encrypted WebDAV devices exchange edits, offline deletion, explicit conflicts and session retry ciphertext', async () => {
+  const cloud = strictWebdav(), a = device(cloud, 'a'), b = device(cloud, 'b');
+  try {
+    const navigation = createEmptyState(); navigation.entries.push(site('dual-device'));
+    await a.localData.set({ [NAV]: { version: 1, state: navigation, snapshots: [] } });
+    for (const subject of [a, b]) await subject.api.saveCloudSyncSettings(cloud.profile, cloud.secrets, password);
+    await saved(a); await saved(b);
+    assert.equal((await valueOf(b, NAV)).state.entries[0].id, 'dual-device');
+    const next = await b.stateStore.loadState(); next.entries[0].name = 'Edited on B';
+    await b.stateStore.saveState(next, next.revision); await saved(b); await saved(a);
+    assert.equal((await valueOf(a, NAV)).state.entries[0].name, 'Edited on B');
+    await a.localData.set({ 'covelet.offline.v1': { body: 'initial' } }); await saved(a); await saved(b);
+    await a.localData.remove('covelet.offline.v1'); await b.localData.set({ 'covelet.offline.v1': { body: 'offline B' } });
+    await saved(a); await saved(b);
+    assert.equal((await valueOf(b, 'covelet.offline.v1')).body, 'offline B');
+    const conflict = (await b.api.getCloudSyncConflicts()).find(item => item.deleted);
+    const preview = await b.api.previewCloudSyncConflict(conflict.id);
+    await b.api.restoreCloudSyncConflict(conflict.id, { choice: 'remote', token: preview.token });
+    await saved(b); await saved(a);
+    assert.equal(await valueOf(a, 'covelet.offline.v1'), undefined); assert.equal(await valueOf(b, 'covelet.offline.v1'), undefined);
+    await b.localData.set({ 'covelet.retry.v1': { body: 'retry after lost response' } }); cloud.unknownPut = true;
+    assert.equal((await b.api.syncCloudNow()).phase, 'error');
+    assert.ok((await valueOf(b, 'covelet.data-sync.v1')).metadata.pending);
+    await b.api.lockCloudSync(); await b.sessionStore.clear();
+    assert.equal((await b.api.loadCloudSyncSettings()).unlocked, false);
+    await b.api.unlockCloudSync(cloud.secrets, password); await saved(b); await saved(a);
+    assert.equal((await valueOf(a, 'covelet.retry.v1')).body, 'retry after lost response');
+    assert.equal((await valueOf(b, 'covelet.data-sync.v1')).metadata.pending, null);
+    const putCount = cloud.calls.filter(call => call.method === 'PUT').length;
+    await saved(a); await saved(b);
+    assert.equal(cloud.calls.filter(call => call.method === 'PUT').length, putCount, 'unchanged repeated sync writes nothing');
+  } finally { await a.close(); await b.close(); }
+});
+
+test('different device languages cannot create sync conflicts or overwrite either device preference', async () => {
+  const cloud = strictWebdav(), a = device(cloud, 'a'), b = device(cloud, 'b');
+  try {
+    await a.localData.set({ 'covelet.language.v1': 'zh-CN', 'covelet.shared.v1': 'portable' });
+    await b.localData.set({ 'covelet.language.v1': 'en' });
+    for (const subject of [a, b]) await subject.api.saveCloudSyncSettings(cloud.profile, cloud.secrets, password);
+    await saved(a); await saved(b); await saved(a);
+    assert.deepEqual(await a.api.getCloudSyncConflicts(), []);
+    assert.deepEqual(await b.api.getCloudSyncConflicts(), []);
+    assert.equal(await valueOf(a, 'covelet.language.v1'), 'zh-CN');
+    assert.equal(await valueOf(b, 'covelet.language.v1'), 'en');
+    assert.equal(await valueOf(b, 'covelet.shared.v1'), 'portable');
+    assert.ok((await a.syncDataStore.snapshot()).records.every(item => item.key !== 'covelet.language.v1'));
+  } finally { await a.close(); await b.close(); }
+});

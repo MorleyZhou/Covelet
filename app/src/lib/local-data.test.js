@@ -207,7 +207,7 @@ test('invalid input is rejected before an atomic write and get results do not sh
 
 test('full sync discovers future namespaces after restart, transfers Blob bytes and retains every device-only key', async () => {
   const source = fixture(), future = source.createEncryptedStore('future-built-in-extension');
-  await source.localData.set({ 'covelet.future.settings.v1': { enabled: true, label: 'all-extension-content' }, 'covelet.cloud.local.v1': { target: 'source-target' }, 'covelet.privacy.lock.v1': { verifier: 'never-portable' } });
+  await source.localData.set({ 'covelet.future.settings.v1': { enabled: true, label: 'all-extension-content' }, 'covelet.cloud.local.v1': { target: 'source-target' }, 'covelet.privacy.lock.v1': { verifier: 'never-portable' }, 'covelet.language.v1': 'zh-CN' });
   await future.set('private-key', { palette: [1, 2], image: new Blob([new Uint8Array([2, 3, 255])], { type: 'image/png' }) });
   await source.createEncryptedStore('full-data-pending').set('pending', { ciphertext: 'never-sync-recursively' });
   const reopened = fixture({ backend: source.backend }), portable = await reopened.syncDataStore.snapshot();
@@ -216,7 +216,7 @@ test('full sync discovers future namespaces after restart, transfers Blob bytes 
   assert.doesNotMatch(JSON.stringify(portable), /source-target|never-portable|never-sync-recursively/);
   const destination = fixture();
   await destination.localData.set({ 'covelet.cloud.local.v1': { target: 'destination-target' }, 'covelet.tools.cloud.v1': { enabled: false },
-    'covelet.data-sync.v1': { actor: 'destination' }, 'covelet.cloud.session.v1': { secret: 'session-only' }, 'covelet.privacy.lock.v1': { verifier: 'destination-password' }, 'covelet.obsolete': { remove: true } });
+    'covelet.data-sync.v1': { actor: 'destination' }, 'covelet.cloud.session.v1': { secret: 'session-only' }, 'covelet.privacy.lock.v1': { verifier: 'destination-password' }, 'covelet.language.v1': 'en', 'covelet.obsolete': { remove: true } });
   const before = await destination.syncDataStore.snapshot(), result = await destination.syncDataStore.apply(portable, { expectedToken: before.token });
   assert.equal(result.token, portable.token); assert.equal(result.changed, 3, 'Two additions and one deletion commit together.');
   const restored = await destination.createEncryptedStore('future-built-in-extension').get('private-key');
@@ -224,6 +224,7 @@ test('full sync discovers future namespaces after restart, transfers Blob bytes 
   const persisted = await destination.localData.get(null);
   assert.deepEqual(persisted['covelet.cloud.local.v1'], { target: 'destination-target' });
   assert.equal(persisted['covelet.privacy.lock.v1'].verifier, 'destination-password');
+  assert.equal(persisted['covelet.language.v1'], 'en');
   assert.equal(persisted['covelet.data-sync.v1'].actor, 'destination'); assert.equal(persisted['covelet.obsolete'], undefined);
   const unchanged = await destination.syncDataStore.apply(portable, { expectedToken: result.token });
   assert.equal(unchanged.changed, 0); assert.equal(unchanged.token, result.token);

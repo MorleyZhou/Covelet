@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 const profile = await mkdtemp(path.join(tmpdir(), 'covelet-bookmarks-qa-'));
 const root = fileURLToPath(new URL('..', import.meta.url));
-const extension = path.join(root, 'dist/extension'), output = path.join(root, 'output/0.3-bookmarks');
+const extension = path.join(root, 'dist/extension'), output = path.join(root, 'output/0.2.2-bookmarks');
 await mkdir(output, { recursive: true });
 const chrome = spawn(process.env.COVELET_CHROMIUM || '/opt/ungoogled-chromium/chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--disable-background-networking','--no-first-run','--lang=zh-CN',`--user-data-dir=${profile}`, '--remote-debugging-port=0', `--disable-extensions-except=${extension}`,`--load-extension=${extension}`,'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
 const delay = ms => new Promise(r => setTimeout(r, ms));

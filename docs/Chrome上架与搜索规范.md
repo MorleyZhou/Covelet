@@ -1,6 +1,6 @@
-# Chrome 提交与搜索 · 0.2.1 A+
+# Chrome 提交与搜索 · 0.2.2
 
-Chrome 线上为 0.2.0，ID `clkholbmabommppnlpcnhdgmibibblgb`；0.2.1 尚未提交。本轮只准备代码、候选包与 PR，不更新托管政策、不操作商店、不合并。
+Chrome 线上为 0.2.0，ID `clkholbmabommppnlpcnhdgmibibblgb`；0.2.2 尚未提交。本轮只准备代码、候选包与 PR，不更新托管政策、不操作商店、不合并。
 
 默认搜索通过 chrome.search.query 使用浏览器已有提供者，不更改其设置。用户临时选择其他引擎时才使用对应配置。搜索查询由所选服务接收，Covelet 无遥测或数据服务器。
 

@@ -12,7 +12,7 @@
   "points.own_storage": "Echte Cloud-Sync heute ist WebDAV (Nutstore / Nextcloud). R2, OSS, GitHub, GitLab und andere sind noch Beta. Wir behaupten nicht „alle fünf funktionieren“ und auch nicht, Multi-Gerät-Wechsel sei schon zuverlässig.",
   "points.no_telemetry": "Keine Werbung, keine Drittanbieter-Analysen, keine Nutzungsstatistik.",
   "verify.h2": "So prüfst du die Aussagen",
-  "verify.body": "Diese Site ist eine statische Infoseite. Sie verarbeitet keine Nutzerdaten, lädt keine Navigation oder Notizen hoch und setzt kein PostHog und keine Tracking-Pixel. In der Erweiterung kannst du Berechtigungen und Speicherort prüfen („Datenschutz-Check“ ab 0.3). Die Aussagen lassen sich an Produkt und Site-Verhalten abgleichen.",
+  "verify.body": "Diese Site ist eine statische Infoseite. Sie verarbeitet keine Nutzerdaten, lädt keine Navigation oder Notizen hoch und setzt kein PostHog und keine Tracking-Pixel. In der Erweiterung kannst du Berechtigungen und Speicherort prüfen („Datenschutz-Check“ ab 0.2.2). Die Aussagen lassen sich an Produkt und Site-Verhalten abgleichen.",
   "verify.contact": "Datenschutz · support@morley.work",
   "site_wont.h3": "Was diese Site nicht tut",
   "site_wont.body": "Kein Login, keine E-Mail-Erfassung, keine Tracking-Pixel, keine Werbung auf der Startseite. Die Seite erklärt nur das Produkt und verlinkt zum Store.",

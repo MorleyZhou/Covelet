@@ -1,0 +1,9 @@
+
+> covelet@0.2.2 check:wasm
+> node scripts/build-wasm.mjs --check && node scripts/build-sync-wasm.mjs --check && node scripts/build-github-wasm.mjs --check && node scripts/clock-wasm.mjs --check && node scripts/build-tools-wasm.mjs --check
+
+Visual WASM verified: 10853 bytes, SHA-256 2eacea134baf76134678c3f3901e835798034a6bfcc4f30e007080896ca99f57, ABI 1, no imports, fixed 512 KiB memory.
+Sync WASM verified: 10773 bytes, SHA-256 45f0445669c48ae5326b624b77aaebb1b5ba792a6a54be382e3fee82c1830182, ABI 1, no imports, fixed 2 MiB memory.
+GitHub WASM verified: 1202 bytes, SHA-256 d4202ce71ab19aa9956d8c7cfd98f10ac521921fe1c4640e13d871c35eabc67b, ABI 1, no imports, fixed 512 KiB memory.
+Clock WASM asset checksum matches: 253 bytes.
+Packaged tools WASM digests match (7600 bytes).

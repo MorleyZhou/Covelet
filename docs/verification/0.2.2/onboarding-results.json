@@ -1,0 +1,147 @@
+{
+  "passed": true,
+  "fixtureObjects": 9,
+  "requests": [
+    {
+      "method": "PROPFIND",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/tools-v1/"
+    },
+    {
+      "method": "MKCOL",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-29736cb6a5e0f324c52e36f5447adf2c-1-29736cb6a5e0f324c52e36f5447adf2c73c367ec3ea11416985365ab8e9cdea5.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-29736cb6a5e0f324c52e36f5447adf2c-1-29736cb6a5e0f324c52e36f5447adf2c73c367ec3ea11416985365ab8e9cdea5.json"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/"
+    },
+    {
+      "method": "MKCOL",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-29736cb6a5e0f324c52e36f5447adf2c-1-29736cb6a5e0f324c52e36f5447adf2c73c367ec3ea11416985365ab8e9cdea5.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-29736cb6a5e0f324c52e36f5447adf2c-1-29736cb6a5e0f324c52e36f5447adf2c73c367ec3ea11416985365ab8e9cdea5.json"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-cab4a1e410327a3b641562171bbaf928-1-cab4a1e410327a3b641562171bbaf928dce6c0feaf59a2db11709002cac73595.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-cab4a1e410327a3b641562171bbaf928-1-cab4a1e410327a3b641562171bbaf928dce6c0feaf59a2db11709002cac73595.json"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-46cdf37f9faec46669a455c60488c79a-1-46cdf37f9faec46669a455c60488c79a47c94cb076491ab62e7074439b676a80.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-46cdf37f9faec46669a455c60488c79a-1-46cdf37f9faec46669a455c60488c79a47c94cb076491ab62e7074439b676a80.json"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-96d60c0bfee449141adb9fbe98d06f4e-1-96d60c0bfee449141adb9fbe98d06f4e8f4ca37bbc0adff1f07400758355a132.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-96d60c0bfee449141adb9fbe98d06f4e-1-96d60c0bfee449141adb9fbe98d06f4e8f4ca37bbc0adff1f07400758355a132.json"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-65ffb328e13d6c57addfcc1f61b04bbe-1-65ffb328e13d6c57addfcc1f61b04bbe55f76f6e2de7eab71797ced9f80505ab.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-65ffb328e13d6c57addfcc1f61b04bbe-1-65ffb328e13d6c57addfcc1f61b04bbe55f76f6e2de7eab71797ced9f80505ab.json"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-7975986bcc5257233512800b396cfcec-1-7975986bcc5257233512800b396cfcec97794a4392fcb91d30561effc96f8532.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-7975986bcc5257233512800b396cfcec-1-7975986bcc5257233512800b396cfcec97794a4392fcb91d30561effc96f8532.json"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-a3ba6c17bf814e83bf3d3d366b7f873d-1-a3ba6c17bf814e83bf3d3d366b7f873dfbfe1a74dde592edb6a521a73528b896.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-a3ba6c17bf814e83bf3d3d366b7f873d-1-a3ba6c17bf814e83bf3d3d366b7f873dfbfe1a74dde592edb6a521a73528b896.json"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-97615227ad210e8c6859185e5b3c7f59-1-97615227ad210e8c6859185e5b3c7f5969bf56b27f49d5f8bd3007624f9beb7f.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/blobs/covelet-97615227ad210e8c6859185e5b3c7f59-1-97615227ad210e8c6859185e5b3c7f5969bf56b27f49d5f8bd3007624f9beb7f.json"
+    },
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/covelet-10573af072bf478b859f871040e1d82c-1-c960b57832e28d488b947733c71527a42da78a01c6fa833414b3768d6244a9bd.json"
+    },
+    {
+      "method": "PUT",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/all-data-v1/covelet-10573af072bf478b859f871040e1d82c-1-c960b57832e28d488b947733c71527a42da78a01c6fa833414b3768d6244a9bd.json"
+    },
+    {
+      "method": "PROPFIND",
+      "url": "https://www.bing.com/covelet-setup-fixture/covelet/"
+    }
+  ],
+  "checks": [
+    "light/dark 1100/390px: Data/What’s new, privacy and all three setup steps",
+    "Space disclosure activation and focus retention",
+    "runtime permissions and honest seven-day disclosure",
+    "privacy narrow layout",
+    "WebDAV default and four selectable Beta channels",
+    "local escape before setup",
+    "provider-specific fields",
+    "HTTPS and Chinese 401 errors",
+    "test without password and credential proof invalidation",
+    "password validation",
+    "failed first PUT stays in step 3",
+    "local fallback clears session and auto-sync",
+    "retry succeeds with encrypted writes",
+    "save-only performs zero requests",
+    "lock invalidates verification"
+  ]
+}

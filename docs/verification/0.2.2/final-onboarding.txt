@@ -1,0 +1,5 @@
+
+> covelet@0.2.2 test:onboarding
+> node tests/onboarding-extension.mjs
+
+Unpacked onboarding and privacy checks passed. Evidence: /workspace/covelet-022-polish/app/output/0.2.2-onboarding

@@ -1,8 +1,14 @@
-# 0.3 P1-A: local bookmark HTML import
+# 0.2.2: local bookmark HTML import
 
 Entry: **Settings → Data → Import URLs and bookmark HTML → Import bookmark HTML file**
 (简体中文：**设置 → 数据 → 导入网址与书签 HTML → 导入书签 HTML 文件**).
 The selectable preview shows destinations, rejected addresses and duplicate counts before confirmation.
+
+## How to import
+
+1. In Chrome or Edge, open the bookmark/favorites manager and choose Export bookmarks/favorites. In Firefox, open Library → Import and Backup → Export Bookmarks to HTML. Save the HTML file locally.
+2. Open the entry above, choose the file, and review the folders, selected links, invalid addresses and skipped duplicates.
+3. Leave **保留本地 / keep local** enabled, choose the destination and confirm. The summary reports added and skipped links; Undo reverses this import.
 
 ## Behavior
 
@@ -15,7 +21,15 @@ The selectable preview shows destinations, rejected addresses and duplicate coun
 - Bounded to 5 MiB of file / UTF-8 content, 2,000 source folders + valid links, 2,000 invalid links, the existing 2,000 stored entries, and 64 structural traversal levels. Deep nesting and malformed / empty / unrelated files get localized errors. Rejecting a replacement file clears the prior preview so it cannot be imported accidentally.
 - New UI and error strings have explicit en, zh-CN (source), zh-TW, ja, ko, de, fr and ru coverage. Marketing availability changes are limited to `migrate.bookmarks` in the eight `site/i18n/*.json` files; the reachable application entry ships in this same change.
 
-## Fixtures and automated verification
+## Current candidate verification
+
+See [0.2.2 evidence](verification/0.2.2/README.md): 473 unit tests pass; the unpacked-extension import checks retain 0 HTTP(S) and 0 native-favicon requests during import. Current package and manifest are **0.2.2**.
+
+## Prior implementation evidence (before 0.2.2)
+
+These counts describe the original import change, not acceptance of the current candidate.
+
+### Fixtures and automated verification
 
 `app/tests/fixtures/bookmarks/{chrome,firefox,edge}.html` are synthetic, sanitized representations of browser Netscape exports, not private user exports or claims of a live browser export session. They retain the Netscape doctype, charset META, export timestamps, toolbar flags, nested DL/DT/H3/A structure and browser-specific attributes. Firefox includes smart bookmarks, IDNs and descriptions; Chrome includes cross-folder duplicates and encoded query parameters; Edge includes nested favorites and a nondefault HTTP port. The original `bookmarks.html` acceptance fixture remains covered.
 
@@ -31,7 +45,7 @@ npm run test:bookmarks
 - `npm test`: **468 passed, 0 failed**, including 13 bookmark tests for all three fixtures, bad/empty/oversize files, URL rejection, limits, explicit DT end tags, safe literal titles, duplicate preservation/selection, local save/reload and eight-language coverage. jsdom 26.1.0 is a pinned development-only HTML5 DOM dependency; production parsing still uses the browser DOM.
 - `build:unpacked`: production unpacked extension built against unchanged packaged WASM, without release ZIP creation.
 - `check:extension`: static package checks passed; package / manifest version remains **0.2.1**.
-- `test:bookmarks`: real isolated unpacked Chromium extension with actual `DOM.setFileInputFiles` file selection, no local application server and no real accounts. Imports **11 valid sites**, checks all three browser previews, rejected files and unsafe URLs, duplicate default/counts, failed replacement, desktop folder/link visibility, stable local IDs/content after reload, zh-CN/English errors, and desktop/narrow modal geometry. Runtime exceptions fail the run. The fixture profile is removed afterward. Use `COVELET_CHROMIUM=/path/to/chrome` if needed (default `/opt/ungoogled-chromium/chrome`). Evidence regenerates under ignored `app/output/0.3-bookmarks/` as screenshots and `results.json`.
+- `test:bookmarks`: real isolated unpacked Chromium extension with actual `DOM.setFileInputFiles` file selection, no local application server and no real accounts. Imports **11 valid sites**, checks all three browser previews, rejected files and unsafe URLs, duplicate default/counts, failed replacement, desktop folder/link visibility, stable local IDs/content after reload, zh-CN/English errors, and desktop/narrow modal geometry. Runtime exceptions fail the run. The fixture profile is removed afterward. Use `COVELET_CHROMIUM=/path/to/chrome` if needed (default `/opt/ungoogled-chromium/chrome`). Evidence regenerates under ignored `app/output/0.2.2-bookmarks/` as screenshots and `results.json`.
 
 ## Zero-outbound verification
 
@@ -41,4 +55,4 @@ The unit round-trip installs throwing `fetch`/XHR spies, includes script/image/i
 
 ## Scope and limits
 
-No merge, release, tag, version bump or store submission. No WeTab / Infinity / Arc importer, tool-pack restoration, tabs / readingList work, Covelet server/account, OAuth relay or analytics. Chromium runtime acceptance and synthetic Chrome/Firefox/Edge export-format coverage are verified; live Firefox/Edge extension installations and real personal export collections were not exercised.
+Draft only: no merge, release, tag or store submission. The current package version is 0.2.2. No WeTab / Infinity / Arc importer, tool-pack restoration, tabs / readingList work, Covelet server/account, OAuth relay or analytics. Chromium runtime acceptance and synthetic Chrome/Firefox/Edge export-format coverage are verified; live Firefox/Edge extension installations and real personal export collections were not exercised.

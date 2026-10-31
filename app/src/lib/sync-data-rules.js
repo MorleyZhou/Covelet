@@ -1,7 +1,7 @@
 // Device/session management never overwrites another device's unlock state or
 // synchronizer. All content namespaces, including future extensions, are open
 // by default; this is deliberately not a business-data whitelist.
-const DEVICE_KEYS = new Set(['covelet.cloud.local.v1', 'covelet.tools.cloud.v1', 'covelet.data-sync.v1', 'covelet.cloud.session.v1', 'covelet.privacy.lock.v1', 'covelet.ai.connection.v1']);
+const DEVICE_KEYS = new Set(['covelet.cloud.local.v1', 'covelet.tools.cloud.v1', 'covelet.data-sync.v1', 'covelet.cloud.session.v1', 'covelet.privacy.lock.v1', 'covelet.ai.connection.v1', 'covelet.language.v1']);
 const PREFERENCES = 'covelet.content.preferences.v1';
 const NAVIGATION = 'owntab.local.v1';
 const TOOLS = 'covelet.tools.v1';

@@ -4,6 +4,7 @@ import { localData, createEncryptedStore } from './local-data.js';
 import { encryptCloudPayload, decryptCloudPayload, CLOUD_OBJECT_LIMIT } from './cloud-crypto.js';
 import { parseCloudSnapshotName } from './cloud-providers.js';
 import { isSyncRecord } from './sync-data-rules.js';
+import { sameJson } from './json-equal.js';
 
 // The remote indexes are small immutable revisions. Typed values and documents
 // are separately encrypted, content-addressed chunks so images/recovery points
@@ -17,12 +18,16 @@ const hex = (value) => /^[a-f0-9]{64}$/.test(value), actorValid = (value) => /^[
 const fields = (value, names) => value && typeof value === 'object' && !Array.isArray(value)
   && Object.keys(value).length === names.length && names.every((name) => own(value, name));
 const fail = (code = 'DATA_SYNC_INVALID') => { throw Object.assign(new Error(code), { code }); };
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const same = sameJson;
+// Older all-data indexes accidentally included this device preference. Accept
+// its causal history so upgrades and pending retries remain readable, but never
+// materialize it, expose a conflict, or include it in a new local snapshot.
+const legacyDeviceRecord = (namespace, key) => namespace === 'preferences' && key === 'covelet.language.v1';
 const validNamespace = (value) => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/.test(value);
 const validKey = (value) => typeof value === 'string' && value.length > 0 && value.length <= 16384 && !/[\u0000-\u001f\u007f]/.test(value);
 function identity(namespace, key) {
   if (!validNamespace(namespace) || !validKey(key)) fail();
-  if (!isSyncRecord(namespace, key)) fail();
+  if (!isSyncRecord(namespace, key) && !legacyDeviceRecord(namespace, key)) fail();
   return JSON.stringify([namespace, key]);
 }
 function splitIdentity(value) {
@@ -165,6 +170,7 @@ function combine(...collections) {
 function materialize(documents) {
   const groups = new Map(), values = new Map(), conflicts = [];
   for (const document of Object.values(documents)) for (const [key, operation] of Object.entries(document.records)) {
+    if (legacyDeviceRecord(...splitIdentity(key))) continue;
     const list = groups.get(key) || []; list.push({ ...copy(operation), actor: document.actor }); groups.set(key, list);
   }
   for (const [key, operations] of [...groups].sort(([a], [b]) => a.localeCompare(b))) {
@@ -266,6 +272,7 @@ export function createFullDataSync({ access, snapshotStore, store = defaultStore
     const values = new Map(); let total = 0;
     for (const record of snapshot.records) {
       if (!fields(record, ['namespace', 'key', 'value'])) fail();
+      if (!isSyncRecord(record.namespace, record.key)) fail();
       const key = identity(record.namespace, record.key); if (values.has(key)) fail();
       const bytes = await encodeValue(record.value); total += bytes.length; if (total > MAX_BYTES) fail('DATA_SYNC_CAPACITY');
       const digest = await hash(bytes), prior = known.values.get(digest);
@@ -443,7 +450,7 @@ export function createFullDataSync({ access, snapshotStore, store = defaultStore
           const remote = chosen.reference === null ? null : decodeValue(await reader(chosen.reference));
           await connection.check();
           const token = uuid();
-          conflictPreview = { id, token, target: m.target, snapshotToken: snapshot.token, documents: await hash(encoder.encode(JSON.stringify(m.documents))), expiresAt: now() + 600000 };
+          conflictPreview = { id, token, target: m.target, snapshotToken: snapshot.token, documents: await hash(await encodeValue(m.documents)), expiresAt: now() + 600000 };
           return { id, token, namespace: chosen.namespace, key: chosen.key, actor: chosen.actor, clock: chosen.clock,
             local: { deleted: !local, value: local?.value ?? null }, remote: { deleted: chosen.deleted, value: remote } };
         });
@@ -459,7 +466,7 @@ export function createFullDataSync({ access, snapshotStore, store = defaultStore
           if (choice !== undefined || token !== undefined) {
             const preview = conflictPreview;
             if (!['local', 'remote'].includes(choice) || !preview || preview.id !== id || preview.token !== token || preview.target !== m.target
-              || preview.snapshotToken !== snapshot.token || preview.expiresAt < now() || preview.documents !== await hash(encoder.encode(JSON.stringify(m.documents)))) fail('DATA_SYNC_CONFLICT_STALE');
+              || preview.snapshotToken !== snapshot.token || preview.expiresAt < now() || preview.documents !== await hash(await encodeValue(m.documents))) fail('DATA_SYNC_CONFLICT_STALE');
             discard = choice === 'local';
           }
           const known = knownReferences(m.documents), staged = { password: connection.password, uploads: new Map() };

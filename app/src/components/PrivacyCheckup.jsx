@@ -31,9 +31,9 @@ export default function PrivacyCheckup({ demo = false }) {
   const grantLabel = (granted) => !permissions.grantsKnown ? tr('授权状态未知') : granted ? tr('已授予') : tr('未授予');
   return <div className="privacy-checkup form-stack">
     <section aria-labelledby="privacy-network-title">
-      <h3 id="privacy-network-title">{tr('近 7 天的外部请求')}</h3>
-      <p>{tr('本机构建：无第三方分析、广告或自动日志上传。')}</p>
-      <p className="hint">{tr('此版本未记录网络请求历史，无法统计近 7 天的请求次数。以下为可能联网的功能。')}</p>
+      <h3 id="privacy-network-title">{tr('联网功能')}</h3>
+      <p>{tr('无广告、遥测或自动日志上传。')}</p>
+      <p className="hint">{tr('未记录网络请求历史，无法统计近 7 天的次数。')}</p>
       <ul>
         <li>{tr('同步：仅在你测试连接或解锁同步后，请求你配置的存储端点；自动同步需要单独开启。')}</li>
         <li>{tr('Bing 每日壁纸：获取图片及元数据；改用颜色或渐变可停止每日壁纸请求。')}</li>
