@@ -381,7 +381,7 @@ export function createLocalData(options = {}) {
       const encryptionKey = await key(); await migrate('preferences', null, encryptionKey);
       return makeSnapshot(await allDecoded(encryptionKey));
     }),
-    apply: (snapshot, { expectedToken } = {}) => withSyncLocks(snapshot, () => exclusive(async () => {
+    apply: (snapshot, { expectedToken, wholeRecord } = {}) => withSyncLocks(snapshot, () => exclusive(async () => {
       if (!snapshot || Object.getPrototypeOf(snapshot) !== Object.prototype || snapshot.version !== 1 || !Array.isArray(snapshot.records)
         || snapshot.records.length > MAX_SYNC_RECORDS || typeof expectedToken !== 'string' || !/^[a-f0-9]{64}$/.test(expectedToken)
         || Object.keys(snapshot).some((field) => !['version', 'records', 'token'].includes(field))) throw invalid('Invalid synchronized extension snapshot.');
@@ -406,6 +406,12 @@ export function createLocalData(options = {}) {
       // Preserve a local active privacy lock even if another device deleted
       // its preferences record; deletion is never an implicit local unlock.
       const privacyId = recordIdentity('preferences', 'covelet.content.preferences.v1'), privacy = existing.get(privacyId);
+      const selected = wholeRecord ? recordIdentity(wholeRecord.namespace, wholeRecord.key) : null;
+      // Explicit conflict choices must not silently union portable fields.
+      // Deleting an active local visibility record would also unlock this
+      // device; require the user to unlock locally before choosing deletion.
+      if (selected === privacyId && !incoming.has(privacyId) && privacy?.value.presentation)
+        throw fail('LOCAL_DATA_PRIVACY_CONFLICT', 'Unlock hidden content on this device before choosing this deleted version.');
       if (!incoming.has(privacyId) && privacy?.value.presentation) incoming.set(privacyId, { namespace: 'preferences', key: privacy.key,
         value: { version: 1, revision: 0, aliases: {}, privateKeys: [...privacy.value.privateKeys] } });
       const records = [], remove = [], changes = new Map();
@@ -413,7 +419,7 @@ export function createLocalData(options = {}) {
       for (const [id, entry] of incoming) {
         const previous = existing.get(id);
         if (previous && bytesEqual(await pack(normalizeSyncValue(entry.namespace, entry.key, previous.value)), await pack(normalizeSyncValue(entry.namespace, entry.key, entry.value)))) continue;
-        const value = prepareSyncValue(entry.namespace, entry.key, entry.value, previous?.value);
+        const value = prepareSyncValue(entry.namespace, entry.key, entry.value, previous?.value, { wholeRecord: selected === id });
         await validateSyncValue(entry.namespace, entry.key, value);
         if (previous && bytesEqual(await pack(normalizeSyncValue(entry.namespace, entry.key, previous.value)), await pack(normalizeSyncValue(entry.namespace, entry.key, value)))) continue;
         const encrypted = await encrypt(entry.namespace, entry.key, value, encryptionKey);

@@ -459,3 +459,27 @@ WebDAV 请求已停止，请重新解锁并检查站点权限。|WebDAV request 
 WebDAV 身份验证失败，请检查应用密码和目录权限。|WebDAV authentication failed. Check the app password and directory permissions.
 WebDAV 同步目录或文件不可访问，请先创建指定目录并检查权限。|WebDAV sync directory or file is inaccessible. Create the directory and check permissions.
 WebDAV 站点访问权限不可用，请重新授权。|WebDAV site access is unavailable. Grant access again.
+
+# Existing 0.3 P0 translations (preserve on catalog generation)
+WebDAV 地址无效：请填写 HTTPS 基目录地址，不要使用分享链接、查询参数或带密码的地址。|Invalid WebDAV URL. Enter an HTTPS base directory, without share links, query parameters or embedded passwords.
+WebDAV 登录失败（401）：请检查用户名和应用密码，不要使用网页登录密码。|WebDAV login failed (401). Check your username and app password; do not use your website login password.
+WebDAV 拒绝访问（403）：请确认账号已启用 WebDAV，并有此目录的读写权限。|WebDAV access denied (403). Enable WebDAV for this account and check directory read/write permissions.
+WebDAV 路径不存在（404/409）：请检查基目录地址，并先创建填写的保存目录。|WebDAV path not found (404/409). Check the base URL and create the selected save directory first.
+网络已断开，请联网后重新测试 WebDAV。|You are offline. Reconnect and test WebDAV again.
+WebDAV 安全连接失败，请检查服务器 HTTPS 证书和设备时间。|The secure WebDAV connection failed. Check the HTTPS certificate and your device clock.
+找不到或无法访问 WebDAV 服务器，请检查域名、端口和服务是否运行。|The WebDAV server cannot be found or reached. Check the hostname, port and running service.
+无法连接 WebDAV：请检查网络、服务器地址、HTTPS 证书和站点访问权限；浏览器可能未提供具体原因。|Cannot connect to WebDAV. Check your network, server URL, HTTPS certificate and site access. The browser may not report the exact cause.
+冲突预览已过期或数据已更新，请重新查看两侧内容后选择。|The conflict preview expired or data changed. Review both sides again before choosing.
+WebDAV 为本轮加固渠道，真实云账号验收仍待完成；R2、OSS、GitHub、GitLab 已实现但均为 Beta。|WebDAV is the hardened path in this update; real-account acceptance is still pending. R2, OSS, GitHub and GitLab are implemented as Beta providers.
+最近连接测试通过：{0}|Last connection test passed: {0}
+配置已保存；当前凭据的连接尚未验证。|Settings saved; the connection with the current credentials is unverified.
+测试只检查登录和目录读取，不验证写入或同步密码。保存配置不会执行连接测试。|Testing checks login and directory reading only, not writes or the sync password. Saving does not run a connection test.
+冲突内容保留本机版本，等待你选择。请查看两侧内容，整条采用本机或一个远端版本；不会合并记录内部字段。|Conflicting content keeps the local version until you choose. Review both sides and select one complete local or remote record. Fields within a record are never merged.
+远端版本 {0}|Remote version {0}
+此操作会替换这一整条记录，并在下次同步时上传。记录内其他修改也会一起替换，请确认已选对版本。|This replaces the entire record and uploads it on the next sync. Other edits within this record will also be replaced. Check your selection.
+此版本已删除整条记录。|This version deletes the entire record.
+二进制内容：{0} 字节，类型 {1}|Binary content: {0} bytes, type {1}
+内容较长，预览已截短；选择时仍会采用完整记录。|This preview is shortened. Your choice still applies the complete record.
+加密同步桌面、扩展和图标。WebDAV 为加固渠道，其他渠道为 Beta。|Encrypt and sync your desktop, extensions and icons. WebDAV is the hardened path; other providers are Beta.
+最近连接测试未通过，请检查后重试。|The latest connection test did not pass. Check the settings and try again.
+此删除版本会移除当前隐藏内容的标记，请先在本机解除隐藏，再重新选择。|This deleted version removes markings for currently hidden content. Unlock hidden content on this device, then choose again.

@@ -363,3 +363,22 @@ test('local hiding, rebased revisions and set ordering do not create new synchro
   assert.deepEqual(updated.records[0].value.privateKeys, ['site:first', 'site:second']);
   await storage.close();
 });
+
+
+test('explicit whole-record conflict choices replace portable privacy fields without changing the local lock or password', async () => {
+  const storage = fixture(), key = 'covelet.content.preferences.v1';
+  const local = { version: 1, revision: 1, presentation: true, aliases: { 'site:local': 'local alias' }, privateKeys: ['site:local'] };
+  await storage.localData.set({ [key]: local, 'covelet.privacy.lock.v1': { verifier: 'local-password-verifier' } });
+  const before = await storage.syncDataStore.snapshot();
+  const remote = { version: 1, revision: 0, aliases: { 'site:remote': 'remote alias' }, privateKeys: ['site:remote'] };
+  await storage.syncDataStore.apply({ version: 1, records: [{ namespace: 'preferences', key, value: remote }] },
+    { expectedToken: before.token, wholeRecord: { namespace: 'preferences', key } });
+  const values = await storage.localData.get([key, 'covelet.privacy.lock.v1']);
+  assert.equal(values[key].presentation, true); assert.deepEqual(values[key].privateKeys, ['site:remote']);
+  assert.deepEqual(values[key].aliases, remote.aliases); assert.equal(values['covelet.privacy.lock.v1'].verifier, 'local-password-verifier');
+  const current = await storage.syncDataStore.snapshot();
+  await assert.rejects(storage.syncDataStore.apply({ version: 1, records: [] }, { expectedToken: current.token, wholeRecord: { namespace: 'preferences', key } }),
+    error => error.code === 'LOCAL_DATA_PRIVACY_CONFLICT');
+  assert.deepEqual(await storage.syncDataStore.snapshot(), current, 'blocked deletion leaves the whole snapshot untouched');
+  await storage.close();
+});

@@ -79,6 +79,7 @@ import { colorBackgroundCss } from "./lib/background-colors.js";
 import { startCloudSync } from "./lib/cloud-sync.js";
 import ExtensionCenter from "./components/ExtensionCenter.jsx";
 import CloudSyncSettings from './components/CloudSyncSettings.jsx';
+import PrivacyCheckup from './components/PrivacyCheckup.jsx';
 import GitHubWidget from "./components/GitHubWidget.jsx";
 import DesktopPages from "./components/DesktopPages.jsx";
 import { layoutDesktop } from "./lib/desktop-layout.js";
@@ -1488,7 +1489,7 @@ export function App() {
         {modal?.kind === "extensions" && (
           <ExtensionCenter Dialog={Modal} state={state} initialExtension={modal.initialExtension} editingId={modal.editingId} onUseWidget={useWidget} onRemoveWidget={detachWidget} onConfigureFunctional={() => setModal({ kind: 'sync-settings' })} onClose={() => setModal(null)} />
         )}
-        {modal?.kind === 'sync-settings' && <Modal title={tr('自定义存储同步')} className="settings-modal sync-settings-modal" wide maximizable closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}><CloudSyncSettings demo={demo} onBusyChange={setBusy} /></Modal>}
+        {modal?.kind === 'sync-settings' && <Modal title={tr('自定义存储同步')} className="settings-modal sync-settings-modal" wide maximizable closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}><CloudSyncSettings demo={demo} onBusyChange={setBusy} onLocalOnly={() => { setModal(null); notify(tr('已关闭同步，仅在本机保存数据。')); }} /></Modal>}
         {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} Dialog={Modal} onClose={() => setModal(null)} />}
         {modal?.kind === 'tools-trash' && <PersonalToolsTrashDialog Dialog={Modal} onClose={() => setModal(null)} />}
         {modal?.kind === 'content-preferences' && <Modal title={tr('内容与隐私')} privacyKeys={modal.key ? [modal.key] : []} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
@@ -1528,6 +1529,7 @@ export function App() {
             onImport={() => setModal({ kind: 'recovery-center' })}
             onBookmarks={() => { setImportPlan(null); setModal({ kind: 'bookmarks', revision: preferenceState.current.revision }); }}
             onContentPreferences={() => setModal({ kind: 'content-preferences' })}
+            onCloudSync={() => setModal({ kind: 'sync-settings' })}
             onDesktopTemplates={() => setModal({ kind: 'desktop-templates' })}
             onToolsTrash={() => setModal({ kind: 'tools-trash' })}
             onSnapshot={async (latest) => {
@@ -1618,6 +1620,7 @@ function Settings({
   onImport,
   onBookmarks,
   onContentPreferences,
+  onCloudSync,
   onDesktopTemplates,
   onToolsTrash,
   onSnapshot,
@@ -1681,7 +1684,7 @@ function Settings({
     addProvider();
   }
   const patch = (value) => { setDraft((d) => ({ ...d, ...value })); saver.queue({ settings: value }); };
-  const tabs = [["appearance", tr("外观")], ["layout", tr("布局")], ["search", tr("搜索")], ["enhancements", tr("增强")], ["data", tr("数据")]];
+  const tabs = [["appearance", tr("外观")], ["layout", tr("布局")], ["search", tr("搜索")], ["enhancements", tr("增强")], ["data", tr("数据")], ["privacy", tr('隐私自查')]];
   return (
     <Modal title={tr("设置")} closeDisabled={busy} onClose={closeSettings} className="settings-modal preferences-modal" wide>
       <Tabs className="settings-layout" value={tab} orientation="vertical" onValueChange={(value) => { setTab(value); setError(''); }}>
@@ -1874,6 +1877,8 @@ function Settings({
         {tab === "data" && (
           <>
             <div className="data-actions">
+              <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onCloudSync)}>
+                {tr('自定义存储同步')}</Button>
               <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onBookmarks)}>
                 <UploadSimple size={19} />{tr('导入网址与书签')}</Button>
               <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onExport)}>
@@ -1889,6 +1894,7 @@ function Settings({
             <a className="settings-privacy-link" href="https://sites.google.com/view/covelet-privacy" target="_blank" rel="noopener noreferrer">{tr("隐私政策")}</a>
           </>
         )}
+        {tab === 'privacy' && <PrivacyCheckup demo={demo} />}
         {error && (
           <p className="form-error" role="alert">
             {tr(error)}

@@ -43,7 +43,7 @@ const nextRevision = (value) => {
   return revision + 1;
 };
 const same = (left, right) => JSON.stringify(canonical(left)) === JSON.stringify(canonical(right));
-export function prepareSyncValue(namespace, key, input, previous) {
+export function prepareSyncValue(namespace, key, input, previous, { wholeRecord = false } = {}) {
   const value = clone(input);
   if (namespace !== 'preferences') return value;
   if (key === NAVIGATION) {
@@ -53,7 +53,7 @@ export function prepareSyncValue(namespace, key, input, previous) {
   if (revisioned(namespace, key)) value.revision = nextRevision(previous?.revision);
   if (key === PREFERENCES) {
     value.presentation = previous?.presentation === true;
-    if (value.presentation) value.privateKeys = [...new Set([...(previous.privateKeys || []), ...(value.privateKeys || [])])];
+    if (value.presentation && !wholeRecord) value.privateKeys = [...new Set([...(previous.privateKeys || []), ...(value.privateKeys || [])])];
   }
   if (key === TOOLS) {
     for (const kind of ['notes', 'reading', 'snapshots']) {
