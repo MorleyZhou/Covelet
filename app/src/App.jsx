@@ -79,6 +79,7 @@ import { startCloudSync } from "./lib/cloud-sync.js";
 import ExtensionCenter from "./components/ExtensionCenter.jsx";
 import CloudSyncSettings from './components/CloudSyncSettings.jsx';
 import PrivacyCheckup from './components/PrivacyCheckup.jsx';
+import WhatsNew from './components/WhatsNew.jsx';
 import GitHubWidget from "./components/GitHubWidget.jsx";
 import DesktopPages from "./components/DesktopPages.jsx";
 import { layoutDesktop } from "./lib/desktop-layout.js";
@@ -1877,6 +1878,7 @@ function Settings({
         )}
         {tab === "data" && (
           <>
+            <WhatsNew />
             <div className="data-actions">
               <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onCloudSync)}>
                 {tr('自定义存储同步')}</Button>

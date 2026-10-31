@@ -12,7 +12,7 @@
   "points.own_storage": "La synchro cloud réelle aujourd’hui, c’est WebDAV (Nutstore / Nextcloud). R2, OSS, GitHub, GitLab et le reste restent en Beta. Nous ne disons pas « les cinq marchent », ni qu’un basculement multi-appareils est déjà fiable.",
   "points.no_telemetry": "Pas de pub, pas d’analytics tiers, pas de stats d’usage.",
   "verify.h2": "Comment vérifier ces affirmations",
-  "verify.body": "Ce site est une page statique. Il ne traite pas vos données, n’envoie pas navigation ni notes, et n’embarque ni PostHog ni pixel de suivi. Dans l’extension, vous pouvez vérifier permissions et emplacement des données (« Bilan confidentialité » à partir de 0.3). Ces affirmations se confrontent au produit et au comportement du site.",
+  "verify.body": "Ce site est une page statique. Il ne traite pas vos données, n’envoie pas navigation ni notes, et n’embarque ni PostHog ni pixel de suivi. Dans l’extension, vous pouvez vérifier permissions et emplacement des données (« Bilan confidentialité » à partir de 0.2.2). Ces affirmations se confrontent au produit et au comportement du site.",
   "verify.contact": "Politique de confidentialité · support@morley.work",
   "site_wont.h3": "Ce que ce site ne fait pas",
   "site_wont.body": "Pas de connexion, pas de collecte d’e-mail, pas de pixel de suivi, pas de pub sur la page d’accueil. La page présente le produit et renvoie vers le magasin.",

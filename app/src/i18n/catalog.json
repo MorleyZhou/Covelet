@@ -11728,5 +11728,41 @@
     "de": "{0} URLs importiert; {1} doppelte URLs übersprungen.",
     "fr": "{0} URL importées ; {1} URL en doublon ignorées.",
     "ru": "Импортировано адресов: {0}; пропущено повторов: {1}."
+  },
+  "0.2.2 更新内容": {
+    "en": "What's new in 0.2.2",
+    "zh-TW": "0.2.2 更新內容",
+    "ja": "0.2.2 の新機能",
+    "ko": "0.2.2 업데이트",
+    "de": "Neu in 0.2.2",
+    "fr": "Nouveautés de la version 0.2.2",
+    "ru": "Что нового в 0.2.2"
+  },
+  "WebDAV：分步设置，单独测试连接；重启浏览器后需重新解锁。": {
+    "en": "WebDAV: step-by-step setup and a separate connection test. Unlock again after restarting the browser.",
+    "zh-TW": "WebDAV：分步設定，單獨測試連線；重新啟動瀏覽器後需重新解鎖。",
+    "ja": "WebDAV：段階的な設定と個別の接続テスト。ブラウザーの再起動後は再度ロックを解除してください。",
+    "ko": "WebDAV: 단계별 설정 및 별도 연결 테스트. 브라우저를 다시 시작한 후 잠금을 다시 해제하세요.",
+    "de": "WebDAV: schrittweise Einrichtung und separater Verbindungstest. Nach einem Browserneustart erneut entsperren.",
+    "fr": "WebDAV : configuration par étapes et test de connexion séparé. Déverrouillez à nouveau après le redémarrage du navigateur.",
+    "ru": "WebDAV: пошаговая настройка и отдельная проверка подключения. После перезапуска браузера разблокируйте снова."
+  },
+  "书签 HTML：预览后导入，默认保留本地网址并报告跳过数量。": {
+    "en": "Bookmark HTML: preview before importing. Keep local URLs by default and see how many were skipped.",
+    "zh-TW": "書籤 HTML：預覽後匯入，預設保留本機網址並顯示略過數量。",
+    "ja": "ブックマーク HTML：プレビュー後に読み込みます。既定でローカルの URL を保持し、スキップ数を表示します。",
+    "ko": "북마크 HTML: 미리 본 후 가져옵니다. 기본으로 로컬 URL을 유지하고 건너뛴 수를 표시합니다.",
+    "de": "Lesezeichen-HTML: vor dem Import prüfen. Lokale URLs standardmäßig behalten; übersprungene Einträge werden gezählt.",
+    "fr": "HTML de favoris : aperçu avant importation. Les URL locales sont conservées par défaut et les entrées ignorées sont comptées.",
+    "ru": "HTML закладок: предпросмотр перед импортом. Локальные URL сохраняются по умолчанию, число пропущенных показано."
+  },
+  "隐私自查：查看权限、联网功能和数据位置。无遥测或请求次数统计。": {
+    "en": "Privacy checkup: review permissions, network features and data locations. No telemetry or request counters.",
+    "zh-TW": "隱私自查：查看權限、連網功能和資料位置。無遙測或請求次數統計。",
+    "ja": "プライバシーチェック：権限、通信する機能、データの保存先を確認できます。テレメトリやリクエスト数の集計はありません。",
+    "ko": "개인정보 점검: 권한, 네트워크 기능 및 데이터 위치를 확인합니다. 원격 측정이나 요청 횟수 집계는 없습니다.",
+    "de": "Datenschutzprüfung: Berechtigungen, Netzwerkfunktionen und Speicherorte prüfen. Keine Telemetrie oder Anfragezähler.",
+    "fr": "Bilan de confidentialité : autorisations, fonctions réseau et emplacement des données. Aucune télémétrie ni compteur de requêtes.",
+    "ru": "Проверка приватности: разрешения, сетевые функции и места хранения данных. Без телеметрии и счётчиков запросов."
   }
 }

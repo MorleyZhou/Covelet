@@ -460,7 +460,7 @@ WebDAV 身份验证失败，请检查应用密码和目录权限。|WebDAV authe
 WebDAV 同步目录或文件不可访问，请先创建指定目录并检查权限。|WebDAV sync directory or file is inaccessible. Create the directory and check permissions.
 WebDAV 站点访问权限不可用，请重新授权。|WebDAV site access is unavailable. Grant access again.
 
-# Existing 0.3 P0 translations (preserve on catalog generation)
+# Existing 0.2.2 P0 translations (preserve on catalog generation)
 WebDAV 地址无效：请填写 HTTPS 基目录地址，不要使用分享链接、查询参数或带密码的地址。|Invalid WebDAV URL. Enter an HTTPS base directory, without share links, query parameters or embedded passwords.
 WebDAV 登录失败（401）：请检查用户名和应用密码，不要使用网页登录密码。|WebDAV login failed (401). Check your username and app password; do not use your website login password.
 WebDAV 拒绝访问（403）：请确认账号已启用 WebDAV，并有此目录的读写权限。|WebDAV access denied (403). Enable WebDAV for this account and check directory read/write permissions.

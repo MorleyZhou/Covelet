@@ -12,7 +12,7 @@
   "points.own_storage": "Real cloud sync today is WebDAV (Nutstore / Nextcloud). R2, OSS, GitHub, GitLab, and the rest are still Beta. We don’t claim “all five work,” and we don’t claim rock-solid multi-device switching.",
   "points.no_telemetry": "No ads, no third-party analytics, no usage stats.",
   "verify.h2": "How to check these claims",
-  "verify.body": "This site is a static page. It doesn’t handle your data, upload nav or notes, or load PostHog or tracking pixels. In the extension you can check permissions and data location (“Privacy check-up,” from 0.3). Match these claims against the product and this site.",
+  "verify.body": "This site is a static page. It doesn’t handle your data, upload nav or notes, or load PostHog or tracking pixels. In the extension you can check permissions and data location (“Privacy check-up,” from 0.2.2). Match these claims against the product and this site.",
   "verify.contact": "Privacy policy · support@morley.work",
   "site_wont.h3": "What this site won’t do",
   "site_wont.body": "No login, no email capture, no tracking pixels, and no ads on your start page. The page only explains the product and links to the store.",

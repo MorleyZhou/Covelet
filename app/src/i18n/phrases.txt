@@ -947,7 +947,7 @@ WebDAV 父目录不存在，请先建立所选保存目录。|The WebDAV parent 
 旧版本只记录了这台设备修改过的内容，未记录的内容会保留。|This older version only records changes made on this device. Unrecorded content will be kept.|舊版本只記錄了這台裝置修改過的內容，未記錄的內容會保留。|この古いバージョンには、このデバイスで変更した内容だけが記録されています。未記録の内容は保持されます。|이전 버전에는 이 기기에서 변경한 내용만 기록되어 있습니다. 기록되지 않은 내용은 유지됩니다.|Diese ältere Version enthält nur Änderungen von diesem Gerät. Nicht erfasste Inhalte bleiben erhalten.|Cette ancienne version ne contient que les modifications faites sur cet appareil. Le contenu non enregistré sera conservé.|В старой версии записаны только изменения с этого устройства. Остальное содержимое сохранится.
 粘贴网址|Paste links|貼上網址|リンクを貼り付け|링크 붙여넣기|Links einfügen|Coller des liens|Вставить ссылки
 
-# 0.3 setup and privacy checkup
+# 0.2.2 setup and privacy checkup
 授权状态未知|Grant status unknown|授權狀態未知|許可状態は不明|권한 상태 알 수 없음|Berechtigungsstatus unbekannt|Autorisation inconnue|Статус доступа неизвестен
 已授予|Granted|已授予|許可済み|허용됨|Gewährt|Accordée|Предоставлено
 未授予|Not granted|未授予|未許可|허용되지 않음|Nicht gewährt|Non accordée|Не предоставлено
@@ -1008,7 +1008,7 @@ GitHub 贡献组件：授权后读取所选账号的公开贡献日历。|The Gi
 测试时仅申请所选存储地址的访问权限。|Testing requests access only to the selected storage origin.|測試時僅申請所選儲存位址的存取權限。|テスト時は選択したストレージの接続先への権限のみを申請します。|테스트 시 선택한 저장소 출처에 대한 접근 권한만 요청합니다.|Der Test fordert nur Zugriff auf den gewählten Speicherursprung an.|Le test demande l’accès uniquement à l’origine de stockage choisie.|Проверка запрашивает доступ только к выбранному источнику хранения.
 仅保存配置不会验证连接、开启自动同步或执行首次同步。|Saving alone does not verify the connection, enable automatic sync or run the first sync.|僅儲存設定不會驗證連線、開啟自動同步或執行首次同步。|設定の保存だけでは接続の検証、自動同期の有効化、初回同期は実行されません。|설정만 저장하면 연결 검증, 자동 동기화 켜기 또는 첫 동기화를 실행하지 않습니다.|Nur Speichern prüft weder die Verbindung noch aktiviert es automatische oder erstmalige Synchronisierung.|Enregistrer seul ne vérifie pas la connexion et n’active ni la synchronisation automatique ni la première synchronisation.|Одно сохранение настроек не проверяет подключение, не включает автосинхронизацию и не запускает первую синхронизацию.
 
-# Existing 0.3 P0 translations (preserve on catalog generation)
+# Existing 0.2.2 P0 translations (preserve on catalog generation)
 {0}（Beta）|{0} (Beta)|{0}（Beta）|{0}（ベータ）|{0} (베타)|{0} (Beta)|{0} (bêta)|{0} (бета)
 连接尚未验证。|Connection unverified.|連線尚未驗證。|接続は未検証です。|연결이 검증되지 않았습니다.|Verbindung ungeprüft.|Connexion non vérifiée.|Подключение не проверено.
 查看并选择版本|Review and choose a version|檢視並選擇版本|確認してバージョンを選択|버전 검토 및 선택|Version prüfen und wählen|Examiner et choisir une version|Просмотреть и выбрать версию
@@ -1034,3 +1034,9 @@ GitHub 贡献组件：授权后读取所选账号的公开贡献日历。|The Gi
 导入条目不能超过 {0}|Import at most {0} entries.|匯入項目不可超過 {0} 筆。|読み込める項目は {0} 件までです。|가져올 항목은 {0}개를 초과할 수 없습니다.|Höchstens {0} Einträge importieren.|Importez au maximum {0} éléments.|Можно импортировать не более {0} записей.
 无效书签不能超过 {0}|Invalid bookmarks must not exceed {0}.|無效書籤不可超過 {0} 筆。|無効なブックマークは {0} 件までです。|잘못된 북마크는 {0}개를 초과할 수 없습니다.|Höchstens {0} ungültige Lesezeichen zulässig.|Le nombre de favoris invalides ne doit pas dépasser {0}.|Недопустимых закладок должно быть не более {0}.
 当前环境不能解析书签 HTML|This environment cannot parse bookmark HTML.|目前環境無法解析書籤 HTML。|この環境ではブックマーク HTML を解析できません。|현재 환경에서는 북마크 HTML을 분석할 수 없습니다.|Diese Umgebung kann Lesezeichen-HTML nicht verarbeiten.|Cet environnement ne peut pas analyser les favoris HTML.|В этой среде невозможно обработать HTML-закладки.
+
+# 0.2.2 What's new
+0.2.2 更新内容|What's new in 0.2.2|0.2.2 更新內容|0.2.2 の新機能|0.2.2 업데이트|Neu in 0.2.2|Nouveautés de la version 0.2.2|Что нового в 0.2.2
+WebDAV：分步设置，单独测试连接；重启浏览器后需重新解锁。|WebDAV: step-by-step setup and a separate connection test. Unlock again after restarting the browser.|WebDAV：分步設定，單獨測試連線；重新啟動瀏覽器後需重新解鎖。|WebDAV：段階的な設定と個別の接続テスト。ブラウザーの再起動後は再度ロックを解除してください。|WebDAV: 단계별 설정 및 별도 연결 테스트. 브라우저를 다시 시작한 후 잠금을 다시 해제하세요.|WebDAV: schrittweise Einrichtung und separater Verbindungstest. Nach einem Browserneustart erneut entsperren.|WebDAV : configuration par étapes et test de connexion séparé. Déverrouillez à nouveau après le redémarrage du navigateur.|WebDAV: пошаговая настройка и отдельная проверка подключения. После перезапуска браузера разблокируйте снова.
+书签 HTML：预览后导入，默认保留本地网址并报告跳过数量。|Bookmark HTML: preview before importing. Keep local URLs by default and see how many were skipped.|書籤 HTML：預覽後匯入，預設保留本機網址並顯示略過數量。|ブックマーク HTML：プレビュー後に読み込みます。既定でローカルの URL を保持し、スキップ数を表示します。|북마크 HTML: 미리 본 후 가져옵니다. 기본으로 로컬 URL을 유지하고 건너뛴 수를 표시합니다.|Lesezeichen-HTML: vor dem Import prüfen. Lokale URLs standardmäßig behalten; übersprungene Einträge werden gezählt.|HTML de favoris : aperçu avant importation. Les URL locales sont conservées par défaut et les entrées ignorées sont comptées.|HTML закладок: предпросмотр перед импортом. Локальные URL сохраняются по умолчанию, число пропущенных показано.
+隐私自查：查看权限、联网功能和数据位置。无遥测或请求次数统计。|Privacy checkup: review permissions, network features and data locations. No telemetry or request counters.|隱私自查：查看權限、連網功能和資料位置。無遙測或請求次數統計。|プライバシーチェック：権限、通信する機能、データの保存先を確認できます。テレメトリやリクエスト数の集計はありません。|개인정보 점검: 권한, 네트워크 기능 및 데이터 위치를 확인합니다. 원격 측정이나 요청 횟수 집계는 없습니다.|Datenschutzprüfung: Berechtigungen, Netzwerkfunktionen und Speicherorte prüfen. Keine Telemetrie oder Anfragezähler.|Bilan de confidentialité : autorisations, fonctions réseau et emplacement des données. Aucune télémétrie ni compteur de requêtes.|Проверка приватности: разрешения, сетевые функции и места хранения данных. Без телеметрии и счётчиков запросов.
