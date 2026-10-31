@@ -1,0 +1,341 @@
+name: Release to Chrome and Edge
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to build and submit (e.g. v0.2.1)
+        type: string
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: release-stores
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    outputs:
+      version: ${{ steps.package.outputs.version }}
+      zip_name: ${{ steps.package.outputs.zip_name }}
+      sha: ${{ steps.package.outputs.sha }}
+    steps:
+      - name: Validate release tag
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo '::error::Release tag must be vX.Y.Z (e.g. v0.2.1).'
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Verify source versions match tag
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const version = process.env.RELEASE_TAG.slice(1);
+          for (const file of ['app/package.json', 'app/extension.manifest.json']) {
+            assert.equal(JSON.parse(readFileSync(file, 'utf8')).version, version,
+              `${file} version must equal tag version ${version}`);
+          }
+          NODE
+
+      - name: Build and check extension
+        working-directory: app
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build:extension
+          npm run check:extension --if-present
+
+      - name: Verify built version and hash ZIP
+        id: package
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { appendFileSync, readFileSync, statSync } from 'node:fs';
+          const version = process.env.RELEASE_TAG.slice(1);
+          const manifest = JSON.parse(readFileSync('app/dist/extension/manifest.json', 'utf8'));
+          assert.equal(manifest.version, version, 'Built manifest version must equal tag version');
+          const zipName = `covelet-${version}.zip`;
+          const zipPath = `app/dist/${zipName}`;
+          assert(statSync(zipPath).isFile() && statSync(zipPath).size > 0, `Missing or empty ZIP: ${zipPath}`);
+          const sha = createHash('sha256').update(readFileSync(zipPath)).digest('hex');
+          appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nzip_name=${zipName}\nsha=${sha}\n`);
+          console.log(`${zipName} SHA256: ${sha}`);
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-package
+          path: app/dist/${{ steps.package.outputs.zip_name }}
+          if-no-files-found: error
+          compression-level: 0
+
+  github-release:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: v${{ needs.build.outputs.version }}
+      ZIP_NAME: ${{ needs.build.outputs.zip_name }}
+      EXPECTED_SHA: ${{ needs.build.outputs.sha }}
+    outputs:
+      version: ${{ needs.build.outputs.version }}
+      zip_name: ${{ needs.build.outputs.zip_name }}
+      sha: ${{ needs.build.outputs.sha }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension-package
+
+      - name: Create or update GitHub Release
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" | sha256sum --check --strict
+          notes_file="${RUNNER_TEMP}/release-notes.md"
+          printf 'Covelet %s\n\nPackage: `%s`\n\nSHA256: `%s`\n' \
+            "$RELEASE_TAG" "$ZIP_NAME" "$EXPECTED_SHA" > "$notes_file"
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$ZIP_NAME" --clobber --repo "$GITHUB_REPOSITORY"
+            gh release edit "$RELEASE_TAG" --notes-file "$notes_file" --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$RELEASE_TAG" "$ZIP_NAME" --verify-tag \
+              --title "Covelet ${RELEASE_TAG}" --notes-file "$notes_file" --repo "$GITHUB_REPOSITORY"
+          fi
+
+  chrome:
+    needs: github-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: chrome-web-store
+    permissions:
+      contents: read
+    env:
+      EXTENSION_ID: clkholbmabommppnlpcnhdgmibibblgb
+      ZIP_NAME: ${{ needs.github-release.outputs.zip_name }}
+      EXPECTED_SHA: ${{ needs.github-release.outputs.sha }}
+    steps:
+      - name: Check required Chrome secrets
+        env:
+          CWS_SERVICE_ACCOUNT_JSON: ${{ secrets.CWS_SERVICE_ACCOUNT_JSON }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+        run: |
+          set -euo pipefail
+          missing=()
+          for secret_name in CWS_SERVICE_ACCOUNT_JSON CWS_PUBLISHER_ID; do
+            if [[ -z "${!secret_name}" ]]; then
+              missing+=("$secret_name")
+            fi
+          done
+          if (( ${#missing[@]} )); then
+            echo "::error::Missing chrome-web-store environment secrets: ${missing[*]}. Configure them in Settings > Environments > chrome-web-store."
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension-package
+
+      - name: Verify ZIP
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" | sha256sum --check --strict
+
+      - name: Authenticate with service account
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.CWS_SERVICE_ACCOUNT_JSON }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/chromewebstore
+          create_credentials_file: false
+          export_environment_variables: false
+
+      - name: Upload and submit Chrome package
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+        run: |
+          set -euo pipefail
+          response_file="${RUNNER_TEMP}/cws-response.json"
+          item_url="https://chromewebstore.googleapis.com/v2/publishers/${CWS_PUBLISHER_ID}/items/${EXTENSION_ID}"
+
+          cws_request() {
+            local label="$1" method="$2" url="$3" status
+            shift 3
+            if ! status=$(curl --silent --show-error --connect-timeout 30 --max-time 180 \
+              --request "$method" --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+              --output "$response_file" --write-out '%{http_code}' "$@" "$url"); then
+              echo "::error::Chrome Web Store ${label} transport failure."
+              cat "$response_file" 2>/dev/null || true
+              exit 1
+            fi
+            cat "$response_file"
+            if [[ ! "$status" =~ ^2[0-9][0-9]$ ]]; then
+              echo "::error::Chrome Web Store ${label} failed (HTTP ${status})."
+              exit 1
+            fi
+          }
+
+          cws_request upload POST \
+            "https://chromewebstore.googleapis.com/upload/v2/publishers/${CWS_PUBLISHER_ID}/items/${EXTENSION_ID}:upload" \
+            --header 'Content-Type: application/zip' --data-binary "@${ZIP_NAME}"
+          upload_state=$(jq -er '.uploadState // "MISSING"' "$response_file")
+          attempt=0
+          while [[ "$upload_state" == IN_PROGRESS ]] && (( attempt < 60 )); do
+            attempt=$((attempt + 1))
+            sleep 10
+            cws_request fetchStatus GET "${item_url}:fetchStatus"
+            upload_state=$(jq -er '.lastAsyncUploadState // "MISSING"' "$response_file")
+          done
+          if [[ "$upload_state" != SUCCEEDED ]]; then
+            echo "::error::Chrome Web Store upload state is ${upload_state}; required SUCCEEDED. Submission blocked."
+            exit 1
+          fi
+
+          cws_request publish POST "${item_url}:publish" \
+            --header 'Content-Type: application/json' --data '{}'
+
+  edge:
+    needs: github-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: edge-addons
+    permissions:
+      contents: read
+    env:
+      RELEASE_TAG: v${{ needs.github-release.outputs.version }}
+      ZIP_NAME: ${{ needs.github-release.outputs.zip_name }}
+      EXPECTED_SHA: ${{ needs.github-release.outputs.sha }}
+    steps:
+      - name: Check required Edge secrets
+        env:
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+        run: |
+          set -euo pipefail
+          missing=()
+          for secret_name in EDGE_CLIENT_ID EDGE_API_KEY EDGE_PRODUCT_ID; do
+            if [[ -z "${!secret_name}" ]]; then
+              missing+=("$secret_name")
+            fi
+          done
+          if (( ${#missing[@]} )); then
+            echo "::error::Missing edge-addons environment secrets: ${missing[*]}."
+            echo '::error::Create the extension product and complete its first-ever submission manually in Partner Center first; the API only updates existing products.'
+            echo '::error::In Partner Center: Microsoft Edge > Publish API > enable new experience > Create API credentials. Save Client ID as EDGE_CLIENT_ID, API key as EDGE_API_KEY, and the product ID as EDGE_PRODUCT_ID in Settings > Environments > edge-addons.'
+            echo '::error::Setup: https://learn.microsoft.com/microsoft-edge/extensions/publish/api/using-addons-api'
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension-package
+
+      - name: Verify ZIP
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" | sha256sum --check --strict
+
+      - name: Upload and submit Edge package (API v1.1)
+        env:
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+        run: |
+          set -euo pipefail
+          base_url="https://api.addons.microsoftedge.microsoft.com/v1/products/${EDGE_PRODUCT_ID}/submissions"
+          response_file="${RUNNER_TEMP}/edge-response.json"
+          headers_file="${RUNNER_TEMP}/edge-response.headers"
+
+          edge_request() {
+            local label="$1" method="$2" url="$3" status
+            shift 3
+            if ! status=$(curl --silent --show-error --connect-timeout 30 --max-time 180 \
+              --request "$method" --header "Authorization: ApiKey ${EDGE_API_KEY}" \
+              --header "X-ClientID: ${EDGE_CLIENT_ID}" \
+              --dump-header "$headers_file" --output "$response_file" \
+              --write-out '%{http_code}' "$@" "$url"); then
+              echo "::error::Edge Add-ons ${label} transport failure."
+              cat "$response_file" 2>/dev/null || true
+              exit 1
+            fi
+            cat "$response_file"
+            if [[ ! "$status" =~ ^2[0-9][0-9]$ ]]; then
+              echo "::error::Edge Add-ons ${label} failed (HTTP ${status})."
+              exit 1
+            fi
+          }
+
+          read_operation_id() {
+            local location operation_id
+            location=$(awk 'tolower($1) == "location:" {sub(/^[^:]*:[ \t]*/, ""); sub(/\r$/, ""); value=$0} END {print value}' "$headers_file")
+            # Accept an operation ID, relative path, or full Location URL.
+            operation_id="${location##*/}"
+            if [[ ! "$operation_id" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+              echo '::error::Edge Add-ons response has a missing or invalid Location operation ID.' >&2
+              cat "$response_file" >&2
+              exit 1
+            fi
+            printf '%s' "$operation_id"
+          }
+
+          poll_operation() {
+            local label="$1" url="$2" state attempt
+            for ((attempt=1; attempt<=60; attempt++)); do
+              edge_request "${label} status" GET "$url"
+              state=$(jq -er '.status // "MISSING"' "$response_file")
+              case "$state" in
+                Succeeded) return 0 ;;
+                InProgress) sleep 10 ;;
+                *)
+                  echo "::error::Edge Add-ons ${label} operation failed with status ${state}. See response/errors above."
+                  exit 1
+                  ;;
+              esac
+            done
+            echo "::error::Edge Add-ons ${label} operation timed out in InProgress; required Succeeded."
+            exit 1
+          }
+
+          edge_request upload POST "${base_url}/draft/package" \
+            --header 'Content-Type: application/zip' --data-binary "@${ZIP_NAME}"
+          upload_op=$(read_operation_id)
+          poll_operation upload "${base_url}/draft/package/operations/${upload_op}"
+
+          notes=$(jq -n --arg notes "Covelet ${RELEASE_TAG}; ${ZIP_NAME}; SHA256 ${EXPECTED_SHA}" '{notes: $notes}')
+          edge_request publish POST "$base_url" \
+            --header 'Content-Type: application/json' --data "$notes"
+          publish_op=$(read_operation_id)
+          poll_operation publish "${base_url}/operations/${publish_op}"
