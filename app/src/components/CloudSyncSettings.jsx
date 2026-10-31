@@ -185,10 +185,10 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       {saved?.profile && !configuring && <div className="cloud-connection-summary">
         <div><strong>{cloudProviderLabel(saved.profile.provider)}</strong><span className="connection-state">{status.unlocked ? tr("已解锁") : tr("需解锁")}</span></div>
         <p className="cloud-sync-target">{targetLabel(saved.profile)}</p>
-        <p className="hint">{tr("浏览器重启后需重新输入凭据和同步密码。")}</p>
+        <p className="hint">{tr("凭据仅在本次浏览器会话保留；重启后需重新输入凭据和同步密码。")}</p>
         <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => { setStep(1); setDraftTest(null); setError(''); }}>{tr("修改配置")}</Button>
       </div>}
-      <p className="hint">{tr('WebDAV 为本轮加固渠道，真实云账号验收仍待完成；R2、OSS、GitHub、GitLab 已实现但均为 Beta。')}</p>
+      <p className="hint">{tr('WebDAV 优先；所有渠道的真实云账号验收仍待完成。')}</p>
       {(step === 2 || step === 3 || saved?.profile && !configuring) && <div className="cloud-connection-test" role="status" aria-live="polite">
         <p className="hint">{testing ? tr('正在测试连接…') : testFailed ? tr('最近连接测试未通过，请检查后重试。') : connectionTest ? tr('最近连接测试通过：{0}', [new Date(connectionTest.testedAt).toLocaleString(getLocale())]) : saved?.profile && !configuring ? tr('配置已保存；当前凭据的连接尚未验证。') : tr('连接尚未验证。')}</p>
         <p className="hint">{tr('测试只检查登录和目录读取，不验证写入或同步密码。保存配置不会执行连接测试。')}</p>
@@ -233,7 +233,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       <p className="hint" id="cloud-password-help">{tr("至少 12 个字符。密码无法找回，其他设备须使用相同密码。")}</p>
       </>}
       {step === 3 && <>
-      <p className="hint">{tr('首次同步会检查写入权限和同步密码；失败后可重试，或仅在本机使用。')}</p>
+      <p className="hint">{tr('首次同步会读取云端数据并尝试写入。失败可重试，或仅在本机使用。')}</p>
       <label className="check-label"><Switch checked={autoSync} disabled={busy || demo} onCheckedChange={(nextChecked) => setAutoSync(nextChecked)} />{tr('首次同步成功后自动同步')}</label>
       <p className="hint">{tr("自动同步仅在 Covelet 页面打开且已解锁时运行。")}</p>
       </>}
@@ -241,7 +241,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       {draft.provider === 'r2' && <p className="hint">{tr("创建专用 Bucket，并使用仅限该 Bucket 对象读写的 API 凭据。")}</p>}
       {draft.provider === 'github' && <p className="hint">{tr("建议使用私有仓库及仅限该仓库 Contents 读写的令牌；同步会生成仓库提交。")}</p>}
       {draft.provider === 'gitlab' && <p className="hint">{tr("先创建私有项目和分支，使用具备 API 写权限的专用令牌；同步会生成仓库提交。")}</p>}
-      {draft.provider === 'webdav' && <p className="hint">{tr("支持坚果云、Nextcloud 等 HTTPS WebDAV。请先在基目录内建好保存目录，并使用应用密码。免费服务可能限制流量、请求频率和文件数量。")}</p>}
+      {draft.provider === 'webdav' && <p className="hint">{tr("使用 HTTPS WebDAV 和应用密码。先在基目录内建好保存目录；服务商可能限制流量和请求频率。")}</p>}
       {draft.provider === 'oss' && <p className="hint">{tr("使用专用 RAM 凭据或临时令牌；部分 OSS 账号需要自己的 HTTPS 域名。")}</p>}
       </Disclosure>}
       {step === 2 && <p className="hint">{tr('测试时仅申请所选存储地址的访问权限。')}</p>}

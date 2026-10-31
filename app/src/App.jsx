@@ -1879,6 +1879,8 @@ function Settings({
         {tab === "data" && (
           <>
             <WhatsNew />
+            <p className="hint">{tr('同步默认关闭；保存配置不代表连接已验证。')}</p>
+            <p className="hint">{tr('导出的 JSON/ZIP 备份未加密，请妥善保管。')}</p>
             <div className="data-actions">
               <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onCloudSync)}>
                 {tr('自定义存储同步')}</Button>

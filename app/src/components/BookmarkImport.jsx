@@ -9,6 +9,7 @@ import { Input } from './ui/input.jsx';
 import { Textarea } from './ui/textarea.jsx';
 import { Checkbox } from './ui/checkbox.jsx';
 import Select from './Select.jsx';
+import { Disclosure } from './ui/disclosure.jsx';
 import './import-plan.css';
 
 export default function BookmarkImport({ state, initialPlan = null, initialPage = 0, columns = 8, onApply, onClose, onBusyChange }) {
@@ -91,6 +92,10 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
         <Input ref={fileInput} type="file" hidden accept="text/html,.html,.htm" onChange={loadFile} />
       </div>
       <p className="hint">{tr('支持 Chrome、Firefox 和 Edge 导出的书签 HTML 文件，仅在本机处理。')}</p>
+      <Disclosure title={tr('导入提示')}>
+        <p className="hint">{tr('使用浏览器导出的书签 HTML。嵌套文件夹会展平成路径名称；无效地址会列出并跳过。')}</p>
+        <p className="hint">{tr('重复网址不替换本地内容。取消「保留本地」只会添加副本。')}</p>
+      </Disclosure>
       {plan && <>
         <div className="bookmark-import-target">
           <Select label={tr('目标主屏幕')} value={String(page)} onChange={(value) => setPage(Number(value))} disabled={busy || targetFolderId !== 'original'} options={pages.map((value, index) => ({ value: String(value), label: tr('第 {0} 屏', [formatNumber(index + 1)]) }))} />
@@ -102,7 +107,7 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
         </div>
         {hiddenDestination && <div className="form-stack"><p className="form-error" role="alert">{tr('请先输入密码解除隐藏。')}</p>
           <Button type="button" variant="secondary" disabled={busy} onClick={presentation.requestUnlock}>{tr('输入密码查看隐藏内容')}</Button></div>}
-        <label className="bookmark-import-check"><Checkbox checked={skipDuplicates} disabled={busy} onCheckedChange={(value) => setSkipDuplicates(value === true)} />{tr('跳过桌面中已有和本次重复的网址')}</label>
+        <label className="bookmark-import-check"><Checkbox checked={skipDuplicates} disabled={busy} onCheckedChange={(value) => setSkipDuplicates(value === true)} />{tr('保留本地：跳过桌面中已有和本次重复的网址')}</label>
         {prepared && !prepared.error && <p className="bookmark-import-summary" role="status">{tr('已选 {0} 项，将添加 {1} 个网址和 {2} 个文件夹，跳过 {3} 条重复网址。', [formatNumber(selected.size), formatNumber(prepared.addedSites), formatNumber(prepared.addedFolders), formatNumber(prepared.skippedDuplicates)])}</p>}
         <p className="hint">{tr('新内容会加入目标屏幕的空位；放不下时创建新屏幕，已有内容保持原位。')}</p>
         {plan.invalid?.length > 0 && <details className="bookmark-import-invalid"><summary>{tr('已跳过 {0} 项无效地址。', [formatNumber(plan.invalid.length)])}</summary>
