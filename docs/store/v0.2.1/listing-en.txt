@@ -1,0 +1,11 @@
+Covelet — Private New Tab
+
+Organize sites and folders, use your browser’s default search, and customize layout, colors, and Bing Daily wallpaper. Includes clock / world clocks / time-zone compare / countdown / stopwatch, notes, manual Read Later, and a GitHub contributions widget, with eight UI languages.
+
+Data stays primarily in on-device encrypted IndexedDB. Optional, off-by-default encrypted sync to storage you own—no browser native sync. No Covelet account, ads, or telemetry.
+
+0.2.1 (A+) removes tab snapshots, browser Reading List import, and the 17-item extension toolkit so the new-tab core stays focused. Notifications are the only optional named permission; site / image / storage access is requested per origin.
+
+Support: support@morley.work
+Privacy: https://sites.google.com/view/covelet-privacy
+Status: Candidate draft — not submitted.
