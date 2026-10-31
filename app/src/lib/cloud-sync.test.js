@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { createWebdavProvider } from './cloud-webdav.js';
+import { cloudProviderLabel, SYNC_PROVIDERS, SYNC_SETUP_STEPS } from './cloud-connection.js';
 import { createCloudSync, supportsCloudSync } from './cloud-sync.js';
 import { createSyncWasm } from './sync-wasm.js';
 import { createEmptyState } from './model.js';
@@ -76,7 +78,7 @@ test('cloud settings persist only a nonsecret target and independent off-by-defa
   const remote = cloud();
   const subject = device(remote, 'a');
   assert.equal(supportsCloudSync(), false);
-  assert.deepEqual(await subject.api.loadCloudSyncSettings(), { profile: null, autoSync: false, configured: false, unlocked: false });
+  assert.deepEqual(await subject.api.loadCloudSyncSettings(), { profile: null, autoSync: false, configured: false, unlocked: false, connectionTest: null });
   const result = await configure(subject);
   assert.equal(result.autoSync, false);
   assert.equal(result.unlocked, true);
@@ -377,4 +379,66 @@ test('a completed in-flight PUT after locking cannot clear pending state or repo
   assert.equal((await subject.api.syncCloudNow()).phase, 'saved');
   assert.equal(subject.configStore.value.metadata.pending, null);
   assert.equal(remote.objects.size, 1, 'unlocking verifies the existing ciphertext instead of publishing another name');
+});
+
+
+test('connection testing is independent of saving and the sync password; proof follows only the tested target and credentials', async () => {
+  const remote = cloud(), subject = device(remote, 'a');
+  const result = await subject.api.testCloudConnection(profile, secrets);
+  assert.equal(result.scope, 'directory-read'); assert.ok(result.testedAt > 0);
+  assert.equal(subject.configStore.value, null, 'test does not save or unlock');
+  assert.equal(subject.sessionStore.value, null);
+  assert.deepEqual(remote.calls.map(call => call[0]), ['list']);
+  const settings = await configure(subject);
+  assert.deepEqual(settings.connectionTest, result);
+  assert.equal(remote.calls.length, 1, 'saving never probes the network');
+  await subject.api.lockCloudSync();
+  assert.equal((await subject.api.loadCloudSyncSettings()).connectionTest, null);
+  await subject.api.unlockCloudSync(secrets, password);
+  assert.equal((await subject.api.loadCloudSyncSettings()).connectionTest, null, 'unlocking does not verify credentials');
+  await subject.api.testCloudConnection();
+  assert.ok((await subject.api.loadCloudSyncSettings()).connectionTest);
+  const restarted = device(remote, 'a', { configStore: subject.configStore });
+  assert.equal((await restarted.api.loadCloudSyncSettings()).connectionTest, null, 'restart loses session proof');
+  await subject.api.saveCloudSyncSettings(profile, { token: 'other fake token' }, password);
+  assert.equal((await subject.api.loadCloudSyncSettings()).connectionTest, null, 'credential changes invalidate a test');
+  await subject.api.testCloudConnection(profile, secrets);
+  await subject.api.saveCloudSyncSettings({ ...profile, prefix: 'another-directory' }, secrets, password);
+  assert.equal((await subject.api.loadCloudSyncSettings()).connectionTest, null, 'target changes invalidate a test');
+});
+
+test('failed retests invalidate verification; locking or denied site access prevents test results from reviving a session', async () => {
+  const remote = cloud(); let fails = false, during;
+  const subject = device(remote, 'a', { providerFactory: (...args) => ({ ...remote.factory(...args),
+    async testConnection() { if (during) await during(); if (fails) throw Error('PRIVATE-CREDENTIAL'); },
+  }) });
+  await configure(subject); await subject.api.testCloudConnection();
+  fails = true; await assert.rejects(subject.api.testCloudConnection());
+  assert.equal((await subject.api.loadCloudSyncSettings()).connectionTest, null);
+  fails = false; during = () => subject.api.lockCloudSync();
+  await assert.rejects(subject.api.testCloudConnection(), error => error.code === 'CLOUD_LOCKED');
+  assert.equal(subject.sessionStore.value, null);
+  const denied = device(remote, 'b', { hasPermission: async () => false });
+  await assert.rejects(denied.api.testCloudConnection(profile, secrets), error => error.code === 'CLOUD_PERMISSION');
+  assert.equal(remote.calls.length, 0);
+});
+
+test('safe WebDAV status and transport messages survive the public sync boundary without untrusted details', async () => {
+  const dav = { provider: 'webdav', endpoint: 'https://cloud.example.test/dav/', prefix: 'covelet' };
+  const credentials = { username: 'fake', appPassword: 'fake-app-password' };
+  for (const [status, code, text] of [[401, 'CLOUD_AUTH', /用户名和应用密码/], [403, 'CLOUD_FORBIDDEN', /读写权限/], [404, 'CLOUD_NOT_FOUND', /路径不存在/]]) {
+    const subject = device(cloud(), 'a', { providerFactory: (profile, secrets, options) => createWebdavProvider(profile, secrets, {
+      ...options, fetcher: async () => new Response('PRIVATE-RESPONSE', { status }),
+    }) });
+    await subject.api.saveCloudSyncSettings(dav, credentials, password);
+    await assert.rejects(subject.api.testCloudConnection(), error => {
+      assert.equal(error.code, code); assert.match(error.message, text); assert.ok(!error.message.includes('PRIVATE-RESPONSE')); return true;
+    });
+  }
+});
+
+test('WebDAV is the default hardened channel and every other provider has a Beta label; setup exposes independent steps', () => {
+  assert.equal(SYNC_PROVIDERS[0], 'webdav'); assert.equal(cloudProviderLabel('webdav'), 'WebDAV');
+  for (const provider of ['r2', 'oss', 'github', 'gitlab']) assert.match(cloudProviderLabel(provider), /Beta/);
+  assert.deepEqual(SYNC_SETUP_STEPS, ['channel', 'connection-test', 'sync-password', 'first-sync']);
 });

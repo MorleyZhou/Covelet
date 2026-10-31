@@ -1,4 +1,5 @@
 import { tr } from '../i18n/index.js';
+import { isWebdavError } from './cloud-webdav.js';
 import { localData, createEncryptedStore } from './local-data.js';
 import { encryptCloudPayload, decryptCloudPayload, CLOUD_OBJECT_LIMIT } from './cloud-crypto.js';
 import { parseCloudSnapshotName } from './cloud-providers.js';
@@ -35,6 +36,8 @@ function defaultStore() {
     async write(value) { await localData.set({ [KEY]: value }); } };
 }
 const messages = {
+  get LOCAL_DATA_PRIVACY_CONFLICT() { return tr('此删除版本会移除当前隐藏内容的标记，请先在本机解除隐藏，再重新选择。'); },
+  get DATA_SYNC_CONFLICT_STALE() { return tr('冲突预览已过期或数据已更新，请重新查看两侧内容后选择。'); },
   get DATA_SYNC_INVALID() { return tr('全量同步数据无效，全部本机数据已保留。'); },
   get DATA_SYNC_CAPACITY() { return tr('全量同步数据超出容量限制，全部本机数据已保留。'); },
   get DATA_SYNC_LOCAL() { return tr('无法保存全量同步状态，尚未确认上传。'); },
@@ -45,6 +48,7 @@ const messages = {
   get REVISION_CONFLICT() { return tr('数据已在其他页面更新，本次未覆盖，请重新同步。'); },
 };
 function safeError(reason) {
+  if (isWebdavError(reason)) return reason;
   const code = own(messages, reason?.code) ? reason.code : ['CLOUD_CAPACITY', 'CLOUD_LIMIT'].includes(reason?.code) ? 'DATA_SYNC_CAPACITY'
     : ['LOCAL_DATA_CONFLICT', 'LOCAL_DATA_REVISION', 'DATA_SYNC_STALE'].includes(reason?.code) ? 'REVISION_CONFLICT' : 'DATA_SYNC_REQUEST';
   return Object.assign(new Error(messages[code]), { code });
@@ -171,25 +175,44 @@ function materialize(documents) {
     const distinct = new Set(versions.map((version) => version.value?.digest || null));
     values.set(key, winner.value);
     if (distinct.size > 1) for (const version of versions) conflicts.push({ id: JSON.stringify([key, version.actor, version.n]),
-      namespace: splitIdentity(key)[0], key: splitIdentity(key)[1], deleted: version.value === null, reference: version.value });
+      namespace: splitIdentity(key)[0], key: splitIdentity(key)[1], actor: version.actor, clock: version.n, deleted: version.value === null, reference: version.value });
   }
   return { values, conflicts };
 }
 const digests = (values) => Object.fromEntries([...values].filter(([, value]) => value !== null).map(([key, value]) => [key, value.digest]));
 const difference = (before, next) => [...new Set([...Object.keys(before), ...next.keys()])].filter((key) => before[key] !== next.get(key)?.digest);
 function author(document, before, next, observed, forced) {
+  // Ordinary edits continue the local branch of an unresolved conflict. They
+  // must not acknowledge competing branches or be lost to an older remote
+  // choice. Only an explicit whole-record choice observes all competitors.
+  const blocked = new Set(materialize(observed).conflicts.map(item => identity(item.namespace, item.key)));
   const result = validateFullDataReplica(document), changed = forced ? [forced.key] : difference(before, next);
   if (!changed.length && result.clock > 0) return result;
   if (result.clock >= Number.MAX_SAFE_INTEGER) fail('DATA_SYNC_CAPACITY');
   const context = Object.fromEntries(Object.values(observed).map((item) => [item.actor, item.clock])); context[result.actor] = result.clock;
   result.clock++;
-  for (const key of changed) result.records[key] = { n: result.clock, context: copy(context), value: forced ? forced.value : next.get(key) || null };
+  for (const key of changed) {
+    const causal = !forced && blocked.has(key) ? { ...copy(result.records[key]?.context || {}), [result.actor]: result.clock - 1 } : copy(context);
+    result.records[key] = { n: result.clock, context: causal, value: forced ? forced.value : next.get(key) || null };
+  }
   return validateFullDataReplica(result);
+}
+
+// Nonconflicting records may advance independently. Conflicting records keep
+// the complete local value (including local deletion) until an explicit choice.
+function retainLocalConflicts(view, local) {
+  const values = new Map(view.values);
+  for (const item of view.conflicts) {
+    const key = identity(item.namespace, item.key);
+    values.set(key, local.get(key) || null);
+  }
+  return values;
 }
 
 export function createFullDataSync({ access, snapshotStore, store = defaultStore(), pendingStore = createEncryptedStore('full-data-pending'),
   signer, crypto = globalThis.crypto, uuid = () => crypto.randomUUID(), now = () => Date.now(), locks = globalThis.navigator?.locks,
   seed, autoDelay = 15000, pullInterval = 60000, eventWindow = globalThis.window, eventDocument = globalThis.document } = {}) {
+  let conflictPreview;
   let serial = Promise.resolve(), flight, started = false, applying = false, timer, interval, unsubscribe;
   const listeners = new Set();
   let status = { phase: 'idle', pending: 0, conflicts: 0, lastSync: 0, localChanges: false, code: null, message: '' };
@@ -403,28 +426,56 @@ export function createFullDataSync({ access, snapshotStore, store = defaultStore
     },
     async guardFullDataTarget(target, action) { return exclusive(async () => { try { await api.ensureFullDataTarget(target); return await action(); } catch (reason) { throw safeError(reason); } }); },
     async getFullDataConflicts() {
-      try { const config = await read(); return config.metadata ? materialize(config.metadata.documents).conflicts.map(({ reference, ...item }) => ({ ...item, digest: reference?.digest || null })) : []; }
+      try { const config = await read(); return config.metadata ? materialize(config.metadata.documents).conflicts.map(({ reference, ...item }) => ({ ...item, local: item.actor === config.metadata.document.actor, digest: reference?.digest || null })) : []; }
       catch (reason) { throw safeError(reason); }
     },
-    async restoreFullDataConflict(id, { discard = false } = {}) {
+    clearFullDataConflictPreview() { conflictPreview = undefined; },
+    async previewFullDataConflict(id) {
+      try {
+        return await exclusive(async () => {
+          conflictPreview = undefined;
+          const config = await read(), m = config.metadata;
+          if (!m || m.pending) fail('DATA_SYNC_TARGET');
+          const connection = await access(); if (connection.target !== m.target) fail('DATA_SYNC_TARGET'); await connection.check();
+          const chosen = materialize(m.documents).conflicts.find(item => item.id === id); if (!chosen) fail('DATA_SYNC_CONFLICT_STALE');
+          const snapshot = await snapshotStore.snapshot(), reader = makeReader(connection);
+          const local = snapshot.records.find(item => item.namespace === chosen.namespace && item.key === chosen.key);
+          const remote = chosen.reference === null ? null : decodeValue(await reader(chosen.reference));
+          await connection.check();
+          const token = uuid();
+          conflictPreview = { id, token, target: m.target, snapshotToken: snapshot.token, documents: await hash(encoder.encode(JSON.stringify(m.documents))), expiresAt: now() + 600000 };
+          return { id, token, namespace: chosen.namespace, key: chosen.key, actor: chosen.actor, clock: chosen.clock,
+            local: { deleted: !local, value: local?.value ?? null }, remote: { deleted: chosen.deleted, value: remote } };
+        });
+      } catch (reason) { throw safeError(reason); }
+    },
+    async restoreFullDataConflict(id, { discard = false, choice, token } = {}) {
       try {
         return await exclusive(async () => {
           const config = await read(); await cleanupStaging(config);
           const m = config.metadata; if (!m || m.pending) fail('DATA_SYNC_TARGET');
           const connection = await access(); if (connection.target !== m.target) fail('DATA_SYNC_TARGET'); await connection.check();
-          const snapshot = await snapshotStore.snapshot(), known = knownReferences(m.documents), staged = { password: connection.password, uploads: new Map() };
+          const snapshot = await snapshotStore.snapshot();
+          if (choice !== undefined || token !== undefined) {
+            const preview = conflictPreview;
+            if (!['local', 'remote'].includes(choice) || !preview || preview.id !== id || preview.token !== token || preview.target !== m.target
+              || preview.snapshotToken !== snapshot.token || preview.expiresAt < now() || preview.documents !== await hash(encoder.encode(JSON.stringify(m.documents)))) fail('DATA_SYNC_CONFLICT_STALE');
+            discard = choice === 'local';
+          }
+          const known = knownReferences(m.documents), staged = { password: connection.password, uploads: new Map() };
           const local = await prepareSnapshot(snapshot, known, staged), authored = author(m.document, m.base, local, m.documents);
           const documents = combine(m.documents, { [authored.actor]: authored }), selection = materialize(documents), chosen = selection.conflicts.find((item) => item.id === id);
           if (!chosen) fail();
           const key = identity(chosen.namespace, chosen.key), reference = discard ? local.get(key) || null : chosen.reference;
           const document = author(authored, digests(local), local, documents, { key, value: reference }), all = combine(documents, { [document.actor]: document });
-          const merged = materialize(all), reader = makeReader(connection), next = await decodeRecords(merged.values, reader); await validateConflicts(merged.conflicts, reader);
-          // Checkpoint local authored operations before CAS, but do not mark the
-          // received causal baseline as observed until the whole import commits.
-          m.document = document; m.documents = combine(m.documents, { [document.actor]: document }); m.base = digests(local); await persist(config);
+          const merged = materialize(all), visible = retainLocalConflicts(merged, local), reader = makeReader(connection), next = await decodeRecords(visible, reader); await validateConflicts(merged.conflicts, reader);
+          // No remote write happens here. Commit the chosen local record before
+          // acknowledging its causal winner: a CAS/validation rejection must
+          // leave the conflict unresolved, including active-privacy deletion.
           applying = true; let saved;
-          try { saved = await snapshotStore.apply(next, { expectedToken: snapshot.token }); } finally { applying = false; }
-          m.documents = all; m.base = digests(merged.values); await persist(config);
+          try { saved = await snapshotStore.apply(next, { expectedToken: snapshot.token, wholeRecord: { namespace: chosen.namespace, key: chosen.key } }); } finally { applying = false; }
+          m.document = document; m.documents = all; m.base = digests(visible); await persist(config);
+          conflictPreview = undefined;
           await inspect(); schedule(); return saved;
         });
       } catch (reason) { throw safeError(reason); }
@@ -453,13 +504,14 @@ export function createFullDataSync({ access, snapshotStore, store = defaultStore
         const local = await prepareSnapshot(logical, known, staged), document = author(m.document, m.base, local, m.documents);
         const actualValues = logical === actual ? local : await prepareSnapshot(actual, known, staged);
         const documents = combine(received, { [document.actor]: document }), merged = materialize(documents);
-        const next = await decodeRecords(merged.values, reader); await validateConflicts(merged.conflicts, reader); await connection.check();
+        const visible = retainLocalConflicts(merged, actualValues);
+        const next = await decodeRecords(visible, reader); await validateConflicts(merged.conflicts, reader); await connection.check();
         m.document = document; m.documents = combine(m.documents, { [document.actor]: document }); m.base = digests(actualValues); await persist(config);
         // A full snapshot import is a single CAS operation supplied by the
         // encrypted persistence layer. No consumer sees a partial record set.
         applying = true;
         try { await snapshotStore.apply(next, { expectedToken: actual.token }); } finally { applying = false; }
-        m.documents = documents; m.base = digests(merged.values); await persist(config);
+        m.documents = documents; m.base = digests(visible); await persist(config);
         if (document.clock > m.publishedClock) {
           const reference = await stageBinary(encoder.encode(JSON.stringify(document)), known.chunks, staged);
           const bytes = await encryptCloudPayload(encoder.encode(JSON.stringify({ format: 'covelet-all-data', version: 1, actor: document.actor, clock: document.clock, createdAt: now(), document: reference })), connection.password, { crypto });

@@ -8,6 +8,8 @@ import * as packagedWasm from './sync-wasm.js';
 import { encryptCloudPayload, decryptCloudPayload, validateCloudPassword, CLOUD_OBJECT_LIMIT, CLOUD_PLAINTEXT_LIMIT } from './cloud-crypto.js';
 import { revisionDiff, applyRevisionSelection } from './revision-diff.js';
 import { createToolSync, validateToolReplica, materializeToolReplicas } from './tool-sync.js';
+import { isWebdavError } from './cloud-webdav.js';
+import { probeCloudConnection } from './cloud-connection.js';
 import { createFullDataSync } from './full-data-sync.js';
 
 const LOCAL_KEY = 'covelet.cloud.local.v1';
@@ -53,6 +55,7 @@ const messages = {
 };
 
 function publicError(cause) {
+  if (isWebdavError(cause)) return cause;
   const code = Object.hasOwn(messages, cause?.code) ? cause.code : 'CLOUD_REQUEST';
   return failure(messages[code] || tr("云服务请求失败，请检查授权、凭据、网络及服务权限；本地数据仍然保留。"), code);
 }
@@ -136,6 +139,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
   let applying = false;
   let lastObserved;
   let historyPreview;
+  let lastConnectionTest;
   const listeners = new Set();
   let status = { phase: 'unconfigured', message: tr("尚未配置自定义云同步。"), lastSync: 0, conflicts: 0, autoSync: false, unlocked: false, localChanges: false };
   const report = (patch) => {
@@ -207,7 +211,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       message: config.profile ? (session ? tr("已解锁，凭据仅保留在当前浏览器会话。") : messages.CLOUD_LOCKED) : tr("尚未配置自定义云同步。"),
       autoSync: config.autoSync, unlocked: Boolean(session), lastSync: fullData ? fullStatus.lastSync : config.metadata?.lastSync || 0, conflicts,
       ...(fullData ? { pending: fullStatus.pending } : {}) });
-    return { profile: clone(config.profile), autoSync: config.autoSync, configured: Boolean(config.profile), unlocked: Boolean(session) };
+    return { profile: clone(config.profile), autoSync: config.autoSync, configured: Boolean(config.profile), unlocked: Boolean(session), connectionTest: clone(session?.connectionTest || null) };
   };
   const schedule = () => {
     clearTimeout(timer);
@@ -429,6 +433,26 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     useToolSyncConflict: toolSync.useToolSyncConflict,
     syncToolCloudNow: fullData ? () => api.syncCloudNow() : toolSync.syncToolCloudNow,
     async loadCloudSyncSettings() { try { return await inspectSettings(); } catch (cause) { throw publicError(cause); } },
+    async testCloudConnection(profile, secrets) {
+      try {
+        return await exclusive(async () => {
+          lastConnectionTest = undefined;
+          const config = await read();
+          const session = !profile && config.profile ? await currentSession(await targetOf(config.profile)) : null;
+          if (!profile && !session) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+          const checked = validateConfig(profile || config.profile), credentials = secrets || session.secrets;
+          // Invalidate old proof before a new attempt, including a failed test.
+          if (session) await sessionStore.write({ ...session, connectionTest: null });
+          const check = session ? () => checkAccess(config, { ...session, connectionTest: null }) : async () => {
+            if (!await hasPermission(originOf(checked))) throw failure(messages.CLOUD_PERMISSION, 'CLOUD_PERMISSION');
+          };
+          const result = await probeCloudConnection(checked, credentials, { providerFactory, signer, check, now });
+          lastConnectionTest = { fingerprint: await hash({ profile: checked, secrets: credentials }), result };
+          if (session) await sessionStore.write({ ...session, connectionTest: result });
+          return clone(result);
+        });
+      } catch (cause) { throw publicError(cause); }
+    },
     async saveCloudSyncSettings(profile, secrets, password, { autoSync = false } = {}) {
       try {
         if (typeof autoSync !== 'boolean') throw failure(tr("自动同步设置无效。"));
@@ -450,7 +474,9 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
             const config = { version: 1, profile: checked, autoSync, metadata: previous.metadata };
             config.metadata = await metadataFor(config);
             await persist(config);
-            await sessionStore.write({ target: config.metadata.target, secrets: clone(secrets), password });
+            const fingerprint = await hash({ profile: checked, secrets });
+            await sessionStore.write({ target: config.metadata.target, secrets: clone(secrets), password,
+              connectionTest: lastConnectionTest?.fingerprint === fingerprint ? clone(lastConnectionTest.result) : null });
           }));
         });
         const settings = await inspectSettings(); schedule(); return settings;
@@ -463,7 +489,9 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
           const config = await read();
           if (!config.profile) throw failure(tr("请先保存云同步配置。"));
           providerFactory(config.profile, secrets, { signer });
-          await sessionStore.write({ target: await targetOf(config.profile), secrets: clone(secrets), password });
+          const fingerprint = await hash({ profile: config.profile, secrets });
+          await sessionStore.write({ target: await targetOf(config.profile), secrets: clone(secrets), password,
+            connectionTest: lastConnectionTest?.fingerprint === fingerprint ? clone(lastConnectionTest.result) : null });
         });
         const settings = await inspectSettings(); schedule(); return settings;
       } catch (cause) { throw publicError(cause); }
@@ -471,6 +499,8 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     async lockCloudSync() {
       clearTimeout(timer);
       historyPreview = undefined;
+      lastConnectionTest = undefined;
+      fullSync?.clearFullDataConflictPreview();
       try { await sessionStore.clear(); return await inspectSettings(); } catch (cause) { throw publicError(cause); }
     },
     getCloudSyncStatus() { return clone(status); },
@@ -541,6 +571,10 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       if (fullData) return fullSync.getFullDataConflicts();
       try { const config = await read(); return config.metadata ? syncConflicts(config.metadata.documents) : []; }
       catch (cause) { throw publicError(cause); }
+    },
+    async previewCloudSyncConflict(id) {
+      if (fullData) return fullSync.previewFullDataConflict(id);
+      throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
     },
     async restoreCloudSyncConflict(id, options) {
       if (fullData) return fullSync.restoreFullDataConflict(id, options);
@@ -684,7 +718,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
 }
 
 const cloud = createCloudSync();
-export const { loadCloudSyncSettings, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, syncCloudNow, getCloudSyncStatus,
-  subscribeCloudSyncStatus, startCloudSync, stopCloudSync, getCloudSyncConflicts, restoreCloudSyncConflict,
+export const { loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, syncCloudNow, getCloudSyncStatus,
+  subscribeCloudSyncStatus, startCloudSync, stopCloudSync, getCloudSyncConflicts, previewCloudSyncConflict, restoreCloudSyncConflict,
   listCloudHistory, previewCloudHistory, restoreCloudHistory, clearCloudHistoryPreview,
   loadToolSyncSettings, setToolSyncEnabled, getToolSyncStatus, subscribeToolSyncStatus, getToolSyncConflicts, useToolSyncConflict, syncToolCloudNow } = cloud;

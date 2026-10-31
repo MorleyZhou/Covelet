@@ -8,6 +8,8 @@ Chrome 当前线上版本为 **v0.2.0**，扩展 ID：`clkholbmabommppnlpcnhdgmi
 
 数据以本机加密 IndexedDB 为主副本，浏览器原生同步已停用。用户可选择默认关闭的自定义存储加密同步，直接连接自己配置的服务；设备密钥、隐藏密码和会话凭据不随同步传播。JSON/ZIP 导出文件不等于加密备份，应妥善保管。[隐私说明](docs/隐私说明.md) · [自定义存储同步](docs/自定义存储同步.md)
 
+0.3 P0 源码加固以 **WebDAV** 为主要路径，提供独立连接测试、中文错误提示和整条记录二选一的冲突处理；真实坚果云／Nextcloud 账号验收仍待完成。R2、OSS、GitHub、GitLab 已实现但均为 **Beta**，尚未通过真实云账号验收。本 PR 不提升商店包版本。
+
 在 `app/` 中运行 `npm ci`、`npm test`、`npm run build:extension`。解压输出为 `app/dist/extension/`，候选 ZIP 为 `app/dist/covelet-0.2.1.zip`。构建与静态检查不能替代实际浏览器验收或商店审核。
 
 支持及隐私联系：support@morley.work。

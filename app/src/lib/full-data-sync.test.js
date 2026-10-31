@@ -85,12 +85,13 @@ test('all namespaces, extension records and a Blob exceeding the old document li
   assert.equal(a.pendingStore.values.size, 0, 'acknowledged ciphertext staging is removed');
 });
 
-test('offline edits of different records merge; concurrent deletion wins while every competing body remains recoverable', async () => {
+test('offline edits of different records merge; concurrent delete/edit retains each local record until an explicit choice', async () => {
   const cloud = remote(), a = device(cloud, 'a', { records: [record('covelet.note-1.v1', { body: 'initial' })] }), b = device(cloud, 'b');
   await saved(a); await saved(b); await saved(a);
   a.edit((records) => records.splice(0, 1)); b.edit((records) => { records[0].value.body = 'offline renamed'; records.push(record('covelet.extra.v1', { retained: true })); });
   await saved(a); await saved(b); await saved(a);
   assert.equal(find(a, 'covelet.note-1.v1'), undefined); assert.ok(find(a, 'covelet.extra.v1'));
+  assert.equal(find(b, 'covelet.note-1.v1').value.body, 'offline renamed');
   const conflicts = await b.api.getFullDataConflicts();
   assert.equal(conflicts.length, 2); assert.ok(conflicts.some((item) => item.deleted));
   assert.ok(conflicts.every((item) => !own(item, 'value')), 'status does not expose private conflict content');
@@ -193,7 +194,7 @@ test('a seed rejected by CAS remains staged and can be imported after restart wi
 test('a protected local privacy union is authored on the following sync and converges without an endless feedback loop', async () => {
   const key = 'covelet.content.preferences.v1', cloud = remote(), a = device(cloud, 'a', { records: [record(key, { privateKeys: [] })] });
   await saved(a);
-  const b = device(cloud, 'b', { records: [record(key, { privateKeys: ['site:protected'] })], applyTransform: (records) => records.map((item) => item.key === key
+  const b = device(cloud, 'b', { applyTransform: (records) => records.map((item) => item.key === key
     ? { ...item, value: { privateKeys: [...new Set([...item.value.privateKeys, 'site:protected'])].sort() } } : item) });
   assert.equal((await saved(b)).pending, 1, 'protected local state remains visibly pending until causally authored');
   assert.equal((await saved(b)).pending, 0); await saved(a);
@@ -222,4 +223,93 @@ test('target switching is blocked with local edits or recoverable conflicts, and
   a.edit((records) => { records[0].value.text = 'unpublished'; });
   await assert.rejects(a.api.guardFullDataTarget('b'.repeat(64), async () => {}), { code: 'DATA_SYNC_TARGET' });
   a.allowed = false; assert.equal((await a.api.syncFullDataNow()).phase, 'locked');
+});
+
+
+test('whole-record choices never synthesize a field merge, and ordinary sync or edits cannot silently resolve a conflict', async () => {
+  for (const choice of ['local', 'remote']) {
+    const cloud = remote(), key = 'covelet.whole-record.v1';
+    const a = device(cloud, 'a', { records: [record(key, { left: 'initial', right: 'initial' })] }), b = device(cloud, 'b');
+    await saved(a); await saved(b); await saved(a);
+    a.edit(records => { records[0].value.left = 'A'; }); b.edit(records => { records[0].value.right = 'B'; });
+    await saved(a); await saved(b); await saved(a);
+    assert.deepEqual(find(a, key).value, { left: 'A', right: 'initial' });
+    assert.deepEqual(find(b, key).value, { left: 'initial', right: 'B' });
+    b.edit(records => { records[0].value.right = 'B after conflict'; });
+    await saved(b); await saved(a); await saved(b);
+    assert.equal((await b.api.getFullDataConflicts()).length, 2, 'autosync and local edits do not acknowledge a whole-record choice');
+    const remoteConflict = (await b.api.getFullDataConflicts()).find(item => !item.local);
+    const preview = await b.api.previewFullDataConflict(remoteConflict.id);
+    assert.deepEqual(preview.local.value, { left: 'initial', right: 'B after conflict' });
+    assert.deepEqual(preview.remote.value, { left: 'A', right: 'initial' });
+    await b.api.restoreFullDataConflict(preview.id, { choice, token: preview.token });
+    const expected = choice === 'local' ? preview.local.value : preview.remote.value;
+    assert.deepEqual(find(b, key).value, expected);
+    await saved(b); await saved(a);
+    assert.deepEqual(find(a, key).value, expected); assert.equal((await a.api.getFullDataConflicts()).length, 0);
+  }
+});
+
+test('conflict preview rejects stale local snapshots, stale causal documents, missing choices, expiry and locked access', async () => {
+  const cloud = remote(), key = 'covelet.stale.v1'; let time = 1000;
+  const a = device(cloud, 'a', { records: [record(key, { body: 'initial' })] }), b = device(cloud, 'b', { now: () => time });
+  await saved(a); await saved(b); await saved(a);
+  a.edit(records => { records[0].value.body = 'A'; }); b.edit(records => { records[0].value.body = 'B'; });
+  await saved(a); await saved(b);
+  const conflict = (await b.api.getFullDataConflicts()).find(item => !item.local);
+  let preview = await b.api.previewFullDataConflict(conflict.id);
+  await assert.rejects(b.api.restoreFullDataConflict(preview.id, { token: preview.token }), error => error.code === 'DATA_SYNC_CONFLICT_STALE');
+  b.edit(records => { records[0].value.body = 'B later'; });
+  await assert.rejects(b.api.restoreFullDataConflict(preview.id, { choice: 'remote', token: preview.token }), error => error.code === 'DATA_SYNC_CONFLICT_STALE');
+  assert.equal(find(b, key).value.body, 'B later');
+  preview = await b.api.previewFullDataConflict(conflict.id); time += 600001;
+  await assert.rejects(b.api.restoreFullDataConflict(preview.id, { choice: 'remote', token: preview.token }), error => error.code === 'DATA_SYNC_CONFLICT_STALE');
+  preview = await b.api.previewFullDataConflict(conflict.id); b.allowed = false;
+  await assert.rejects(b.api.restoreFullDataConflict(preview.id, { choice: 'remote', token: preview.token }), error => error.code === 'CLOUD_LOCKED');
+  b.allowed = true;
+  preview = await b.api.previewFullDataConflict(conflict.id);
+  await saved(b);
+  await assert.rejects(b.api.restoreFullDataConflict(preview.id, { choice: 'remote', token: preview.token }), error => error.code === 'DATA_SYNC_CONFLICT_STALE');
+});
+
+test('choosing one conflicted record leaves other conflicted records intact', async () => {
+  const cloud = remote(), a = device(cloud, 'a', { records: [record('covelet.one.v1', 'initial'), record('covelet.two.v1', 'initial')] }), b = device(cloud, 'b');
+  await saved(a); await saved(b); await saved(a);
+  a.edit(records => { for (const item of records) item.value = 'A'; }); b.edit(records => { for (const item of records) item.value = 'B'; });
+  await saved(a); await saved(b);
+  const one = (await b.api.getFullDataConflicts()).find(item => item.key === 'covelet.one.v1' && !item.local);
+  const preview = await b.api.previewFullDataConflict(one.id);
+  await b.api.restoreFullDataConflict(one.id, { choice: 'remote', token: preview.token });
+  assert.equal(find(b, 'covelet.one.v1').value, 'A'); assert.equal(find(b, 'covelet.two.v1').value, 'B');
+  await saved(b); assert.equal((await b.api.getFullDataConflicts()).length, 2);
+});
+
+
+test('a CAS rejection during an explicit choice cannot acknowledge the winning causal clock', async () => {
+  const cloud = remote(), key = 'covelet.choice-race.v1';
+  const a = device(cloud, 'a', { records: [record(key, 'initial')] }), b = device(cloud, 'b');
+  await saved(a); await saved(b); await saved(a);
+  a.edit(records => { records[0].value = 'A'; }); b.edit(records => { records[0].value = 'B'; });
+  await saved(a); await saved(b);
+  const conflict = (await b.api.getFullDataConflicts()).find(item => !item.local), preview = await b.api.previewFullDataConflict(conflict.id), before = b.store.value;
+  b.race = true;
+  await assert.rejects(b.api.restoreFullDataConflict(conflict.id, { choice: 'remote', token: preview.token }), error => error.code === 'REVISION_CONFLICT');
+  assert.deepEqual(b.store.value, before); assert.equal((await b.api.getFullDataConflicts()).length, 2);
+  assert.equal(find(b, key).value, 'B'); assert.ok(find(b, 'covelet.racing.v1'));
+});
+
+
+test('a later local edit to an unresolved branch survives a remote choice that never observed it', async () => {
+  const cloud = remote(), key = 'covelet.branch.v1', a = device(cloud, 'a', { records: [record(key, 'initial')] }), b = device(cloud, 'b');
+  await saved(a); await saved(b); await saved(a);
+  a.edit(records => { records[0].value = 'A'; }); b.edit(records => { records[0].value = 'B'; });
+  await saved(a); await saved(b); await saved(a);
+  b.edit(records => { records[0].value = 'B edited after conflict'; });
+  const conflict = (await a.api.getFullDataConflicts()).find(item => !item.local), preview = await a.api.previewFullDataConflict(conflict.id);
+  await a.api.restoreFullDataConflict(conflict.id, { choice: 'local', token: preview.token });
+  await saved(a); await saved(b);
+  assert.equal(find(b, key).value, 'B edited after conflict'); assert.equal((await b.api.getFullDataConflicts()).length, 2);
+  await saved(a); assert.equal(find(a, key).value, 'A');
+  const later = await a.api.previewFullDataConflict((await a.api.getFullDataConflicts()).find(item => !item.local).id);
+  assert.equal(later.remote.value, 'B edited after conflict');
 });

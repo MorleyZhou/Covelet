@@ -10915,5 +10915,161 @@
     "de": "Links einfügen",
     "fr": "Coller des liens",
     "ru": "Вставить ссылки"
+  },
+  "WebDAV 地址无效：请填写 HTTPS 基目录地址，不要使用分享链接、查询参数或带密码的地址。": {
+    "en": "Invalid WebDAV URL. Enter an HTTPS base directory, without share links, query parameters or embedded passwords."
+  },
+  "WebDAV 登录失败（401）：请检查用户名和应用密码，不要使用网页登录密码。": {
+    "en": "WebDAV login failed (401). Check your username and app password; do not use your website login password."
+  },
+  "WebDAV 拒绝访问（403）：请确认账号已启用 WebDAV，并有此目录的读写权限。": {
+    "en": "WebDAV access denied (403). Enable WebDAV for this account and check directory read/write permissions."
+  },
+  "WebDAV 路径不存在（404/409）：请检查基目录地址，并先创建填写的保存目录。": {
+    "en": "WebDAV path not found (404/409). Check the base URL and create the selected save directory first."
+  },
+  "网络已断开，请联网后重新测试 WebDAV。": {
+    "en": "You are offline. Reconnect and test WebDAV again."
+  },
+  "WebDAV 安全连接失败，请检查服务器 HTTPS 证书和设备时间。": {
+    "en": "The secure WebDAV connection failed. Check the HTTPS certificate and your device clock."
+  },
+  "找不到或无法访问 WebDAV 服务器，请检查域名、端口和服务是否运行。": {
+    "en": "The WebDAV server cannot be found or reached. Check the hostname, port and running service."
+  },
+  "无法连接 WebDAV：请检查网络、服务器地址、HTTPS 证书和站点访问权限；浏览器可能未提供具体原因。": {
+    "en": "Cannot connect to WebDAV. Check your network, server URL, HTTPS certificate and site access. The browser may not report the exact cause."
+  },
+  "{0}（Beta）": {
+    "en": "{0} (Beta)",
+    "zh-TW": "{0}（Beta）",
+    "ja": "{0}（ベータ）",
+    "ko": "{0} (베타)",
+    "de": "{0} (Beta)",
+    "fr": "{0} (bêta)",
+    "ru": "{0} (бета)"
+  },
+  "冲突预览已过期或数据已更新，请重新查看两侧内容后选择。": {
+    "en": "The conflict preview expired or data changed. Review both sides again before choosing."
+  },
+  "WebDAV 为本轮加固渠道，真实云账号验收仍待完成；R2、OSS、GitHub、GitLab 已实现但均为 Beta。": {
+    "en": "WebDAV is the hardened path in this update; real-account acceptance is still pending. R2, OSS, GitHub and GitLab are implemented as Beta providers."
+  },
+  "最近连接测试通过：{0}": {
+    "en": "Last connection test passed: {0}"
+  },
+  "配置已保存；当前凭据的连接尚未验证。": {
+    "en": "Settings saved; the connection with the current credentials is unverified."
+  },
+  "连接尚未验证。": {
+    "en": "Connection unverified.",
+    "zh-TW": "連線尚未驗證。",
+    "ja": "接続は未検証です。",
+    "ko": "연결이 검증되지 않았습니다.",
+    "de": "Verbindung ungeprüft.",
+    "fr": "Connexion non vérifiée.",
+    "ru": "Подключение не проверено."
+  },
+  "测试只检查登录和目录读取，不验证写入或同步密码。保存配置不会执行连接测试。": {
+    "en": "Testing checks login and directory reading only, not writes or the sync password. Saving does not run a connection test."
+  },
+  "冲突内容保留本机版本，等待你选择。请查看两侧内容，整条采用本机或一个远端版本；不会合并记录内部字段。": {
+    "en": "Conflicting content keeps the local version until you choose. Review both sides and select one complete local or remote record. Fields within a record are never merged."
+  },
+  "远端版本 {0}": {
+    "en": "Remote version {0}"
+  },
+  "查看并选择版本": {
+    "en": "Review and choose a version",
+    "zh-TW": "檢視並選擇版本",
+    "ja": "確認してバージョンを選択",
+    "ko": "버전 검토 및 선택",
+    "de": "Version prüfen und wählen",
+    "fr": "Examiner et choisir une version",
+    "ru": "Просмотреть и выбрать версию"
+  },
+  "选择一条完整记录": {
+    "en": "Choose one complete record",
+    "zh-TW": "選擇一筆完整記錄",
+    "ja": "完全なレコードを1つ選択",
+    "ko": "전체 레코드 하나 선택",
+    "de": "Einen vollständigen Datensatz wählen",
+    "fr": "Choisir un enregistrement complet",
+    "ru": "Выберите одну полную запись"
+  },
+  "整条采用远端版本": {
+    "en": "Use the complete remote record",
+    "zh-TW": "整筆採用遠端版本",
+    "ja": "リモートのレコード全体を使用",
+    "ko": "원격 레코드 전체 사용",
+    "de": "Vollständigen Remote-Datensatz verwenden",
+    "fr": "Utiliser tout l’enregistrement distant",
+    "ru": "Использовать полную удалённую запись"
+  },
+  "整条保留本机版本": {
+    "en": "Keep the complete local record",
+    "zh-TW": "整筆保留本機版本",
+    "ja": "ローカルのレコード全体を保持",
+    "ko": "로컬 레코드 전체 유지",
+    "de": "Vollständigen lokalen Datensatz behalten",
+    "fr": "Conserver tout l’enregistrement local",
+    "ru": "Сохранить полную локальную запись"
+  },
+  "此操作会替换这一整条记录，并在下次同步时上传。记录内其他修改也会一起替换，请确认已选对版本。": {
+    "en": "This replaces the entire record and uploads it on the next sync. Other edits within this record will also be replaced. Check your selection."
+  },
+  "本机版本": {
+    "en": "Local version",
+    "zh-TW": "本機版本",
+    "ja": "ローカル版",
+    "ko": "로컬 버전",
+    "de": "Lokale Version",
+    "fr": "Version locale",
+    "ru": "Локальная версия"
+  },
+  "远端版本": {
+    "en": "Remote version",
+    "zh-TW": "遠端版本",
+    "ja": "リモート版",
+    "ko": "원격 버전",
+    "de": "Remote-Version",
+    "fr": "Version distante",
+    "ru": "Удалённая версия"
+  },
+  "此版本已删除整条记录。": {
+    "en": "This version deletes the entire record."
+  },
+  "正在测试连接…": {
+    "en": "Testing connection…",
+    "zh-TW": "正在測試連線…",
+    "ja": "接続をテスト中…",
+    "ko": "연결 테스트 중…",
+    "de": "Verbindung wird getestet…",
+    "fr": "Test de connexion…",
+    "ru": "Проверка подключения…"
+  },
+  "测试连接": {
+    "en": "Test connection",
+    "zh-TW": "測試連線",
+    "ja": "接続をテスト",
+    "ko": "연결 테스트",
+    "de": "Verbindung testen",
+    "fr": "Tester la connexion",
+    "ru": "Проверить подключение"
+  },
+  "二进制内容：{0} 字节，类型 {1}": {
+    "en": "Binary content: {0} bytes, type {1}"
+  },
+  "内容较长，预览已截短；选择时仍会采用完整记录。": {
+    "en": "This preview is shortened. Your choice still applies the complete record."
+  },
+  "加密同步桌面、扩展和图标。WebDAV 为加固渠道，其他渠道为 Beta。": {
+    "en": "Encrypt and sync your desktop, extensions and icons. WebDAV is the hardened path; other providers are Beta."
+  },
+  "最近连接测试未通过，请检查后重试。": {
+    "en": "The latest connection test did not pass. Check the settings and try again."
+  },
+  "此删除版本会移除当前隐藏内容的标记，请先在本机解除隐藏，再重新选择。": {
+    "en": "This deleted version removes markings for currently hidden content. Unlock hidden content on this device, then choose again."
   }
 }

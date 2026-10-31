@@ -1,23 +1,25 @@
 import { tr, getLocale } from "../i18n/index.js";
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LockKey, ArrowsClockwise } from '@phosphor-icons/react';
 import Select from './Select.jsx';
 import { Disclosure } from './ui/disclosure.jsx';
 import CloudHistory from './CloudHistory.jsx';
 import PromptDialog, { MessageDialog } from './PromptDialog.jsx';
 import { validateCloudConfig, cloudOrigin } from '../lib/cloud-providers.js';
+import { cloudProviderLabel, SYNC_PROVIDERS } from '../lib/cloud-connection.js';
+import { conflictRecordPreview } from '../lib/cloud-conflict-preview.js';
 import { requestSiteAccess } from '../lib/site-info.js';
 import {
-  loadCloudSyncSettings, saveCloudSyncSettings, unlockCloudSync, lockCloudSync,
+  loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync,
   syncCloudNow, supportsCloudSync, getCloudSyncStatus, subscribeCloudSyncStatus,
-  getCloudSyncConflicts, restoreCloudSyncConflict,
+  getCloudSyncConflicts, previewCloudSyncConflict, restoreCloudSyncConflict,
 } from '../lib/cloud-sync.js';
 import './cloud-sync.css';
 import { Button } from './ui/button.jsx';
 import { Input } from './ui/input.jsx';
 import { Switch } from './ui/switch.jsx';
 
-const blank = { provider: 'github', endpoint: '', bucket: '', region: 'cn-hangzhou', owner: '', repo: '', project: '', branch: 'main', prefix: 'covelet' };
+const blank = { provider: 'webdav', endpoint: '', bucket: '', region: 'cn-hangzhou', owner: '', repo: '', project: '', branch: 'main', prefix: 'covelet' };
 const emptySecrets = { accessKeyId: '', secretAccessKey: '', sessionToken: '', token: '', username: '', appPassword: '' };
 function profileOf(draft) {
   const { provider, endpoint, bucket, region, owner, repo, project, branch, prefix } = draft;
@@ -56,9 +58,11 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
   const [password, setPassword] = useState(''), [autoSync, setAutoSync] = useState(false);
   const [saved, setSaved] = useState(null), [status, setStatus] = useState(() => getCloudSyncStatus());
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const [draftTest, setDraftTest] = useState(null), [testing, setTesting] = useState(false), [testFailed, setTestFailed] = useState(false);
   const [conflicts, setConflicts] = useState([]);
   const [conflictChoice, setConflictChoice] = useState(null);
   const [editing, setEditing] = useState(false);
+  const wasUnlocked = useRef(status.unlocked);
   const available = supportsCloudSync();
   const connectionMatches = (() => {
     try { return Boolean(saved?.profile) && JSON.stringify(profileOf(draft)) === JSON.stringify(saved.profile); }
@@ -77,12 +81,15 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     const off = subscribeCloudSyncStatus((value) => {
       if (active) {
         setStatus(value);
+        if (!value.unlocked) setConflictChoice(null);
+        if (wasUnlocked.current && !value.unlocked) setDraftTest(null);
+        wasUnlocked.current = value.unlocked;
         getCloudSyncConflicts().then((items) => { if (active) setConflicts(items); }).catch(() => {});
       }
     });
     return () => { active = false; off(); };
   }, [demo]);
-  function patch(value) { setDraft((current) => ({ ...current, ...value })); }
+  function patch(value) { setTestFailed(false); setDraftTest(null); setDraft((current) => ({ ...current, ...value })); }
   async function run(action) {
     setBusy(true); onBusyChange(true); setError('');
     try { await action(); setStatus(getCloudSyncStatus()); }
@@ -106,14 +113,28 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       setEditing(false);
     });
   }
+  function testConnection() {
+    if (busy || demo) return;
+    let profile;
+    try { profile = profileOf(draft); } catch (reason) { setError(reason.message); return; }
+    const access = requestSiteAccess(cloudOrigin(profile));
+    setDraftTest(null); setTestFailed(true); setTesting(true);
+    run(async () => {
+      try {
+        if (!await access) throw new Error(tr('尚未授权访问这个云服务，请先在设置中授权。'));
+        const result = configuring || !status.unlocked ? await testCloudConnection(profile, secrets) : await testCloudConnection();
+        setDraftTest(result); setTestFailed(false);
+      } finally { setTesting(false); setSaved(await loadCloudSyncSettings()); }
+    });
+  }
   function credentialField(label, key, type = 'password', optional = false) {
     return <label>{label}{optional ? tr("（可选）") : ''}<Input type={type} value={secrets[key]} autoComplete="off" spellCheck={false}
-      maxLength={key === 'sessionToken' ? 8192 : 2048} onChange={(event) => setSecrets((current) => ({ ...current, [key]: event.target.value }))} disabled={busy || demo} /></label>;
+      maxLength={key === 'sessionToken' ? 8192 : 2048} onChange={(event) => { setTestFailed(false); setDraftTest(null); setSecrets((current) => ({ ...current, [key]: event.target.value })); }} disabled={busy || demo} /></label>;
   }
   const configuring = !saved?.profile || editing;
   function unlock() {
     if (busy || !connectionMatches) return;
-    run(async () => { await unlockCloudSync(secrets, password); setSecrets(emptySecrets); setPassword(''); });
+    run(async () => { setSaved(await unlockCloudSync(secrets, password)); setDraftTest(null); setSecrets(emptySecrets); setPassword(''); });
   }
   function conflictLabel(item) {
     if (item.namespace === 'assets' || item.namespace === 'navigation-icons' || item.namespace === 'provider-icons') return tr('图片与图标');
@@ -126,6 +147,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     if (item.key.startsWith('covelet.clock.v1.')) return tr('时钟');
     return tr('扩展数据');
   }
+  const connectionTest = !testFailed && (configuring || !status.unlocked ? draftTest : saved?.connectionTest);
   return <form className="cloud-sync-form form-stack" onSubmit={(event) => {
     event.preventDefault();
     if (event.nativeEvent?.isComposing) return;
@@ -135,14 +157,19 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     <div className="settings-scroll cloud-sync-fields">
       {introduction}
       {saved?.profile && <div className="cloud-connection-summary">
-        <div><strong>{({ github: 'GitHub', gitlab: 'GitLab', r2: 'Cloudflare R2', oss: tr("阿里云 OSS"), webdav: 'WebDAV' })[saved.profile.provider]}</strong><span className="connection-state">{status.unlocked ? tr("已解锁") : tr("需解锁")}</span></div>
+        <div><strong>{cloudProviderLabel(saved.profile.provider)}</strong><span className="connection-state">{status.unlocked ? tr("已解锁") : tr("需解锁")}</span></div>
         <p className="cloud-sync-target">{targetLabel(saved.profile)}</p>
         <p className="hint">{tr("浏览器重启后需重新输入凭据和同步密码。")}</p>
-        {!configuring && <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => { setEditing(true); setError(''); }}>{tr("修改配置")}</Button>}
+        {!configuring && <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => { setEditing(true); setDraftTest(null); setError(''); }}>{tr("修改配置")}</Button>}
       </div>}
+      <p className="hint">{tr('WebDAV 为本轮加固渠道，真实云账号验收仍待完成；R2、OSS、GitHub、GitLab 已实现但均为 Beta。')}</p>
+      <div className="cloud-connection-test" role="status" aria-live="polite">
+        <p className="hint">{testing ? tr('正在测试连接…') : testFailed ? tr('最近连接测试未通过，请检查后重试。') : connectionTest ? tr('最近连接测试通过：{0}', [new Date(connectionTest.testedAt).toLocaleString(getLocale())]) : saved?.profile && !configuring ? tr('配置已保存；当前凭据的连接尚未验证。') : tr('连接尚未验证。')}</p>
+        <p className="hint">{tr('测试只检查登录和目录读取，不验证写入或同步密码。保存配置不会执行连接测试。')}</p>
+      </div>
       {configuring && <>
       <Select label={tr("存储服务")} value={draft.provider} disabled={busy || demo} onChange={(provider) => { patch({ provider, endpoint: provider === 'gitlab' ? 'https://gitlab.com' : '' }); setSecrets(emptySecrets); setPassword(''); }}
-        options={[{ value: 'r2', label: 'Cloudflare R2' }, { value: 'oss', label: tr("阿里云 OSS") }, { value: 'github', label: 'GitHub' }, { value: 'gitlab', label: 'GitLab' }, { value: 'webdav', label: 'WebDAV' }]} />
+        options={SYNC_PROVIDERS.map(provider => ({ value: provider, label: cloudProviderLabel(provider) }))} />
       {draft.provider === 'github' ? <>
         <label>{tr("仓库所有者")}<Input value={draft.owner} maxLength={100} spellCheck={false} disabled={busy || demo} onChange={(e) => patch({ owner: e.target.value })} /></label>
         <label>{tr("仓库名称")}<Input value={draft.repo} maxLength={100} spellCheck={false} disabled={busy || demo} onChange={(e) => patch({ repo: e.target.value })} /></label>
@@ -200,15 +227,26 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
         {status.phase === 'syncing' && <p className="hint" role="status">{status.message || tr('正在同步…')}</p>}
       </section>}
       {conflicts.length > 0 && <div className="cloud-sync-conflicts"><strong>{tr("保留的冲突版本")}</strong>
-        <p className="hint">{tr('不同设备同时修改的版本均已保留。选择采用一个版本，或将当前本机内容作为新版本；选择后再同步到其他设备。')}</p>
-        {conflicts.map((item, index) => <div key={item.id}><span>{conflictLabel(item)} · {index + 1}{item.deleted ? tr("（删除版本）") : ''}</span><div>
-          <Button variant="ghost" type="button" disabled={busy || !status.unlocked} onClick={() => setConflictChoice({ ...item, discard: true })}>{tr('保留当前版本')}</Button>
-          <Button variant="secondary" type="button" disabled={busy || !status.unlocked} onClick={() => setConflictChoice({ ...item, discard: false })}>{tr('采用此版本')}</Button>
-        </div></div>)}
+        <p className="hint">{tr('冲突内容保留本机版本，等待你选择。请查看两侧内容，整条采用本机或一个远端版本；不会合并记录内部字段。')}</p>
+        {conflicts.filter(item => !item.local).map((item, index) => <div key={item.id}>
+          <span>{conflictLabel(item)} · {tr('远端版本 {0}', [index + 1])}{item.deleted ? tr("（删除版本）") : ''}</span>
+          <Button variant="secondary" type="button" disabled={busy || !status.unlocked} onClick={() => run(async () => {
+            const preview = await previewCloudSyncConflict(item.id); setConflictChoice({ ...preview, choice: null });
+          })}>{tr('查看并选择版本')}</Button>
+        </div>)}
       </div>}
-      {conflictChoice && <PromptDialog title={tr('处理并发版本')} action={conflictChoice.discard ? tr('保留当前版本') : tr('采用此版本')} busy={busy} onCancel={() => setConflictChoice(null)}
-        onConfirm={() => run(async () => { await restoreCloudSyncConflict(conflictChoice.id, { discard: conflictChoice.discard }); setConflictChoice(null); setConflicts(await getCloudSyncConflicts()); })}>
-        <p>{tr('此操作会更新对应的数据类别，并在下次同步时作为新版本上传。当前隐藏状态和本机隐藏密码保持不变。')}</p>
+      {conflictChoice && <PromptDialog title={tr('选择一条完整记录')} action={conflictChoice.choice === 'remote' ? tr('整条采用远端版本') : tr('整条保留本机版本')} busy={busy} confirmDisabled={!conflictChoice.choice} onCancel={() => setConflictChoice(null)}
+        onConfirm={() => run(async () => { await restoreCloudSyncConflict(conflictChoice.id, { choice: conflictChoice.choice, token: conflictChoice.token }); setConflictChoice(null); setConflicts(await getCloudSyncConflicts()); })}>
+        <p>{tr('此操作会替换这一整条记录，并在下次同步时上传。记录内其他修改也会一起替换，请确认已选对版本。')}</p>
+        <div className="cloud-conflict-sides" role="group" aria-label={tr('选择一条完整记录')}>
+          {['local', 'remote'].map(side => <section key={side}>
+            <strong>{side === 'local' ? tr('本机版本') : tr('远端版本')}</strong>
+            <pre>{conflictChoice[side].deleted ? tr('此版本已删除整条记录。') : conflictRecordPreview(conflictChoice[side].value)}</pre>
+            <Button type="button" variant="secondary" disabled={busy} aria-pressed={conflictChoice.choice === side} onClick={() => setConflictChoice(current => ({ ...current, choice: side }))}>
+              {side === 'local' ? tr('整条保留本机版本') : tr('整条采用远端版本')}
+            </Button>
+          </section>)}
+        </div>
       </PromptDialog>}
       {saved?.profile && !configuring && <Disclosure className="context-help" title={tr('旧版导航历史')}>
         <p className="hint">{tr('这里保留升级前的导航历史。新版本的桌面、扩展数据和图标使用统一加密同步；旧版客户端请升级后继续使用。')}</p>
@@ -216,9 +254,10 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       </Disclosure>}
     </div>
     <div className="settings-footer cloud-sync-actions">
+      <Button variant="secondary" type="button" className="button" disabled={busy || demo || !available} onClick={testConnection}>{testing ? tr('正在测试连接…') : tr('测试连接')}</Button>
       {configuring ? <>
-        {saved?.profile && <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => { setDraft({ ...blank, ...saved.profile }); setAutoSync(saved.autoSync); setSecrets(emptySecrets); setPassword(''); setEditing(false); setError(''); }}>{tr("取消修改")}</Button>}
-        <Button variant="default" type="submit" className="button primary" disabled={busy || demo || !available}>{busy ? tr("正在保存…") : tr("保存配置")}</Button>
+        {saved?.profile && <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => { setDraft({ ...blank, ...saved.profile }); setAutoSync(saved.autoSync); setSecrets(emptySecrets); setPassword(''); setEditing(false); setDraftTest(null); setError(''); }}>{tr("取消修改")}</Button>}
+        <Button variant="default" type="submit" className="button primary" disabled={busy || demo || !available}>{busy && !testing ? tr("正在保存…") : tr("保存配置")}</Button>
       </> : <>
         {status.unlocked ? <>
           <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => run(lockCloudSync)}><LockKey size={16} />{tr("锁定")}</Button>

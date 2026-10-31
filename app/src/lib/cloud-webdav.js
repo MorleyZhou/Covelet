@@ -1,4 +1,4 @@
-import { tr, getLocale } from "../i18n/index.js";
+import { tr } from "../i18n/index.js";
 // Fixed packaged WebDAV transport for encrypted, content-addressed snapshots.
 // Only the user-selected directory is listed. Explicit sync setup may create
 // its fixed protocol children, never arbitrary parents; no directory is deleted,
@@ -10,12 +10,14 @@ const MAX_RESPONSE = 1024 * 1024;
 const MAX_SCAN = 2000;
 const NAME = /^covelet-([a-f0-9]{32})-([1-9][0-9]{0,15})-([a-f0-9]{64})\.json$/;
 const safeErrors = new WeakSet();
+// Only errors created here may cross sync boundaries with their safe copy.
+export const isWebdavError = cause => safeErrors.has(cause);
 const error = (message, code) => {
   const result = Object.assign(new Error(message), { code });
   safeErrors.add(result);
   return result;
 };
-const invalid = () => error(tr("WebDAV 配置无效，请检查服务器地址和目录。"), 'CLOUD_INVALID_CONFIG');
+const invalid = () => error(tr("WebDAV 地址无效：请填写 HTTPS 基目录地址，不要使用分享链接、查询参数或带密码的地址。"), 'CLOUD_INVALID_CONFIG');
 const badResponse = () => error(tr("WebDAV 返回的数据不完整或格式无效，已停止同步。"), 'CLOUD_INVALID_RESPONSE');
 const limit = () => error(tr("WebDAV 目录数量或数据大小超出安全限制，请使用独立的同步目录。"), 'CLOUD_LIMIT');
 const conflict = () => error(tr("云端存在同名但内容不同的快照，已停止写入并保留本地数据。"), 'CLOUD_CONFLICT');
@@ -78,8 +80,9 @@ function checkedSecrets(input) {
 
 function statusError(status) {
   if (status === 429) return error(tr("WebDAV 请求过于频繁，请稍后再试。"), 'CLOUD_RATE_LIMIT');
-  if (status === 401 || status === 403) return error(tr("WebDAV 身份验证失败，请检查应用密码和目录权限。"), 'CLOUD_AUTH');
-  if (status === 404 || status === 409) return error(tr("WebDAV 同步目录或文件不可访问，请先创建指定目录并检查权限。"), 'CLOUD_NOT_FOUND');
+  if (status === 401) return error(tr("WebDAV 登录失败（401）：请检查用户名和应用密码，不要使用网页登录密码。"), 'CLOUD_AUTH');
+  if (status === 403) return error(tr("WebDAV 拒绝访问（403）：请确认账号已启用 WebDAV，并有此目录的读写权限。"), 'CLOUD_FORBIDDEN');
+  if (status === 404 || status === 409) return error(tr("WebDAV 路径不存在（404/409）：请检查基目录地址，并先创建填写的保存目录。"), 'CLOUD_NOT_FOUND');
   if (status === 412) return conflict();
   if (status === 507) return limit();
   return error(tr("WebDAV 请求未成功，请检查服务配置后重试。"), 'CLOUD_REQUEST_FAILED');
@@ -346,7 +349,16 @@ export function createWebdavProvider(input, secrets, options = {}) {
     catch (cause) {
       if (expired) throw timeout();
       if (safeErrors.has(cause)) throw cause;
-      throw error(tr("无法连接 WebDAV，请检查网络、站点授权和跨域配置。"), 'CLOUD_NETWORK');
+      const code = cause?.cause?.code || cause?.code;
+      if (globalThis.navigator?.onLine === false || code === 'ENETUNREACH' || code === 'ERR_INTERNET_DISCONNECTED')
+        throw error(tr('网络已断开，请联网后重新测试 WebDAV。'), 'CLOUD_OFFLINE');
+      if (['ETIMEDOUT', 'UND_ERR_CONNECT_TIMEOUT', 'ERR_CONNECTION_TIMED_OUT'].includes(code) || cause?.name === 'TimeoutError') throw timeout();
+      if (/^(?:ERR_TLS_|ERR_SSL_|ERR_CERT_|CERT_|DEPTH_ZERO_SELF_SIGNED_CERT|SELF_SIGNED_CERT_IN_CHAIN|UNABLE_TO_VERIFY_LEAF_SIGNATURE)/.test(code || ''))
+        throw error(tr('WebDAV 安全连接失败，请检查服务器 HTTPS 证书和设备时间。'), 'CLOUD_TLS');
+      if (['ENOTFOUND', 'EAI_AGAIN', 'ECONNREFUSED', 'EHOSTUNREACH', 'ERR_NAME_NOT_RESOLVED', 'ERR_CONNECTION_REFUSED'].includes(code))
+        throw error(tr('找不到或无法访问 WebDAV 服务器，请检查域名、端口和服务是否运行。'), 'CLOUD_HOST');
+      // Browser fetch deliberately hides DNS/TLS/CORS details. Do not guess.
+      throw error(tr('无法连接 WebDAV：请检查网络、服务器地址、HTTPS 证书和站点访问权限；浏览器可能未提供具体原因。'), 'CLOUD_NETWORK');
     } finally { clearTimeout(timer); controller.abort(); }
   }
   async function readBytes(request, name, optional = false) {
@@ -356,6 +368,16 @@ export function createWebdavProvider(input, secrets, options = {}) {
     return checkedBody(bytes);
   }
   return {
+    testConnection() {
+      // Read-only authentication/path probe: never publish data or create a
+      // directory. A successful result does not certify PUT or the sync password.
+      return operation(async request => {
+        const body = encoder.encode('<?xml version="1.0" encoding="UTF-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/><d:getcontentlength/></d:prop></d:propfind>');
+        const { response, bytes } = await request('PROPFIND', directory, body, { depth: '0', 'content-type': 'application/xml; charset=utf-8' });
+        if (response.status !== 207) throw statusError(response.status);
+        listObjects(bytes, directory);
+      });
+    },
     ensureToolDirectory() {
       // A dedicated opt-in call, never an automatic side effect of list/write.
       if (!/\/(?:tools-v1|all-data-v1(?:\/blobs)?)$/.test(profile.prefix)) throw invalid();

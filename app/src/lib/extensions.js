@@ -37,7 +37,7 @@ export const BUNDLED_EXTENSIONS = Object.freeze([
     type: 'functional',
     category: 'sync',
     get name() { return tr("自定义存储同步"); },
-    get description() { return tr("统一加密同步桌面、所有内置扩展数据和图标。"); },
+    get description() { return tr("加密同步桌面、扩展和图标。WebDAV 为加固渠道，其他渠道为 Beta。"); },
     core: 'sync-core.wasm',
     keywords: Object.freeze(['GitHub', 'GitLab', 'Cloudflare R2', 'OSS', 'WebDAV', '存储', '同步', '加密']),
   }),

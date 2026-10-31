@@ -47,3 +47,9 @@
 .revision-field-values pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.7 ui-monospace, monospace; margin: 0; max-height: 140px; overflow: auto; color: var(--muted); }
 .revision-field-values del { text-decoration: none; color: #b54545; background: #bb55551a; }
 .revision-field-values ins { text-decoration: none; color: #27824d; background: #3b99551a; }
+
+.cloud-connection-test { display: flex; flex-direction: column; gap: 6px; }
+.cloud-conflict-sides { display: flex; flex-direction: column; gap: 16px; white-space: normal; }
+.cloud-conflict-sides section { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.cloud-conflict-sides pre { margin: 0; max-height: 180px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.6 ui-monospace, monospace; }
+.cloud-conflict-sides button[aria-pressed=true] { background: var(--accent); color: white; }

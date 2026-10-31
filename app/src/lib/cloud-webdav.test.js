@@ -295,7 +295,7 @@ test('整个操作包含多步请求、guard 与响应读取的超时，超时�
 test('所有错误不反射 URL、XML 或凭据，重定向不跟随', async () => {
   for (const [result, code] of [
     [response(`<secret>${secrets.appPassword}</secret>`, 401), 'CLOUD_AUTH'],
-    [response(`<secret>${secrets.appPassword}</secret>`, 403), 'CLOUD_AUTH'],
+    [response(`<secret>${secrets.appPassword}</secret>`, 403), 'CLOUD_FORBIDDEN'],
     [response('', 429), 'CLOUD_RATE_LIMIT'], [response('', 507), 'CLOUD_LIMIT'],
     [new Error(`${secrets.appPassword} ${directory} XML PRIVATE`), 'CLOUD_NETWORK'],
     [{ redirected: true, status: 200 }, 'CLOUD_REDIRECT'],
@@ -322,4 +322,33 @@ test('无效应用凭据与签名器在网络前拒绝，默认 bridge 使用 gl
     assert.equal(requested.url, directory);
     assert.equal(requested.options.method, 'PROPFIND');
   } finally { globalThis.fetch = original; }
+});
+
+
+test('独立连接测试只做 Depth 0 PROPFIND，不写入、不创建目录且拒绝缺失路径', async () => {
+  const transport = queue([response(listing(), 207)]); let checks = 0;
+  await provider(transport, { beforeRequest: () => { checks++; } }).testConnection();
+  assert.deepEqual(transport.calls.map(call => call.method), ['PROPFIND']);
+  assert.equal(transport.calls[0].headers.depth, '0'); assert.equal(checks, 1);
+  for (const [status, code, text] of [[401, 'CLOUD_AUTH', /用户名和应用密码/], [403, 'CLOUD_FORBIDDEN', /读写权限/], [404, 'CLOUD_NOT_FOUND', /路径不存在/]]) {
+    await assert.rejects(provider(queue([response('SECRET', status)])).testConnection(), error => {
+      assert.equal(error.code, code); assert.match(error.message, text); assert.ok(!error.message.includes('SECRET')); return true;
+    });
+  }
+  await assert.rejects(provider(queue([response('<html>login</html>', 200)])).testConnection(), codeIs('CLOUD_REQUEST_FAILED'));
+});
+
+test('传输错误区分离线、超时、TLS 和主机不可达，隐藏浏览器错误不猜测原因', async () => {
+  for (const [transportCode, expected, text] of [
+    ['ENETUNREACH', 'CLOUD_OFFLINE', /网络已断开/], ['ERR_INTERNET_DISCONNECTED', 'CLOUD_OFFLINE', /联网/],
+    ['ETIMEDOUT', 'CLOUD_TIMEOUT', /超时/], ['UND_ERR_CONNECT_TIMEOUT', 'CLOUD_TIMEOUT', /超时/],
+    ['CERT_HAS_EXPIRED', 'CLOUD_TLS', /证书/], ['ERR_CERT_AUTHORITY_INVALID', 'CLOUD_TLS', /证书/], ['ERR_TLS_CERT_ALTNAME_INVALID', 'CLOUD_TLS', /证书/],
+    ['ENOTFOUND', 'CLOUD_HOST', /域名/], ['ECONNREFUSED', 'CLOUD_HOST', /服务/],
+    ['UNRECOGNIZED', 'CLOUD_NETWORK', /浏览器可能未提供具体原因/],
+  ]) {
+    const cause = new TypeError('SECRET URL PASSWORD', { cause: { code: transportCode } });
+    await assert.rejects(provider(queue([cause])).testConnection(), error => {
+      assert.equal(error.code, expected); assert.match(error.message, text); assert.ok(!error.message.includes('SECRET')); return true;
+    });
+  }
 });
