@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { polishScreens, keyboardDisclosure } from '../polish-screens.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -61,6 +62,10 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await delay(500);
   const startupRequests = requests.length, nativeStart = nativeFavicons.length;
   await openImport();
+  const screenTools = { evaluate, send, delay, writeFile, output };
+  await keyboardDisclosure(screenTools, '导入提示');
+  await polishScreens(screenTools, 'import-tips', '.bookmark-import-modal', '.bookmark-import-scroll');
+  await evaluate('document.activeElement.click()');
   assert.match(await evaluate('document.querySelector(".bookmark-import").innerText'), /Chrome、Firefox 和 Edge/);
 
   for (const [name, content, error] of [
@@ -85,6 +90,7 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   };
   await assertGeometry();
   await screenshot('chrome-preview');
+  await polishScreens(screenTools, 'bookmark-preview', '.bookmark-import-modal', '.bookmark-import-scroll');
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
   await delay(150);
   await assertGeometry();
@@ -162,5 +168,5 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await choose(path.join(output, 'empty.html'));
   await wait(has('The bookmark file is empty.'), 'English file error');
   await screenshot('bad-file-en');
-  await writeFile(path.join(output, 'results.json'), JSON.stringify({ passed: true, importedSites: 11, importHttpRequests: 0, importNativeFaviconRequests: 0, startupRequests: requests.slice(0, startupRequests), reloadRequests, checks: ['settings/data/file-picker reachability', 'Chrome/Firefox/Edge fixtures', 'empty/non-HTML/oversize errors', 'failed replacement clears prior preview', 'skip duplicates default and counts', 'unsafe URLs excluded', 'hostile resources inert', 'desktop folders and links visible', 'encrypted local reload preserves IDs and content', 'zh-CN and English UI errors', 'eight locales covered by unit tests', 'desktop and narrow dialog geometry with pinned actions'] }, null, 2));
+  await writeFile(path.join(output, 'results.json'), JSON.stringify({ passed: true, importedSites: 11, importHttpRequests: 0, importNativeFaviconRequests: 0, startupRequests: requests.slice(0, startupRequests), reloadRequests, checks: ['light/dark 1100/390px import tips and preview','Space disclosure activation and focus retention','settings/data/file-picker reachability', 'Chrome/Firefox/Edge fixtures', 'empty/non-HTML/oversize errors', 'failed replacement clears prior preview', 'skip duplicates default and counts', 'unsafe URLs excluded', 'hostile resources inert', 'desktop folders and links visible', 'encrypted local reload preserves IDs and content', 'zh-CN and English UI errors', 'eight locales covered by unit tests', 'desktop and narrow dialog geometry with pinned actions'] }, null, 2));
 };

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createFullDataSync } from './full-data-sync.js';
+import { encryptCloudPayload } from './cloud-crypto.js';
 
 const clone = (value) => structuredClone(value), password = 'full data synthetic test passphrase';
 const target = 'a'.repeat(64), id = (record) => JSON.stringify([record.namespace, record.key]);
@@ -312,4 +313,90 @@ test('a later local edit to an unresolved branch survives a remote choice that n
   await saved(a); assert.equal(find(a, key).value, 'A');
   const later = await a.api.previewFullDataConflict((await a.api.getFullDataConflicts()).find(item => !item.local).id);
   assert.equal(later.remote.value, 'B edited after conflict');
+});
+
+test('a JSON-reserialized device accepts the same immutable remote clock and reuses pending ciphertext', async () => {
+  const cloud = remote(), disk = memory();
+  const reorder = value => Array.isArray(value) ? value.map(reorder) : value && typeof value === 'object'
+    ? Object.fromEntries(Object.entries(value).reverse().map(([key, item]) => [key, reorder(item)])) : value;
+  let reserialized = false;
+  const store = { read: async () => reserialized ? reorder(await disk.read()) : disk.read(), write: value => disk.write(value) };
+  const a = device(cloud, 'a', { store, records: [record('covelet.reloaded.v1', { body: 'retained' })] });
+  await saved(a); reserialized = true;
+  const writes = cloud.calls.filter(([, method]) => method === 'write').length;
+  await saved(a);
+  assert.equal(cloud.calls.filter(([, method]) => method === 'write').length, writes);
+  a.edit(records => { records[0].value.body = 'pending'; }); cloud.failWrites = true;
+  assert.equal((await a.api.syncFullDataNow()).phase, 'error');
+  const pending = disk.value.metadata.pending; assert.ok(pending);
+  cloud.failWrites = false;
+  await saved(a);
+  assert.equal(new TextDecoder().decode(cloud.manifests.get(pending.name)), pending.body);
+  const b = device(cloud, 'b'); await saved(b);
+  assert.equal(find(b, 'covelet.reloaded.v1').value.body, 'pending');
+});
+
+// A pre-0.2.2 all-data payload, including the accidentally portable language.
+async function legacyLanguageIndex(cloud) {
+  const encoder = new TextEncoder(), staged = new Map(), actor = 'a'.repeat(32);
+  const hash = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(x => x.toString(16).padStart(2, '0')).join('');
+  const tree = value => value === null ? [0] : typeof value === 'string' ? [3, value] : typeof value === 'number' ? [2, value]
+    : Array.isArray(value) ? [4, value.map(tree)] : [5, Object.entries(value).map(([key, item]) => [key, tree(item)])];
+  const frame = value => {
+    const manifest = encoder.encode(JSON.stringify([1, tree(value), []])), bytes = new Uint8Array(8 + manifest.length);
+    bytes.set([67, 70, 83, 49]); new DataView(bytes.buffer).setUint32(4, manifest.length); bytes.set(manifest, 8); return bytes;
+  };
+  const stage = async bytes => {
+    const encrypted = await encryptCloudPayload(bytes, password), digest = await hash(encrypted), plainHash = await hash(bytes);
+    const chunk = { hash: plainHash, size: bytes.length, name: `covelet-${digest.slice(0, 32)}-1-${digest}.json` };
+    cloud.chunks.set(chunk.name, encrypted); staged.set(chunk.name, { body: new TextDecoder().decode(encrypted) });
+    return { digest: plainHash, size: bytes.length, chunks: [chunk] };
+  };
+  const languageKey = id(record('covelet.language.v1', 'zh-CN')), businessKey = id(record('covelet.legacy-business.v1', 'portable'));
+  const language = await stage(frame('zh-CN')), business = await stage(frame('portable'));
+  const document = { version: 1, actor, clock: 1, records: {
+    [languageKey]: { n: 1, context: { [actor]: 0 }, value: language },
+    [businessKey]: { n: 1, context: { [actor]: 0 }, value: business },
+  } };
+  const reference = await stage(encoder.encode(JSON.stringify(document)));
+  const encrypted = await encryptCloudPayload(encoder.encode(JSON.stringify({ format: 'covelet-all-data', version: 1, actor, clock: 1, createdAt: 1, document: reference })), password);
+  const pending = { name: `covelet-${actor}-1-${await hash(encrypted)}.json`, body: new TextDecoder().decode(encrypted), uploads: [...language.chunks, ...business.chunks, ...reference.chunks] };
+  cloud.manifests.set(pending.name, encrypted);
+  return { document, pending, staged, base: { [languageKey]: language.digest, [businessKey]: business.digest } };
+}
+
+test('pre-0.2.2 language history and persisted pending indexes remain readable without importing device preferences', async () => {
+  for (const pendingRetry of [false, true]) {
+    const cloud = remote(), legacy = await legacyLanguageIndex(cloud);
+    if (pendingRetry) {
+      cloud.manifests.clear(); cloud.chunks.clear();
+      const disk = memory({ version: 1, metadata: { target, document: legacy.document, documents: { [legacy.document.actor]: legacy.document },
+        base: legacy.base, pending: legacy.pending, publishedClock: 0, lastSync: 0 } });
+      const pendingStore = pendingMemory(); for (const [name, body] of legacy.staged) await pendingStore.set(name, body);
+      const a = device(cloud, 'a', { store: disk, pendingStore, records: [record('covelet.legacy-business.v1', 'portable')] });
+      await saved(a);
+      assert.equal(new TextDecoder().decode(cloud.manifests.get(legacy.pending.name)), legacy.pending.body, 'old pending index keeps its exact ciphertext');
+    }
+    const b = device(cloud, 'b'); await saved(b);
+    assert.equal(find(b, 'covelet.legacy-business.v1').value, 'portable');
+    assert.equal(find(b, 'covelet.language.v1'), undefined);
+    assert.deepEqual(await b.api.getFullDataConflicts(), []);
+  }
+});
+
+test('conflict preview survives JSON field reordering, but a changed same-clock document still fails', async () => {
+  const cloud = remote(), disk = memory(); let reordered = false;
+  const reorder = value => Array.isArray(value) ? value.map(reorder) : value && typeof value === 'object'
+    ? Object.fromEntries(Object.entries(value).reverse().map(([key, item]) => [key, reorder(item)])) : value;
+  const store = { read: async () => reordered ? reorder(await disk.read()) : disk.read(), write: value => disk.write(value) };
+  const key = 'covelet.order-conflict.v1', a = device(cloud, 'a', { records: [record(key, 'initial')] }), b = device(cloud, 'b', { store });
+  await saved(a); await saved(b); await saved(a);
+  a.edit(records => { records[0].value = 'A'; }); b.edit(records => { records[0].value = 'B'; }); await saved(a); await saved(b);
+  const conflict = (await b.api.getFullDataConflicts()).find(item => !item.local), preview = await b.api.previewFullDataConflict(conflict.id);
+  reordered = true;
+  await b.api.restoreFullDataConflict(conflict.id, { choice: 'remote', token: preview.token });
+  await saved(b); await saved(a); assert.equal(find(b, key).value, 'A');
+  const metadata = disk.value; metadata.metadata.document.records[id(record(key))].value.digest = 'f'.repeat(64); await disk.write(metadata);
+  assert.equal((await b.api.syncFullDataNow()).code, 'DATA_SYNC_INVALID');
+  assert.equal(find(b, key).value, 'A');
 });

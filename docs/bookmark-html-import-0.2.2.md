@@ -21,6 +21,10 @@ The selectable preview shows destinations, rejected addresses and duplicate coun
 - Bounded to 5 MiB of file / UTF-8 content, 2,000 source folders + valid links, 2,000 invalid links, the existing 2,000 stored entries, and 64 structural traversal levels. Deep nesting and malformed / empty / unrelated files get localized errors. Rejecting a replacement file clears the prior preview so it cannot be imported accidentally.
 - New UI and error strings have explicit en, zh-CN (source), zh-TW, ja, ko, de, fr and ru coverage. Marketing availability changes are limited to `migrate.bookmarks` in the eight `site/i18n/*.json` files; the reachable application entry ships in this same change.
 
+## Current candidate verification
+
+See [0.2.2 evidence](verification/0.2.2/README.md): 473 unit tests pass; the unpacked-extension import checks retain 0 HTTP(S) and 0 native-favicon requests during import. Current package and manifest are **0.2.2**.
+
 ## Prior implementation evidence (before 0.2.2)
 
 These counts describe the original import change, not acceptance of the current candidate.

@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "importedSites": 11,
+  "importHttpRequests": 0,
+  "importNativeFaviconRequests": 0,
+  "startupRequests": [
+    {
+      "method": "GET",
+      "url": "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN"
+    }
+  ],
+  "reloadRequests": [],
+  "checks": [
+    "light/dark 1100/390px import tips and preview",
+    "Space disclosure activation and focus retention",
+    "settings/data/file-picker reachability",
+    "Chrome/Firefox/Edge fixtures",
+    "empty/non-HTML/oversize errors",
+    "failed replacement clears prior preview",
+    "skip duplicates default and counts",
+    "unsafe URLs excluded",
+    "hostile resources inert",
+    "desktop folders and links visible",
+    "encrypted local reload preserves IDs and content",
+    "zh-CN and English UI errors",
+    "eight locales covered by unit tests",
+    "desktop and narrow dialog geometry with pinned actions"
+  ]
+}

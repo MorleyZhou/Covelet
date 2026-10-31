@@ -11,6 +11,7 @@ import { createToolSync, validateToolReplica, materializeToolReplicas } from './
 import { isWebdavError } from './cloud-webdav.js';
 import { probeCloudConnection } from './cloud-connection.js';
 import { createFullDataSync } from './full-data-sync.js';
+import { sameJson } from './json-equal.js';
 
 const LOCAL_KEY = 'covelet.cloud.local.v1';
 const SESSION_KEY = 'covelet.cloud.session.v1';
@@ -21,7 +22,7 @@ const MAX_TOTAL_BYTES = 4 * 1024 * 1024;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
 const clone = (value) => structuredClone(value);
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const same = sameJson;
 const failure = (message, code = 'CLOUD_INVALID') => Object.assign(new Error(message), { code });
 const empty = () => ({ version: 1, profile: null, autoSync: false, metadata: null });
 const messages = {

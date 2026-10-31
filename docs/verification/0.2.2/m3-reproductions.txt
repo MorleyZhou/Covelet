@@ -1,0 +1,70 @@
+✖ different device languages cannot create sync conflicts or overwrite either device preference (1183.288313ms)
+✖ a JSON-reserialized device accepts the same immutable remote clock and reuses pending ciphertext (306.308653ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1361.247719
+
+✖ failing tests:
+
+test at src/lib/cloud-full-data.test.js:303:1
+✖ different device languages cannot create sync conflicts or overwrite either device preference (1183.288313ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   {
+  +     actor: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  +     clock: 1,
+  +     deleted: false,
+  +     digest: '1df59674721eeb03e46e3580113d8cb0dd1e53f55bf6f2dee8318062b69d1ce1',
+  +     id: '["[\\"preferences\\",\\"covelet.language.v1\\"]","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",1]',
+  +     key: 'covelet.language.v1',
+  +     local: true,
+  +     namespace: 'preferences'
+  +   },
+  +   {
+  +     actor: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+  +     clock: 1,
+  +     deleted: false,
+  +     digest: 'aa84f5c2ba5e676cf6f3243e3c918e2544cbbb0fcea00f6d77dec74a538c061d',
+  +     id: '["[\\"preferences\\",\\"covelet.language.v1\\"]","bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",1]',
+  +     key: 'covelet.language.v1',
+  +     local: false,
+  +     namespace: 'preferences'
+  +   }
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///workspace/covelet-022-polish/app/src/lib/cloud-full-data.test.js:310:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { id: '["[\\"preferences\\",\\"covelet.language.v1\\"]","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",1]', namespace: 'preferences', key: 'covelet.language.v1', actor: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', clock: 1, deleted: false, local: true, digest: '1df59674721eeb03e46e3580113d8cb0dd1e53f55bf6f2dee8318062b69d1ce1' }, { id: '["[\\"preferences\\",\\"covelet.language.v1\\"]","bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",1]', namespace: 'preferences', key: 'covelet.language.v1', actor: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', clock: 1, deleted: false, local: false, digest: 'aa84f5c2ba5e676cf6f3243e3c918e2544cbbb0fcea00f6d77dec74a538c061d' } ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at src/lib/full-data-sync.test.js:317:1
+✖ a JSON-reserialized device accepts the same immutable remote clock and reuses pending ciphertext (306.308653ms)
+  AssertionError [ERR_ASSERTION]: DATA_SYNC_INVALID: 全量同步数据无效，全部本机数据已保留。
+  
+  'error' !== 'saved'
+  
+      at saved (file:///workspace/covelet-022-polish/app/src/lib/full-data-sync.test.js:58:95)
+      at async TestContext.<anonymous> (file:///workspace/covelet-022-polish/app/src/lib/full-data-sync.test.js:326:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'error',
+    expected: 'saved',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

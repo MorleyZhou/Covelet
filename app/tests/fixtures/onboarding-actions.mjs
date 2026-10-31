@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { polishScreens, keyboardDisclosure } from './polish-screens.mjs';
 export default async ({ evaluate, send, delay, on, writeFile, extId, output }) => {
   const requests = [], objects = new Map(); let authFailure = false, failWrites = false;
   on('Fetch.requestPaused', async ({requestId,request,networkId}) => {
@@ -34,17 +35,25 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   const openSync = async () => {await openSettings();await click('数据');await click('自定义存储同步');await wait('!!document.querySelector(".cloud-sync-form")','sync form');await delay(200);};
   const nextDisabled = () => evaluate('[...document.querySelectorAll("button")].find(b=>b.innerText.trim()==="下一步").disabled');
   const credentials = async () => {await fill('WebDAV 基目录地址','https://www.bing.com/covelet-setup-fixture/');await fill('WebDAV 用户名','FIXTURE-USER');await fill('WebDAV 应用密码','FIXTURE-APP-PASSWORD');};
-  await openSettings();await click('隐私自查');await wait(has('当前权限与用途'),'privacy page');
+  const screenTools = { evaluate, send, delay, writeFile, output };
+  await openSettings();await click('数据');
+  await keyboardDisclosure(screenTools, '0.2.2 更新内容');
+  assert.match(await text(), /导出的 JSON\/ZIP 备份未加密/);
+  assert.match(await text(), /保存配置不代表连接已验证/);
+  await polishScreens(screenTools, 'data-whats-new', '.settings-modal', '.settings-content');
+  await click('隐私自查');await wait(has('当前权限与用途'),'privacy page');
   assert.match(await text(),/未记录网络请求历史/);assert.match(await text(),/Bing 每日壁纸/);assert.match(await text(),/chrome.storage.session/);
   assert.match(await text(),/storage/);assert.match(await text(),/notifications/);assert.match(await text(),/未授予/);assert.match(await text(),/https:\/\/www.bing.com\/\*/);
   assert.doesNotMatch(await text(),/近 7 天[^\n]*[:：]\s*0/);
   assert.equal(requests.length,0,'checkup performs no sync requests');await screenshot('privacy-desktop');
+  await polishScreens(screenTools, 'privacy', '.settings-modal', '.settings-content');
   await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:false});await delay(150);
   assert.equal(await evaluate('document.querySelector(".settings-content").scrollWidth<=document.querySelector(".settings-content").clientWidth+1'),true,'privacy fits narrow screen');await screenshot('privacy-narrow');
   await send('Emulation.setDeviceMetricsOverride',{width:1100,height:850,deviceScaleFactor:1,mobile:false});
   await click('数据');await click('自定义存储同步');await wait(has('选择渠道'),'step one');
   assert.equal(await evaluate('document.querySelector(".cloud-channel-option[aria-pressed=true]").innerText.includes("WebDAV")'),true);
   assert.equal(await evaluate('document.querySelectorAll(".cloud-channel-option").length'),5);await screenshot('step-one');
+  await polishScreens(screenTools, 'step-one', '.cloud-sync-form', '.cloud-sync-fields');
   await click('仅在本机使用');assert.equal(await evaluate('!!document.querySelector(".cloud-sync-form")'),false);
   assert.equal(await evaluate('new Promise(r=>chrome.storage.session.get("covelet.cloud.session.v1",v=>r(!!v["covelet.cloud.session.v1"])))'),false);
   await openSync();
@@ -56,7 +65,8 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await credentials();authFailure=true;await click('测试连接');await wait(has('WebDAV 登录失败（401）'),'401 inline');assert.equal(await nextDisabled(),true);assert.doesNotMatch(await text(),/PRIVATE-RESPONSE-MUST-NOT-LEAK/);
   authFailure=false;await click('测试连接');await wait(has('最近连接测试通过'),'test passes');assert.equal(await nextDisabled(),false);assert.equal(await evaluate('!!document.querySelector("input[autocomplete=new-password]")'),false);
   await fill('WebDAV 应用密码','FIXTURE-APP-PASSWORD-CHANGED');assert.equal(await nextDisabled(),true);assert.match(await text(),/连接尚未验证/);
-  await click('测试连接');await wait(has('最近连接测试通过'),'retest passes');await screenshot('step-two');await click('下一步');
+  await click('测试连接');await wait(has('最近连接测试通过'),'retest passes');await screenshot('step-two');await polishScreens(screenTools, 'step-two', '.cloud-sync-form', '.cloud-sync-fields');await click('下一步');
+  await polishScreens(screenTools, 'step-three', '.cloud-sync-form', '.cloud-sync-fields');
   await fill('同步密码','short');const beforePassword=requests.length;await click('保存并首次同步');assert.match(await text(),/至少需要 12 个字符/);assert.equal(requests.length,beforePassword);
   await fill('同步密码','FIXTURE-SYNC-PASSWORD');await evaluate('document.querySelector("button[role=switch]").click()');failWrites=true;
   await click('保存并首次同步');await wait(has('WebDAV 拒绝访问（403）'),'write failure visible',30000);
@@ -74,5 +84,5 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await click('修改配置');await click('下一步');await credentials();await click('测试连接');await wait(has('最近连接测试通过'),'save-only connection');await click('下一步');await fill('同步密码','FIXTURE-SYNC-PASSWORD');const beforeSave=requests.length;await click('保存配置');await wait('!document.querySelector(".cloud-setup-steps")','save only returns to management');assert.equal(requests.length,beforeSave,'save-only performs no WebDAV request');assert.doesNotMatch(await text(),/自动同步已开启/);
   await click('锁定');await wait(has('当前凭据的连接尚未验证'),'locking clears proof');assert.doesNotMatch(await text(),/最近连接测试通过/);
   await fill('WebDAV 用户名','FIXTURE-USER');await fill('WebDAV 应用密码','FIXTURE-APP-PASSWORD');await fill('同步密码','FIXTURE-SYNC-PASSWORD');const beforeUnlock=requests.length;await click('解锁');await wait(has('已解锁'),'unlock without verification');assert.equal(requests.length,beforeUnlock);assert.match(await text(),/当前凭据的连接尚未验证/);
-  await writeFile(`${output}/results.json`,JSON.stringify({passed:true,fixtureObjects:objects.size,requests,checks:['runtime permissions and honest seven-day disclosure','privacy narrow layout','WebDAV default and four selectable Beta channels','local escape before setup','provider-specific fields','HTTPS and Chinese 401 errors','test without password and credential proof invalidation','password validation','failed first PUT stays in step 3','local fallback clears session and auto-sync','retry succeeds with encrypted writes','save-only performs zero requests','lock invalidates verification']},null,2));
+  await writeFile(`${output}/results.json`,JSON.stringify({passed:true,fixtureObjects:objects.size,requests,checks:['light/dark 1100/390px: Data/What’s new, privacy and all three setup steps','Space disclosure activation and focus retention','runtime permissions and honest seven-day disclosure','privacy narrow layout','WebDAV default and four selectable Beta channels','local escape before setup','provider-specific fields','HTTPS and Chinese 401 errors','test without password and credential proof invalidation','password validation','failed first PUT stays in step 3','local fallback clears session and auto-sync','retry succeeds with encrypted writes','save-only performs zero requests','lock invalidates verification']},null,2));
 }

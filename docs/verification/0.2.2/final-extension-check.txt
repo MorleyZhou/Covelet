@@ -1,0 +1,7 @@
+
+> covelet@0.2.2 check:extension
+> node scripts/check-extension.mjs
+
+Extension static checks passed: 61 files, 2 HTML, 24 JS, 3 CSS.
+Checked Covelet branding/version, four PNG icon sizes, manifest scope, fixed Bing host, optional per-site access/CSP, packaged resources, common remote-code/network patterns and source search/wallpaper/site metadata bridges.
+Static checks do not prove runtime behavior, arbitrary dynamic URL safety, full data recovery, accessibility, performance, or Web Store approval.
