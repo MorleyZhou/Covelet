@@ -1,4 +1,4 @@
-import { tr, getLocale } from "../i18n/index.js";
+import { tr } from "../i18n/index.js";
 import { normalizeUrl } from './model.js';
 import { validateNoteDocument, noteDocumentText } from './note-document.js';
 import { sameJson } from './json-equal.js';
@@ -11,7 +11,9 @@ const KEY = demo ? 'covelet.tools.demo.v1' : 'covelet.tools.v1';
 const native = () => !demo && Boolean(globalThis.chrome?.runtime?.id && globalThis.chrome?.storage?.local);
 const listeners = new Set(), encoder = new TextEncoder();
 export const PERSONAL_TRASH_LIMITS = Object.freeze({ retentionDays: 30, maxRecords: 200, maxBytes: 4 * 1024 * 1024 });
+// Historical collections remain validated/exportable, without capture or restore actions.
 const kinds = ['notes', 'reading', 'snapshots'];
+const activeKinds = ['notes', 'reading'];
 const retention = PERSONAL_TRASH_LIMITS.retentionDays * 86400000;
 const empty = () => ({ version: 3, revision: 0, notes: [], reading: [], snapshots: [], trash: [] });
 const copy = (value) => structuredClone(value);
@@ -155,12 +157,12 @@ export function mergePersonalTools(input, options = {}) {
   const incoming = check(input);
   return mutate((data) => {
     const ids = new Set(kinds.flatMap((kind) => data[kind]).map((item) => item.id)), urls = new Set(data.reading.map((item) => item.url));
-    for (const kind of kinds) for (const record of incoming[kind]) {
+    for (const kind of activeKinds) for (const record of incoming[kind]) {
       if (ids.has(record.id) || kind === 'reading' && urls.has(record.url)) continue;
       data[kind].push(copy(record)); ids.add(record.id); if (kind === 'reading') urls.add(record.url);
     }
     const trashIds = new Set(data.trash.map((item) => item.id));
-    for (const item of incoming.trash) if (!trashIds.has(item.id) && item.deletedAt > Date.now() - retention) { data.trash.push(copy(item)); trashIds.add(item.id); }
+    for (const item of incoming.trash) if (activeKinds.includes(item.kind) && !trashIds.has(item.id) && item.deletedAt > Date.now() - retention) { data.trash.push(copy(item)); trashIds.add(item.id); }
     return data;
   }, options);
 }
@@ -189,13 +191,13 @@ export async function saveNote({ id, revision, title: name, body, document, pinn
   });
 }
 export function deletePersonalRecord(kind, id, revision) {
-  if (!kinds.includes(kind)) fail(tr("记录类型无效。"));
+  if (!activeKinds.includes(kind)) fail(tr("记录类型无效。"));
   return mutate((data) => { moveToTrash(data, kind, recordFor(data[kind], id, revision)); data[kind] = data[kind].filter((item) => item.id !== id); return true; });
 }
 export function restoreTrashedPersonalRecord(trashId, options = {}) {
   return mutate((data) => {
     const item = data.trash.find((record) => record.id === trashId);
-    if (!item) fail(tr('这条回收站记录已移除或过期。'));
+    if (!item || !activeKinds.includes(item.kind)) fail(tr('这条回收站记录已移除或过期。'));
     if (kinds.some((kind) => data[kind].some((record) => record.id === item.record.id))) fail(tr('相同标识的记录已存在，未覆盖现有内容。'));
     if (item.kind === 'reading' && data.reading.some((record) => record.url === item.record.url)) fail(tr('这个链接已在稍后读中。'));
     const revision = Math.max(...data.trash.filter((entry) => entry.record.id === item.record.id).map((entry) => entry.record.revision)) + 1;
@@ -239,57 +241,8 @@ export function saveReadingItem({ id, revision, url, title: name, status = 'unre
     return record;
   });
 }
-export async function importBrowserReadingList() {
-  if (!native() || !await chrome.permissions.request({ permissions: ['readingList'] }) || !chrome.readingList) fail(tr("请在扩展中允许访问阅读清单。"));
-  const items = await chrome.readingList.query({});
-  if (!Array.isArray(items) || items.length > 500) fail(tr("浏览器阅读清单超过 500 条，请先整理后再导入。"));
-  return mutate((data) => {
-    const seen = new Set(data.reading.map((item) => item.url)); let count = 0;
-    for (const item of items) {
-      let url; try { url = normalizeUrl(item.url); } catch { continue; }
-      if (seen.has(url)) continue;
-      data.reading.push({ ...newRecord(title((item.title || '').slice(0, 200), new URL(url).hostname)), url, status: item.hasBeenRead ? 'read' : 'unread' });
-      seen.add(url); count++;
-    }
-    return count;
-  });
-}
-export async function captureTabSnapshot(name, { windowId, requestPermission = true } = {}) {
-  // The popup obtains optional access in the explicit click before dispatching
-  // a capture to the worker. No tab query runs on startup or in a timer.
-  if (!native() || !await (requestPermission ? chrome.permissions.request({ permissions: ['tabs'] })
-    : chrome.permissions.contains({ permissions: ['tabs'] }))) fail(tr("请在扩展中允许读取标签页。"));
-  if (windowId !== undefined && (!Number.isInteger(windowId) || windowId < 0)) fail(tr("快照操作未完成，请重试。"));
-  const tabs = await chrome.tabs.query(windowId === undefined ? { currentWindow: true } : { windowId });
-  const candidates = tabs.filter((tab) => !tab.incognito).sort((a, b) => a.index - b.index).flatMap((tab) => {
-    try { return [{ url: normalizeUrl(tab.url), title: (tab.title || '').slice(0, 200), pinned: Boolean(tab.pinned) }]; } catch { return []; }
-  });
-  if (!candidates.length) fail(tr("当前窗口没有可保存的普通网页。"));
-  if (candidates.length > 1000) fail(tr("单次最多保存 1000 个标签。"));
-  const core = await loadToolsCore(), unique = core.unique(candidates.map((tab) => tab.url)).map((index) => candidates[index]);
-  return mutate((data) => { const record = { ...newRecord(title(name, new Date().toLocaleString(getLocale()))), tabs: unique }; data.snapshots.push(record); return record; });
-}
-export function renameTabSnapshot(id, revision, name) {
-  return mutate((data) => { const record = recordFor(data.snapshots, id, revision); record.title = title(name); record.updatedAt = Math.max(Date.now(), record.updatedAt); record.revision++; return record; });
-}
-export async function restoreTabSnapshot(id, revision, indices) {
-  const data = await loadPersonalTools(), record = recordFor(data.snapshots, id, revision);
-  if (!Array.isArray(indices) || !indices.length || indices.length > 50 || new Set(indices).size !== indices.length
-    || indices.some((index) => !Number.isInteger(index) || index < 0 || index >= record.tabs.length)) fail(tr("一次请选择 1 至 50 个标签。"));
-  if (!native() || !chrome.tabs?.create) fail(tr("请在浏览器扩展中恢复标签快照。"));
-  // Open a separate window to avoid displacing the current session. Do not
-  // navigate existing tabs, close tabs, or follow non-HTTP(S) saved addresses.
-  const first = record.tabs[indices[0]], window = await chrome.windows.create({ url: normalizeUrl(first.url), focused: false, incognito: false });
-  let opened = 1;
-  try {
-    if (first.pinned && window.tabs?.[0]?.id) await chrome.tabs.update(window.tabs[0].id, { pinned: true });
-    for (const index of indices.slice(1)) { const tab = record.tabs[index]; await chrome.tabs.create({ windowId: window.id, url: normalizeUrl(tab.url), pinned: tab.pinned, active: false }); opened++; }
-  } catch { fail(tr("已打开 {0} 个标签，其余标签未打开。快照仍然保留。", [opened])); }
-  // Focus only after all selected tabs have been created. The worker owns the
-  // operation even if activating this window dismisses its initiating popup.
-  try { await chrome.windows.update(window.id, { focused: true }); } catch { /* The user may have closed the restored window. */ }
-  return opened;
-}
+// Historical snapshot records remain valid for backup compatibility only.
+// A+ has no browser Reading List import or tab-snapshot runtime.
 export async function exportPersonalTools() {
   const data = await loadPersonalTools();
   return new Blob([JSON.stringify({ format: 'covelet-personal-tools', version: 3, exportedAt: new Date().toISOString(), data })], { type: 'application/json' });
@@ -304,12 +257,12 @@ export async function importPersonalTools(file) {
     let count = 0;
     // Merge only new IDs. Existing local edits always win; never silently replace.
     const ids = new Set([...data.notes, ...data.reading, ...data.snapshots].map((item) => item.id)), urls = new Set(data.reading.map((item) => item.url));
-    for (const kind of ['notes', 'reading', 'snapshots']) for (const record of incoming[kind]) {
+    for (const kind of activeKinds) for (const record of incoming[kind]) {
       if (ids.has(record.id) || kind === 'reading' && urls.has(record.url)) continue;
       data[kind].push(copy(record)); ids.add(record.id); if (kind === 'reading') urls.add(record.url); count++;
     }
     const trashIds = new Set(data.trash.map((item) => item.id));
-    for (const item of incoming.trash) if (!trashIds.has(item.id) && item.deletedAt > Date.now() - retention) { data.trash.push(copy(item)); trashIds.add(item.id); count++; }
+    for (const item of incoming.trash) if (activeKinds.includes(item.kind) && !trashIds.has(item.id) && item.deletedAt > Date.now() - retention) { data.trash.push(copy(item)); trashIds.add(item.id); count++; }
     return count;
   });
 }

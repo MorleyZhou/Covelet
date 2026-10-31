@@ -388,13 +388,6 @@
     ]
   },
   {
-    "key": "便笺、稍后读与标签快照仅保存在本机。导入会保留已有记录；这些内容不参与导航同步。",
-    "ui": true,
-    "files": [
-      "src/components/PersonalTools.jsx"
-    ]
-  },
-  {
     "key": "便笺列表",
     "ui": true,
     "files": [
@@ -413,13 +406,6 @@
     "ui": true,
     "files": [
       "src/components/PersonalTools.jsx"
-    ]
-  },
-  {
-    "key": "标签快照",
-    "ui": true,
-    "files": [
-      "src/lib/extensions.js"
     ]
   },
   {
@@ -555,13 +541,6 @@
     "ui": true,
     "files": [
       "src/components/GitHubWidget.jsx"
-    ]
-  },
-  {
-    "key": "从浏览器阅读清单导入",
-    "ui": true,
-    "files": [
-      "src/components/PersonalTools.jsx"
     ]
   },
   {
@@ -1844,13 +1823,6 @@
     ]
   },
   {
-    "key": "请在扩展中保存和恢复标签快照。",
-    "ui": true,
-    "files": [
-      "src/components/PersonalTools.jsx"
-    ]
-  },
-  {
     "key": "曲线 {0}",
     "ui": true,
     "files": [
@@ -2339,13 +2311,6 @@
   },
   {
     "key": "搜索便笺",
-    "ui": true,
-    "files": [
-      "src/components/PersonalTools.jsx"
-    ]
-  },
-  {
-    "key": "搜索标签快照",
     "ui": true,
     "files": [
       "src/components/PersonalTools.jsx"
@@ -3880,13 +3845,6 @@
     ]
   },
   {
-    "key": "安排日期应在行程日期范围内。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "版本预览已失效，或本机导航已更新，请重新查看差异。",
     "ui": false,
     "files": [
@@ -4246,13 +4204,6 @@
     ]
   },
   {
-    "key": "不支持此扩展。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "不支持的数据版本",
     "ui": false,
     "files": [
@@ -4337,13 +4288,6 @@
     ]
   },
   {
-    "key": "待入账周期过多，请先调整账单日期。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
     "key": "待上传快照的内容与文件名不一致。",
     "ui": false,
     "files": [
@@ -4355,20 +4299,6 @@
     "ui": false,
     "files": [
       "src/lib/cloud-webdav.js"
-    ]
-  },
-  {
-    "key": "单词记录无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "单词内容无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
     ]
   },
   {
@@ -4561,34 +4491,6 @@
     ]
   },
   {
-    "key": "附件仅支持图片、PDF 或文本，每个不超过 5 MB。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "复习结果无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "该标的暂无可用行情，请检查代码与市场权限。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "该标的暂无可用走势图。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
     "key": "工具备份格式不支持。",
     "ui": false,
     "files": [
@@ -4652,13 +4554,6 @@
     ]
   },
   {
-    "key": "购物记录无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "还没有可恢复的本地快照。",
     "ui": false,
     "files": [
@@ -4677,48 +4572,6 @@
     "ui": false,
     "files": [
       "src/lib/storage.js"
-    ]
-  },
-  {
-    "key": "汇率服务返回的数据无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "汇率服务没有返回有效数据。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "汇率或金额格式无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "汇率无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "货币精度无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "积分榜数据无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
     ]
   },
   {
@@ -4757,13 +4610,6 @@
     ]
   },
   {
-    "key": "记录数量已达上限，请先整理已有内容。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "加密口令至少需要 12 个字符，且不能超过 1024 字节。",
     "ui": false,
     "files": [
@@ -4799,13 +4645,6 @@
     ]
   },
   {
-    "key": "结束日期不能早于开始日期。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "今日背景暂不可用，继续显示上次缓存。",
     "ui": false,
     "files": [
@@ -4831,34 +4670,6 @@
     "ui": false,
     "files": [
       "src/lib/wallpaper.js"
-    ]
-  },
-  {
-    "key": "金额必须大于零。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "金额超出支持范围。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "金额的小数位超过该货币支持的精度。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "金额无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
     ]
   },
   {
@@ -4901,34 +4712,6 @@
     "ui": false,
     "files": [
       "src/lib/storage.js"
-    ]
-  },
-  {
-    "key": "扩展记录无效，原有内容已保留。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "扩展内容过多或格式无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "扩展数据格式无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "扩展数据无效，原有内容已保留。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
     ]
   },
   {
@@ -5031,13 +4814,6 @@
   },
   {
     "key": "浏览器无法锁定本机数据，请关闭其他 Covelet 页面后重试。",
-    "ui": false,
-    "files": [
-      "src/lib/personal-tools.js"
-    ]
-  },
-  {
-    "key": "浏览器阅读清单超过 500 条，请先整理后再导入。",
     "ui": false,
     "files": [
       "src/lib/personal-tools.js"
@@ -5198,24 +4974,10 @@
     ]
   },
   {
-    "key": "请检查填写的内容。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "请稍后再刷新。",
     "ui": false,
     "files": [
       "src/lib/github-contributions.js"
-    ]
-  },
-  {
-    "key": "请设置含 {number} 的物流接口地址。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
     ]
   },
   {
@@ -5240,38 +5002,10 @@
     ]
   },
   {
-    "key": "请添加食材。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "请填写分类。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "请填写三位货币代码。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
     "key": "请填写完整的 HTTP 或 HTTPS 图标地址。",
     "ui": false,
     "files": [
       "src/lib/site-icons.js"
-    ]
-  },
-  {
-    "key": "请填写有效的 HTTP 或 HTTPS 地址。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
     ]
   },
   {
@@ -5282,38 +5016,10 @@
     ]
   },
   {
-    "key": "请填写有效的份数。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "请填写有效的股票代码。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
     "key": "请填写有效的图标地址。",
     "ui": false,
     "files": [
       "src/lib/site-icons.js"
-    ]
-  },
-  {
-    "key": "请填写有效金额。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "请先保存行情服务和 API Key。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
     ]
   },
   {
@@ -5359,13 +5065,6 @@
     ]
   },
   {
-    "key": "请先选择账户。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
     "key": "请先允许读取此网站的名称和图标。",
     "ui": false,
     "files": [
@@ -5391,84 +5090,6 @@
     "ui": false,
     "files": [
       "src/lib/personal-tools.js"
-    ]
-  },
-  {
-    "key": "请在扩展中允许访问阅读清单。",
-    "ui": false,
-    "files": [
-      "src/lib/personal-tools.js"
-    ]
-  },
-  {
-    "key": "请在浏览器扩展中恢复标签快照。",
-    "ui": false,
-    "files": [
-      "src/lib/personal-tools.js"
-    ]
-  },
-  {
-    "key": "任务步骤无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "任务记录无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "任务清单无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "任务无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "任务已被移除。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "日期无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js",
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "赛程数据无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "赛事 API Key 无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "赛事请求无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
     ]
   },
   {
@@ -5514,13 +5135,6 @@
     ]
   },
   {
-    "key": "时间无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "时钟内核包含不支持的导入。",
     "ui": false,
     "files": [
@@ -5546,13 +5160,6 @@
     "ui": false,
     "files": [
       "src/lib/clock-runtime.js"
-    ]
-  },
-  {
-    "key": "食材数量无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
     ]
   },
   {
@@ -5609,13 +5216,6 @@
     "ui": false,
     "files": [
       "src/lib/visual-worker.js"
-    ]
-  },
-  {
-    "key": "收支类型或日期无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
     ]
   },
   {
@@ -5756,13 +5356,6 @@
     "ui": false,
     "files": [
       "src/lib/cloud-sync.js"
-    ]
-  },
-  {
-    "key": "提醒时间无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
     ]
   },
   {
@@ -6438,13 +6031,6 @@
     ]
   },
   {
-    "key": "无法读取小抄文件。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "无法分析文字背景。",
     "ui": false,
     "files": [
@@ -6509,48 +6095,6 @@
     ]
   },
   {
-    "key": "物流服务返回的数据格式不受支持。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "物流记录无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "物流接口须使用不含账号密码的 HTTPS 地址。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "小抄内容无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "小抄文件格式无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "小抄文件过大。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "新建文件夹",
     "ui": false,
     "files": [
@@ -6569,48 +6113,6 @@
     "ui": false,
     "files": [
       "src/lib/model.js"
-    ]
-  },
-  {
-    "key": "行程安排无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "行程内容无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "行情服务返回的数据无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "行情服务拒绝了请求，请检查密钥、市场权限或请求频率。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "行情请求无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "学习记录无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
     ]
   },
   {
@@ -6719,13 +6221,6 @@
     ]
   },
   {
-    "key": "用餐安排无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "有 {0} 个并发版本可在冲突列表恢复。",
     "ui": false,
     "files": [
@@ -6733,24 +6228,10 @@
     ]
   },
   {
-    "key": "语种代码无效。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
     "key": "预设图标无效",
     "ui": false,
     "files": [
       "src/lib/model.js"
-    ]
-  },
-  {
-    "key": "月份无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
     ]
   },
   {
@@ -6995,34 +6476,6 @@
     ]
   },
   {
-    "key": "账本记录过多，请先导出归档。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "账本金额超出支持范围。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "账本金额无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "账本类型无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
     "key": "找不到要合并的条目",
     "ui": false,
     "files": [
@@ -7048,20 +6501,6 @@
     "ui": false,
     "files": [
       "src/lib/personal-tools.js"
-    ]
-  },
-  {
-    "key": "这条记录已存在。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
-    ]
-  },
-  {
-    "key": "这条记录已在其他页面更新，请重新打开。",
-    "ui": false,
-    "files": [
-      "src/lib/daily-apps.js"
     ]
   },
   {
@@ -7142,27 +6581,6 @@
     ]
   },
   {
-    "key": "周期账单的账户已变更，请重新设置。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "周期账单日期无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
-    "key": "周期账单无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
-    ]
-  },
-  {
     "key": "主屏幕列表无效",
     "ui": false,
     "files": [
@@ -7217,13 +6635,6 @@
     "ui": false,
     "files": [
       "src/lib/cloud-sync.js"
-    ]
-  },
-  {
-    "key": "走势图数据无效。",
-    "ui": false,
-    "files": [
-      "src/lib/market-apps.js"
     ]
   },
   {

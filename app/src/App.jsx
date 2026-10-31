@@ -1,8 +1,6 @@
 import { tr, getLocale, builtinName, providerName, formatNumber } from "./i18n/index.js";
 import { useLanguage } from './i18n/react.js';
 import LanguageSettings from './components/LanguageSettings.jsx';
-import AppWidget, { AppToolWindow } from './components/apps/AppTools.jsx';
-import { isAppId } from './lib/app-catalog.js';
 import { createContext, useContext, useEffect, useLayoutEffect, useCallback, useMemo, useRef, useState } from "react";
 import { Dialog as UIDialog, DialogContent, DialogTitle } from './components/ui/dialog.jsx';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs.jsx';
@@ -153,7 +151,7 @@ function WidgetTile({ item, editing, className, children, presentationHidden = f
     {presentationHidden && <Button key="shield" variant="unstyled" size="unstyled" type="button" className="presentation-widget-lock" data-widget-launcher onClick={requestUnlock} aria-haspopup="dialog" aria-label={tr('输入密码查看隐藏内容')} title={tr('输入密码查看隐藏内容')}>
       <span className="presentation-private-icon" aria-hidden="true"><LockSimple size={26} /></span>
     </Button>}
-    {(presentationHidden || item.config.size === 'mini' || !(isAppId(item.extensionId) || ['notes', 'read-later'].includes(item.extensionId))) && <span className="site-name widget-caption">{presentationHidden ? tr('已隐藏') : builtinName(item.extensionId, item.name)}</span>}
+    {(presentationHidden || item.config.size === 'mini' || !(['notes', 'read-later'].includes(item.extensionId))) && <span className="site-name widget-caption">{presentationHidden ? tr('已隐藏') : builtinName(item.extensionId, item.name)}</span>}
   </div>;
 }
 
@@ -683,21 +681,15 @@ export function App() {
       return saved;
     } finally { release(); }
   }
-  function openClock(item, initialContext) {
+  function openClock(item) {
     if (presentation && hiddenKeys.has(`widget:${item.id}`)) { requestPrivacyUnlock(); return; }
     if (layoutEditor.editing || modal || drag) return;
     stopLayoutPress(); cancelDrag(); setContext(null); setEngineMenu(false); setQuery(''); setFocused(false);
-    setModal(isAppId(item.extensionId) ? { kind: 'app-tool', appId: item.extensionId, id: item.id, initialContext } : { kind: item.extensionId === CLOCK_WIDGET_ID ? 'clock' : item.extensionId === GITHUB_WIDGET_ID ? 'github-tool' : 'personal-tool', id: item.id });
-  }
-  function openAppTool(appId, initialContext) {
-    if (!isAppId(appId)) return;
-    const widget = state.entries.find((item) => item.type === 'widget' && item.extensionId === appId);
-    if (widget && presentation && hiddenKeys.has(`widget:${widget.id}`)) { requestPrivacyUnlock(); return; }
-    setModal({ kind: 'app-tool', appId, id: widget?.id, initialContext });
+    setModal({ kind: item.extensionId === CLOCK_WIDGET_ID ? 'clock' : item.extensionId === GITHUB_WIDGET_ID ? 'github-tool' : 'personal-tool', id: item.id });
   }
   function openEntry(item) {
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
-    if (item.type === 'widget' && ([CLOCK_WIDGET_ID, GITHUB_WIDGET_ID, 'notes', 'read-later'].includes(item.extensionId) || isAppId(item.extensionId))) {
+    if (item.type === 'widget' && ([CLOCK_WIDGET_ID, GITHUB_WIDGET_ID, 'notes', 'read-later'].includes(item.extensionId))) {
       revealDesktopEntry(state, item.id); openClock(item); return;
     }
     if (item.type === "folder") {
@@ -1062,7 +1054,6 @@ export function App() {
         {item.type === 'widget' ? item.extensionId === CLOCK_WIDGET_ID
           ? <ClockWidget entry={item} open={modal?.kind === 'clock' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} />
           : ['notes', 'read-later'].includes(item.extensionId) ? <PersonalWidget entry={item} open={modal?.kind === 'personal-tool' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} Dialog={Modal} portalTarget={mainRef.current} />
-          : isAppId(item.extensionId) ? <AppWidget entry={item} open={modal?.kind === 'app-tool' && modal.appId === item.extensionId} onOpen={(initialContext) => openClock(item, initialContext)} />
           : <GitHubWidget entry={item} open={modal?.kind === 'github-tool' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} /> : item.type === "site" ? <a className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} href={item.url} draggable={false} target={settings.openNewTab ? "_blank" : undefined} rel="noreferrer noopener" title={`${item.name}\n${item.url}`}>
           <SiteIcon entry={item} /><span className="site-name">{item.name}</span>
         </a> : <Button variant="unstyled" size="unstyled" className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} title={item.name} aria-label={item.name} aria-haspopup="dialog" onClick={() => openEntry(item)}>
@@ -1497,7 +1488,6 @@ export function App() {
         {modal?.kind === "extensions" && (
           <ExtensionCenter Dialog={Modal} state={state} initialExtension={modal.initialExtension} editingId={modal.editingId} onUseWidget={useWidget} onRemoveWidget={detachWidget} onConfigureFunctional={() => setModal({ kind: 'sync-settings' })} onClose={() => setModal(null)} />
         )}
-        {modal?.kind === 'app-tool' && <AppToolWindow key={modal.appId} appId={modal.appId} widgetId={modal.id} initialContext={modal.initialContext} Dialog={Modal} onOpenApp={openAppTool} onClose={() => setModal(null)} />}
         {modal?.kind === 'sync-settings' && <Modal title={tr('自定义存储同步')} className="settings-modal sync-settings-modal" wide maximizable closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}><CloudSyncSettings demo={demo} onBusyChange={setBusy} /></Modal>}
         {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} Dialog={Modal} onClose={() => setModal(null)} />}
         {modal?.kind === 'tools-trash' && <PersonalToolsTrashDialog Dialog={Modal} onClose={() => setModal(null)} />}

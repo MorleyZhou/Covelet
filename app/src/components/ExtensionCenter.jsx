@@ -4,27 +4,37 @@ import { SquaresFour, Code, ArrowsClockwise, GithubLogo, MagnifyingGlass, X, Clo
 import { BUNDLED_EXTENSIONS, EXTENSION_CATEGORIES, extensionMetadata, extensionsForCatalog } from '../lib/extensions.js';
 import { WIDGET_SIZE_OPTIONS } from '../lib/widget-model.js';
 import { WIDGET_SIZES } from '../lib/desktop-layout.js';
-import { AppIcon } from './apps/AppTools.jsx';
-import { AppError, useAppAction } from './apps/shared.jsx';
-import Confirm from './PromptDialog.jsx';
+import Confirm, { MessageDialog } from './PromptDialog.jsx';
 import Select from './Select.jsx';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs.jsx';
 import { Input } from './ui/input.jsx';
 import { Button } from './ui/button.jsx';
 import './extensions.css';
 
+function useCatalogAction() {
+  const [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const running = useRef(false);
+  const run = async (action) => {
+    if (running.current) return;
+    running.current = true; setBusy(true); setError('');
+    try { return await action(); }
+    catch (reason) { if (reason.name !== 'AbortError') setError(reason.message || tr('操作失败，请重试。')); }
+    finally { running.current = false; setBusy(false); }
+  };
+  return { busy, error, run, setError };
+}
+
 const catalogTabs = [{ id: 'all', get label() { return tr('全部扩展'); }, Icon: SquaresFour }, ...EXTENSION_CATEGORIES.map((category) => ({
   id: category.id, get label() { return category.label; }, Icon: ({ development: Code, time: Clock, productivity: NotePencil, learning: BookOpen, finance: ChartLine, creative: SquaresFour, life: Package })[category.id] || ArrowsClockwise,
 }))];
 function ExtensionIcon({ extension }) {
-  if (extension.app) return <span className={`extension-item-icon extension-${extension.id}-icon`}><AppIcon appId={extension.id} size="54%" /></span>;
   const Icon = ({ clock: Clock, notes: NotePencil, 'read-later': BookOpen, 'github-contributions': GithubLogo })[extension.id] || ArrowsClockwise;
   return <span className={`extension-item-icon extension-${extension.id}-icon`}><Icon size="54%" aria-hidden="true" /></span>;
 }
 // Management only: no app panel, content data, or provider configuration here.
 function WidgetSettings({ extension, entry, onSave, onRemove, onBusyChange, onDirtyChange }) {
   const initialSize = entry?.config.size || (extension.id === 'github-contributions' ? 'medium' : 'small');
-  const [size, setSize] = useState(initialSize), action = useAppAction(), footprint = WIDGET_SIZES[size];
+  const [size, setSize] = useState(initialSize), action = useCatalogAction(), footprint = WIDGET_SIZES[size];
   useEffect(() => { onBusyChange(action.busy); }, [action.busy, onBusyChange]);
   useEffect(() => { onDirtyChange(size !== initialSize); }, [size, initialSize, onDirtyChange]);
   const save = () => action.run(() => onSave({ ...(entry?.config || (extension.id === 'clock' ? { style: 'analog' } : extension.id === 'github-contributions' ? { username: '' } : {})), size }, entry, extension.id));
@@ -37,7 +47,7 @@ function WidgetSettings({ extension, entry, onSave, onRemove, onBusyChange, onDi
     </figure><div className="extension-size-controls"><Select label={tr('桌面尺寸')} value={size} onChange={setSize} disabled={action.busy} options={WIDGET_SIZE_OPTIONS} />
       <div className="extension-size-actions"><Button type="button" disabled={action.busy} onClick={save}>{entry && !entry.detached ? tr('保存') : tr('添加到桌面')}</Button>
       {entry && !entry.detached && <Button type="button" variant="ghost" disabled={action.busy} onClick={() => action.run(() => onRemove(entry))}>{tr('从桌面移除')}</Button>}</div></div></div>
-    <AppError message={action.error} onClose={() => action.setError('')} />
+    <MessageDialog message={action.error} onClose={() => action.setError('')} />
   </div>;
 }
 export default function ExtensionCenter({ Dialog, state, initialExtension, editingId, onUseWidget, onRemoveWidget, onConfigureFunctional, onClose }) {

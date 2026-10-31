@@ -119,7 +119,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     if (item.namespace === 'assets' || item.namespace === 'navigation-icons' || item.namespace === 'provider-icons') return tr('图片与图标');
     if (item.namespace === 'wallpaper') return tr('壁纸');
     if (item.key === 'owntab.local.v1') return tr('导航、文件夹与外观');
-    if (item.key === 'covelet.tools.v1') return tr('便笺、稍后读与标签快照');
+    if (item.key === 'covelet.tools.v1') return tr('便笺与稍后读');
     if (item.key === 'covelet.content.preferences.v1') return tr('别名与隐私标记');
     if (item.key === 'covelet.desktop-templates.v1') return tr('桌面方案');
     if (item.key === 'covelet.recovery-point.v1') return tr('恢复前副本');

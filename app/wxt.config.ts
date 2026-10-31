@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "wxt";
 import dependencyReload from './scripts/vite-dependency-reload.mjs';
-import processingPdf from './scripts/vite-processing-pdf.mjs';
 
 // One manifest baseline; WXT discovers new-tab, quick-add popup and background.
 // Keep the regular Vite config separate for the web preview and Sites build.
@@ -22,7 +21,7 @@ export default defineConfig({
   // No runner dependency is installed; opening browsers is an explicit action.
   webExt: { enabled: false },
   vite: () => ({
-    plugins: [processingPdf(), react(), dependencyReload(), {
+    plugins: [react(), dependencyReload(), {
       name: "covelet:preserve-module-resource-urls",
       configResolved(config) {
         // WXT 0.21 replaces import.meta.url with self.location.href for its
@@ -32,7 +31,7 @@ export default defineConfig({
         if (config.define) delete config.define["import.meta.url"];
       },
     }],
-    worker: { format: "es", plugins: () => [processingPdf()] },
+    worker: { format: "es", plugins: () => [] },
     build: { modulePreload: { polyfill: false }, sourcemap: false, assetsInlineLimit: 0 },
   }),
 });

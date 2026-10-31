@@ -133,7 +133,6 @@
 浏览器同步尚未开启；数据仅保存在本机。|Browser sync is off. Data is stored only on this device.
 浏览器同步已关闭；本地数据和已有同步区数据均保留。|Browser sync is off. Local and existing sync data were retained.
 浏览器无法锁定本机数据，请关闭其他 Covelet 页面后重试。|Could not lock local data. Close other Covelet pages and retry.
-浏览器阅读清单超过 500 条，请先整理后再导入。|The browser reading list exceeds 500 entries. Reduce it before importing.
 浏览器暂无此网站图标，将使用文字图标。|No browser favicon is available. A letter icon will be used.
 路径搜索不能使用路径跳转符|Path-based search cannot use path traversal segments.
 没有可移动的导航。|No navigation items are available to move.
@@ -166,8 +165,6 @@
 请允许读取这个网站的图标信息。|Allow access to this website’s icon metadata.
 请在 Chrome 或 Edge 扩展中开启浏览器同步。|Enable browser sync in the Chrome or Edge extension.
 请在扩展中允许读取标签页。|Allow tab access in the extension.
-请在扩展中允许访问阅读清单。|Allow reading list access in the extension.
-请在浏览器扩展中恢复标签快照。|Restore tab snapshots in the browser extension.
 尚未配置自定义云同步。|Custom cloud sync is not configured.
 尚未授权访问这个云服务，请先在设置中授权。|Cloud service access is not authorized. Allow it in settings first.
 稍后读格式无效。|Invalid reading list format.

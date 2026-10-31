@@ -1,5 +1,4 @@
 import { tr, getLocale } from "../i18n/index.js";
-import { APP_DEFINITIONS } from './app-catalog.js';
 // The catalog contains only reviewed modules bundled with Covelet. Configuration
 // and imported backups cannot register executable code or download a module.
 export const EXTENSION_TYPES = Object.freeze([
@@ -8,10 +7,6 @@ export const EXTENSION_TYPES = Object.freeze([
 ]);
 
 export const EXTENSION_CATEGORIES = Object.freeze([
-  Object.freeze({ id: 'learning', get label() { return tr('语言学习'); } }),
-  Object.freeze({ id: 'finance', get label() { return tr('财务与行情'); } }),
-  Object.freeze({ id: 'creative', get label() { return tr('处理与创作'); } }),
-  Object.freeze({ id: 'life', get label() { return tr('生活与关注'); } }),
   Object.freeze({ id: 'development', get label() { return tr("开发工具"); } }),
   Object.freeze({ id: 'time', get label() { return tr("时间工具"); } }),
   Object.freeze({ id: 'productivity', get label() { return tr("记录与阅读"); } }),
@@ -19,7 +14,6 @@ export const EXTENSION_CATEGORIES = Object.freeze([
 ]);
 
 export const BUNDLED_EXTENSIONS = Object.freeze([
-  ...APP_DEFINITIONS,
   Object.freeze({ id: 'clock', type: 'widget', category: 'time', get name() { return tr("时钟"); },
     get description() { return tr("世界时钟、时区对照、倒计时与计时。"); }, core: 'clock-core.wasm',
     keywords: Object.freeze(['时间', '时钟', '世界时钟', '时区', '倒计时', '秒表', '计时', 'clock', 'timer']) }),

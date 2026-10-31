@@ -151,7 +151,7 @@ export default function DesktopTemplates({ state, privateEntryIds = [], iconProg
         <h3 className="desktop-template-section-title">{tr('导出预览')}</h3>
         {capturePreview && <TemplatePreview template={capturePreview} caption={tr('仅包含外观、组件布局和已选公开网址。')} />}
         <p className="desktop-template-share-total">{tr('包含 {0} 个网址，不包含自定义图标。', [formatNumber(selectedPublicIds.length)])}</p>
-        <Disclosure title={tr('分享内容说明')} className="desktop-template-sharing-help"><p className="hint">{tr('不包含账号信息、文件夹名称、便笺正文、阅读内容和标签快照。最多可保存 20 份方案。')}</p></Disclosure>
+        <Disclosure title={tr('分享内容说明')} className="desktop-template-sharing-help"><p className="hint">{tr('不包含账号信息、文件夹名称、便笺正文和阅读内容。最多可保存 20 份方案。')}</p></Disclosure>
       </aside>
     </TabsContent>
     <div className="desktop-template-feedback" aria-live="polite">

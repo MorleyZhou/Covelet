@@ -1,0 +1,11 @@
+Covelet 0.2.1 A+ — candidate draft, not submitted
+
+Chrome live is 0.2.0, item clkholbmabommppnlpcnhdgmibibblgb. This patch reduces scope: tab snapshots and browser Reading List import/UI are removed, and the development tree's 17-tool pack is stripped. Notes and manually saved Read Later links remain core features.
+
+No Covelet account is required. Open a new tab to test navigation/search/appearance and the core clock, notes, Read Later and public GitHub contribution widgets. Clicking the toolbar reads only the invoked page using activeTab/scripting and allows Save/Cancel. No broad tabs permission or window collection is present. Notifications are optional; HTTP(S) site access is granted per selected origin.
+
+Business records use locally encrypted IndexedDB. Browser-native sync is disabled. Optional password-encrypted custom-storage sync is off by default and requires the reviewer's own selected provider; there is no developer test account. Credentials and portable sync passwords stay in the browser session. JSON/ZIP exports are not password-encrypted. Legacy removed-feature records may remain in historical exports without capture/restore UI.
+
+All JavaScript/WASM is packaged. No ads, telemetry or Covelet data server. Build/static checks and unit tests are documented in the PR; they do not establish real provider, browser or store acceptance. Hosted privacy-policy publication is a separate pending release step. Support: support@morley.work.
+
+Do not merge — waiting exec OK. No Chrome/Edge submission or Partner Center operation is authorized by this preparation.

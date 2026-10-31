@@ -6,7 +6,7 @@ import { NotePencil, BookOpen, Plus, Trash, PencilSimple, Check, Archive, ArrowS
 import Select from './Select.jsx';
 import { WIDGET_NAMES, WIDGET_SIZE_OPTIONS, validateWidgetConfig } from '../lib/widget-model.js';
 import usePersonalTools from '../lib/use-personal-tools.js';
-import { saveNote, saveReadingItem, deletePersonalRecord, importBrowserReadingList, exportPersonalTools, importPersonalTools, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash } from '../lib/personal-tools.js';
+import { saveNote, saveReadingItem, deletePersonalRecord, exportPersonalTools, importPersonalTools, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash } from '../lib/personal-tools.js';
 import { validateNoteDocument, noteDocumentText } from '../lib/note-document.js';
 import FolioNoteEditor from './FolioNoteEditor.jsx';
 import PromptDialog, { MessageDialog } from './PromptDialog.jsx';
@@ -53,13 +53,13 @@ function PrivateEditor({ hidden, busy, onBusyChange, onDiscard, className = '', 
 export function PersonalToolsTrash({ data, run, busy = false, defaultOpen = false }) {
   const presentation = useContext(PresentationContext), [prompt, setPrompt] = useState(null);
   const hidden = (key) => presentation.active && key && presentation.hiddenKeys.has(key);
-  const items = [...(data?.trash || [])].filter((item) => !hidden(trashPrivacyKey(item))).sort((a, b) => b.deletedAt - a.deletedAt || a.id.localeCompare(b.id));
+  const items = [...(data?.trash || [])].filter((item) => ['notes', 'reading'].includes(item.kind) && !hidden(trashPrivacyKey(item))).sort((a, b) => b.deletedAt - a.deletedAt || a.id.localeCompare(b.id));
   const emptyIds = prompt?.kind === 'empty' ? prompt.items.filter((item) => !hidden(item.privacyKey)).map((item) => item.id) : [];
   return <Disclosure className="personal-trash" title={tr('工具回收站')} defaultOpen={defaultOpen}>
-    <p>{tr('删除的便笺、稍后读和标签快照保留 30 天，最多 200 条，与工具共用 4 MiB 容量。过期记录在下次读取或操作时清理。')}</p>
+    <p>{tr('删除的便笺和稍后读保留 30 天，最多 200 条，与工具共用 4 MiB 容量。过期记录在下次读取或操作时清理。')}</p>
     <div className="personal-trash-header"><span>{tr('{0} 条记录', [formatNumber(items.length)])}</span><Button variant="ghost" type="button" disabled={busy || !items.length} onClick={() => setPrompt({ kind: 'empty', revision: data.revision, items: items.map((item) => ({ id: item.id, privacyKey: trashPrivacyKey(item) })) })}>{tr('清空回收站')}</Button></div>
     <div className="personal-trash-list" aria-label={tr('工具回收站')}>{items.map((item) => <div className="personal-trash-record" key={item.id}>
-      <div><strong>{item.record.title}</strong><small>{item.kind === 'notes' ? tr('便笺') : item.kind === 'reading' ? tr('稍后读') : tr('标签快照')} · {tr('删除于 {0}', [formatDate(item.deletedAt)])}</small></div>
+      <div><strong>{item.record.title}</strong><small>{item.kind === 'notes' ? tr('便笺') : tr('稍后读')} · {tr('删除于 {0}', [formatDate(item.deletedAt)])}</small></div>
       <Button variant="ghost" type="button" disabled={busy} onClick={() => run(() => restoreTrashedPersonalRecord(item.id, { expectedRevision: data.revision }))}>{tr('恢复')}</Button>
       <Button variant="ghost" type="button" disabled={busy} aria-label={tr('永久删除“{0}”', [item.record.title])} onClick={() => setPrompt({ kind: 'delete', id: item.id, title: item.record.title, privacyKey: trashPrivacyKey(item), revision: data.revision })}><Trash size={16} /></Button>
     </div>)}{!items.length && <p className="tool-empty">{tr('回收站为空')}</p>}</div>
@@ -234,6 +234,6 @@ function ReadingTools({ onBusyChange, onDirtyChange, initialRecordId }) {
       {item.status !== 'archived' && <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={tr("归档")} title={tr("归档")} onClick={() => action.run(() => saveReadingItem({ ...item, status: 'archived' }))}><Archive size={17} /></Button>}
       <Button variant="ghost" type="button" className="button quiet" disabled={action.busy || Boolean(draft.url || draft.title)} aria-label={tr("编辑链接")} title={tr("编辑")} onClick={() => setDraft(item)}><PencilSimple size={17} /></Button>
       <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={tr("删除链接")} title={tr("删除")} onClick={() => setDeleting(item)}><Trash size={17} /></Button></div></div>)}{!records.length && <p className="tool-empty">{visibleQuery ? tr("没有找到链接") : tr("暂无链接")}</p>}</TabsContent>
-    <div className="reading-bottom-actions"><Button variant="ghost" type="button" className="button quiet" disabled={action.busy || !globalThis.chrome?.runtime?.id} onClick={() => action.run(importBrowserReadingList)}>{tr("从浏览器阅读清单导入")}</Button><ToolDataActions data={rawData} run={action.run} busy={action.busy} /></div>
+    <div className="reading-bottom-actions"><ToolDataActions data={rawData} run={action.run} busy={action.busy} /></div>
   </div></Tabs>;
 }

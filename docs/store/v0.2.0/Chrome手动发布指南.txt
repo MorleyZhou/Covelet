@@ -1,3 +1,5 @@
+> 历史开发／发布资料，不是 0.2.1 A+ 功能或权限说明。A+ 移除标签快照、浏览器阅读清单导入和 17 项工具；无原生同步，自选存储加密同步默认关闭。Chrome 线上为 0.2.0，0.2.1 尚未提交；当前材料见 docs/store/v0.2.1/ 和 docs/store/发布状态.md。
+
 Covelet v0.2.0 — Chrome 手动更新指南
 准备日期：2026-10-22
 当前交接状态：发布包、五张截图及文案已完成；Google Sites 隐私政策已更新；Chrome 上传和审核提交尚未完成。
@@ -22,7 +24,7 @@ C:\Users\zhoub\Code\Future-Element\OwnTab\docs\store\v0.2.0\listing-zh-CN.txt
 
 本版无需 Covelet 登录，订阅/支付尚未接入。商品说明无需填写未来 $6/年的定价。
 可继续使用现有 Covelet 商店图标及品牌宣传图。
-支持邮箱：support@mudong17.com
+支持邮箱：support@morley.work
 隐私政策：https://sites.google.com/view/covelet-privacy
 
 四、替换五张截图

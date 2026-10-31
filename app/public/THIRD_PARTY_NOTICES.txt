@@ -152,12 +152,3 @@ ChatGPT: https://cdn.oaistatic.com/assets/apple-touch-icon-mz9nytnj.webp
 Grok: https://grok.com/images/android-chrome-monochrome-512x512.png
 Only these exact icon addresses may seed a missing encrypted image cache from
 the package. Existing cached images and user-selected custom URLs are retained.
-
-Packaged app tools (2026-10-30)
-
-The PDF, formatting, structured-data and Markdown tools additionally use pdf-lib,
-yaml, prettier, sql-formatter, react-markdown and remark-gfm. Their exact installed
-versions, reachable production dependencies and original license/notice texts are
-included in APP_TOOL_LICENSES.txt alongside this file. That file also preserves
-Prettier's bundled THIRD-PARTY-NOTICES.md and installed upstream copyright notices.
-Regenerate it with node scripts/generate-app-notices.mjs after dependency changes.

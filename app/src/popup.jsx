@@ -21,7 +21,6 @@ import { loadContentPreferences, useContentPreferences } from './lib/content-pre
 import { privateContentKeys } from './lib/presentation.js';
 import { initializeLocalData } from './lib/initialize-local-data.js';
 import { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
-import TabSnapshotsPopup from './components/TabSnapshotsPopup.jsx';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs.jsx';
 import './owntab.css';
 import './popup.css';
@@ -53,6 +52,7 @@ function AddCurrentPage() {
     const controller = new AbortController();
     (async () => {
       try {
+        // activeTab exposes only the invoked page; no tabs permission or window capture.
         const [tabs, state] = await Promise.all([chrome.tabs.query({ active: true, currentWindow: true }), loadState()]);
         const tab = tabs[0];
         let url = '';
@@ -201,10 +201,10 @@ function AddCurrentPage() {
   const imagePending = initializing || visualPending || preferLocal && asset.phase === 'loading' || Boolean(source) && cached.phase === 'loading';
   const renderedImage = fullBleed ? image : adapted.url || image;
   if (!contentPreferences.ready) return <main className="quick-add theme-system"><h1>Covelet</h1>{contentPreferences.error && <p className="form-error" role="alert">{contentPreferences.error}</p>}</main>;
-  return <Tabs value={destination} onValueChange={setDestination} asChild><main className={`quick-add theme-system ${destination === 'snapshots' ? 'is-snapshots' : ''}`}>
-    <h1>{destination === 'snapshots' ? tr('标签快照') : privateBlocked ? tr('已隐藏') : destination === 'reading' ? tr("添加到稍后读") : original.current ? tr("编辑网站") : tr("添加网站")}</h1>
-    <TabsList className="popup-destination" aria-label={tr("保存位置")}><TabsTrigger value="navigation" disabled={locked}>{tr("网站导航")}</TabsTrigger><TabsTrigger value="reading" disabled={locked}>{tr("稍后读")}</TabsTrigger><TabsTrigger value="snapshots" disabled={locked}>{tr('标签快照')}</TabsTrigger></TabsList>
-    <TabsContent value={destination} className="popup-destination-panel">{destination === 'snapshots' ? <TabSnapshotsPopup onBusyChange={setBusy} /> : privateBlocked
+  return <Tabs value={destination} onValueChange={setDestination} asChild><main className="quick-add theme-system">
+    <h1>{privateBlocked ? tr('已隐藏') : destination === 'reading' ? tr("添加到稍后读") : original.current ? tr("编辑网站") : tr("添加网站")}</h1>
+    <TabsList className="popup-destination" aria-label={tr("保存位置")}><TabsTrigger value="navigation" disabled={locked}>{tr("网站导航")}</TabsTrigger><TabsTrigger value="reading" disabled={locked}>{tr("稍后读")}</TabsTrigger></TabsList>
+    <TabsContent value={destination} className="popup-destination-panel">{privateBlocked
       ? <PrivacyPasswordForm purpose="unlock" onBusyChange={setBusy} onCancel={() => window.close()} /> : <form className="form-stack" onSubmit={save}>
       <label>{tr("名称")}<Input required maxLength={200} disabled={locked || initializing} value={form.name} onChange={(event) => patch({ name: event.target.value })} /></label>
       <label>{tr("网址")}<Input required maxLength={4096} disabled={locked || initializing} value={form.url} placeholder="https://example.com" onChange={(event) => {
