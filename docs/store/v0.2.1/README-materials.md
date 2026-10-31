@@ -22,24 +22,12 @@ Chrome 线上仍为 **v0.2.0**，扩展 ID `clkholbmabommppnlpcnhdgmibibblgb`。
 
 截图保留原始捕获文件；上传前可能需要裁剪至 **1280×800**（Screenshots may need crop to 1280×800 before upload）。
 
-锁定 ZIP：`covelet-0.2.1.zip`，来自 main `22f725cc5c33c468bd8e468f47bd18b11de32bb2`。SHA256：
-
-```text
-bd2e26cb50a5bd3b1183677fdd89275b9499b774a25624f6a4d5c26a85d860dd
-```
-
-原本机路径：`/workspace/covelet-store-021/app/dist/covelet-0.2.1.zip`。本 PR 不重建、不修改、不提交 ZIP，也不修改 `app/` 源码。
+发布 ZIP 由 tag 对应的代码自动构建为 `covelet-0.2.1.zip`，本次构建的 SHA256 记录在 GitHub Release notes 中。材料目录不再指定本机 ZIP 路径或固定校验值。
 
 隐私：已核对 [v0.2.1 政策](privacy-policy.txt)、[根目录 TXT](../privacy-policy.txt) 和 [HTML](../privacy-policy.html) 使用 `support@morley.work`，无浏览器原生同步，不请求 tabs / readingList 权限。托管 Google Sites 隐私页 **待更新**，不在本 PR 范围内；仓库材料不代表托管页已发布。
 
-**Do not merge — waiting CoS/CTO OK**。本 PR 不授权商店上传或提交。
+## Chrome / Edge 自动发布
 
-## Chrome Web Store CI（Path A，待批准）
+参见 [自动发布 CI 使用与配置说明](../release-ci.md)：推送 `v0.2.1` 等发布 tag 会自动构建 ZIP、生成 SHA256、创建或更新 GitHub Release，并向 **Chrome 和 Edge 两个商店提交审核**；也可通过 `workflow_dispatch` 的 `tag` 输入重跑。
 
-[publish-cws.yml](../../../.github/workflows/publish-cws.yml) 使用 **Path A = Chrome Web Store API v2 + Service Account**，仅支持手动 `workflow_dispatch`，不构建扩展。**Do not merge — waiting CoS/CTO/exec OK**；本 PR 不执行上传或商店提交。**Do not workflow_dispatch until Secrets ready and exec re-OK**。
-
-在 GitHub Settings → Environments 创建 `chrome-web-store`，将 `CWS_SERVICE_ACCOUNT_JSON`（服务账号 JSON key）和 `CWS_PUBLISHER_ID` 放在该 Environment 的 Secrets 中；exec 稍后配置 required reviewers。扩展 ID **硬编码**为 `clkholbmabommppnlpcnhdgmibibblgb`（不作 Secret）。服务账号须配置商店发布者访问权限；按 [auth action 文档](https://github.com/google-github-actions/auth#inputs-service-account-key-json)配置自身的 `roles/iam.serviceAccountTokenCreator` 权限及所需 API，令牌 scope 为 `https://www.googleapis.com/auth/chromewebstore`。工作流首先检查两个必需 Secret，缺少任一个即失败。
-
-ZIP 策略：**Release asset + `release_tag` / `asset_name` 输入 + SHA256 gate**。维护者须在首次 dispatch 前创建例如 `v0.2.1-candidate` 的 GitHub Release，在 Assets → Attach binaries 中一次性附加来自 `22f725cc5c33c468bd8e468f47bd18b11de32bb2` 的锁定 `covelet-0.2.1.zip`（原路径见上文）。之后每次手动 dispatch 必填 `release_tag`（例如 `v0.2.1-candidate`），可选 `asset_name`（默认 `covelet-0.2.1.zip`，须为完整文件名，不支持路径或通配符），无需复制 HTTPS asset URL。工作流使用 GitHub CLI 和 `GITHUB_TOKEN`（`contents: read`）从本仓库 Release 下载；Release/tag/asset 缺失或不可访问时明确报错并终止。不要将约 4 MB ZIP 提交进 git。`sha256sum` 必须精确匹配上文完整 SHA256，否则在认证和上传前终止；校验通过后沿用 `covelet-0.2.1.zip` 作为上传文件名。**Do not workflow_dispatch until Secrets ready and exec re-OK**。
-
-批准后，`publish_live=false`（默认）只调用 [API v2 upload](https://developer.chrome.com/docs/webstore/api/reference/rest/v2/media/upload) 更新商店草稿；仍属于真实商店上传。只有 `publish_live=true` 才额外调用 [publish](https://developer.chrome.com/docs/webstore/api/reference/rest/v2/publishers.items/publish) 提交审核，通过后默认发布，并不表示绕过审核或保证立即上线。HTTP / 网络错误会输出响应并失败；上传返回非 `SUCCEEDED`（包括处理中）也会阻止后续提交，需人工检查响应／Dashboard。准备此 PR 期间不得 dispatch、上传或提交。
+发布前配置 `chrome-web-store` 和 `edge-addons` 两个 GitHub Environments 的 secrets，建议启用 required reviewers。**Edge 首次提交必须先在 Partner Center 手动完成；0.2.1 需要准备已有产品及 Edge secrets，API 只能更新已有产品。**
