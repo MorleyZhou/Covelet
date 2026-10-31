@@ -8,10 +8,15 @@ on:
         type: boolean
         required: false
         default: false
-      zip_url:
-        description: Trusted HTTPS download URL for the locked covelet-0.2.1.zip
+      release_tag:
+        description: GitHub Release tag holding the locked ZIP (e.g. v0.2.1-candidate)
         type: string
         required: true
+      asset_name:
+        description: Release asset filename
+        type: string
+        required: false
+        default: covelet-0.2.1.zip
 
 permissions:
   contents: read
@@ -51,24 +56,41 @@ jobs:
 
       - name: Download and verify locked ZIP
         env:
-          ZIP_URL: ${{ inputs.zip_url }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          ASSET_NAME: ${{ inputs.asset_name }}
         run: |
           set -euo pipefail
-          if [[ "$ZIP_URL" != https://* ]]; then
-            echo "::error::zip_url must be a trusted HTTPS URL."
+          if [[ -z "$RELEASE_TAG" ]]; then
+            echo '::error::release_tag is required.'
             exit 1
           fi
+          case "$ASSET_NAME" in
+            ''|.|..|*/*|*\\*|*'*'*|*'?'*|*'['*|*']'*)
+              echo '::error::asset_name must be an exact filename without paths or glob patterns.'
+              exit 1
+              ;;
+          esac
           cd "$GITHUB_WORKSPACE"
-          curl --fail-with-body --silent --show-error --location \
-            --proto '=https' --proto-redir '=https' \
-            --output covelet-0.2.1.zip --url "$ZIP_URL"
+          if ! gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$ASSET_NAME" --dir "$GITHUB_WORKSPACE"; then
+            echo "::error::Unable to download asset '${ASSET_NAME}' from Release tag '${RELEASE_TAG}'. Check that the Release/tag and asset exist and are accessible."
+            exit 1
+          fi
+          if [[ ! -f "$ASSET_NAME" ]]; then
+            echo "::error::Release asset '${ASSET_NAME}' was not downloaded."
+            exit 1
+          fi
           expected_sha='bd2e26cb50a5bd3b1183677fdd89275b9499b774a25624f6a4d5c26a85d860dd'
-          actual_sha="$(sha256sum covelet-0.2.1.zip | cut -d ' ' -f 1)"
+          actual_sha="$(sha256sum -- "$ASSET_NAME" | cut -d ' ' -f 1)"
           if [[ "$actual_sha" != "$expected_sha" ]]; then
             echo "::error::Locked ZIP SHA256 mismatch: expected ${expected_sha}, got ${actual_sha}. Upload blocked."
             exit 1
           fi
           echo "Locked ZIP SHA256 verified: ${actual_sha}"
+          if [[ "$ASSET_NAME" != covelet-0.2.1.zip ]]; then
+            mv -- "$ASSET_NAME" covelet-0.2.1.zip
+          fi
 
       - name: Authenticate with service account
         id: auth
