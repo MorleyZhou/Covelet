@@ -28,7 +28,7 @@
   "migrate.h2": "다른 시작 페이지에서 오기",
   "migrate.disclaimer": "글자 그대로 읽으세요. 이미 출시된 기능으로 보지 마세요.",
   "migrate.bookmarks_title": "북마크 HTML 가져오기",
-  "migrate.bookmarks": "곧 지원. 기기에서 처리하며, 브라우저에서보낸 북마크 파일에 맞습니다.",
+  "migrate.bookmarks": "지금 지원합니다. 기기에서 처리하며, 브라우저에서 내보낸 북마크 파일을 가져올 수 있습니다.",
   "migrate.others_title": "WeTab / Infinity / Arc",
   "migrate.others": "이전 경로는 아직 검토 중입니다.",
   "close.h2": "새 탭은 나를 위해",

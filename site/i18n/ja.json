@@ -28,7 +28,7 @@
   "migrate.h2": "ほかの開始ページからの移行",
   "migrate.disclaimer": "文字どおり読んでください。出荷済み機能だと思わないでください。",
   "migrate.bookmarks_title": "ブックマーク HTML のインポート",
-  "migrate.bookmarks": "近日対応。端末上で処理し、ブラウザから書き出したブックマークファイル向けです。",
+  "migrate.bookmarks": "対応済み。端末上で処理し、ブラウザーから書き出したブックマークファイルを読み込めます。",
   "migrate.others_title": "WeTab / Infinity / Arc",
   "migrate.others": "移行経路はまだ検討中です。",
   "close.h2": "新しいタブは自分のために",

@@ -28,7 +28,7 @@
   "migrate.h2": "Coming from another start page",
   "migrate.disclaimer": "Read these literally. Don’t treat them as shipped features.",
   "migrate.bookmarks_title": "Bookmark HTML import",
-  "migrate.bookmarks": "Coming soon. Runs on device; works with bookmark files exported from the browser.",
+  "migrate.bookmarks": "Available now. Runs on device; works with bookmark files exported from the browser.",
   "migrate.others_title": "WeTab / Infinity / Arc",
   "migrate.others": "Migration paths are still under review.",
   "close.h2": "Keep the new tab for yourself",

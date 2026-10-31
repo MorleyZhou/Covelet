@@ -1,5 +1,11 @@
-.bookmark-import { min-height: 0; }
-.bookmark-import-scroll { min-height: 0; max-height: min(72dvh, 760px); overflow-y: auto; padding: 1px 4px 8px 1px; }
+.modal.wide.bookmark-import-modal { display: flex; flex-direction: column; width: min(760px, calc(100vw - 32px)); height: min(800px, 90dvh); padding: 0; overflow: hidden; }
+.bookmark-import-modal > .modal-title { margin: 0; padding: 22px 24px 16px; }
+.bookmark-import { flex: 1; min-height: 0; min-width: 0; gap: 0; }
+.bookmark-import-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1px 24px 18px; }
+.bookmark-import-scroll > * { flex-shrink: 0; min-width: 0; }
+.bookmark-import > .modal-footer { flex-shrink: 0; margin: 0; padding: 16px 24px; }
+.bookmark-import.form-stack :is(.bookmark-import-check, .bookmark-import-group-heading, .bookmark-import-row, .bookmark-import-filter) { flex-direction: row; }
+.bookmark-import .ui-checkbox { flex-shrink: 0; }
 .bookmark-import-paste { display: grid; gap: 8px; }
 .bookmark-import-paste > span { font-size: 13px; font-weight: 600; }
 .bookmark-import-paste textarea { min-height: 100px; resize: vertical; }
