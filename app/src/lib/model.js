@@ -492,18 +492,22 @@ export function configureWidget(input, extensionId, config, id, { page = 0 } = {
 }
 
 export function parseBookmarks(html) {
-  if (typeof html !== 'string' || new TextEncoder().encode(html).byteLength > 5 * 1024 * 1024) fail(tr("书签文件无效或超过 5 MB"));
+  if (typeof html !== 'string') fail(tr('请选择浏览器导出的书签 HTML 文件。'));
+  if (new TextEncoder().encode(html).byteLength > 5 * 1024 * 1024) fail(tr('书签文件不能超过 5 MB'));
+  if (!html.trim()) fail(tr('书签文件为空，请选择浏览器导出的 HTML 文件。'));
   if (typeof DOMParser === 'undefined') fail(tr("当前环境不能解析书签 HTML"));
   // Parse imported markup only inside an inert template. Scripts and resource tags never enter a rendered document.
   const document = new DOMParser().parseFromString('', 'text/html');
   const template = document.createElement('template');
   template.innerHTML = html;
+  const list = template.content.querySelector('dl');
+  if (!list) fail(tr('请选择浏览器导出的书签 HTML 文件。'));
   const plan = { folders: [], sites: [], invalid: [], duplicateCount: 0 };
   const folderNames = new Set();
   const shortName = (value, fallback) => String(value ?? '').replace(/[\u0000-\u001f\u007f]/gu, ' ').trim().slice(0, MAX_NAME) || fallback;
   const folder = (path) => {
     const originalPath = path.join(' / ');
-    const base = shortName(originalPath, '未命名文件夹');
+    const base = shortName(originalPath, tr('未命名文件夹'));
     let label = base, count = 2;
     while (folderNames.has(label)) {
       const suffix = ` (${count++})`;
@@ -514,8 +518,12 @@ export function parseBookmarks(html) {
     if (plan.folders.length + plan.sites.length > MAX_ENTRIES) fail(tr("导入条目不能超过 {0}", [MAX_ENTRIES]));
     return label;
   };
-  const walk = (node, path = [], parentName = null) => {
+  const walk = (node, path = [], parentName = null, depth = 0) => {
+    if (depth > 64) fail(tr('书签文件夹层级过深，请减少层级后重试。'));
     if (node.nodeType !== 1 && node.nodeType !== 11) return;
+    // Only Netscape list/entry elements are data. Ignore descriptions,
+    // scripts, templates and resource tags, even if they contain links.
+    if (!['DL', 'DT', 'H3', 'A', 'P'].includes(node.tagName)) return;
     if (node.tagName === 'A') {
       const raw = node.getAttribute('href') ?? '';
       try {
@@ -524,7 +532,7 @@ export function parseBookmarks(html) {
         if (plan.folders.length + plan.sites.length > MAX_ENTRIES) fail(tr("导入条目不能超过 {0}", [MAX_ENTRIES]));
       } catch (error) {
         if (plan.folders.length + plan.sites.length > MAX_ENTRIES) throw error;
-        plan.invalid.push({ name: shortName(node.textContent, '未命名网址'), url: raw.slice(0, MAX_URL), reason: error.message });
+        plan.invalid.push({ name: shortName(node.textContent, tr('未命名网址')), url: raw.slice(0, MAX_URL), reason: tr('书签地址无效，仅支持不含用户名和密码的 HTTP 或 HTTPS 网址。') });
         if (plan.invalid.length > MAX_ENTRIES) fail(tr("无效书签不能超过 {0}", [MAX_ENTRIES]));
       }
       return;
@@ -532,27 +540,37 @@ export function parseBookmarks(html) {
     const children = Array.from(node.children ?? []);
     const heading = node.tagName === 'DT' ? children.find((child) => child.tagName === 'H3') : null;
     if (heading) {
-      const nextPath = [...path, shortName(heading.textContent, '未命名文件夹')];
+      const nextPath = [...path, shortName(heading.textContent, tr('未命名文件夹'))];
       const nextName = folder(nextPath);
-      children.filter((child) => child !== heading).forEach((child) => walk(child, nextPath, nextName));
-      return;
+      children.filter((child) => child !== heading).forEach((child) => walk(child, nextPath, nextName, depth + 1));
+      // Some exporters explicitly close DT before its sibling DL.
+      return children.some((child) => child.tagName === 'DL') ? null : { path: nextPath, name: nextName };
     }
     let pending = null;
     for (const child of children) {
       if (child.tagName === 'H3') {
-        const nextPath = [...path, shortName(child.textContent, '未命名文件夹')];
+        const nextPath = [...path, shortName(child.textContent, tr('未命名文件夹'))];
         pending = { path: nextPath, name: folder(nextPath) };
       } else if (child.tagName === 'DL' && pending) {
-        walk(child, pending.path, pending.name); pending = null;
-      } else walk(child, path, parentName);
+        walk(child, pending.path, pending.name, depth + 1); pending = null;
+      } else if (child.tagName === 'DD') {
+        // Firefox folder descriptions close DT and can own the following DL.
+        // Read that list, while leaving links in the description itself out.
+        const lists = Array.from(child.children).filter((item) => item.tagName === 'DL');
+        for (const list of lists) walk(list, pending?.path ?? path, pending?.name ?? parentName, depth + 1);
+        if (lists.length) pending = null;
+      } else if (child.tagName === 'P' && !child.children.length) {
+        // Optional paragraph separators do not consume a pending heading.
+      } else pending = walk(child, path, parentName, depth + 1) || null;
     }
   };
-  walk(template.content);
+  walk(list);
+  if (!plan.sites.length && !plan.invalid.length) fail(tr('文件中没有可导入的书签。'));
   const populatedFolders = new Set(plan.sites.map((site) => site.folder).filter((folderName) => folderName !== null));
   plan.folders = plan.folders.filter((folder) => populatedFolders.has(folder.name));
   const seen = new Set();
   for (const site of plan.sites) {
-    const key = JSON.stringify([site.folder, site.url]);
+    const key = site.url;
     if (seen.has(key)) plan.duplicateCount += 1;
     seen.add(key);
   }
@@ -570,21 +588,20 @@ export function applyBookmarkImport(input, plan, groupId = 'group-home') {
     object(item, tr("导入文件夹")); const label = name(item.name, tr("文件夹名称"));
     if (declared.has(label)) fail(tr("导入计划中的文件夹名称重复"));
     declared.add(label);
-    if (!folders.has(label)) {
-      const id = newId('folder');
-      state.entries.push({ id, type: 'folder', name: label, groupId, parentId: null, icon: letterIcon(label), order: state.entries.filter((entry) => entry.groupId === groupId && entry.parentId === null).length });
-      folders.set(label, id);
-    }
   }
-  const seen = new Set(state.entries.filter((entry) => entry.type === 'site' && entry.groupId === groupId).map((entry) => JSON.stringify([entry.parentId, entry.url])));
+  const seen = new Set(state.entries.filter((entry) => entry.type === 'site').map((entry) => entry.url));
   for (const item of plan.sites) {
     object(item, tr("导入网址"));
     const label = name(item.name), url = normalizeUrl(item.url);
     if (item.folder !== null && (typeof item.folder !== 'string' || !declared.has(item.folder))) fail(tr("导入网址引用了未知文件夹"));
+    if (seen.has(url)) continue;
+    seen.add(url);
+    if (item.folder !== null && !folders.has(item.folder)) {
+      const id = newId('folder');
+      state.entries.push({ id, type: 'folder', name: item.folder, groupId, parentId: null, icon: letterIcon(item.folder), order: state.entries.filter((entry) => entry.groupId === groupId && entry.parentId === null).length });
+      folders.set(item.folder, id);
+    }
     const parentId = item.folder === null ? null : folders.get(item.folder);
-    const key = JSON.stringify([parentId, url]);
-    if (seen.has(key)) continue;
-    seen.add(key);
     state.entries.push({ id: newId('site'), type: 'site', name: label, url, groupId, parentId, icon: letterIcon(label), order: state.entries.filter((entry) => entry.groupId === groupId && entry.parentId === parentId).length });
   }
   return finish(state);

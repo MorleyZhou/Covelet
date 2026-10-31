@@ -278,12 +278,13 @@ test('文件夹内部拖放只重排，移出或删除倒数第二项自动在�
   assert.doesNotThrow(() => validateState(emptied));
 });
 
-test('导入按目标容器去重，多次导入复用文件夹，不修改原数据', () => {
+test('导入按网址保留本地，多次导入复用文件夹，不修改原数据', () => {
   const state = createEmptyState();
   const plan = { folders: [{ name: '开发 / 文档', originalPath: '开发 / 文档' }], sites: [
     { name: '根网址', url: 'https://example.com', folder: null },
     { name: '根网址重复', url: 'https://example.com/', folder: null },
     { name: '文件夹网址', url: 'https://example.com/', folder: '开发 / 文档' },
+    { name: '新网址', url: 'https://docs.example.com/', folder: '开发 / 文档' },
   ] };
   const first = applyBookmarkImport(state, plan, 'group-home');
   assert.equal(state.entries.length, 0);

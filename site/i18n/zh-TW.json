@@ -28,7 +28,7 @@
   "migrate.h2": "從別的起始頁過來",
   "migrate.disclaimer": "以下按字面理解，不要當成已上線功能。",
   "migrate.bookmarks_title": "書籤 HTML 匯入",
-  "migrate.bookmarks": "即將支援。在本機處理，適合瀏覽器匯出的書籤檔。",
+  "migrate.bookmarks": "現已支援。在本機處理，適合瀏覽器匯出的書籤檔。",
   "migrate.others_title": "WeTab / Infinity / Arc",
   "migrate.others": "遷移路徑仍在評估。",
   "close.h2": "把新分頁留給自己",

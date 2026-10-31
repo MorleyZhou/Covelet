@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { FileArrowUp, Folder, Link, MagnifyingGlass } from '@phosphor-icons/react';
 import { tr, formatNumber } from '../i18n/index.js';
-import { parseBookmarks } from '../lib/model.js';
+import { readBookmarkFile } from '../lib/bookmark-file.js';
 import { parseBulkLinks, prepareImport } from '../lib/import-plan.js';
 import { PresentationContext } from '../lib/presentation.js';
 import { Button } from './ui/button.jsx';
@@ -9,10 +9,9 @@ import { Input } from './ui/input.jsx';
 import { Textarea } from './ui/textarea.jsx';
 import { Checkbox } from './ui/checkbox.jsx';
 import Select from './Select.jsx';
-import NavigationIconStatus from './NavigationIconStatus.jsx';
 import './import-plan.css';
 
-export default function BookmarkImport({ state, initialPlan = null, initialPage = 0, columns = 8, iconProgress, onApply, onClose, onBusyChange }) {
+export default function BookmarkImport({ state, initialPlan = null, initialPage = 0, columns = 8, onApply, onClose, onBusyChange }) {
   const presentation = useContext(PresentationContext);
   const [plan, setPlan] = useState(initialPlan), [text, setText] = useState(''), [query, setQuery] = useState('');
   const [selected, setSelected] = useState(() => new Set(initialPlan?.sites.map((_, index) => index) ?? []));
@@ -77,10 +76,9 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
   const loadFile = (event) => {
     const file = event.target.files?.[0]; event.target.value = '';
     if (!file) return;
-    run(async () => {
-      if (file.size > 5 * 1024 * 1024) throw Error(tr('书签文件不能超过 5 MB'));
-      usePlan(parseBookmarks(await file.text()));
-    });
+    // A rejected replacement must not leave the previous file ready to apply.
+    setPlan(null); setSelected(new Set());
+    run(async () => usePlan(await readBookmarkFile(file)));
   };
   return <div className="bookmark-import form-stack">
     <div className="bookmark-import-scroll form-stack">
@@ -89,9 +87,10 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
       </label>
       <div className="bookmark-import-source-actions">
         <Button type="button" variant="secondary" disabled={busy || !text.trim()} onClick={() => run(() => usePlan(parseBulkLinks(text)))}><Link size={16} />{tr('预览网址')}</Button>
-        <Button type="button" variant="outline" disabled={busy} onClick={() => fileInput.current?.click()}><FileArrowUp size={16} />{tr('导入书签文件')}</Button>
+        <Button type="button" variant="outline" disabled={busy} onClick={() => fileInput.current?.click()}><FileArrowUp size={16} />{tr('导入书签 HTML 文件')}</Button>
         <Input ref={fileInput} type="file" hidden accept="text/html,.html,.htm" onChange={loadFile} />
       </div>
+      <p className="hint">{tr('支持 Chrome、Firefox 和 Edge 导出的书签 HTML 文件，仅在本机处理。')}</p>
       {plan && <>
         <div className="bookmark-import-target">
           <Select label={tr('目标主屏幕')} value={String(page)} onChange={(value) => setPage(Number(value))} disabled={busy || targetFolderId !== 'original'} options={pages.map((value, index) => ({ value: String(value), label: tr('第 {0} 屏', [formatNumber(index + 1)]) }))} />
@@ -123,8 +122,7 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
           {!visibleRows.length && <p className="bookmark-import-empty">{plan.sites.length ? tr('没有匹配的导入条目') : tr('没有可导入的网址')}</p>}
         </div>
       </>}
-      {(error || prepared?.error || changed) && <p className="form-error" role="alert">{changed ? tr('桌面已在其他页面更新，请关闭后重新打开导入。') : error || prepared?.error}</p>}
-      <NavigationIconStatus report={iconProgress} busy={busy} />
+      {(error || prepared?.error || changed) && <p className="form-error" role="alert">{changed ? tr('桌面已在其他页面更新，请关闭后重新打开导入。') : tr(error || prepared?.error)}</p>}
     </div>
     <div className="modal-footer">
       <Button type="button" variant="secondary" disabled={busy} onClick={onClose}>{tr('取消')}</Button>

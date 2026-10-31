@@ -207,7 +207,13 @@
     "en": "This window has no eligible web pages to save."
   },
   "当前环境不能解析书签 HTML": {
-    "en": "This environment cannot parse bookmark HTML."
+    "en": "This environment cannot parse bookmark HTML.",
+    "zh-TW": "目前環境無法解析書籤 HTML。",
+    "ja": "この環境ではブックマーク HTML を解析できません。",
+    "ko": "현재 환경에서는 북마크 HTML을 분석할 수 없습니다.",
+    "de": "Diese Umgebung kann Lesezeichen-HTML nicht verarbeiten.",
+    "fr": "Cet environnement ne peut pas analyser les favoris HTML.",
+    "ru": "В этой среде невозможно обработать HTML-закладки."
   },
   "当前环境无法处理图片。": {
     "en": "This environment cannot process images."
@@ -246,7 +252,13 @@
     "en": "Import destination does not exist."
   },
   "导入条目不能超过 {0}": {
-    "en": "Import at most {0} entries."
+    "en": "Import at most {0} entries.",
+    "zh-TW": "匯入項目不可超過 {0} 筆。",
+    "ja": "読み込める項目は {0} 件までです。",
+    "ko": "가져올 항목은 {0}개를 초과할 수 없습니다.",
+    "de": "Höchstens {0} Einträge importieren.",
+    "fr": "Importez au maximum {0} éléments.",
+    "ru": "Можно импортировать не более {0} записей."
   },
   "导入网址": {
     "en": "Imported URL"
@@ -876,7 +888,13 @@
     "ru": "Не удалось расшифровать данные синхронизации. Проверьте пароль шифрования и целостность облачного документа."
   },
   "无效书签不能超过 {0}": {
-    "en": "Invalid bookmarks must not exceed {0}."
+    "en": "Invalid bookmarks must not exceed {0}.",
+    "zh-TW": "無效書籤不可超過 {0} 筆。",
+    "ja": "無効なブックマークは {0} 件までです。",
+    "ko": "잘못된 북마크는 {0}개를 초과할 수 없습니다.",
+    "de": "Höchstens {0} ungültige Lesezeichen zulässig.",
+    "fr": "Le nombre de favoris invalides ne doit pas dépasser {0}.",
+    "ru": "Недопустимых закладок должно быть не более {0}."
   },
   "新建文件夹": {
     "en": "New folder"
@@ -11611,5 +11629,104 @@
     "de": "Nach erfolgreicher erster Synchronisierung automatisch synchronisieren",
     "fr": "Synchroniser automatiquement après une première synchronisation réussie",
     "ru": "Синхронизировать автоматически после первой успешной синхронизации"
+  },
+  "请选择浏览器导出的书签 HTML 文件。": {
+    "en": "Choose a bookmark HTML file exported by your browser.",
+    "zh-TW": "請選擇瀏覽器匯出的書籤 HTML 檔案。",
+    "ja": "ブラウザーから書き出したブックマーク HTML ファイルを選んでください。",
+    "ko": "브라우저에서 내보낸 북마크 HTML 파일을 선택하세요.",
+    "de": "Wählen Sie eine vom Browser exportierte Lesezeichen-HTML-Datei.",
+    "fr": "Choisissez un fichier HTML de favoris exporté par votre navigateur.",
+    "ru": "Выберите HTML-файл закладок, экспортированный из браузера."
+  },
+  "书签文件为空，请选择浏览器导出的 HTML 文件。": {
+    "en": "The bookmark file is empty. Choose an HTML export from your browser.",
+    "zh-TW": "書籤檔案為空，請選擇瀏覽器匯出的 HTML 檔案。",
+    "ja": "ファイルが空です。ブラウザーから書き出した HTML ファイルを選んでください。",
+    "ko": "북마크 파일이 비어 있습니다. 브라우저에서 내보낸 HTML 파일을 선택하세요.",
+    "de": "Die Lesezeichendatei ist leer. Wählen Sie einen HTML-Export Ihres Browsers.",
+    "fr": "Le fichier de favoris est vide. Choisissez un export HTML de votre navigateur.",
+    "ru": "Файл закладок пуст. Выберите HTML-файл, экспортированный из браузера."
+  },
+  "文件中没有可导入的书签。": {
+    "en": "This file contains no bookmarks to import.",
+    "zh-TW": "檔案中沒有可匯入的書籤。",
+    "ja": "このファイルには読み込めるブックマークがありません。",
+    "ko": "이 파일에 가져올 북마크가 없습니다.",
+    "de": "Diese Datei enthält keine importierbaren Lesezeichen.",
+    "fr": "Ce fichier ne contient aucun favori à importer.",
+    "ru": "В файле нет закладок для импорта."
+  },
+  "书签文件夹层级过深，请减少层级后重试。": {
+    "en": "Bookmark folders are nested too deeply. Reduce the nesting and try again.",
+    "zh-TW": "書籤資料夾層級過深，請減少層級後重試。",
+    "ja": "ブックマークのフォルダー階層が深すぎます。階層を減らして再試行してください。",
+    "ko": "북마크 폴더의 중첩이 너무 깊습니다. 단계를 줄인 후 다시 시도하세요.",
+    "de": "Die Lesezeichenordner sind zu tief verschachtelt. Verringern Sie die Tiefe und versuchen Sie es erneut.",
+    "fr": "Les dossiers de favoris sont trop imbriqués. Réduisez les niveaux et réessayez.",
+    "ru": "Слишком много уровней папок закладок. Уменьшите вложенность и повторите попытку."
+  },
+  "无法读取书签文件，请重新选择。": {
+    "en": "Unable to read the bookmark file. Select it again.",
+    "zh-TW": "無法讀取書籤檔案，請重新選擇。",
+    "ja": "ブックマークファイルを読み込めません。選び直してください。",
+    "ko": "북마크 파일을 읽을 수 없습니다. 다시 선택하세요.",
+    "de": "Die Lesezeichendatei kann nicht gelesen werden. Wählen Sie sie erneut.",
+    "fr": "Impossible de lire le fichier de favoris. Sélectionnez-le à nouveau.",
+    "ru": "Не удалось прочитать файл закладок. Выберите его заново."
+  },
+  "书签地址无效，仅支持不含用户名和密码的 HTTP 或 HTTPS 网址。": {
+    "en": "Invalid bookmark URL. Only HTTP or HTTPS URLs without a username or password are supported.",
+    "zh-TW": "書籤地址無效，僅支援不含使用者名稱和密碼的 HTTP 或 HTTPS 網址。",
+    "ja": "無効なブックマーク URL です。ユーザー名やパスワードを含まない HTTP または HTTPS の URL のみ対応しています。",
+    "ko": "잘못된 북마크 주소입니다. 사용자 이름과 비밀번호가 없는 HTTP 또는 HTTPS 주소만 지원합니다.",
+    "de": "Ungültige Lesezeichen-URL. Unterstützt werden nur HTTP- oder HTTPS-URLs ohne Benutzername und Passwort.",
+    "fr": "URL de favori invalide. Seules les URL HTTP ou HTTPS sans identifiant ni mot de passe sont acceptées.",
+    "ru": "Недопустимый адрес закладки. Поддерживаются только адреса HTTP и HTTPS без имени пользователя и пароля."
+  },
+  "未命名文件夹": {
+    "en": "Untitled folder",
+    "zh-TW": "未命名資料夾",
+    "ja": "無題のフォルダー",
+    "ko": "이름 없는 폴더",
+    "de": "Unbenannter Ordner",
+    "fr": "Dossier sans nom",
+    "ru": "Папка без названия"
+  },
+  "导入书签 HTML 文件": {
+    "en": "Import bookmark HTML file",
+    "zh-TW": "匯入書籤 HTML 檔案",
+    "ja": "ブックマーク HTML を読み込む",
+    "ko": "북마크 HTML 파일 가져오기",
+    "de": "Lesezeichen-HTML importieren",
+    "fr": "Importer un fichier HTML de favoris",
+    "ru": "Импортировать HTML-файл закладок"
+  },
+  "导入网址与书签 HTML": {
+    "en": "Import URLs and bookmark HTML",
+    "zh-TW": "匯入網址與書籤 HTML",
+    "ja": "URL とブックマーク HTML を読み込む",
+    "ko": "URL 및 북마크 HTML 가져오기",
+    "de": "URLs und Lesezeichen-HTML importieren",
+    "fr": "Importer des URL et des favoris HTML",
+    "ru": "Импорт URL и HTML-закладок"
+  },
+  "支持 Chrome、Firefox 和 Edge 导出的书签 HTML 文件，仅在本机处理。": {
+    "en": "Supports bookmark HTML exports from Chrome, Firefox and Edge. Processed on this device only.",
+    "zh-TW": "支援 Chrome、Firefox 和 Edge 匯出的書籤 HTML 檔案，僅在本機處理。",
+    "ja": "Chrome、Firefox、Edge のブックマーク HTML に対応。処理はこの端末内で行います。",
+    "ko": "Chrome, Firefox, Edge에서 내보낸 북마크 HTML을 지원하며 이 기기에서만 처리합니다.",
+    "de": "Unterstützt HTML-Lesezeichenexporte aus Chrome, Firefox und Edge. Verarbeitung nur auf diesem Gerät.",
+    "fr": "Prend en charge les exports HTML de favoris de Chrome, Firefox et Edge. Traitement uniquement sur cet appareil.",
+    "ru": "Поддерживаются HTML-файлы закладок из Chrome, Firefox и Edge. Обработка только на этом устройстве."
+  },
+  "已导入 {0} 个网址，跳过 {1} 条重复网址。": {
+    "en": "Imported {0} URLs; skipped {1} duplicate URLs.",
+    "zh-TW": "已匯入 {0} 個網址，略過 {1} 筆重複網址。",
+    "ja": "{0} 件の URL を読み込み、重複する {1} 件をスキップしました。",
+    "ko": "URL {0}개를 가져오고 중복 URL {1}개를 건너뛰었습니다.",
+    "de": "{0} URLs importiert; {1} doppelte URLs übersprungen.",
+    "fr": "{0} URL importées ; {1} URL en doublon ignorées.",
+    "ru": "Импортировано адресов: {0}; пропущено повторов: {1}."
   }
 }

@@ -28,7 +28,7 @@
   "migrate.h2": "从别的起始页过来",
   "migrate.disclaimer": "以下按字面理解，不要当成已上线功能。",
   "migrate.bookmarks_title": "书签 HTML 导入",
-  "migrate.bookmarks": "即将支持。在本机处理，适合浏览器导出的书签文件。",
+  "migrate.bookmarks": "现已支持。在本机处理，适合浏览器导出的书签文件。",
   "migrate.others_title": "WeTab / Infinity / Arc",
   "migrate.others": "迁移路径仍在评估。",
   "close.h2": "把新标签页留给自己",

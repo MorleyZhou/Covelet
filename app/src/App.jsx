@@ -42,7 +42,6 @@ import {
   moveEntry,
   deleteEntry,
   migrateNavigationState,
-  parseBookmarks,
   letterIcon,
   DEFAULT_ICON_BACKGROUND,
   configureWidget,
@@ -106,6 +105,7 @@ import { PresentationContext, privateContentKeys } from './lib/presentation.js';
 import ContentPreferences from './components/ContentPreferences.jsx';
 import PrivacyPasswordDialog, { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
 import BookmarkImport from './components/BookmarkImport.jsx';
+import { readBookmarkFile } from './lib/bookmark-file.js';
 import DesktopTemplates from './components/DesktopTemplates.jsx';
 import RecoveryCenter, { downloadRecoveryFile } from './components/RecoveryCenter.jsx';
 import { recoveryCenter } from './lib/recovery-center.js';
@@ -667,13 +667,14 @@ export function App() {
       return null;
     }
   }
-  async function commitImportedNavigation(next, addedIds, expected, message) {
+  async function commitImportedNavigation(next, addedIds, expected, message, { hydrateIcons = true } = {}) {
     const imported = { entries: next.entries.filter((item) => addedIds.has(item.id)) };
     const release = retainNavigationIconResources(imported);
     try {
-      const icons = await prepareImportedNavigationIcons(imported, {
+      // Bookmark/URL imports keep letter icons and never acquire favicons.
+      const icons = hydrateIcons ? await prepareImportedNavigationIcons(imported, {
         onIconProgress: setIconProgress, isCurrent: () => preferenceState.current.revision === expected,
-      });
+      }) : { cancelled: false, failed: 0 };
       if (icons.cancelled) throw Error(tr('数据已更新，已停止本次图标补齐，请重试。'));
       const preferences = await loadContentPreferences();
       if (preferences.presentation && imported.entries.some((item) => item.parentId && preferences.privateKeys.includes(`folder:${item.parentId}`))) throw Error(tr('请先输入密码解除隐藏。'));
@@ -966,8 +967,7 @@ export function App() {
     e.target.value = "";
     if (!file) return;
     try {
-      if (file.size > 5 * 1024 * 1024) throw Error(tr("书签文件不能超过 5 MB"));
-      const plan = parseBookmarks(await file.text());
+      const plan = await readBookmarkFile(file);
       setImportPlan(plan);
       setModal({ kind: "bookmarks", revision: state.revision });
     } catch (e) {
@@ -1549,12 +1549,13 @@ export function App() {
             onProviderIconReady={() => setProviderIconEpoch((value) => value + 1)}
           />
         )}
-        {modal?.kind === 'bookmarks' && <Modal title={tr('导入网址与书签')} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide>
-          <BookmarkImport state={state} initialPlan={importPlan} initialPage={desktopScreen.current.page} columns={desktopScreen.current.columns} iconProgress={iconProgress}
+        {modal?.kind === 'bookmarks' && <Modal title={tr('导入网址与书签 HTML')} className="bookmark-import-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide>
+          <BookmarkImport state={state} initialPlan={importPlan} initialPage={desktopScreen.current.page} columns={desktopScreen.current.columns}
             onBusyChange={setBusy} onClose={() => setModal(null)} onApply={async (prepared) => {
               const before = state;
               const added = new Set(prepared.rows.filter((row) => row.willAdd).map((row) => row.entryId));
-              const saved = await commitImportedNavigation(prepared.state, added, prepared.sourceRevision, tr('已导入 {0} 个网址。', [formatNumber(prepared.addedSites)]));
+              const saved = await commitImportedNavigation(prepared.state, added, prepared.sourceRevision,
+                tr('已导入 {0} 个网址，跳过 {1} 条重复网址。', [formatNumber(prepared.addedSites), formatNumber(prepared.skippedDuplicates)]), { hydrateIcons: false });
               if (!saved) return false;
               setUndo({ before, revision: saved.revision });
               if (prepared.revealId) revealDesktopEntry(saved, prepared.revealId);
@@ -1880,7 +1881,7 @@ function Settings({
               <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onCloudSync)}>
                 {tr('自定义存储同步')}</Button>
               <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onBookmarks)}>
-                <UploadSimple size={19} />{tr('导入网址与书签')}</Button>
+                <UploadSimple size={19} />{tr('导入网址与书签 HTML')}</Button>
               <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onExport)}>
                 <DownloadSimple size={19} />{tr("导出完整备份")}</Button>
               <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onImport)}>
