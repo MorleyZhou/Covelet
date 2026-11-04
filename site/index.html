@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" data-i18n-content="hero.lead" content="Covelet 是 Chrome / Edge 新标签页扩展。导航和便笺用 AES 存在本机。跨设备时，同步到你自备的 WebDAV（坚果云或 Nextcloud）。没有 Covelet 业务服务器，也不中转密文。">
+  <meta name="description" data-i18n-content="meta.description" content="Covelet：无账号、本机加密、自备 WebDAV。扩展零遥测、不加 PostHog。官网可用无 Cookie 的 Cloudflare Web Analytics。">
   <meta name="theme-color" content="#B9FF66">
-  <title data-i18n="meta.title">可验证、不会变质的私人起始页</title>
+  <title data-i18n="meta.title">Covelet · 可验证、不会变质的私人起始页</title>
   <link rel="icon" href="assets/covelet-mark-brutal.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <script src="site.js" defer></script>
@@ -43,7 +43,7 @@
       <div>
         <h1 id="hero-title" data-i18n="hero.h1">可验证、不会变质的私人起始页</h1>
         <p class="sub" data-i18n="hero.tagline">无账号 · 本地加密 · 数据只在你自己的存储里</p>
-        <p class="lead" data-i18n="hero.lead">Covelet 是 Chrome / Edge 新标签页扩展。导航和便笺用 AES 存在本机。跨设备时，同步到你自备的 WebDAV（坚果云或 Nextcloud）。没有 Covelet 业务服务器，也不中转密文。</p>
+        <p class="lead" data-i18n="hero.lead">Covelet 是 Chrome / Edge 的新标签页扩展。导航和便笺在本机用 AES 加密保存。跨设备时，同步到你自己的 WebDAV（坚果云或 Nextcloud）。没有 Covelet 业务服务器，也不中转密文。</p>
         <div class="cta-row" id="install">
           <a class="btn" href="https://chromewebstore.google.com/detail/covelet/clkholbmabommppnlpcnhdgmibibblgb" data-i18n="install.chrome_label" data-i18n-href="install.chrome_url" rel="noopener">Chrome 安装</a>
           <a class="btn btn-outline" href="https://microsoftedge.microsoft.com/addons/detail/bonhgpeghngokebfkoacolleijacccff" data-i18n="install.edge_label" data-i18n-href="install.edge_url" rel="noopener">Edge 安装</a>
@@ -55,43 +55,43 @@
     </section>
 
     <div class="trust" data-i18n-aria-label="ui.highlights" aria-label="隐私要点">
-      <article><h2 data-i18n="ui.no_account">无账号</h2><p data-i18n="points.no_account">不用注册账号，也不经我们中转 OAuth。</p></article>
-      <article><h2 data-i18n="ui.local_aes">本地 AES</h2><p data-i18n="points.local_aes">导航与便笺在本机加密；权限和数据位置可在扩展里自查。</p></article>
-      <article><h2 data-i18n="ui.own_storage">自备存储</h2><p data-i18n="points.own_storage">真云渠道目前是 WebDAV（坚果云 / Nextcloud）。R2、OSS、GitHub、GitLab 等仍为 Beta。我们不说「五家全通」，也不宣称已可靠多设备随便切。</p></article>
-      <article><h2 data-i18n="ui.no_telemetry">无遥测</h2><p data-i18n="points.no_telemetry">无广告、无第三方分析、无使用统计。</p></article>
+      <article><h2 data-i18n="ui.no_account">无账号</h2><p data-i18n="points.no_account">不用注册。我们也不中转 OAuth。</p></article>
+      <article><h2 data-i18n="ui.local_aes">本地 AES</h2><p data-i18n="points.local_aes">导航和便笺在本机加密。权限和数据位置，可在扩展里查看。</p></article>
+      <article><h2 data-i18n="ui.own_storage">自备存储</h2><p data-i18n="points.own_storage">真云目前是 WebDAV（坚果云 / Nextcloud）。其余仍是 Beta。</p></article>
+      <article><h2 data-i18n="ui.no_telemetry">无遥测</h2><p data-i18n="points.no_telemetry">扩展没有广告，没有第三方分析，没有使用统计。永远不会加 PostHog。</p></article>
     </div>
 
     <section class="sec" id="privacy" aria-labelledby="privacy-title">
       <span class="tag" data-i18n="ui.privacy">隐私</span>
-      <h2 id="privacy-title" data-i18n="verify.h2">主张怎么核对</h2>
+      <h2 id="privacy-title" data-i18n="verify.h2">隐私</h2>
       <div class="grid2">
         <div class="card">
-          <p data-i18n="verify.body">本站是静态介绍页，不处理用户数据，不上传导航或便笺，也不挂 PostHog 或统计像素。扩展内可自查权限与数据位置（「隐私体检」随 0.2.2 提供）。上面这些说法都可以对照产品和本站行为核对。</p>
+          <p data-i18n="verify.body">这页只介绍产品，不会碰你的导航或便笺。扩展零遥测，不加 PostHog。官网可用无 Cookie 的 Cloudflare Web Analytics 看访问量，只在本站，不进扩展，不关联身份。扩展里可做「隐私自查」，随 0.2.2 提供。</p>
           <p class="meta"><a href="https://sites.google.com/view/covelet-privacy" rel="noopener" data-i18n="ui.privacy_policy">隐私政策</a> · <a href="mailto:support@morley.work">support@morley.work</a></p>
         </div>
         <div class="card dark">
-          <h3 data-i18n="site_wont.h3">本站不会做</h3>
-          <p data-i18n="site_wont.body">不设登录，不收邮箱，不挂统计像素，不把起始页做成广告位。页面只介绍产品，并链到商店安装。</p>
+          <h3 data-i18n="site_wont.h3">本站不会</h3>
+          <p data-i18n="site_wont.body">这里没有登录，也不收邮箱。起始页不会变成广告位。若有站点统计，只用官网无 Cookie 的 Cloudflare Web Analytics。页面介绍产品，并链到商店安装。</p>
         </div>
       </div>
     </section>
 
     <section class="sec" id="sync" aria-labelledby="sync-title">
       <span class="tag" data-i18n="ui.sync">同步</span>
-      <h2 id="sync-title" data-i18n="storage.h2">自备存储，怎么工作</h2>
-      <p class="sec-lead" data-i18n="storage.intro">首个真云渠道是 WebDAV（坚果云 / Nextcloud）。其余渠道目前为 Beta。</p>
+      <h2 id="sync-title" data-i18n="storage.h2">用你自己的存储同步</h2>
+      <p class="sec-lead" data-i18n="storage.intro">真云目前是 WebDAV（坚果云 / Nextcloud）。其余仍是 Beta。</p>
       <ol class="steps">
-        <li class="step"><div class="n" aria-hidden="true">01</div><h3 data-i18n="storage.step1_title">选渠道</h3><p data-i18n="storage.step1">优先 WebDAV（坚果云 / Nextcloud）；其余为 Beta。</p></li>
-        <li class="step"><div class="n" aria-hidden="true">02</div><h3 data-i18n="storage.step2_title">最少字段 + 测连</h3><p data-i18n="storage.step2">只填连接所需信息，然后测连。</p></li>
+        <li class="step"><div class="n" aria-hidden="true">01</div><h3 data-i18n="storage.step1_title">选渠道</h3><p data-i18n="storage.step1">优先 WebDAV（坚果云 / Nextcloud）。其余为 Beta。</p></li>
+        <li class="step"><div class="n" aria-hidden="true">02</div><h3 data-i18n="storage.step2_title">填最少字段，测连接</h3><p data-i18n="storage.step2">只填连接需要的信息，然后测连。</p></li>
         <li class="step"><div class="n" aria-hidden="true">03</div><h3 data-i18n="storage.step3_title">设同步密码并首次同步</h3><p data-i18n="storage.step3">其他设备用同一目标和同步密码即可。</p></li>
       </ol>
-      <div class="callout" data-i18n="storage.note">保存不等于已验证，以测连成功为准。测连失败可以继续纯本机用，本地数据不受影响。多设备冲突时按整条记录二选一；不会静默合并，你会看清选了哪一份。</div>
+      <div class="callout" data-i18n="storage.note">保存成功不等于已验证，以测连结果为准。测连失败仍可只用本机，本地数据不动。多设备冲突时整条记录二选一，不会悄悄合并。</div>
     </section>
 
     <section class="sec" id="migrate" aria-labelledby="migrate-title">
       <span class="tag" data-i18n="ui.migrate">迁移</span>
       <h2 id="migrate-title" data-i18n="migrate.h2">从别的起始页过来</h2>
-      <p class="sec-lead" data-i18n="migrate.disclaimer">以下按字面理解，不要当成已上线功能。</p>
+      <p class="sec-lead" data-i18n="migrate.disclaimer">还在路上：</p>
       <div class="grid2">
         <div class="card">
           <h3 data-i18n="migrate.bookmarks_title">书签 HTML 导入</h3>
@@ -99,7 +99,7 @@
         </div>
         <div class="card">
           <h3 data-i18n="migrate.others_title">WeTab / Infinity / Arc</h3>
-          <p data-i18n="migrate.others">迁移路径仍在评估。</p>
+          <p data-i18n="migrate.others">迁移方案还在评估。</p>
         </div>
       </div>
     </section>
@@ -107,7 +107,7 @@
     <section class="band" aria-labelledby="close-title">
       <div>
         <h2 id="close-title" data-i18n="close.h2">把新标签页留给自己</h2>
-        <p data-i18n="close.body">无预置推广站点。安装后从空桌面开始，自己添加常用网站。</p>
+        <p data-i18n="close.body">没有预置推广站点。安装后从空桌面开始，自己加常用网站。</p>
       </div>
       <div class="cta-row">
         <a class="btn" href="https://chromewebstore.google.com/detail/covelet/clkholbmabommppnlpcnhdgmibibblgb" data-i18n="install.chrome_label" data-i18n-href="install.chrome_url" rel="noopener">Chrome 安装</a>
