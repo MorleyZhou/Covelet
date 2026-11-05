@@ -957,7 +957,13 @@
     "en": "Cloud repository, branch or directory is inaccessible. Check settings and permissions."
   },
   "云端存在同名但内容不同的快照，已停止写入并保留本地数据。": {
-    "en": "A cloud snapshot has the same name but different content. Writes stopped; local data retained."
+    "en": "A cloud snapshot has the same name but different content. Writes stopped; local data retained.",
+    "zh-TW": "雲端存在同名但內容不同的快照，已停止寫入並保留本機資料。",
+    "ja": "クラウドに同名で内容の異なるスナップショットがあります。書き込みを停止し、ローカルデータを保持しました。",
+    "ko": "클라우드에 이름은 같지만 내용이 다른 스냅샷이 있습니다. 쓰기를 중지하고 로컬 데이터를 보존했습니다.",
+    "de": "In der Cloud liegt ein Snapshot gleichen Namens mit anderem Inhalt. Schreiben gestoppt; lokale Daten bleiben erhalten.",
+    "fr": "Un instantané du même nom avec un contenu différent existe dans le cloud. Écriture arrêtée, données locales conservées.",
+    "ru": "В облаке есть снимок с тем же именем, но другим содержимым. Запись остановлена, локальные данные сохранены."
   },
   "云端加密文档编码无效。": {
     "en": "Invalid cloud ciphertext encoding."
@@ -1143,16 +1149,34 @@
     "en": "Invalid device time. Correct the system clock."
   },
   "本机同步计算模块返回无效结果。": {
-    "en": "The local sync module returned an invalid result."
+    "en": "The local sync module returned an invalid result.",
+    "zh-TW": "本機同步計算模組傳回無效結果。",
+    "ja": "この端末の同期処理モジュールが無効な結果を返しました。",
+    "ko": "이 기기의 동기화 처리 모듈이 올바르지 않은 결과를 반환했습니다.",
+    "de": "Das lokale Synchronisierungsmodul hat ein ungültiges Ergebnis geliefert.",
+    "fr": "Le module local de synchronisation a renvoyé un résultat invalide.",
+    "ru": "Локальный модуль синхронизации вернул недопустимый результат."
   },
   "本机同步计算模块尚未准备好。": {
-    "en": "The local sync module is not ready."
+    "en": "The local sync module is not ready.",
+    "zh-TW": "本機同步計算模組尚未準備好。",
+    "ja": "この端末の同期処理モジュールはまだ準備できていません。",
+    "ko": "이 기기의 동기화 처리 모듈이 아직 준비되지 않았습니다.",
+    "de": "Das lokale Synchronisierungsmodul ist noch nicht bereit.",
+    "fr": "Le module local de synchronisation n’est pas encore prêt.",
+    "ru": "Локальный модуль синхронизации ещё не готов."
   },
   "待上传快照的内容与文件名不一致。": {
     "en": "The pending snapshot does not match its filename."
   },
   "待上传快照内容与文件名不一致。": {
-    "en": "The pending snapshot does not match its filename."
+    "en": "The pending snapshot does not match its filename.",
+    "zh-TW": "待上傳快照內容與檔名不一致。",
+    "ja": "アップロード予定のスナップショットの内容がファイル名と一致しません。",
+    "ko": "업로드할 스냅샷 내용이 파일 이름과 일치하지 않습니다.",
+    "de": "Der Inhalt des hochzuladenden Snapshots passt nicht zum Dateinamen.",
+    "fr": "Le contenu de l’instantané à envoyer ne correspond pas à son nom de fichier.",
+    "ru": "Содержимое снимка для отправки не соответствует имени файла."
   },
   "当前浏览器无法使用云同步，已停止请求。": {
     "en": "Cloud sync is unavailable in this browser. Requests stopped."
@@ -1194,7 +1218,13 @@
     "ru": "Подождите перед следующим обновлением."
   },
   "请输入有效的 WebDAV 用户名和应用密码。": {
-    "en": "Enter a valid WebDAV username and app password."
+    "en": "Enter a valid WebDAV username and app password.",
+    "zh-TW": "請輸入有效的 WebDAV 使用者名稱和應用程式密碼。",
+    "ja": "有効な WebDAV ユーザー名とアプリパスワードを入力してください。",
+    "ko": "올바른 WebDAV 사용자 이름과 앱 비밀번호를 입력하세요.",
+    "de": "Einen gültigen WebDAV-Benutzernamen und ein App-Passwort eingeben.",
+    "fr": "Saisissez un identifiant WebDAV et un mot de passe d’application valides.",
+    "ru": "Введите действительные имя пользователя WebDAV и пароль приложения."
   },
   "尚未授权访问这个云服务，已停止请求。": {
     "en": "Access to this cloud service is not permitted. Requests stopped."
@@ -1308,10 +1338,22 @@
     "en": "Cloud snapshot count or size exceeds safe limits. Use a separate storage directory."
   },
   "云端快照文件名无效。": {
-    "en": "Invalid cloud snapshot filename."
+    "en": "Invalid cloud snapshot filename.",
+    "zh-TW": "雲端快照檔名無效。",
+    "ja": "クラウドのスナップショットのファイル名が無効です。",
+    "ko": "클라우드 스냅샷 파일 이름이 올바르지 않습니다.",
+    "de": "Der Dateiname des Cloud-Snapshots ist ungültig.",
+    "fr": "Le nom de fichier de l’instantané cloud est invalide.",
+    "ru": "Недопустимое имя файла облачного снимка."
   },
   "云端快照校验失败，已保留本地数据。": {
-    "en": "Cloud snapshot verification failed. Local data was preserved."
+    "en": "Cloud snapshot verification failed. Local data was preserved.",
+    "zh-TW": "雲端快照驗證失敗，已保留本機資料。",
+    "ja": "クラウドのスナップショットを検証できませんでした。ローカルデータを保持しました。",
+    "ko": "클라우드 스냅샷 검증에 실패했습니다. 로컬 데이터를 보존했습니다.",
+    "de": "Der Cloud-Snapshot konnte nicht geprüft werden. Lokale Daten bleiben erhalten.",
+    "fr": "La vérification de l’instantané cloud a échoué. Les données locales sont conservées.",
+    "ru": "Проверка облачного снимка не пройдена. Локальные данные сохранены."
   },
   "云端文件、仓库或分支不可访问，请检查存储配置和权限。": {
     "en": "Cloud file, repository or branch is inaccessible. Check the configuration and permissions."
@@ -1443,28 +1485,70 @@
     "ru": "Время ожидания GitHub истекло. Повторите позже."
   },
   "WebDAV 返回的数据不完整或格式无效，已停止同步。": {
-    "en": "WebDAV returned incomplete or invalid data. Sync stopped."
+    "en": "WebDAV returned incomplete or invalid data. Sync stopped.",
+    "zh-TW": "WebDAV 傳回的資料不完整或格式無效，已停止同步。",
+    "ja": "WebDAV の応答が不完全か、形式が無効です。同期を停止しました。",
+    "ko": "WebDAV 응답 데이터가 불완전하거나 형식이 올바르지 않아 동기화를 중지했습니다.",
+    "de": "WebDAV hat unvollständige oder ungültige Daten geliefert. Die Synchronisierung wurde gestoppt.",
+    "fr": "Les données renvoyées par WebDAV sont incomplètes ou invalides. Synchronisation arrêtée.",
+    "ru": "WebDAV вернул неполные данные или данные неверного формата. Синхронизация остановлена."
   },
   "WebDAV 返回了不允许的跳转，已停止请求。": {
-    "en": "WebDAV returned a disallowed redirect. Request stopped."
+    "en": "WebDAV returned a disallowed redirect. Request stopped.",
+    "zh-TW": "WebDAV 傳回不允許的重新導向，已停止請求。",
+    "ja": "WebDAV が許可されていないリダイレクトを返しました。リクエストを停止しました。",
+    "ko": "WebDAV가 허용되지 않는 리디렉션을 반환하여 요청을 중지했습니다.",
+    "de": "WebDAV hat eine unzulässige Weiterleitung geliefert. Anfrage gestoppt.",
+    "fr": "WebDAV a renvoyé une redirection non autorisée. Requête arrêtée.",
+    "ru": "WebDAV вернул недопустимое перенаправление. Запрос остановлен."
   },
   "WebDAV 连接超时，未完成的操作会在下次同步时核对。": {
-    "en": "WebDAV timed out. Incomplete operations will be reconciled on the next sync."
+    "en": "WebDAV timed out. Incomplete operations will be reconciled on the next sync.",
+    "zh-TW": "WebDAV 連線逾時，未完成的操作會在下次同步時核對。",
+    "ja": "WebDAV への接続がタイムアウトしました。未完了の操作は次回の同期時に確認します。",
+    "ko": "WebDAV 연결 시간이 초과되었습니다. 완료되지 않은 작업은 다음 동기화 때 확인합니다.",
+    "de": "Zeitüberschreitung bei WebDAV. Unvollständige Vorgänge werden bei der nächsten Synchronisierung geprüft.",
+    "fr": "Délai de connexion WebDAV dépassé. Les opérations incomplètes seront vérifiées à la prochaine synchronisation.",
+    "ru": "Время ожидания подключения к WebDAV истекло. Незавершённые операции будут проверены при следующей синхронизации."
   },
   "WebDAV 目录数量或数据大小超出安全限制，请使用独立的同步目录。": {
-    "en": "WebDAV directory count or data size exceeds safe limits. Use a separate sync directory."
+    "en": "WebDAV directory count or data size exceeds safe limits. Use a separate sync directory.",
+    "zh-TW": "WebDAV 目錄數量或資料大小超出安全限制，請使用獨立的同步目錄。",
+    "ja": "WebDAV の項目数またはデータ量が安全上の上限を超えています。同期専用のディレクトリを使用してください。",
+    "ko": "WebDAV 디렉터리 항목 수 또는 데이터 크기가 안전 한도를 초과했습니다. 별도의 동기화 디렉터리를 사용하세요.",
+    "de": "Anzahl der WebDAV-Einträge oder Datenmenge überschreitet die Sicherheitsgrenze. Ein eigenes Sync-Verzeichnis verwenden.",
+    "fr": "Le nombre d’entrées ou la taille des données WebDAV dépasse la limite de sécurité. Utilisez un répertoire dédié à la synchronisation.",
+    "ru": "Число записей или объём данных WebDAV превышает безопасный предел. Используйте отдельный каталог синхронизации."
   },
   "WebDAV 配置无效，请检查服务器地址和目录。": {
     "en": "Invalid WebDAV configuration. Check the server URL and directory."
   },
   "WebDAV 请求过于频繁，请稍后再试。": {
-    "en": "Too many WebDAV requests. Try again later."
+    "en": "Too many WebDAV requests. Try again later.",
+    "zh-TW": "WebDAV 請求過於頻繁，請稍後再試。",
+    "ja": "WebDAV へのリクエストが多すぎます。しばらくしてから再試行してください。",
+    "ko": "WebDAV 요청이 너무 많습니다. 잠시 후 다시 시도하세요.",
+    "de": "Zu viele WebDAV-Anfragen. Später erneut versuchen.",
+    "fr": "Trop de requêtes WebDAV. Réessayez plus tard.",
+    "ru": "Слишком много запросов WebDAV. Повторите попытку позже."
   },
   "WebDAV 请求未成功，请检查服务配置后重试。": {
-    "en": "WebDAV request failed. Check the service configuration and retry."
+    "en": "WebDAV request failed. Check the service configuration and retry.",
+    "zh-TW": "WebDAV 請求未成功，請檢查服務設定後重試。",
+    "ja": "WebDAV のリクエストに失敗しました。サービスの設定を確認して再試行してください。",
+    "ko": "WebDAV 요청에 실패했습니다. 서비스 설정을 확인한 후 다시 시도하세요.",
+    "de": "WebDAV-Anfrage fehlgeschlagen. Dienstkonfiguration prüfen und erneut versuchen.",
+    "fr": "La requête WebDAV a échoué. Vérifiez la configuration du service et réessayez.",
+    "ru": "Запрос WebDAV не выполнен. Проверьте настройки сервиса и повторите попытку."
   },
   "WebDAV 请求已停止，请重新解锁并检查站点权限。": {
-    "en": "WebDAV request stopped. Unlock sync and check site access."
+    "en": "WebDAV request stopped. Unlock sync and check site access.",
+    "zh-TW": "WebDAV 請求已停止，請重新解鎖並檢查網站權限。",
+    "ja": "WebDAV のリクエストを停止しました。同期のロックを解除し、サイト権限を確認してください。",
+    "ko": "WebDAV 요청이 중지되었습니다. 동기화 잠금을 다시 해제하고 사이트 권한을 확인하세요.",
+    "de": "WebDAV-Anfrage gestoppt. Synchronisierung erneut entsperren und Website-Berechtigungen prüfen.",
+    "fr": "Requête WebDAV arrêtée. Déverrouillez la synchronisation et vérifiez les autorisations du site.",
+    "ru": "Запрос WebDAV остановлен. Снова разблокируйте синхронизацию и проверьте разрешения сайта."
   },
   "WebDAV 身份验证失败，请检查应用密码和目录权限。": {
     "en": "WebDAV authentication failed. Check the app password and directory permissions."
@@ -1473,31 +1557,85 @@
     "en": "WebDAV sync directory or file is inaccessible. Create the directory and check permissions."
   },
   "WebDAV 站点访问权限不可用，请重新授权。": {
-    "en": "WebDAV site access is unavailable. Grant access again."
+    "en": "WebDAV site access is unavailable. Grant access again.",
+    "zh-TW": "WebDAV 網站存取權限不可用，請重新授權。",
+    "ja": "WebDAV サイトへのアクセス権限がありません。もう一度許可してください。",
+    "ko": "WebDAV 사이트 접근 권한이 없습니다. 다시 허용하세요.",
+    "de": "Kein Zugriff auf die WebDAV-Website. Berechtigung erneut erteilen.",
+    "fr": "L’autorisation d’accès au site WebDAV n’est pas disponible. Accordez-la à nouveau.",
+    "ru": "Нет разрешения на доступ к сайту WebDAV. Предоставьте его снова."
   },
   "WebDAV 地址无效：请填写 HTTPS 基目录地址，不要使用分享链接、查询参数或带密码的地址。": {
-    "en": "Invalid WebDAV URL. Enter an HTTPS base directory, without share links, query parameters or embedded passwords."
+    "en": "Invalid WebDAV URL. Enter an HTTPS base directory, without share links, query parameters or embedded passwords.",
+    "zh-TW": "WebDAV 網址無效：請填寫 HTTPS 基底目錄網址，勿使用分享連結、查詢參數或內含密碼的網址。",
+    "ja": "WebDAV の URL が無効です。共有リンク、クエリ、パスワードを含まない HTTPS のベースディレクトリを入力してください。",
+    "ko": "WebDAV 주소가 올바르지 않습니다. 공유 링크, 쿼리 매개변수 또는 비밀번호가 없는 HTTPS 기본 디렉터리 주소를 입력하세요.",
+    "de": "Ungültige WebDAV-URL. Ein HTTPS-Basisverzeichnis ohne Freigabelinks, Abfrageparameter oder eingebettete Passwörter eingeben.",
+    "fr": "URL WebDAV invalide. Saisissez un répertoire de base HTTPS, sans lien de partage, paramètres ni mot de passe intégré.",
+    "ru": "Недопустимый адрес WebDAV. Укажите базовый каталог HTTPS без ссылок общего доступа, параметров запроса и паролей в адресе."
   },
   "WebDAV 登录失败（401）：请检查用户名和应用密码，不要使用网页登录密码。": {
-    "en": "WebDAV login failed (401). Check your username and app password; do not use your website login password."
+    "en": "WebDAV login failed (401). Check your username and app password; do not use your website login password.",
+    "zh-TW": "WebDAV 登入失敗（401）：請檢查使用者名稱和應用程式密碼，勿使用網頁登入密碼。",
+    "ja": "WebDAV のログインに失敗しました（401）。ユーザー名とアプリパスワードを確認してください。Web サイトのログインパスワードは使用しないでください。",
+    "ko": "WebDAV 로그인에 실패했습니다(401). 사용자 이름과 앱 비밀번호를 확인하세요. 웹사이트 로그인 비밀번호를 사용하지 마세요.",
+    "de": "WebDAV-Anmeldung fehlgeschlagen (401). Benutzername und App-Passwort prüfen; kein Website-Anmeldepasswort verwenden.",
+    "fr": "Connexion WebDAV refusée (401). Vérifiez l’identifiant et le mot de passe d’application ; n’utilisez pas le mot de passe du site.",
+    "ru": "Не удалось войти в WebDAV (401). Проверьте имя пользователя и пароль приложения. Не используйте пароль входа на сайт."
   },
   "WebDAV 拒绝访问（403）：请确认账号已启用 WebDAV，并有此目录的读写权限。": {
-    "en": "WebDAV access denied (403). Enable WebDAV for this account and check directory read/write permissions."
+    "en": "WebDAV access denied (403). Enable WebDAV for this account and check directory read/write permissions.",
+    "zh-TW": "WebDAV 拒絕存取（403）：請確認帳號已啟用 WebDAV，並有此目錄的讀寫權限。",
+    "ja": "WebDAV へのアクセスが拒否されました（403）。アカウントで WebDAV が有効で、このディレクトリの読み書き権限があるか確認してください。",
+    "ko": "WebDAV 접근이 거부되었습니다(403). 계정에서 WebDAV를 사용하도록 설정했고 이 디렉터리에 읽기 및 쓰기 권한이 있는지 확인하세요.",
+    "de": "WebDAV-Zugriff verweigert (403). Prüfen, ob WebDAV für das Konto aktiviert ist und Lese- und Schreibrechte für dieses Verzeichnis bestehen.",
+    "fr": "Accès WebDAV refusé (403). Vérifiez que WebDAV est activé pour le compte et que ce répertoire est accessible en lecture et en écriture.",
+    "ru": "Доступ к WebDAV запрещён (403). Убедитесь, что WebDAV включён для учётной записи и есть права чтения и записи в этот каталог."
   },
   "WebDAV 路径不存在（404/409）：请检查基目录地址，并先创建填写的保存目录。": {
-    "en": "WebDAV path not found (404/409). Check the base URL and create the selected save directory first."
+    "en": "WebDAV path not found (404/409). Check the base URL and create the selected save directory first.",
+    "zh-TW": "WebDAV 路徑不存在（404/409）：請檢查基底目錄網址，並先建立填寫的儲存目錄。",
+    "ja": "WebDAV のパスが存在しません（404/409）。ベース URL を確認し、指定した保存先ディレクトリを先に作成してください。",
+    "ko": "WebDAV 경로가 없습니다(404/409). 기본 디렉터리 주소를 확인하고 입력한 저장 디렉터리를 먼저 만드세요.",
+    "de": "WebDAV-Pfad nicht gefunden (404/409). Basis-URL prüfen und das angegebene Speicherverzeichnis zuerst erstellen.",
+    "fr": "Chemin WebDAV introuvable (404/409). Vérifiez l’URL de base et créez d’abord le répertoire d’enregistrement indiqué.",
+    "ru": "Путь WebDAV не существует (404/409). Проверьте базовый адрес и сначала создайте указанный каталог сохранения."
   },
   "网络已断开，请联网后重新测试 WebDAV。": {
-    "en": "You are offline. Reconnect and test WebDAV again."
+    "en": "You are offline. Reconnect and test WebDAV again.",
+    "zh-TW": "網路已中斷，請連網後重新測試 WebDAV。",
+    "ja": "オフラインです。ネットワークに接続して WebDAV を再テストしてください。",
+    "ko": "네트워크 연결이 끊겼습니다. 인터넷에 연결한 후 WebDAV를 다시 테스트하세요.",
+    "de": "Keine Internetverbindung. Verbindung herstellen und WebDAV erneut testen.",
+    "fr": "Vous êtes hors ligne. Reconnectez-vous puis testez à nouveau WebDAV.",
+    "ru": "Нет подключения к сети. Подключитесь и снова проверьте WebDAV."
   },
   "WebDAV 安全连接失败，请检查服务器 HTTPS 证书和设备时间。": {
-    "en": "The secure WebDAV connection failed. Check the HTTPS certificate and your device clock."
+    "en": "The secure WebDAV connection failed. Check the HTTPS certificate and your device clock.",
+    "zh-TW": "WebDAV 安全連線失敗，請檢查伺服器 HTTPS 憑證和裝置時間。",
+    "ja": "WebDAV への安全な接続に失敗しました。サーバーの HTTPS 証明書と端末の時刻を確認してください。",
+    "ko": "WebDAV 보안 연결에 실패했습니다. 서버의 HTTPS 인증서와 기기 시간을 확인하세요.",
+    "de": "Sichere WebDAV-Verbindung fehlgeschlagen. HTTPS-Zertifikat des Servers und Gerätezeit prüfen.",
+    "fr": "La connexion sécurisée WebDAV a échoué. Vérifiez le certificat HTTPS du serveur et l’heure de l’appareil.",
+    "ru": "Не удалось установить защищённое соединение WebDAV. Проверьте HTTPS-сертификат сервера и время на устройстве."
   },
   "找不到或无法访问 WebDAV 服务器，请检查域名、端口和服务是否运行。": {
-    "en": "The WebDAV server cannot be found or reached. Check the hostname, port and running service."
+    "en": "The WebDAV server cannot be found or reached. Check the hostname, port and running service.",
+    "zh-TW": "找不到或無法存取 WebDAV 伺服器，請檢查網域、連接埠和服務是否運作。",
+    "ja": "WebDAV サーバーが見つからないか、アクセスできません。ドメイン名、ポート、サービスの稼働状況を確認してください。",
+    "ko": "WebDAV 서버를 찾을 수 없거나 접근할 수 없습니다. 도메인, 포트 및 서비스 실행 상태를 확인하세요.",
+    "de": "WebDAV-Server nicht gefunden oder nicht erreichbar. Domain, Port und laufenden Dienst prüfen.",
+    "fr": "Le serveur WebDAV est introuvable ou inaccessible. Vérifiez le domaine, le port et que le service fonctionne.",
+    "ru": "Сервер WebDAV не найден или недоступен. Проверьте домен, порт и работу сервиса."
   },
   "无法连接 WebDAV：请检查网络、服务器地址、HTTPS 证书和站点访问权限；浏览器可能未提供具体原因。": {
-    "en": "Cannot connect to WebDAV. Check your network, server URL, HTTPS certificate and site access. The browser may not report the exact cause."
+    "en": "Cannot connect to WebDAV. Check your network, server URL, HTTPS certificate and site access. The browser may not report the exact cause.",
+    "zh-TW": "無法連線 WebDAV：請檢查網路、伺服器網址、HTTPS 憑證和網站存取權限；瀏覽器可能未提供具體原因。",
+    "ja": "WebDAV に接続できません。ネットワーク、サーバー URL、HTTPS 証明書、サイト権限を確認してください。ブラウザーが詳細な原因を通知しない場合があります。",
+    "ko": "WebDAV에 연결할 수 없습니다. 네트워크, 서버 주소, HTTPS 인증서 및 사이트 접근 권한을 확인하세요. 브라우저가 구체적인 원인을 제공하지 않을 수 있습니다.",
+    "de": "Keine Verbindung zu WebDAV. Netzwerk, Serveradresse, HTTPS-Zertifikat und Website-Zugriff prüfen. Der Browser nennt möglicherweise keinen genauen Grund.",
+    "fr": "Connexion WebDAV impossible. Vérifiez le réseau, l’adresse du serveur, le certificat HTTPS et les autorisations du site. Le navigateur peut ne pas préciser la cause.",
+    "ru": "Не удалось подключиться к WebDAV. Проверьте сеть, адрес сервера, HTTPS-сертификат и разрешения сайта. Браузер может не сообщить точную причину."
   },
   "冲突预览已过期或数据已更新，请重新查看两侧内容后选择。": {
     "en": "The conflict preview expired or data changed. Review both sides again before choosing."
@@ -11881,5 +12019,14 @@
     "de": "Exportierte JSON/ZIP-Backups sind nicht verschlüsselt. Sicher aufbewahren.",
     "fr": "Les sauvegardes JSON/ZIP exportées ne sont pas chiffrées. Conservez-les en lieu sûr.",
     "ru": "Экспортированные резервные копии JSON/ZIP не зашифрованы. Храните их в безопасном месте."
+  },
+  "自备存储同步（Beta）": {
+    "en": "Sync with your storage (Beta)",
+    "zh-TW": "自備儲存同步（Beta）",
+    "ja": "自分のストレージと同期（Beta）",
+    "ko": "개인 저장소 동기화 (Beta)",
+    "de": "Mit eigenem Speicher synchronisieren (Beta)",
+    "fr": "Synchronisation avec votre stockage (Beta)",
+    "ru": "Синхронизация со своим хранилищем (Beta)"
   }
 }

@@ -1490,7 +1490,7 @@ export function App() {
         {modal?.kind === "extensions" && (
           <ExtensionCenter Dialog={Modal} state={state} initialExtension={modal.initialExtension} editingId={modal.editingId} onUseWidget={useWidget} onRemoveWidget={detachWidget} onConfigureFunctional={() => setModal({ kind: 'sync-settings' })} onClose={() => setModal(null)} />
         )}
-        {modal?.kind === 'sync-settings' && <Modal title={tr('自定义存储同步')} className="settings-modal sync-settings-modal" wide maximizable closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}><CloudSyncSettings demo={demo} onBusyChange={setBusy} onLocalOnly={() => { setModal(null); notify(tr('已关闭同步，仅在本机保存数据。')); }} /></Modal>}
+        {modal?.kind === 'sync-settings' && <Modal title={tr('自备存储同步（Beta）')} className="settings-modal sync-settings-modal" wide maximizable closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}><CloudSyncSettings demo={demo} onBusyChange={setBusy} onLocalOnly={() => { setModal(null); notify(tr('已关闭同步，仅在本机保存数据。')); }} /></Modal>}
         {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} Dialog={Modal} onClose={() => setModal(null)} />}
         {modal?.kind === 'tools-trash' && <PersonalToolsTrashDialog Dialog={Modal} onClose={() => setModal(null)} />}
         {modal?.kind === 'content-preferences' && <Modal title={tr('内容与隐私')} privacyKeys={modal.key ? [modal.key] : []} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
@@ -1883,7 +1883,7 @@ function Settings({
             <p className="hint">{tr('导出的 JSON/ZIP 备份未加密，请妥善保管。')}</p>
             <div className="data-actions">
               <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onCloudSync)}>
-                {tr('自定义存储同步')}</Button>
+                {tr('自备存储同步（Beta）')}</Button>
               <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onBookmarks)}>
                 <UploadSimple size={19} />{tr('导入网址与书签 HTML')}</Button>
               <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onExport)}>

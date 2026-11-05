@@ -141,6 +141,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
   let lastObserved;
   let historyPreview;
   let lastConnectionTest;
+  let lockGeneration = 0;
   const listeners = new Set();
   let status = { phase: 'unconfigured', message: tr("尚未配置自定义云同步。"), lastSync: 0, conflicts: 0, autoSync: false, unlocked: false, localChanges: false };
   const report = (patch) => {
@@ -193,6 +194,19 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     if (!value || value.target !== target || typeof value.password !== 'string' || !value.secrets || typeof value.secrets !== 'object') return null;
     validateCloudPassword(value.password);
     return value;
+  };
+  const checkLockGeneration = (generation) => {
+    if (generation !== lockGeneration) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+  };
+  const writeSession = async (value, generation) => {
+    checkLockGeneration(generation);
+    await sessionStore.write(value);
+    if (generation !== lockGeneration) {
+      // Callers still hold the shared exclusive lock, so a later save/unlock
+      // cannot publish a newer session before this cancelled write is cleared.
+      await sessionStore.clear();
+      checkLockGeneration(generation);
+    }
   };
   const metadataFor = async (config) => {
     const target = await targetOf(config.profile);
@@ -435,26 +449,39 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     syncToolCloudNow: fullData ? () => api.syncCloudNow() : toolSync.syncToolCloudNow,
     async loadCloudSyncSettings() { try { return await inspectSettings(); } catch (cause) { throw publicError(cause); } },
     async testCloudConnection(profile, secrets) {
+      const generation = lockGeneration;
       try {
         return await exclusive(async () => {
           lastConnectionTest = undefined;
           const config = await read();
-          const session = !profile && config.profile ? await currentSession(await targetOf(config.profile)) : null;
-          if (!profile && !session) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
-          const checked = validateConfig(profile || config.profile), credentials = secrets || session.secrets;
+          const savedSession = config.profile ? await currentSession(await targetOf(config.profile)) : null;
+          if (!profile && !savedSession) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+          const checked = validateConfig(profile || config.profile), credentials = secrets || (!profile ? savedSession?.secrets : undefined);
+          const session = savedSession && same(checked, config.profile) && same(credentials, savedSession.secrets) ? savedSession : null;
+          const testingSession = session ? { ...session, connectionTest: null } : null;
           // Invalidate old proof before a new attempt, including a failed test.
-          if (session) await sessionStore.write({ ...session, connectionTest: null });
-          const check = session ? () => checkAccess(config, { ...session, connectionTest: null }) : async () => {
-            if (!await hasPermission(originOf(checked))) throw failure(messages.CLOUD_PERMISSION, 'CLOUD_PERMISSION');
+          if (session) {
+            if (!same(await currentSession(session.target), session)) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+            await writeSession(testingSession, generation);
+          }
+          const fingerprint = await hash({ profile: checked, secrets: credentials });
+          const check = async () => {
+            checkLockGeneration(generation);
+            if (session) await checkAccess(config, testingSession);
+            else if (!await hasPermission(originOf(checked))) throw failure(messages.CLOUD_PERMISSION, 'CLOUD_PERMISSION');
+            checkLockGeneration(generation);
           };
           const result = await probeCloudConnection(checked, credentials, { providerFactory, signer, check, now });
-          lastConnectionTest = { fingerprint: await hash({ profile: checked, secrets: credentials }), result };
-          if (session) await sessionStore.write({ ...session, connectionTest: result });
+          checkLockGeneration(generation);
+          if (session) await writeSession({ ...testingSession, connectionTest: result }, generation);
+          checkLockGeneration(generation);
+          lastConnectionTest = { fingerprint, result };
           return clone(result);
         });
       } catch (cause) { throw publicError(cause); }
     },
     async saveCloudSyncSettings(profile, secrets, password, { autoSync = false } = {}) {
+      const generation = lockGeneration;
       try {
         if (typeof autoSync !== 'boolean') throw failure(tr("自动同步设置无效。"));
         const checked = validateConfig(profile);
@@ -476,14 +503,15 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
             config.metadata = await metadataFor(config);
             await persist(config);
             const fingerprint = await hash({ profile: checked, secrets });
-            await sessionStore.write({ target: config.metadata.target, secrets: clone(secrets), password,
-              connectionTest: lastConnectionTest?.fingerprint === fingerprint ? clone(lastConnectionTest.result) : null });
+            await writeSession({ target: config.metadata.target, secrets: clone(secrets), password,
+              connectionTest: lastConnectionTest?.fingerprint === fingerprint ? clone(lastConnectionTest.result) : null }, generation);
           }));
         });
         const settings = await inspectSettings(); schedule(); return settings;
       } catch (cause) { throw publicError(cause); }
     },
     async unlockCloudSync(secrets, password) {
+      const generation = lockGeneration;
       try {
         validateCloudPassword(password);
         await exclusive(async () => {
@@ -491,13 +519,14 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
           if (!config.profile) throw failure(tr("请先保存云同步配置。"));
           providerFactory(config.profile, secrets, { signer });
           const fingerprint = await hash({ profile: config.profile, secrets });
-          await sessionStore.write({ target: await targetOf(config.profile), secrets: clone(secrets), password,
-            connectionTest: lastConnectionTest?.fingerprint === fingerprint ? clone(lastConnectionTest.result) : null });
+          await writeSession({ target: await targetOf(config.profile), secrets: clone(secrets), password,
+            connectionTest: lastConnectionTest?.fingerprint === fingerprint ? clone(lastConnectionTest.result) : null }, generation);
         });
         const settings = await inspectSettings(); schedule(); return settings;
       } catch (cause) { throw publicError(cause); }
     },
     async lockCloudSync() {
+      lockGeneration++;
       clearTimeout(timer);
       historyPreview = undefined;
       lastConnectionTest = undefined;
