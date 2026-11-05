@@ -337,8 +337,8 @@ function Modal({ title, titleContent, onClose, onBack, backLabel = tr("返回"),
       onOpenAutoFocus={(event) => { event.preventDefault(); focusContent(); }}
       onCloseAutoFocus={(event) => {
         event.preventDefault();
-        // Radix restores focus after unmount; another dialog may already be open.
-        if (document.querySelector('[data-ui-modal][data-state="open"]')) return;
+        // Radix restores focus after unmount; a new dialog or menu may own it.
+        if (document.querySelector('[data-ui-modal][data-state="open"], [data-popover][data-state="open"]')) return;
         if (opener.current?.isConnected && !opener.current.matches(':disabled')) opener.current.focus({ preventScroll: true });
       }}
       onEscapeKeyDown={(event) => { if (closeDisabled || event.target?.closest('.folder-name-editor')) event.preventDefault(); }}

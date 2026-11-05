@@ -29,10 +29,14 @@ test('consecutive add dialogs keep typed text in the uniquely labelled field', a
 test('editing can cancel, save through the keyboard, persist, and open from local search', async ({ extension }, testInfo) => {
   const page = await extension.newtab();
   await addSite(page, 'Navigation Original', 'https://example.com/navigation-original');
-  let editor = await editSiteThroughKeyboard(page, 'Navigation Original');
-  await editor.getByLabel('名称', { exact: true }).fill('Discarded Name');
-  await editor.getByRole('button', { name: '取消', exact: true }).click();
-  await expect(desktopNames(page)).toHaveText(['Navigation Original']);
+  let editor;
+  for (const draft of ['Discarded Name', 'Discarded Again', 'Discarded Last']) {
+    editor = await editSiteThroughKeyboard(page, 'Navigation Original');
+    await editor.getByLabel('名称', { exact: true }).fill(draft);
+    await editor.getByRole('button', { name: '取消', exact: true }).click();
+    await expect(desktopNames(page)).toHaveText(['Navigation Original']);
+    expect(new URL(page.url()).protocol).toBe('chrome-extension:');
+  }
 
   editor = await editSiteThroughKeyboard(page, 'Navigation Original');
   await editor.getByLabel('网址', { exact: true }).fill('https://example.com/navigation-renamed');
