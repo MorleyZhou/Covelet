@@ -45,7 +45,7 @@
       <div>
         <h1 id="hero-title" data-i18n="hero.h1">常用网站，就在新标签页。</h1>
         <p class="sub" data-i18n="hero.tagline">整理网站，搜索网页，随手记下想法。</p>
-        <p class="lead" data-i18n="hero.lead">Covelet 是 Chrome 和 Edge 的新标签页扩展。无需 Covelet 账号，数据默认在当前浏览器中加密保存。需要跨设备时，可连接自己的存储服务。</p>
+        <p class="lead" data-i18n="hero.lead">Covelet 是 Chrome 和 Edge 的新标签页扩展，无需注册 Covelet 账号。</p>
         <div class="cta-row" id="install"><a class="btn" href="https://chromewebstore.google.com/detail/covelet/clkholbmabommppnlpcnhdgmibibblgb" data-i18n="install.chrome_label" data-i18n-href="install.chrome_url" rel="noopener">安装到 Chrome</a>
           <a class="btn btn-outline" href="https://microsoftedge.microsoft.com/addons/detail/bonhgpeghngokebfkoacolleijacccff" data-i18n="install.edge_label" data-i18n-href="install.edge_url" rel="noopener">安装到 Edge</a></div>
       </div>
@@ -59,37 +59,34 @@
     </section>
     <section class="sec" id="privacy" aria-labelledby="privacy-title">
       <span class="tag" data-i18n="ui.privacy">隐私</span>
-      <h2 id="privacy-title" data-i18n="privacy.title">数据保存与联网用途</h2>
+      <h2 id="privacy-title" data-i18n="privacy.title">数据默认保存在浏览器中</h2>
       <div class="grid2">
-        <div class="card"><h3 data-i18n="privacy.local_title">默认保存在当前浏览器</h3><p data-i18n="privacy.local_body">网站、便笺和设置在当前浏览器中加密保存。无需注册 Covelet 账号，也没有 Covelet 业务服务器接收这些内容。</p><p class="meta"><a href="https://github.com/MorleyZhou/Covelet" data-i18n="ui.source" rel="noopener">源代码</a></p></div>
-        <div class="card dark"><h3 data-i18n="privacy.network_title">联网用途可以查看</h3><p data-i18n="privacy.network_body">扩展不收集使用统计，也不自动上传日志。同步、每日壁纸、搜索和手动获取网站信息等功能会联网；可在「隐私自查」查看权限与用途。</p></div>
+        <div class="card"><h3 data-i18n="privacy.local_title">本地加密保存</h3><p data-i18n="privacy.local_body">网站、便笺和设置保存在当前浏览器中，不会上传到 Covelet。</p><p class="meta"><a href="https://github.com/MorleyZhou/Covelet" data-i18n="ui.source" rel="noopener">源代码</a></p></div>
+        <div class="card dark"><h3 data-i18n="privacy.network_title">扩展不收集使用统计</h3><p data-i18n="privacy.network_body">同步、每日壁纸、网页搜索和手动获取网站信息会联网。各项权限的用途可在「隐私自查」查看。</p></div>
       </div>
-      <p class="meta site-disclosure"><span data-i18n="privacy.site_note">官网可使用 Cloudflare Web Analytics 统计页面访问，与扩展数据分开。详见隐私政策。</span> <a href="https://sites.google.com/view/covelet-privacy" rel="noopener" data-i18n="ui.privacy_policy">隐私政策</a></p>
+      <p class="meta site-disclosure"><span data-i18n="privacy.site_note">本网站使用 Cloudflare Web Analytics 统计访问情况。</span> <a href="https://sites.google.com/view/covelet-privacy" rel="noopener" data-i18n="ui.privacy_policy">隐私政策</a></p>
     </section>
     <section class="sec" id="sync" aria-labelledby="sync-title">
       <span class="tag" data-i18n="ui.sync">同步</span>
       <h2 id="sync-title" data-i18n="sync.title">自备存储同步（Beta）</h2>
-      <p class="sec-lead" data-i18n="sync.intro">需要跨设备时，可连接自己的存储服务。同步内容加密后直接发送到指定存储，不经过 Covelet 服务器。</p>
-      <ol class="steps">
-        <li class="step"><div class="n" aria-hidden="true">01</div><h3 data-i18n="sync.step1_title">连接存储</h3><p data-i18n="sync.step1_body">推荐 WebDAV，可配置坚果云、Nextcloud 等服务。先准备好保存文件夹和应用密码。</p></li>
-        <li class="step"><div class="n" aria-hidden="true">02</div><h3 data-i18n="sync.step2_title">测试连接</h3><p data-i18n="sync.step2_body">确认能够读取保存文件夹。测试不会上传内容，也不验证写入或同步密码。</p></li>
-        <li class="step"><div class="n" aria-hidden="true">03</div><h3 data-i18n="sync.step3_title">填写同步密码</h3><p data-i18n="sync.step3_body">首次使用空目录时设置新密码；其他设备填写相同目录和原来的同步密码，再开始同步。</p></li>
-      </ol>
-      <div class="callout" data-i18n="sync.note">保存配置不会开始同步。自动同步默认关闭；开启后，仅在 Covelet 页面打开且连接已解锁时运行。</div>
-      <div class="sync-scope"><h3 data-i18n="sync.conflict_title">冲突时，由你选择</h3><p data-i18n="sync.conflict_body">发生冲突时，先比较版本，再选择采用哪一组完整内容。选择会影响同组的其他修改，请先查看范围。</p><p class="meta" data-i18n="sync.beta_note">R2、OSS、GitHub 和 GitLab 也可选，目前均为 Beta。请保留独立备份；同步密码无法找回。</p></div>
+      <p class="sec-lead" data-i18n="sync.intro">连接自己的存储服务，在多台设备间同步网站、便笺和设置。内容加密后直接发送到你的存储，不经过 Covelet 服务器。</p>
+      <div class="grid2">
+        <div class="card"><h3 data-i18n="sync.storage_title">使用自己的存储</h3><p data-i18n="sync.storage_body">支持 WebDAV，可连接坚果云、Nextcloud 等服务。</p></div>
+        <div class="card"><h3 data-i18n="sync.conflict_title">冲突时，由你选择</h3><p data-i18n="sync.conflict_body">出现冲突时，可比较本机和云端版本，再选择保留哪一个。</p></div>
+      </div>
+      <p class="meta" data-i18n="sync.beta_note">R2、OSS、GitHub 和 GitLab 也可选，目前均为 Beta。</p>
     </section>
     <section class="sec" id="backup" aria-labelledby="backup-title">
       <span class="tag" data-i18n="ui.backup">备份</span>
       <h2 id="backup-title" data-i18n="backup.title">留一份独立的备份。</h2>
-      <p class="sec-lead" data-i18n="backup.intro">把数据导出为文件，保存在浏览器之外。需要恢复时，先预览，再选择恢复内容和方式。</p>
+      <p class="sec-lead" data-i18n="backup.intro">把数据导出为文件，保存在浏览器之外。</p>
       <div class="grid2">
-        <div class="card"><h3 data-i18n="backup.export_title">导出数据备份</h3><p data-i18n="backup.export_body">可备份网站、文件夹、外观、便笺、稍后读和桌面方案。备份文件未加密，也包含隐藏的内容，请妥善保存。</p></div>
-        <div class="card" id="migrate"><h3 data-i18n="backup.bookmarks_title">带上已有书签</h3><p data-i18n="backup.bookmarks_body">选择浏览器导出的书签 HTML 文件，在本机预览后导入。默认保留已有网址；导入内容会按你的同步设置参与同步。</p></div>
+        <div class="card"><h3 data-i18n="backup.export_title">导出数据备份</h3><p data-i18n="backup.export_body">备份网站、文件夹、便笺和设置。备份文件未加密，也包含隐藏内容，请妥善保存。</p></div>
+        <div class="card" id="migrate"><h3 data-i18n="backup.bookmarks_title">带上已有书签</h3><p data-i18n="backup.bookmarks_body">支持导入浏览器导出的书签 HTML 文件，导入前可预览。</p></div>
       </div>
-      <p class="meta" data-i18n="backup.note">恢复前会在当前浏览器保留副本。它不能代替独立的备份文件。同步连接凭据、同步密码和隐藏密码不会自动加入备份。</p>
     </section>
     <section class="band" aria-labelledby="close-title">
-      <div><h2 id="close-title" data-i18n="close.title">从常用的几个网站开始。</h2><p data-i18n="close.body">添加、移除和整理网站，让新标签页适合自己的习惯。</p></div>
+      <div><h2 id="close-title" data-i18n="close.title">从常用的几个网站开始。</h2></div>
       <div class="cta-row"><a class="btn" href="https://chromewebstore.google.com/detail/covelet/clkholbmabommppnlpcnhdgmibibblgb" data-i18n="install.chrome_label" data-i18n-href="install.chrome_url" rel="noopener">安装到 Chrome</a>
           <a class="btn btn-outline" href="https://microsoftedge.microsoft.com/addons/detail/bonhgpeghngokebfkoacolleijacccff" data-i18n="install.edge_label" data-i18n-href="install.edge_url" rel="noopener">安装到 Edge</a></div>
     </section>

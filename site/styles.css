@@ -89,10 +89,6 @@ a:hover{opacity:.75}
   border:var(--bd);border-radius:18px;padding:16px 18px;background:var(--soft);font-size:14px;font-weight:600;
 }
 .callout strong{font-weight:800}
-.sync-scope{margin-top:24px;max-width:52em}
-.sync-scope h3{margin:0 0 8px;font-size:20px}
-.sync-scope p{margin:0;color:var(--mute)}
-.sync-scope .meta{margin-top:12px;font-size:14px;font-weight:500}
 .site-disclosure{font-size:13px;font-weight:500;color:var(--mute)}
 .status{
   display:inline-block;margin-top:12px;background:var(--lime);border:2px solid var(--ink);
