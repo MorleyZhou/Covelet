@@ -43,7 +43,7 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await polishScreens(screenTools, 'data-whats-new', '.settings-modal', '.settings-content');
   await click('隐私自查');await wait(has('当前权限与用途'),'privacy page');
   assert.match(await text(),/未记录网络请求历史/);assert.match(await text(),/Bing 每日壁纸/);assert.match(await text(),/chrome.storage.session/);
-  assert.match(await text(),/storage/);assert.match(await text(),/notifications/);assert.match(await text(),/未授予/);assert.match(await text(),/https:\/\/www.bing.com\/\*/);
+  assert.match(await text(),/storage/);assert.match(await text(),/alarms/);assert.match(await text(),/https:\/\/www.bing.com\/\*/);
   assert.doesNotMatch(await text(),/近 7 天[^\n]*[:：]\s*0/);
   assert.equal(requests.length,0,'checkup performs no sync requests');await screenshot('privacy-desktop');
   await polishScreens(screenTools, 'privacy', '.settings-modal', '.settings-content');
@@ -57,7 +57,7 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await click('仅在本机使用');assert.equal(await evaluate('!!document.querySelector(".cloud-sync-form")'),false);
   assert.equal(await evaluate('new Promise(r=>chrome.storage.session.get("covelet.cloud.session.v1",v=>r(!!v["covelet.cloud.session.v1"])))'),false);
   await openSync();
-  for(const [provider,required,absent] of [['Cloudflare R2（Beta）','Bucket 名称','WebDAV 用户名'],['阿里云 OSS（Beta）','地域','仓库所有者'],['GitHub（Beta）','仓库名称','WebDAV 基目录地址'],['GitLab（Beta）','项目 ID 或完整路径','Bucket 名称']]) {
+  for(const [provider,required,absent] of [['Cloudflare R2','Bucket 名称','WebDAV 用户名'],['阿里云 OSS','地域','仓库所有者'],['GitHub','仓库名称','WebDAV 基目录地址'],['GitLab','项目 ID 或完整路径','Bucket 名称']]) {
     await click(provider);await click('下一步');assert.match(await text(),new RegExp(required));assert.doesNotMatch(await text(),new RegExp(absent));assert.equal(await evaluate('!!document.querySelector("input[autocomplete=new-password]")'),false);await click('上一步');
   }
   await click('WebDAV\n推荐');await click('下一步');
@@ -86,5 +86,5 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await click('修改配置');await click('下一步');await credentials();await click('测试连接');await wait(has('最近连接测试通过'),'save-only connection');await click('下一步');await fill('同步密码','FIXTURE-SYNC-PASSWORD');const beforeSave=requests.length;await click('保存配置');await wait('!document.querySelector(".cloud-setup-steps")','save only returns to management');assert.equal(requests.length,beforeSave,'save-only performs no WebDAV request');assert.doesNotMatch(await text(),/自动同步已开启/);
   await click('锁定');await wait(has('当前凭据的连接尚未验证'),'locking clears proof');assert.doesNotMatch(await text(),/最近连接测试通过/);
   await fill('WebDAV 用户名','FIXTURE-USER');await fill('WebDAV 应用密码','FIXTURE-APP-PASSWORD');await fill('同步密码','FIXTURE-SYNC-PASSWORD');const beforeUnlock=requests.length;await click('解锁');await wait(has('已解锁'),'unlock without verification');assert.equal(requests.length,beforeUnlock);assert.match(await text(),/当前凭据的连接尚未验证/);
-  await writeFile(`${output}/results.json`,JSON.stringify({passed:true,fixtureObjects:objects.size,requests,checks:['light/dark 1100/390px: Data/What’s new, privacy and all three setup steps','Space disclosure activation and focus retention','runtime permissions and honest seven-day disclosure','privacy narrow layout','WebDAV default and four selectable Beta channels','local escape before setup','provider-specific fields','HTTPS and Chinese 401 errors','test without password and credential proof invalidation','password validation','failed first PUT stays in step 3','local fallback clears session and auto-sync','retry succeeds with encrypted writes','save-only performs zero requests','lock invalidates verification']},null,2));
+  await writeFile(`${output}/results.json`,JSON.stringify({passed:true,fixtureObjects:objects.size,requests,checks:['light/dark 1100/390px: Data/What’s new, privacy and all three setup steps','Space disclosure activation and focus retention','runtime permissions and honest request-history disclosure','privacy narrow layout','WebDAV default and four selectable storage channels','local escape before setup','provider-specific fields','HTTPS and Chinese 401 errors','test without password and credential proof invalidation','password validation','failed first PUT stays in step 3','local fallback clears session and auto-sync','retry succeeds with encrypted writes','save-only performs zero requests','lock invalidates verification']},null,2));
 }

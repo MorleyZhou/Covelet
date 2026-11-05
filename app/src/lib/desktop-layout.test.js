@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { DESKTOP_ROWS, layoutDesktop, desktopFootprint, nextDesktopPage, WIDGET_SIZES } from './desktop-layout.js';
 import { createEmptyState, createInitialState, createDemoState, validateState, migrateNavigationState, configureGitHubWidget, moveEntry, combineEntries, deleteEntry } from './model.js';
 import { createReplica, recordChanges, packReplica, readReplicas, materializeState, portableState } from './sync.js';
+import { createConfiguredNavigation } from '../../tests/fixtures/navigation-state.mjs';
 
 test('widget dimensions are rows by columns and bounded by the available columns', () => {
   assert.equal(DESKTOP_ROWS, 6);
@@ -13,7 +14,7 @@ test('widget dimensions are rows by columns and bounded by the available columns
 });
 
 test('mixed paged layouts preserve every root exactly once, spatial reading order and non-overlapping bounds', () => {
-  const initial = createInitialState();
+  const initial = createConfiguredNavigation();
   const items = Array.from({ length: 97 }, (_, order) => order % 9 === 0
     ? { id: `widget-${order}`, type: 'widget', parentId: null, order, config: { size: ['small', 'medium', 'large'][Math.floor(order / 9) % 3] }, page: order > 80 ? 2 : 0 }
     : { ...initial.entries[order % 6], id: `site-${order}`, order, page: order > 80 ? 2 : 0 });
@@ -46,7 +47,7 @@ test('mixed paged layouts preserve every root exactly once, spatial reading orde
 });
 
 test('large widgets use the six-row capacity and start a new screen when the remaining rows cannot fit', () => {
-  const state = configureGitHubWidget(createInitialState(), { username: 'torvalds', size: 'large' });
+  const state = configureGitHubWidget(createConfiguredNavigation(), { username: 'torvalds', size: 'large' });
   const screens = layoutDesktop(state.entries, 8);
   assert.equal(screens.length, 1);
   const widget = state.entries.find((entry) => entry.type === 'widget');
@@ -54,7 +55,7 @@ test('large widgets use the six-row capacity and start a new screen when the rem
   assert.deepEqual(screens[0].placements.get(widget.id), { row: 2, column: 1, rows: 4, columns: 4 });
   assert.equal(layoutDesktop(state.entries, 3).flatMap((screen) => screen.items).length, 7);
   assert.deepEqual(layoutDesktop(state.entries, 8), screens, 'a narrow-window layout does not change the wide layout');
-  const crowded = createInitialState(), originals = crowded.entries;
+  const crowded = createConfiguredNavigation(), originals = crowded.entries;
   crowded.entries = Array.from({ length: 24 }, (_, order) => ({ ...originals[order % originals.length], id: `crowded-${order}`, order }));
   const overflow = configureGitHubWidget(crowded, { username: 'torvalds', size: 'large' });
   const paged = layoutDesktop(overflow.entries, 8);
@@ -64,7 +65,7 @@ test('large widgets use the six-row capacity and start a new screen when the rem
 });
 
 test('saved page order takes precedence over the shared root order while order within each page is preserved', () => {
-  const state = moveEntry(createInitialState(), 'default-google', { page: 2, index: 0 });
+  const state = moveEntry(createConfiguredNavigation(), 'default-google', { page: 2, index: 0 });
   const screens = layoutDesktop(state.entries, 8);
   assert.deepEqual(screens.map((screen) => screen.page), [0, 2]);
   assert.deepEqual(screens[0].items.map((entry) => entry.name), ['YouTube', 'GitHub', 'X', 'ChatGPT', 'Grok']);
@@ -72,9 +73,9 @@ test('saved page order takes precedence over the shared root order while order w
   assert.equal(screens.flatMap((screen) => screen.items).length, state.entries.length);
 });
 
-test('fresh defaults are ordinary removable sites; migrations and empty sync never reseed them', () => {
-  const state = createInitialState();
-  assert.deepEqual(state.entries.map((entry) => entry.name), ['Google', 'YouTube', 'GitHub', 'X', 'ChatGPT', 'Grok']);
+test('fresh installations and empty sync stay empty; configured sites remain removable', () => {
+  assert.equal(createInitialState().entries.length, 0);
+  const state = createConfiguredNavigation();
   const deleted = state.entries.reduce((next, entry) => deleteEntry(next, entry.id), state);
   assert.equal(migrateNavigationState(deleted).entries.length, 0);
   assert.equal(materializeState({}).entries.length, 0);
@@ -102,7 +103,7 @@ test('page assignments survive folder creation, cross-screen movement, dissolvin
 
 test('saved screen assignments and deletion of a default survive native-sync packing', async () => {
   const initial = createEmptyState();
-  const defaults = createInitialState();
+  const defaults = createConfiguredNavigation();
   const state = moveEntry(deleteEntry(defaults, 'default-google'), 'default-github', { page: 2 });
   const replica = recordChanges(createReplica('paged-device'), initial, state);
   const packed = await packReplica(replica);

@@ -9,6 +9,9 @@ export const DESKTOP_TEMPLATE_MAX_BYTES = 256 * 1024;
 export const DESKTOP_TEMPLATE_MAX_SAVED = 20;
 const FORMAT = 'covelet-desktop-template';
 const SAFE_WIDGETS = new Set([CLOCK_WIDGET_ID, NOTES_WIDGET_ID, READING_WIDGET_ID]);
+// Old templates retain their clock configuration when read or backed up, but
+// new captures and applications no longer add or reposition the retired widget.
+export const activeTemplateWidgets = (template) => template.widgets.filter((widget) => widget.extensionId !== CLOCK_WIDGET_ID);
 const APPEARANCE_KEYS = ['theme', 'background', 'shade', 'blur', 'width', 'iconSize', 'gap', 'columns', 'showLabels', 'showClock', 'visualEnhancement'];
 const encoder = new TextEncoder();
 const copy = (value) => structuredClone(value);
@@ -84,7 +87,7 @@ export function inspectDesktopTemplate(input) {
 
 export function createDesktopTemplate(input, { name = tr('我的桌面方案'), publicSiteIds = [], privateEntryIds = [] } = {}) {
   const state = migrateNavigationState(input), privateIds = new Set(privateEntryIds), selected = new Set(publicSiteIds);
-  const widgets = state.entries.filter((entry) => entry.type === 'widget' && !entry.detached && SAFE_WIDGETS.has(entry.extensionId) && !privateIds.has(entry.id));
+  const widgets = state.entries.filter((entry) => entry.type === 'widget' && entry.extensionId !== CLOCK_WIDGET_ID && !entry.detached && SAFE_WIDGETS.has(entry.extensionId) && !privateIds.has(entry.id));
   const sites = state.entries.filter((entry) => entry.type === 'site' && selected.has(entry.id) && !privateIds.has(entry.id) && !privateIds.has(entry.parentId));
   const pages = [...new Set([...widgets, ...sites].map((entry) => entry.page ?? 0))].sort((a, b) => a - b);
   const pageMap = new Map(pages.map((page, index) => [page, index]));
@@ -99,7 +102,7 @@ export function applyDesktopTemplate(input, value, { appearance = true, widgets 
   let state = migrateNavigationState(input);
   const originalPages = new Set(state.settings.pages);
   if (appearance) state.settings = { ...state.settings, ...copy(template.appearance) };
-  const selectedWidgets = widgets ? template.widgets : [], selectedSites = sites ? template.sites : [];
+  const selectedWidgets = widgets ? activeTemplateWidgets(template) : [], selectedSites = sites ? template.sites : [];
   const sourcePages = [...new Set([...selectedWidgets, ...selectedSites].map((entry) => entry.page))].sort((a, b) => a - b);
   const firstPage = sourcePages.length ? nextDesktopPage(state.entries, state.settings.pages) : null;
   if (sourcePages.length && (firstPage === null || firstPage + sourcePages.length - 1 > MAX_DESKTOP_PAGE)) fail(tr('主屏幕数量已达上限。'));
@@ -156,12 +159,6 @@ export const BUILTIN_DESKTOP_TEMPLATES = Object.freeze([
   builtin('阅读记录', { background: { kind: 'color', value: '#eef4ef' }, columns: 8 }, [
     { extensionId: NOTES_WIDGET_ID, config: { size: 'medium' }, page: 0, position: { row: 0, column: 0 } },
     { extensionId: READING_WIDGET_ID, config: { size: 'medium' }, page: 0, position: { row: 0, column: 4 } },
-    { extensionId: CLOCK_WIDGET_ID, config: { size: 'small', style: 'digital', timeZone: 'local' }, page: 0, position: { row: 3, column: 0 } },
-  ]),
-  builtin('时区协作', { background: { kind: 'gradient', value: 'linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%)' }, columns: 8 }, [
-    { extensionId: CLOCK_WIDGET_ID, config: { size: 'large', style: 'digital', zones: ['Asia/Shanghai', 'Europe/London', 'America/New_York'] }, page: 0, position: { row: 0, column: 0 } },
-    { extensionId: NOTES_WIDGET_ID, config: { size: 'medium' }, page: 0, position: { row: 0, column: 4 } },
-    { extensionId: READING_WIDGET_ID, config: { size: 'small' }, page: 0, position: { row: 3, column: 4 } },
   ]),
 ]);
 

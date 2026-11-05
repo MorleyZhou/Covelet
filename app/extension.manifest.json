@@ -30,9 +30,7 @@
     "scripting",
     "alarms"
   ],
-  "optional_permissions": [
-    "notifications"
-  ],
+  "optional_permissions": [],
   "host_permissions": [
     "https://www.bing.com/*"
   ],

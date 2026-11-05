@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createWebdavProvider } from './cloud-webdav.js';
+import { createCloudProvider } from './cloud-providers.js';
 import { cloudProviderLabel, SYNC_PROVIDERS, SYNC_SETUP_STEPS } from './cloud-connection.js';
 import { createCloudSync, supportsCloudSync } from './cloud-sync.js';
 import { createSyncWasm } from './sync-wasm.js';
@@ -541,8 +542,25 @@ test('safe WebDAV status and transport messages survive the public sync boundary
   }
 });
 
-test('WebDAV is the default hardened channel and every other provider has a Beta label; setup exposes independent steps', () => {
+test('WebDAV remains the default channel and provider names have no individual Beta labels; setup exposes independent steps', () => {
   assert.equal(SYNC_PROVIDERS[0], 'webdav'); assert.equal(cloudProviderLabel('webdav'), 'WebDAV');
-  for (const provider of ['r2', 'oss', 'github', 'gitlab']) assert.match(cloudProviderLabel(provider), /Beta/);
+  for (const provider of ['r2', 'oss', 'github', 'gitlab']) assert.doesNotMatch(cloudProviderLabel(provider), /Beta/);
   assert.deepEqual(SYNC_SETUP_STEPS, ['channel', 'connection-test', 'sync-password', 'first-sync']);
+});
+
+test('safe adapter transport errors survive the public connection-test boundary for all four storage channels', async () => {
+  const profiles = [profile,
+    { provider: 'gitlab', endpoint: 'https://git.example.test', project: 'qa/project', branch: 'main', prefix: 'qa' },
+    { provider: 'r2', endpoint: 'https://r2.example.test', bucket: 'qa-bucket', prefix: 'qa' },
+    { provider: 'oss', endpoint: 'https://oss.example.test', bucket: 'qa-bucket', region: 'cn-hangzhou', prefix: 'qa' }];
+  for (const selected of profiles) {
+    const credentials = { ...secrets, accessKeyId: 'SYNTHETIC-ACCESS', secretAccessKey: 'SYNTHETIC-SECRET' };
+    const subject = device(cloud(), 'a', { providerFactory: (profile, secrets, options) => createCloudProvider(profile, secrets, {
+      ...options, fetcher: async () => { throw new TypeError('PRIVATE-TRANSPORT-DETAILS'); },
+    }) });
+    await subject.api.saveCloudSyncSettings(selected, credentials, password);
+    await assert.rejects(subject.api.testCloudConnection(), error => {
+      assert.equal(error.code, 'CLOUD_NETWORK'); assert.doesNotMatch(error.message, /PRIVATE|SYNTHETIC|fake-test/); return true;
+    });
+  }
 });

@@ -2,6 +2,9 @@ import { tr, getLocale } from "../i18n/index.js";
 import { normalizeTimeZone } from './time-zones.js';
 export const GITHUB_WIDGET_ID = 'github-contributions';
 export const CLOCK_WIDGET_ID = 'clock';
+// Keep legacy clock identities/configs readable in navigation, backups and sync.
+// The retired widget is filtered only from display and new template application.
+export const isRetiredClockWidget = (entry) => entry?.type === 'widget' && entry.extensionId === CLOCK_WIDGET_ID;
 export const NOTES_WIDGET_ID = 'notes';
 export const READING_WIDGET_ID = 'read-later';
 export const WIDGET_NAMES = Object.freeze({ get clock() { return tr("时钟"); }, get 'github-contributions'() { return tr("GitHub 贡献"); }, get notes() { return tr("便笺"); }, get 'read-later'() { return tr("稍后读"); } } );

@@ -29,7 +29,7 @@ for (const locale of ['en', 'zh_CN', 'zh_TW', 'ja', 'ko', 'de', 'fr', 'ru']) {
 }
 assert.deepEqual(manifest.chrome_url_overrides, { newtab: "newtab.html" });
 assert.deepEqual([...manifest.permissions].sort(), ["activeTab", "alarms", "favicon", "scripting", "search", "storage"]);
-assert.deepEqual(manifest.optional_permissions, ['notifications']);
+assert.deepEqual(manifest.optional_permissions, []);
 assert.deepEqual(manifest.action, { default_title: '__MSG_actionTitle__', default_popup: 'popup.html' });
 assert.deepEqual(manifest.background, { service_worker: 'background.js', type: 'module' });
 assert.deepEqual(manifest.host_permissions, ["https://www.bing.com/*"], "Only the fixed Bing wallpaper host may be accessed.");
@@ -101,8 +101,8 @@ assert(files.some((file) => file === path.join(extensionRoot, manifest.chrome_ur
 assert(files.some((file) => /\.js$/.test(file)), "No packaged JavaScript found.");
 assert(!files.some((file) => /\.map$/i.test(file)), "Source maps must not be included in the release package.");
 const wasmFiles = files.filter((file) => /\.wasm$/i.test(file));
-assert.equal(wasmFiles.length, 5, "Expected the packaged visual, sync, GitHub, clock and tools WASM cores.");
-const reviewedWasm = ['visual-core', 'sync-core', 'github-core', 'clock-core', 'tools-core'].map(name => ({ name, bytes: readFileSync(path.join(appRoot, 'src', 'wasm', `${name}.wasm`)) }));
+assert.equal(wasmFiles.length, 4, "Expected the packaged visual, sync, GitHub and tools WASM cores. The retired clock is not shipped.");
+const reviewedWasm = ['visual-core', 'sync-core', 'github-core', 'tools-core'].map(name => ({ name, bytes: readFileSync(path.join(appRoot, 'src', 'wasm', `${name}.wasm`)) }));
 for (const core of reviewedWasm) {
   const matches = wasmFiles.filter(file => readFileSync(file).equals(core.bytes));
   assert.equal(matches.length, 1, `Missing or duplicated reviewed ${core.name} module.`);

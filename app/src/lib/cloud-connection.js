@@ -7,7 +7,7 @@ export const SYNC_SETUP_STEPS = Object.freeze(['channel', 'connection-test', 'sy
 export const SYNC_PROVIDERS = Object.freeze(['webdav', 'r2', 'oss', 'github', 'gitlab']);
 export function cloudProviderLabel(provider) {
   const name = { webdav: 'WebDAV', r2: 'Cloudflare R2', oss: tr('阿里云 OSS'), github: 'GitHub', gitlab: 'GitLab' }[provider];
-  return provider === 'webdav' ? name : tr('{0}（Beta）', [name]);
+  return name;
 }
 
 // A first attempt must not start background retries before the user has seen

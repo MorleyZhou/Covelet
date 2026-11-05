@@ -2,7 +2,7 @@ import { tr } from '../i18n/index.js';
 import { isWebdavError } from './cloud-webdav.js';
 import { localData, createEncryptedStore } from './local-data.js';
 import { encryptCloudPayload, decryptCloudPayload, CLOUD_OBJECT_LIMIT } from './cloud-crypto.js';
-import { parseCloudSnapshotName } from './cloud-providers.js';
+import { parseCloudSnapshotName, isCloudProviderError } from './cloud-providers.js';
 import { isSyncRecord } from './sync-data-rules.js';
 import { sameJson } from './json-equal.js';
 
@@ -53,7 +53,7 @@ const messages = {
   get REVISION_CONFLICT() { return tr('数据已在其他页面更新，本次未覆盖，请重新同步。'); },
 };
 function safeError(reason) {
-  if (isWebdavError(reason)) return reason;
+  if (isWebdavError(reason) || isCloudProviderError(reason)) return reason;
   const code = own(messages, reason?.code) ? reason.code : ['CLOUD_CAPACITY', 'CLOUD_LIMIT'].includes(reason?.code) ? 'DATA_SYNC_CAPACITY'
     : ['LOCAL_DATA_CONFLICT', 'LOCAL_DATA_REVISION', 'DATA_SYNC_STALE'].includes(reason?.code) ? 'REVISION_CONFLICT' : 'DATA_SYNC_REQUEST';
   return Object.assign(new Error(messages[code]), { code });

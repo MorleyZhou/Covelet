@@ -1,6 +1,6 @@
 import { tr } from '../i18n/index.js';
 import { useEffect, useRef, useState } from 'react';
-import { SquaresFour, Code, ArrowsClockwise, GithubLogo, MagnifyingGlass, X, Clock, NotePencil, BookOpen, ChartLine, Package } from '@phosphor-icons/react';
+import { SquaresFour, Code, ArrowsClockwise, GithubLogo, MagnifyingGlass, X, NotePencil, BookOpen, ChartLine, Package } from '@phosphor-icons/react';
 import { BUNDLED_EXTENSIONS, EXTENSION_CATEGORIES, extensionMetadata, extensionsForCatalog } from '../lib/extensions.js';
 import { WIDGET_SIZE_OPTIONS } from '../lib/widget-model.js';
 import { WIDGET_SIZES } from '../lib/desktop-layout.js';
@@ -25,10 +25,10 @@ function useCatalogAction() {
 }
 
 const catalogTabs = [{ id: 'all', get label() { return tr('全部扩展'); }, Icon: SquaresFour }, ...EXTENSION_CATEGORIES.map((category) => ({
-  id: category.id, get label() { return category.label; }, Icon: ({ development: Code, time: Clock, productivity: NotePencil, learning: BookOpen, finance: ChartLine, creative: SquaresFour, life: Package })[category.id] || ArrowsClockwise,
+  id: category.id, get label() { return category.label; }, Icon: ({ development: Code, productivity: NotePencil, learning: BookOpen, finance: ChartLine, creative: SquaresFour, life: Package })[category.id] || ArrowsClockwise,
 }))];
 function ExtensionIcon({ extension }) {
-  const Icon = ({ clock: Clock, notes: NotePencil, 'read-later': BookOpen, 'github-contributions': GithubLogo })[extension.id] || ArrowsClockwise;
+  const Icon = ({ notes: NotePencil, 'read-later': BookOpen, 'github-contributions': GithubLogo })[extension.id] || ArrowsClockwise;
   return <span className={`extension-item-icon extension-${extension.id}-icon`}><Icon size="54%" aria-hidden="true" /></span>;
 }
 // Management only: no app panel, content data, or provider configuration here.
@@ -37,7 +37,7 @@ function WidgetSettings({ extension, entry, onSave, onRemove, onBusyChange, onDi
   const [size, setSize] = useState(initialSize), action = useCatalogAction(), footprint = WIDGET_SIZES[size];
   useEffect(() => { onBusyChange(action.busy); }, [action.busy, onBusyChange]);
   useEffect(() => { onDirtyChange(size !== initialSize); }, [size, initialSize, onDirtyChange]);
-  const save = () => action.run(() => onSave({ ...(entry?.config || (extension.id === 'clock' ? { style: 'analog' } : extension.id === 'github-contributions' ? { username: '' } : {})), size }, entry, extension.id));
+  const save = () => action.run(() => onSave({ ...(entry?.config || (extension.id === 'github-contributions' ? { username: '' } : {})), size }, entry, extension.id));
   return <div className="extension-component-settings" data-catalog-settings={extension.id}>
     <div className="extension-component-heading"><ExtensionIcon extension={extension} /><div><h3>{extension.name}</h3><p>{extension.description}</p></div></div>
     <div className="extension-size-layout"><figure className="extension-size-preview" aria-label={tr('组件预览')}>

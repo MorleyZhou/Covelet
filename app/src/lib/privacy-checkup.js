@@ -32,8 +32,8 @@ export function permissionPurpose(permission) {
     favicon: tr('添加或导入网站时，读取浏览器已有的网站图标。'),
     activeTab: tr('点击工具栏后，临时读取当前网页的网址、标题和图标地址。'),
     scripting: tr('点击工具栏后读取当前网页信息，帮助添加网站。'),
-    alarms: tr('安排本机倒计时。通知时间可能受浏览器运行状态影响。'),
-    notifications: tr('仅在你启用后显示倒计时完成通知。'),
+    alarms: tr('清理旧版时钟留下的提醒。'),
+    notifications: tr('旧版时钟使用的通知权限，当前版本不再发送通知。'),
   }[permission] || tr('此权限由当前扩展声明；请在浏览器扩展详情中核对用途。');
 }
 
@@ -44,7 +44,7 @@ export function permissionLabel(permission) {
     favicon: tr('网站图标'),
     activeTab: tr('当前网页'),
     scripting: tr('读取网页信息'),
-    alarms: tr('倒计时'),
+    alarms: tr('旧版提醒清理'),
     notifications: tr('通知'),
   }[permission] || permission;
 }

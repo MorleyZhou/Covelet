@@ -3,7 +3,7 @@ import { localData, syncDataStore as defaultSnapshotStore } from './local-data.j
 import * as navigationStorage from './storage.js';
 import { createEmptyState } from './model.js';
 import { createReplica, validateReplica, combineReplicas, recordChanges, portableState, materializeState, syncConflicts } from './sync.js';
-import { validateCloudConfig, createCloudProvider, cloudOrigin, parseCloudSnapshotName } from './cloud-providers.js';
+import { validateCloudConfig, createCloudProvider, cloudOrigin, parseCloudSnapshotName, isCloudProviderError } from './cloud-providers.js';
 import * as packagedWasm from './sync-wasm.js';
 import { encryptCloudPayload, decryptCloudPayload, validateCloudPassword, CLOUD_OBJECT_LIMIT, CLOUD_PLAINTEXT_LIMIT } from './cloud-crypto.js';
 import { revisionDiff, applyRevisionSelection } from './revision-diff.js';
@@ -56,7 +56,7 @@ const messages = {
 };
 
 function publicError(cause) {
-  if (isWebdavError(cause)) return cause;
+  if (isWebdavError(cause) || isCloudProviderError(cause)) return cause;
   const code = Object.hasOwn(messages, cause?.code) ? cause.code : 'CLOUD_REQUEST';
   return failure(messages[code] || tr("云服务请求失败，请检查授权、凭据、网络及服务权限；本地数据仍然保留。"), code);
 }

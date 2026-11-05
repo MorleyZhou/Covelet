@@ -1,0 +1,45 @@
+name: Extension browser tests
+
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+      - '.github/workflows/extension-browser-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: extension-browser-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  chromium-extension:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Install official Chromium and OS dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Build unpacked extension
+        run: npm run build:unpacked
+      - name: Test real extension pages
+        run: npm run test:e2e
+      - name: Save report, screenshots and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: covelet-playwright
+          path: output/playwright/covelet/
+          if-no-files-found: warn
+          retention-days: 14

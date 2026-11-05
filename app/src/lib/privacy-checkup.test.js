@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { readPrivacyPermissions, permissionPurpose } from './privacy-checkup.js';
+import { readPrivacyPermissions, permissionPurpose, permissionLabel } from './privacy-checkup.js';
 import manifest from '../../extension.manifest.json' with { type: 'json' };
 
 test('privacy snapshot distinguishes actual grants from optional declaration ranges without requesting access', async () => {
@@ -14,12 +14,21 @@ test('privacy snapshot distinguishes actual grants from optional declaration ran
   };
   const result = await readPrivacyPermissions(browser);
   assert.equal(result.grantsKnown, true);
+  assert.deepEqual(result.optionalPermissions, []);
   assert.ok(result.grantedPermissions.includes('notifications'));
   assert.ok(result.grantedOrigins.includes('https://dav.example.test/*'));
   assert.deepEqual(result.optionalOriginScope, ['http://*/*', 'https://*/*']);
   assert.equal(result.grantedOrigins.includes('https://*/*'), false);
   assert.equal('requestCount' in result, false, 'permission grants are not evidence of request activity');
   for (const name of [...manifest.permissions, ...manifest.optional_permissions]) assert.ok(permissionPurpose(name));
+});
+
+test('clock retirement requests no notification permission and describes any retained old grant honestly', () => {
+  assert.deepEqual(manifest.optional_permissions, []);
+  assert.ok(manifest.permissions.includes('alarms'), 'owned old browser reminders still need to be cleared');
+  assert.equal(permissionPurpose('alarms'), '清理旧版时钟留下的提醒。');
+  assert.equal(permissionLabel('alarms'), '旧版提醒清理');
+  assert.equal(permissionPurpose('notifications'), '旧版时钟使用的通知权限，当前版本不再发送通知。');
 });
 
 test('unavailable or denied permission inspection stays unknown, never falsely reports no permissions or requests', async () => {

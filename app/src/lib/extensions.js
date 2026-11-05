@@ -8,15 +8,11 @@ export const EXTENSION_TYPES = Object.freeze([
 
 export const EXTENSION_CATEGORIES = Object.freeze([
   Object.freeze({ id: 'development', get label() { return tr("开发工具"); } }),
-  Object.freeze({ id: 'time', get label() { return tr("时间工具"); } }),
   Object.freeze({ id: 'productivity', get label() { return tr("记录与阅读"); } }),
   Object.freeze({ id: 'sync', get label() { return tr("数据同步"); } }),
 ]);
 
 export const BUNDLED_EXTENSIONS = Object.freeze([
-  Object.freeze({ id: 'clock', type: 'widget', category: 'time', get name() { return tr("时钟"); },
-    get description() { return tr("世界时钟、时区对照、倒计时与计时。"); }, core: 'clock-core.wasm',
-    keywords: Object.freeze(['时间', '时钟', '世界时钟', '时区', '倒计时', '秒表', '计时', 'clock', 'timer']) }),
   Object.freeze({ id: 'notes', type: 'widget', category: 'productivity', get name() { return tr("便笺"); },
     get description() { return tr("随手记录，支持 Markdown 预览与置顶。"); }, core: 'tools-core.wasm',
     keywords: Object.freeze(['记录', '便笺', '笔记', 'Markdown', 'notes']) }),

@@ -239,7 +239,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       {draft.provider === 'github' && <p className="hint">{tr("建议使用私有仓库及仅限该仓库 Contents 读写的令牌；同步会生成仓库提交。")}</p>}
       {draft.provider === 'gitlab' && <p className="hint">{tr("先创建私有项目和分支，使用具备 API 写权限的专用令牌；同步会生成仓库提交。")}</p>}
       {draft.provider === 'webdav' && <p className="hint">{tr("使用 HTTPS WebDAV 和应用密码。先在基目录内建好保存目录；服务商可能限制流量和请求频率。")}</p>}
-      {draft.provider === 'oss' && <p className="hint">{tr("使用专用 RAM 凭据或临时令牌；部分 OSS 账号需要自己的 HTTPS 域名。")}</p>}
+      {draft.provider === 'oss' && <p className="hint">{tr("使用从未开启版本控制的专用 Bucket；凭据需具备对象读写、列举及读取 Bucket 版本状态的权限。")}</p>}
       </Disclosure>}
       {step === 2 && <p className="hint">{tr('测试时仅申请所选存储地址的访问权限。')}</p>}
       {step === 3 && <p className="hint">{tr('仅保存配置不会验证连接、开启自动同步或执行首次同步。')}</p>}

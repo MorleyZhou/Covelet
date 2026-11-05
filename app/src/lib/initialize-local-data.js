@@ -4,6 +4,7 @@ import { migrateNavigationIconCache } from './navigation-icon-cache.js';
 import { migrateProviderIconCache } from './provider-icons.js';
 import { migrateWallpaperCache } from './wallpaper.js';
 import { migrateGitHubCalendarCache } from './github-contributions.js';
+import { migrateHomeStartup } from './home-migration.js';
 
 let initialization;
 export function initializeLocalData() {
@@ -15,6 +16,7 @@ export function initializeLocalData() {
       migrateLegacyIndexedDb('owntab-assets', 'assets', createEncryptedStore('assets'), (record) => record.id),
       migrateNavigationIconCache(), migrateProviderIconCache(), migrateWallpaperCache(), migrateGitHubCalendarCache(),
     ]);
+    await migrateHomeStartup();
   })().catch((error) => { initialization = undefined; throw error; });
   return initialization;
 }

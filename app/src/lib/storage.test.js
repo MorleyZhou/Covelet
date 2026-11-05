@@ -157,13 +157,15 @@ test('widget configuration survives ZIP backup/restore without calendar cache or
   assert.deepEqual(Object.keys(restored.entries[0].config), ['username', 'size']);
 });
 
-test('fresh installation defaults remain deleted after reload and an existing empty desktop stays empty', async () => {
+test('fresh installations and saved empty desktops stay empty after reload', async () => {
   const subject = harness({ initialState: createInitialState });
   const fresh = await subject.store.loadState();
-  assert.equal(fresh.entries.length, 6);
-  const deleted = await subject.store.saveState(deleteEntry(fresh, 'default-google'), fresh.revision);
-  assert(!((await subject.another().loadState()).entries.some((entry) => entry.id === 'default-google')));
-  await subject.store.saveState(createEmptyState(), deleted.revision);
+  assert.equal(fresh.entries.length, 0);
+  const minimal = { ...fresh, settings: { ...fresh.settings, minimal: true, showClock: false } };
+  const saved = await subject.store.saveState(minimal, fresh.revision);
+  assert.equal((await subject.another().loadState()).settings.minimal, true);
+  assert.equal((await subject.another().loadState()).settings.showClock, false);
+  await subject.store.saveState(createEmptyState(), saved.revision);
   assert.equal((await subject.another().loadState()).entries.length, 0);
 });
 

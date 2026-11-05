@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import NavigationIconStatus from './NavigationIconStatus.jsx';
-import { BookOpen, Check, Clock, DownloadSimple, FileArrowUp, FloppyDisk, NotePencil, Trash } from '@phosphor-icons/react';
+import { BookOpen, Check, DownloadSimple, FileArrowUp, FloppyDisk, NotePencil, Trash } from '@phosphor-icons/react';
 import { tr, formatNumber } from '../i18n/index.js';
 import { layoutDesktop, DESKTOP_ROWS } from '../lib/desktop-layout.js';
 import { userErrorMessage } from '../lib/user-error.js';
 import { letterIcon } from '../lib/model.js';
 import { WIDGET_NAMES } from '../lib/widget-model.js';
-import { BUILTIN_DESKTOP_TEMPLATES, DESKTOP_TEMPLATE_MAX_BYTES, createDesktopTemplate, inspectDesktopTemplate, applyDesktopTemplate,
+import { BUILTIN_DESKTOP_TEMPLATES, DESKTOP_TEMPLATE_MAX_BYTES, createDesktopTemplate, inspectDesktopTemplate, applyDesktopTemplate, activeTemplateWidgets,
   loadSavedDesktopTemplates, saveDesktopTemplate, deleteDesktopTemplate } from '../lib/desktop-templates.js';
 import { Button } from './ui/button.jsx';
 import { Input } from './ui/input.jsx';
@@ -17,11 +17,12 @@ import PromptDialog from './PromptDialog.jsx';
 import Select from './Select.jsx';
 import './desktop-templates.css';
 
-const widgetIcon = (extensionId) => extensionId === 'clock' ? Clock : extensionId === 'notes' ? NotePencil : BookOpen;
+const widgetIcon = (extensionId) => extensionId === 'notes' ? NotePencil : BookOpen;
 function TemplatePreview({ template, compact = false, caption }) {
+  const widgets = activeTemplateWidgets(template);
   const entries = [
-    ...template.widgets.map((widget, index) => ({ ...widget, id: `widget-${index}`, type: 'widget', name: WIDGET_NAMES[widget.extensionId], parentId: null, order: index })),
-    ...template.sites.map((site, index) => ({ ...site, id: `site-${index}`, type: 'site', parentId: null, order: template.widgets.length + index, icon: letterIcon(site.name) })),
+    ...widgets.map((widget, index) => ({ ...widget, id: `widget-${index}`, type: 'widget', name: WIDGET_NAMES[widget.extensionId], parentId: null, order: index })),
+    ...template.sites.map((site, index) => ({ ...site, id: `site-${index}`, type: 'site', parentId: null, order: widgets.length + index, icon: letterIcon(site.name) })),
   ];
   const pages = [...new Set(entries.map((entry) => entry.page))].sort((a, b) => a - b);
   const screens = layoutDesktop(entries, template.appearance.columns, null, pages.length ? pages : [0]), screen = screens[0];
@@ -43,7 +44,7 @@ function TemplatePreview({ template, compact = false, caption }) {
 }
 
 export default function DesktopTemplates({ state, privateEntryIds = [], iconProgress, onApply, onClose, onBusyChange }) {
-  const builtinNames = [tr('纯净导航'), tr('阅读记录'), tr('时区协作')];
+  const builtinNames = [tr('纯净导航'), tr('阅读记录')];
   const [panel, setPanel] = useState('apply');
   const [template, setTemplate] = useState(BUILTIN_DESKTOP_TEMPLATES[0]), [selectedId, setSelectedId] = useState('builtin-0');
   const [saved, setSaved] = useState([]), [appearance, setAppearance] = useState(true), [widgets, setWidgets] = useState(false), [sites, setSites] = useState(false);
@@ -72,7 +73,7 @@ export default function DesktopTemplates({ state, privateEntryIds = [], iconProg
     const available = new Map();
     for (const entry of state.entries) if (entry.type === 'widget') available.set(entry.extensionId, (available.get(entry.extensionId) || 0) + 1);
     let moved = 0, added = 0;
-    for (const widget of template.widgets) {
+    for (const widget of activeTemplateWidgets(template)) {
       const count = available.get(widget.extensionId) || 0;
       if (count > 0) { moved++; available.set(widget.extensionId, count - 1); } else added++;
     }
@@ -130,7 +131,8 @@ export default function DesktopTemplates({ state, privateEntryIds = [], iconProg
         <TemplatePreview template={template} />
         <fieldset className="desktop-template-scopes"><legend>{tr('应用范围')}</legend>
           <label className={`desktop-template-option${appearance ? ' is-checked' : ''}`}><Checkbox checked={appearance} disabled={busy} onCheckedChange={(value) => setAppearance(value === true)} /><span><strong>{tr('应用外观')}</strong><small>{tr('主题、背景和密度设置；列数变化会调整桌面显示。')}</small></span></label>
-          <label className={`desktop-template-option${widgets ? ' is-checked' : ''}`} data-disabled={!template.widgets.length || undefined}><Checkbox checked={widgets} disabled={busy || !template.widgets.length} onCheckedChange={(value) => setWidgets(value === true)} /><span><strong>{tr('应用组件布局')}</strong><small>{template.widgets.length ? tr('将 {0} 个现有组件移至新屏幕，新增 {1} 个组件。保留现有组件的内容、时区和样式。', [formatNumber(counts.moved), formatNumber(counts.added)]) : tr('此方案不包含组件')}</small></span></label>
+          <label className={`desktop-template-option${widgets ? ' is-checked' : ''}`} data-disabled={!activeTemplateWidgets(template).length || undefined}><Checkbox checked={widgets} disabled={busy || !activeTemplateWidgets(template).length} onCheckedChange={(value) => setWidgets(value === true)} /><span><strong>{tr('应用组件布局')}</strong><small>{activeTemplateWidgets(template).length ? tr('将 {0} 个现有组件移至新屏幕，新增 {1} 个组件。保留现有组件的内容和设置。', [formatNumber(counts.moved), formatNumber(counts.added)]) : tr('此方案不包含组件')}</small></span></label>
+          {activeTemplateWidgets(template).length !== template.widgets.length && <p className="hint">{tr('方案中的旧时钟组件不会添加到桌面，原有时钟数据会保留。')}</p>}
           <label className={`desktop-template-option${sites ? ' is-checked' : ''}`} data-disabled={!template.sites.length || undefined}><Checkbox checked={sites} disabled={busy || !template.sites.length} onCheckedChange={(value) => setSites(value === true)} /><span><strong>{tr('添加方案中的网址')}</strong><small>{template.sites.length ? tr('方案包含 {0} 个网址，将加入新屏幕；已有的完整网址会跳过。', [formatNumber(template.sites.length)]) : tr('此方案不包含网址')}</small></span></label>
         </fieldset>
         {template.sites.length > 0 && <Disclosure className="desktop-template-public-preview" title={tr('查看方案中的网址')}><ul>{template.sites.map((site, index) => <li key={index}><strong>{site.name}</strong><small>{site.url}</small></li>)}</ul></Disclosure>}

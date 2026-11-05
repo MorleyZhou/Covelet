@@ -55,29 +55,29 @@ test('occupied-seat insertion retains deliberate holes while dropping into an em
 });
 
 test('single-cell insertion skips a larger widget without moving its footprint', () => {
-  const widget = { id: 'clock', type: 'widget', name: 'clock', extensionId: 'clock', groupId: 'group-home', parentId: null,
-    page: 0, order: 1, position: { row: 0, column: 1 }, icon: { kind: 'letter', value: 'T' }, config: { size: 'small', style: 'digital' } };
+  const widget = { id: 'notes', type: 'widget', name: 'notes', extensionId: 'notes', groupId: 'group-home', parentId: null,
+    page: 0, order: 1, position: { row: 0, column: 1 }, icon: { kind: 'letter', value: 'T' }, config: { size: 'small' } };
   const state = stateOf([site('a', 0), widget, site('b', 3), site('c', 4)]), moved = drop(state, ['c'], 0);
-  assert.deepEqual(ids(moved.entries), ['c', 'clock', 'a', 'b']);
-  assert.deepEqual(moved.entries.find((item) => item.id === 'clock').position, widget.position);
+  assert.deepEqual(ids(moved.entries), ['c', 'notes', 'a', 'b']);
+  assert.deepEqual(moved.entries.find((item) => item.id === 'notes').position, widget.position);
   assert.equal(slot(moved.entries, 'a'), 3); assert.equal(slot(moved.entries, 'b'), 4); noOverlap(moved.entries);
 });
 
 test('dropping into a larger widget pushes the stable neighbor sequence forward without an endpoint swap', () => {
-  const widget = { id: 'clock', type: 'widget', name: 'clock', extensionId: 'clock', groupId: 'group-home', parentId: null,
-    page: 0, order: 1, position: { row: 0, column: 1 }, icon: { kind: 'letter', value: 'T' }, config: { size: 'small', style: 'digital' } };
+  const widget = { id: 'notes', type: 'widget', name: 'notes', extensionId: 'notes', groupId: 'group-home', parentId: null,
+    page: 0, order: 1, position: { row: 0, column: 1 }, icon: { kind: 'letter', value: 'T' }, config: { size: 'small' } };
   const state = stateOf([site('a', 0), widget, site('b', 3), site('c', 4)]), moved = drop(state, ['a'], 1);
-  assert.equal(slot(moved.entries, 'a'), 1); assert.equal(slot(moved.entries, 'clock'), 2);
+  assert.equal(slot(moved.entries, 'a'), 1); assert.equal(slot(moved.entries, 'notes'), 2);
   assert.equal(slot(moved.entries, 'b'), 4); assert.equal(slot(moved.entries, 'c'), 5);
-  assert.deepEqual(ids(moved.entries), ['a', 'clock', 'b', 'c']); noOverlap(moved.entries);
+  assert.deepEqual(ids(moved.entries), ['a', 'notes', 'b', 'c']); noOverlap(moved.entries);
 });
 
 test('moving a multi-cell widget preserves unselected visual order and leaves its old free cells alone', () => {
-  const widget = { id: 'clock', type: 'widget', name: 'clock', extensionId: 'clock', groupId: 'group-home', parentId: null,
-    page: 0, order: 0, position: { row: 0, column: 0 }, icon: { kind: 'letter', value: 'T' }, config: { size: 'small', style: 'digital' } };
-  const state = stateOf([widget, ...[2, 3, 6, 7, 8, 9].map((value) => site(`s${value}`, value))]), moved = drop(state, ['clock'], 6);
-  assert.equal(slot(moved.entries, 'clock'), 6);
-  assert.deepEqual(ids(moved.entries).filter((id) => id !== 'clock'), ['s2', 's3', 's6', 's7', 's8', 's9']);
+  const widget = { id: 'notes', type: 'widget', name: 'notes', extensionId: 'notes', groupId: 'group-home', parentId: null,
+    page: 0, order: 0, position: { row: 0, column: 0 }, icon: { kind: 'letter', value: 'T' }, config: { size: 'small' } };
+  const state = stateOf([widget, ...[2, 3, 6, 7, 8, 9].map((value) => site(`s${value}`, value))]), moved = drop(state, ['notes'], 6);
+  assert.equal(slot(moved.entries, 'notes'), 6);
+  assert.deepEqual(ids(moved.entries).filter((id) => id !== 'notes'), ['s2', 's3', 's6', 's7', 's8', 's9']);
   assert.equal(slot(moved.entries, 's2'), 2); assert.equal(slot(moved.entries, 's3'), 3);
   noOverlap(moved.entries);
 });

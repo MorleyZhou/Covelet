@@ -15,6 +15,7 @@ const ownError = (message, code = 'CLOUD_INVALID_CONFIG') => {
   safeErrors.add(error);
   return error;
 };
+export const isCloudProviderError = (error) => safeErrors.has(error);
 const invalid = () => ownError(tr("云存储配置无效，请检查填写内容。"));
 const badResponse = () => ownError(tr("云存储返回的数据格式无效。"), 'CLOUD_INVALID_RESPONSE');
 const capacityError = () => ownError(tr("云端快照数量或大小超出安全限制，请使用单独的存储目录。"), 'CLOUD_LIMIT');
@@ -191,6 +192,23 @@ function bucketPage(bytes) {
   const next = xmlField(xml, 'NextContinuationToken', truncated === 'true');
   if (next !== null && (!next || next.length > 4096 || /[\u0000-\u001f\u007f]/.test(next))) throw badResponse();
   return { objects, next: truncated === 'true' ? next : null };
+}
+
+function requireUnversionedOssBucket(bytes) {
+  // https://www.alibabacloud.com/help/en/oss/developer-reference/getbucketversioning
+  // https://www.alibabacloud.com/help/en/oss/developer-reference/putobject
+  let source;
+  try { source = decoder.decode(bytes); } catch { throw badResponse(); }
+  if (/<!DOCTYPE|<!ENTITY|<!\[CDATA\[/i.test(source)) throw badResponse();
+  source = source.replace(/<!--[\s\S]*?-->/g, '');
+  const match = /^\s*(?:<\?xml[^?]*\?>\s*)?<VersioningConfiguration(?:\s+xmlns=(?:"http:\/\/doc\.oss-cn-hangzhou\.aliyuncs\.com"|'http:\/\/doc\.oss-cn-hangzhou\.aliyuncs\.com'))?\s*(?:\/>|>([\s\S]*?)<\/VersioningConfiguration>)\s*$/.exec(source);
+  if (!match) throw badResponse();
+  const content = (match[1] || '').trim();
+  if (!content) return;
+  if (!/^<Status>\s*(?:Enabled|Suspended)\s*<\/Status>$/.test(content)) throw badResponse();
+  // OSS explicitly ignores forbid-overwrite on both enabled and suspended
+  // versioned buckets. Only a never-versioned bucket supplies create-once PUT.
+  throw ownError(tr('此 OSS Bucket 已开启或暂停版本控制，无法防止覆盖同名文件。请使用从未开启版本控制的专用 Bucket。'), 'CLOUD_OSS_VERSIONING');
 }
 
 function base64(bytes) {
@@ -467,6 +485,12 @@ export function createCloudProvider(input, secrets, options = {}) {
         if (await digest(bytes) !== metadata.digest) throw ownError(tr("待上传快照的内容与文件名不一致。"), 'CLOUD_INTEGRITY');
         const existing = await rawRead(request, name, true);
         if (existing) { if (!equalBytes(existing, bytes)) throw conflictError(); return; }
+        if (profile.provider === 'oss') {
+          const versioning = await request('GET', new URL(`${origin}/?versioning`));
+          if ([401, 403].includes(versioning.response.status)) throw ownError(tr('无法读取 OSS Bucket 版本状态，请检查凭据和 GetBucketVersioning 权限。'), 'CLOUD_OSS_VERSIONING_CHECK');
+          if (versioning.response.status !== 200) throw statusError(versioning.response.status, versioning.response.headers);
+          requireUnversionedOssBucket(versioning.bytes);
+        }
         let result;
         if (profile.provider === 'github') {
           const body = encoder.encode(JSON.stringify({ message: 'Covelet encrypted sync snapshot', content: base64(bytes), branch: profile.branch }));

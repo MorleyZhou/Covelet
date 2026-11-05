@@ -98,7 +98,7 @@ import { prepareImportedNavigationIcons, requestNavigationIconAccess } from './l
 import { iconFailureMessage } from './lib/icon-feedback.js';
 import NavigationIconStatus from './components/NavigationIconStatus.jsx';
 import IconArtwork from './components/IconArtwork.jsx';
-import ClockWidget from "./components/ClockWidget.jsx";
+import HomeTime from "./components/HomeTime.jsx";
 import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashDialog } from "./components/PersonalTools.jsx";
 import usePersonalTools from './lib/use-personal-tools.js';
 import { searchCoveletContent } from './lib/content-search.js';
@@ -112,8 +112,7 @@ import DesktopTemplates from './components/DesktopTemplates.jsx';
 import RecoveryCenter, { downloadRecoveryFile } from './components/RecoveryCenter.jsx';
 import { recoveryCenter } from './lib/recovery-center.js';
 import { focusDesktopNeighbor } from "./lib/desktop-focus.js";
-import { CLOCK_WIDGET_ID, GITHUB_WIDGET_ID } from "./lib/widget-model.js";
-import { removeClockState } from "./lib/clock-runtime.js";
+import { GITHUB_WIDGET_ID } from "./lib/widget-model.js";
 import "./owntab.css";
 import { DialogSurface } from './components/DialogSurface.jsx';
 import { MessageDialog } from './components/PromptDialog.jsx';
@@ -468,9 +467,7 @@ export function App() {
     onEnd: () => { stopLayoutPress(); setContext(null); setScreenManager(false); setDraftPage(null); focusDesktop(); },
     onSave: async (next, revision) => {
       const saved = demo ? { ...migrateNavigationState(next), revision: preferenceState.current.revision + 1 } : await saveState(next, revision);
-      const removedClocks = state.entries.filter((item) => item.type === 'widget' && item.extensionId === CLOCK_WIDGET_ID && !saved.entries.some((entry) => entry.id === item.id));
       setState(saved); preferenceState.current = saved; setError('');
-      for (const clock of removedClocks) await removeClockState(clock.id).catch((reason) => notify(userErrorMessage(reason), "error"));
       return saved;
     },
   });
@@ -499,13 +496,8 @@ export function App() {
     } finally { privacyOperation.current = false; setPrivacyBusy(false); }
   }
   useEffect(() => {
-    if (['clock', 'personal-tool'].includes(modal?.kind) && state && !state.entries.some((item) => item.id === modal.id && item.type === 'widget' && !item.detached)) setModal(null);
+    if (modal?.kind === 'personal-tool' && state && !state.entries.some((item) => item.id === modal.id && item.type === 'widget' && !item.detached)) setModal(null);
   }, [state, modal?.kind, modal?.id]);
-  useEffect(() => {
-    const alert = (event) => { if (event.detail?.title) notify(`${event.detail.title}${event.detail.message ? ` · ${event.detail.message}` : ''}`); };
-    window.addEventListener('covelet-clock-alert', alert);
-    return () => window.removeEventListener('covelet-clock-alert', alert);
-  }, []);
   useEffect(() => {
     let mounted = true, initial = true;
     (demo ? Promise.resolve(createInitialState()) : loadState())
@@ -643,7 +635,7 @@ export function App() {
     cancelDrag(); setContext(null);
     setModal({ kind: 'layout-delete', ids: selected.map((item) => item.id), draft: desktopState,
       title: selected.length === 1 ? tr("删除“{0}”？", [selected[0].type === "widget" ? builtinName(selected[0].extensionId, selected[0].name) : selected[0].name]) : tr("删除所选 {0} 项？", [selected.length]),
-      children: children.length, clock: selected.some((item) => item.type === 'widget' && item.extensionId === CLOCK_WIDGET_ID) });
+      children: children.length });
   }
   function confirmLayoutDelete() {
     if (modal?.kind !== 'layout-delete' || !layoutEditor.editing || layoutEditor.saving || layoutEditor.conflict) return;
@@ -685,16 +677,16 @@ export function App() {
       return saved;
     } finally { release(); }
   }
-  function openClock(item) {
+  function openWidget(item) {
     if (presentation && hiddenKeys.has(`widget:${item.id}`)) { requestPrivacyUnlock(); return; }
     if (layoutEditor.editing || modal || drag) return;
     stopLayoutPress(); cancelDrag(); setContext(null); setEngineMenu(false); setQuery(''); setFocused(false);
-    setModal({ kind: item.extensionId === CLOCK_WIDGET_ID ? 'clock' : item.extensionId === GITHUB_WIDGET_ID ? 'github-tool' : 'personal-tool', id: item.id });
+    setModal({ kind: item.extensionId === GITHUB_WIDGET_ID ? 'github-tool' : 'personal-tool', id: item.id });
   }
   function openEntry(item) {
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
-    if (item.type === 'widget' && ([CLOCK_WIDGET_ID, GITHUB_WIDGET_ID, 'notes', 'read-later'].includes(item.extensionId))) {
-      revealDesktopEntry(state, item.id); openClock(item); return;
+    if (item.type === 'widget' && ([GITHUB_WIDGET_ID, 'notes', 'read-later'].includes(item.extensionId))) {
+      revealDesktopEntry(state, item.id); openWidget(item); return;
     }
     if (item.type === "folder") {
       revealDesktopEntry(state, item.id);
@@ -820,7 +812,6 @@ export function App() {
     const before = state,
       saved = await commit(deleteEntry(state, item.id), tr("已删除"));
     if (saved) {
-      if (item.type === 'widget' && item.extensionId === CLOCK_WIDGET_ID) await removeClockState(item.id).catch((reason) => notify(userErrorMessage(reason), "error"));
       setUndo({ before, revision: saved.revision });
       if (folderId === item.id) setFolder(null);
     }
@@ -1054,10 +1045,8 @@ export function App() {
           const box = source.getBoundingClientRect();
           setContext({ kind: editing ? 'layout' : "entry", item, source, keyboard: true, x: box.left, y: box.bottom + 6 });
         }}>
-        {item.type === 'widget' ? item.extensionId === CLOCK_WIDGET_ID
-          ? <ClockWidget entry={item} open={modal?.kind === 'clock' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} />
-          : ['notes', 'read-later'].includes(item.extensionId) ? <PersonalWidget entry={item} open={modal?.kind === 'personal-tool' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} Dialog={Modal} portalTarget={mainRef.current} />
-          : <GitHubWidget entry={item} open={modal?.kind === 'github-tool' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} /> : item.type === "site" ? <a className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} href={item.url} draggable={false} target={settings.openNewTab ? "_blank" : undefined} rel="noreferrer noopener" title={`${item.name}\n${item.url}`}>
+        {item.type === 'widget' ? ['notes', 'read-later'].includes(item.extensionId) ? <PersonalWidget entry={item} open={modal?.kind === 'personal-tool' && modal.id === item.id} onOpen={() => openWidget(item)} onClose={() => setModal(null)} Dialog={Modal} portalTarget={mainRef.current} />
+          : <GitHubWidget entry={item} open={modal?.kind === 'github-tool' && modal.id === item.id} onOpen={() => openWidget(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} /> : item.type === "site" ? <a className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} href={item.url} draggable={false} target={settings.openNewTab ? "_blank" : undefined} rel="noreferrer noopener" title={`${item.name}\n${item.url}`}>
           <SiteIcon entry={item} /><span className="site-name">{item.name}</span>
         </a> : <Button variant="unstyled" size="unstyled" className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} title={item.name} aria-label={item.name} aria-haspopup="dialog" onClick={() => openEntry(item)}>
           <SiteIcon entry={item} children={children} /><span className="site-name">{item.name}</span>
@@ -1179,6 +1168,7 @@ export function App() {
         </header>
         {presentationHint && <p className="presentation-status" role="status">{presentationHint}</p>}
         <section className="search-area" aria-label={tr("搜索")} inert={layoutEditor.editing || undefined}>
+          {!settings.minimal && <HomeTime />}
           <form className="search-box" onSubmit={submit} role="search">
             <div className="engine-selector" data-popover>
               <DropdownMenu open={engineMenu} modal={false} onOpenChange={(open) => { if (open) engineChoice.current = false; setEngineMenu(open); }}>
@@ -1328,7 +1318,6 @@ export function App() {
         {modal?.kind === 'layout-delete' && layoutEditor.editing && <Modal title={modal.title} privacyKeys={modal.ids.flatMap((id) => desktopState.entries.filter((item) => item.id === id || item.parentId === id).map((item) => `${item.type}:${item.id}`))} onClose={() => setModal(null)}>
           <div className="form-stack">
             {modal.children > 0 && <p>{tr("文件夹内的 {0} 个网站也会删除。", [formatNumber(modal.children)])}</p>}
-            {modal.clock && <p>{tr("保存后将清除所选时钟的计时记录和倒计时提醒。")}</p>}
             <div className="modal-footer"><Button variant="secondary" type="button" className="button" data-autofocus onClick={() => setModal(null)}>{tr("取消")}</Button>
               <Button variant="destructive" type="button" className="button" disabled={layoutEditor.saving || layoutEditor.conflict} onClick={confirmLayoutDelete}>{tr("删除")}</Button></div>
           </div>
@@ -1709,6 +1698,10 @@ function Settings({
           <>
             <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onDesktopTemplates)}><SquaresFour size={18} />{tr('桌面方案与分享')}</Button>
             <LanguageSettings />
+            <label className="check-label">
+              <Switch aria-label={tr("极简模式")} checked={draft.minimal} onCheckedChange={(minimal) => patch({ minimal })} />
+              <span>{tr("极简模式")}<span className="enhancement-description">{tr("隐藏时间和日期。")}</span></span>
+            </label>
             <Select label={tr("主题")} value={draft.theme} onChange={(theme) => patch({ theme })}
               options={[{ value: "system", label: tr("跟随系统") }, { value: "light", label: tr("浅色") }, { value: "dark", label: tr("深色") }]} />
             <BackgroundPicker value={draft.background} onChange={(background) => patch({ background })} wallpaper={wallpaper} />

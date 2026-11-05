@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createInitialState, configureGitHubWidget, deleteEntry } from './model.js';
+import { configureGitHubWidget, deleteEntry } from './model.js';
+import { createConfiguredNavigation } from '../../tests/fixtures/navigation-state.mjs';
 import { beginDesktopEdit, addDesktopScreen, removeDesktopScreen, applyDesktopDrop, deleteDesktopEntries } from './desktop-edit.js';
 import { LAYOUT_HISTORY_LIMIT, createLayoutHistory, updateLayoutHistoryView, recordLayoutHistory,
   undoLayoutHistory, redoLayoutHistory, layoutHistoryScreen, layoutHistoryShortcut } from './layout-history.js';
 
 const columns = 8;
-const start = () => beginDesktopEdit(createInitialState(), columns).state;
+const start = () => beginDesktopEdit(createConfiguredNavigation(), columns).state;
 const frame = (draft, selectedIds = [], activeKey = '0:0') => ({ draft, selectedIds, activeKey });
 
 test('inserting a dragged icon records all intervening seats in one undoable layout transaction', () => {

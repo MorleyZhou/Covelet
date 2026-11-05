@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import { CLOUD_SNAPSHOT_MAX_BYTES, cloudOrigin, createCloudProvider, parseCloudSnapshotName, validateCloudConfig } from './cloud-providers.js';
+import { CLOUD_SNAPSHOT_MAX_BYTES, cloudOrigin, createCloudProvider, isCloudProviderError, parseCloudSnapshotName, validateCloudConfig } from './cloud-providers.js';
 import { createSyncWasm } from './sync-wasm.js';
 
 const encoder = new TextEncoder();
@@ -84,9 +84,9 @@ test('R2 uses AWS4, encoded path-style keys, signed create conditions, and safe 
 });
 
 test('OSS native V4 signs bucket in canonical URI, UNSIGNED-PAYLOAD, and all x-oss headers', async () => {
-  const queue = fakeQueue([response('', 404), response('', 200)]);
+  const queue = fakeQueue([response('', 404), response('<VersioningConfiguration/>'), response('', 200)]);
   await provider({ ...oss, endpoint: 'https://storage.example.com', prefix: '保存/界面' }, queue, {}, { ...fakeSecrets, sessionToken: 'FAKE-STS-TOKEN' }).write(name, payload);
-  const put = queue.calls[1];
+  const put = queue.calls[2];
   assert.equal(new URL(put.url).pathname, `/%E4%BF%9D%E5%AD%98/%E7%95%8C%E9%9D%A2/${name}`);
   assert.equal(put.headers['x-oss-content-sha256'], 'UNSIGNED-PAYLOAD');
   assert.equal(put.headers['x-oss-forbid-overwrite'], 'true');
@@ -105,6 +105,46 @@ test('OSS documented canonical request hashes to the official test-vector digest
   // published canonical-request SHA-256 is independently reproducible.
   const canonical = 'PUT\n/examplebucket/exampleobject\n\ncontent-disposition:attachment\ncontent-length:3\ncontent-md5:ICy5YqxZB1uWSwcVLSNLcA==\ncontent-type:text/plain\nx-oss-content-sha256:UNSIGNED-PAYLOAD\nx-oss-date:20250411T064124Z\n\ncontent-disposition;content-length\nUNSIGNED-PAYLOAD';
   assert.equal(hash(canonical), 'c46d96390bdbc2d739ac9363293ae9d710b14e48081fcb22cd8ad54b63136eca');
+});
+
+test('OSS checks never-enabled versioning before every immutable create, including signed subresource query', async () => {
+  for (const policy of ['<VersioningConfiguration/>', '<?xml version="1.0" encoding="UTF-8"?><VersioningConfiguration xmlns="http://doc.oss-cn-hangzhou.aliyuncs.com"></VersioningConfiguration>']) {
+    const queue = fakeQueue([response('', 404), response(policy), response('', 200)]);
+    await provider(oss, queue).write(name, payload);
+    assert.deepEqual(queue.calls.map(call => call.method), ['GET', 'GET', 'PUT']);
+    const check = queue.calls[1], url = new URL(check.url);
+    assert.equal(url.pathname, '/'); assert.equal(url.search, '?versioning');
+    const canonical = 'GET\n/test-bucket/\nversioning\nx-oss-content-sha256:UNSIGNED-PAYLOAD\nx-oss-date:20250411T064124Z\n\n\nUNSIGNED-PAYLOAD';
+    let key = Buffer.from(`aliyun_v4${fakeSecrets.secretAccessKey}`);
+    for (const part of ['20250411', 'cn-hangzhou', 'oss', 'aliyun_v4_request']) key = createHmac('sha256', key).update(part).digest();
+    const signature = createHmac('sha256', key).update(`OSS4-HMAC-SHA256\n20250411T064124Z\n20250411/cn-hangzhou/oss/aliyun_v4_request\n${hash(canonical)}`).digest('hex');
+    assert.ok(check.headers.authorization.endsWith(`Signature=${signature}`), 'versioning subresource has no equals sign in OSS V4 canonical query');
+  }
+});
+
+test('OSS refuses enabled/suspended buckets and unconfirmed/malformed versioning without any PUT', async () => {
+  for (const status of ['Enabled', 'Suspended']) {
+    const queue = fakeQueue([response('', 404), response(`<VersioningConfiguration><Status>${status}</Status></VersioningConfiguration>`)]);
+    await assert.rejects(provider(oss, queue).write(name, payload), codeIs('CLOUD_OSS_VERSIONING'));
+    assert.deepEqual(queue.calls.map(call => call.method), ['GET', 'GET']);
+  }
+  for (const policy of ['', '{}', '<VersioningConfiguration><Status>Disabled</Status></VersioningConfiguration>', '<VersioningConfiguration Status="Enabled"/>', '<VersioningConfiguration><Unknown>enabled</Unknown></VersioningConfiguration>', '<!DOCTYPE x><VersioningConfiguration/>']) {
+    const queue = fakeQueue([response('', 404), response(policy)]);
+    await assert.rejects(provider(oss, queue).write(name, payload), codeIs('CLOUD_INVALID_RESPONSE'));
+    assert.equal(queue.calls.some(call => call.method === 'PUT'), false);
+  }
+  for (const status of [401, 403]) {
+    const queue = fakeQueue([response('', 404), response('PRIVATE bucket error', status)]);
+    await assert.rejects(provider(oss, queue).write(name, payload), error => error.code === 'CLOUD_OSS_VERSIONING_CHECK' && !error.message.includes('PRIVATE'));
+    assert.equal(queue.calls.some(call => call.method === 'PUT'), false);
+  }
+});
+
+test('only adapter-created errors are marked safe for the controller boundary', async () => {
+  const queue = fakeQueue([response('PRIVATE provider message', 401)]);
+  await assert.rejects(provider(github, queue).read(name), error => isCloudProviderError(error));
+  assert.equal(isCloudProviderError(Object.assign(Error('PRIVATE provider message'), { code: 'CLOUD_AUTH' })), false);
+  assert.equal(isCloudProviderError('CLOUD_AUTH'), false);
 });
 
 test('R2 and OSS decode paged XML safely and only list our direct-child snapshot basenames', async () => {
@@ -211,10 +251,11 @@ test('identical existing files are idempotent without PUT, but mismatched files 
 
 test('racing creates reconcile by bytes after R2 412, OSS 409, and GitHub 422', async () => {
   for (const [profile, status] of [[r2, 412], [oss, 409], [github, 422]]) {
-    const queue = fakeQueue([response('', 404), response('{}', status), response(payload)]);
+    const policy = () => profile.provider === 'oss' ? [response('<VersioningConfiguration/>')] : [];
+    const queue = fakeQueue([response('', 404), ...policy(), response('{}', status), response(payload)]);
     await provider(profile, queue).write(name, payload);
-    assert.deepEqual(queue.calls.map((call) => call.method), ['GET', 'PUT', 'GET']);
-    const collision = fakeQueue([response('', 404), response('{}', status), response('BAD EXISTING BYTES')]);
+    assert.deepEqual(queue.calls.map((call) => call.method), profile.provider === 'oss' ? ['GET', 'GET', 'PUT', 'GET'] : ['GET', 'PUT', 'GET']);
+    const collision = fakeQueue([response('', 404), ...policy(), response('{}', status), response('BAD EXISTING BYTES')]);
     await assert.rejects(provider(profile, collision).write(name, payload), codeIs('CLOUD_CONFLICT'));
   }
   await assert.rejects(provider(github, fakeQueue([response('', 404), response('{}', 422), response('', 404)])).write(name, payload), codeIs('CLOUD_REQUEST_FAILED'), '422 validation is not automatically a conflict');
@@ -279,18 +320,43 @@ test('invalid credential headers are rejected before the first request and bytes
   assert.deepEqual(putQueue.calls[1].body, payload);
 });
 
-test('packaged sync WASM interoperates with R2, native OSS V4, and GitHub adapters', async () => {
+test('packaged sync WASM interoperates with R2, native OSS V4, GitHub and GitLab adapters', async () => {
   const wasm = await createSyncWasm(await readFile(new URL('../wasm/sync-core.wasm', import.meta.url)));
-  for (const profile of [r2, oss, github]) {
-    const normal = fakeQueue([response('', 404), response('{}', profile.provider === 'github' ? 201 : 200), response(payload)]);
-    const compiled = fakeQueue([response('', 404), response('{}', profile.provider === 'github' ? 201 : 200), response(payload)]);
+  for (const profile of [r2, oss, github, gitlab]) {
+    const policy = () => profile.provider === 'oss' ? [response('<VersioningConfiguration/>')] : [];
+    const normal = fakeQueue([response('', 404), ...policy(), response('{}', ['github', 'gitlab'].includes(profile.provider) ? 201 : 200), response(payload)]);
+    const compiled = fakeQueue([response('', 404), ...policy(), response('{}', ['github', 'gitlab'].includes(profile.provider) ? 201 : 200), response(payload)]);
     await provider(profile, normal).write(name, payload);
     const runtime = provider(profile, compiled, { signer: wasm });
     await runtime.write(name, payload);
     assert.deepEqual(await runtime.read(name), payload);
-    assert.deepEqual(compiled.calls[1].headers, normal.calls[1].headers, 'real bundled WASM signatures match Node crypto reference');
+    const putIndex = profile.provider === 'oss' ? 2 : 1;
+    assert.deepEqual(compiled.calls[putIndex].headers, normal.calls[putIndex].headers, 'real bundled WASM signatures match Node crypto reference');
   }
 });
+
+for (const profile of [r2, oss, github, gitlab]) {
+  test(`${profile.provider} preserves HTTP failure codes without exposing remote text or blindly retrying`, async () => {
+    const privateBody = JSON.stringify({ message: 'SYNTHETIC PRIVATE SERVER TEXT', token: fakeSecrets.token });
+    for (const [status, expected] of [[401, 'CLOUD_AUTH'], [403, 'CLOUD_AUTH'], [404, 'CLOUD_NOT_FOUND'], [429, 'CLOUD_RATE_LIMIT'], [500, 'CLOUD_REQUEST_FAILED'], [503, 'CLOUD_REQUEST_FAILED']]) {
+      const queue = fakeQueue([response(privateBody, status)]);
+      await assert.rejects(provider(profile, queue).read(name), error => {
+        assert.equal(error.code, expected);
+        assert.doesNotMatch(error.message, /SYNTHETIC|FAKE|SERVER TEXT|http/);
+        return true;
+      });
+      assert.equal(queue.calls.length, 1, 'a failed read must not trigger a write or unbounded automatic retry');
+    }
+    const write = fakeQueue([response('', 404), ...(profile.provider === 'oss' ? [response('<VersioningConfiguration/>')] : []), response(privateBody, 403)]);
+    await assert.rejects(provider(profile, write).write(name, payload), codeIs('CLOUD_AUTH'));
+    assert.deepEqual(write.calls.map(call => call.method), profile.provider === 'oss' ? ['GET', 'GET', 'PUT'] : ['GET', profile.provider === 'gitlab' ? 'POST' : 'PUT']);
+    for (const status of [401, 403, 429, 503]) {
+      const listing = fakeQueue([response(privateBody, status)]);
+      await assert.rejects(provider(profile, listing).list(), codeIs(status === 429 ? 'CLOUD_RATE_LIMIT' : status === 503 ? 'CLOUD_REQUEST_FAILED' : 'CLOUD_AUTH'));
+      assert.equal(listing.calls.length, 1, 'an auth/rate-limit error must not be interpreted as an empty directory');
+    }
+  });
+}
 
 test('GitLab profiles normalize project IDs and namespace paths without retaining credentials', () => {
   assert.deepEqual(validateCloudConfig({ ...gitlab, token: fakeSecrets.token }), gitlab);

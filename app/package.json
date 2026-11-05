@@ -21,7 +21,10 @@
     "check:extension": "node scripts/check-extension.mjs",
     "build:github-wasm": "node scripts/build-github-wasm.mjs --rebuild",
     "generate:tools-wasm": "node scripts/build-tools-wasm.mjs --generate",
-    "generate:i18n": "node scripts/localize-source.mjs --catalog"
+    "generate:i18n": "node scripts/localize-source.mjs --catalog",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:e2e:report": "playwright show-report ../output/playwright/covelet/report"
   },
   "dependencies": {
     "@futelab/folio": "0.2.1",
@@ -47,6 +50,7 @@
     "vite": "6.4.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "jsdom": "26.1.0",
     "wxt": "0.21.4"
   },
