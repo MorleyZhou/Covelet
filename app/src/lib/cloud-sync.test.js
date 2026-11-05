@@ -542,9 +542,10 @@ test('safe WebDAV status and transport messages survive the public sync boundary
   }
 });
 
-test('WebDAV remains the default channel and provider names have no individual Beta labels; setup exposes independent steps', () => {
+test('WebDAV remains the default channel and only OSS retains an individual Beta label; setup exposes independent steps', () => {
   assert.equal(SYNC_PROVIDERS[0], 'webdav'); assert.equal(cloudProviderLabel('webdav'), 'WebDAV');
-  for (const provider of ['r2', 'oss', 'github', 'gitlab']) assert.doesNotMatch(cloudProviderLabel(provider), /Beta/);
+  assert.equal(cloudProviderLabel('oss'), '阿里云 OSS（Beta）');
+  for (const provider of ['r2', 'github', 'gitlab']) assert.doesNotMatch(cloudProviderLabel(provider), /Beta/);
   assert.deepEqual(SYNC_SETUP_STEPS, ['channel', 'connection-test', 'sync-password', 'first-sync']);
 });
 

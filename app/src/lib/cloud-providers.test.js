@@ -404,12 +404,31 @@ test('GitLab probes full pages when pagination headers are unavailable and respe
   assert.equal(declared.calls.length, 1);
 });
 
+test('GitLab accepts both empty-page conventions only after verifying the configured branch', async () => {
+  for (const headers of [{}, { 'x-page': '1', 'x-next-page': '', 'x-total': '0', 'x-total-pages': '0' }, { 'x-total-pages': '0' }, { 'x-total': '0', 'x-total-pages': '1' }]) {
+    const queue = fakeQueue([response('[]', 200, headers), response(JSON.stringify({ name: gitlab.branch }))]);
+    assert.deepEqual(await provider(gitlab, queue).list(), []);
+    assert.equal(queue.calls.length, 2);
+    assert.match(queue.calls[1].url, /\/repository\/branches\/sync%2Fcovelet$/);
+  }
+  for (const [branchBody, status, code] of [['{}', 404, 'CLOUD_NOT_FOUND'], ['{"name":"other"}', 200, 'CLOUD_NOT_FOUND'], ['{}', 403, 'CLOUD_AUTH']]) {
+    const queue = fakeQueue([response('[]', 200, { 'x-total': '0', 'x-total-pages': '0' }), response(branchBody, status)]);
+    await assert.rejects(provider(gitlab, queue).list(), codeIs(code));
+  }
+});
+
 test('GitLab rejects pagination loops, skipped pages, inconsistent totals, nested entries and symlinks', async () => {
   const invalidPages = [
     [gitlabTree(1, 100), { 'x-next-page': '1' }],
     [gitlabTree(1, 100), { 'x-next-page': '3' }],
     [gitlabTree(1, 1), { 'x-next-page': '2' }],
     [gitlabTree(1, 1), { 'x-total': '5' }],
+    [gitlabTree(1, 1), { 'x-total-pages': '0' }],
+    [[], { 'x-total-pages': '0', 'x-total': '1' }],
+    [[], { 'x-total-pages': '0', 'x-next-page': '2' }],
+    [[], { 'x-total-pages': '00' }],
+    [[], { 'x-total-pages': 'NaN' }],
+    [[], { 'x-total-pages': '0', 'x-page': '2' }],
     [[{ ...gitlabTree()[0], path: `covelet/nested/${name}` }], {}],
     [[{ ...gitlabTree()[0], mode: '120000' }], {}],
     [gitlabTree(1, 101), {}],
@@ -417,6 +436,8 @@ test('GitLab rejects pagination loops, skipped pages, inconsistent totals, neste
   for (const [entries, headers] of invalidPages) await assert.rejects(provider(gitlab, fakeQueue([response(JSON.stringify(entries), 200, headers)])).list(), codeIs('CLOUD_INVALID_RESPONSE'));
   const repeated = fakeQueue([response(JSON.stringify(gitlabTree(1, 100))), response(JSON.stringify(gitlabTree(1, 1)))]);
   await assert.rejects(provider(gitlab, repeated).list(), codeIs('CLOUD_INVALID_RESPONSE'));
+  const zeroSecondPage = fakeQueue([response(JSON.stringify(gitlabTree(1, 100))), response('[]', 200, { 'x-page': '2', 'x-total-pages': '0' })]);
+  await assert.rejects(provider(gitlab, zeroSecondPage).list(), codeIs('CLOUD_INVALID_RESPONSE'));
   await assert.rejects(provider(gitlab, fakeQueue([response('[]', 200, { 'x-total': '5001' })])).list(), codeIs('CLOUD_LIMIT'));
 });
 

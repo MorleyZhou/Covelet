@@ -57,7 +57,7 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await click('仅在本机使用');assert.equal(await evaluate('!!document.querySelector(".cloud-sync-form")'),false);
   assert.equal(await evaluate('new Promise(r=>chrome.storage.session.get("covelet.cloud.session.v1",v=>r(!!v["covelet.cloud.session.v1"])))'),false);
   await openSync();
-  for(const [provider,required,absent] of [['Cloudflare R2','Bucket 名称','WebDAV 用户名'],['阿里云 OSS','地域','仓库所有者'],['GitHub','仓库名称','WebDAV 基目录地址'],['GitLab','项目 ID 或完整路径','Bucket 名称']]) {
+  for(const [provider,required,absent] of [['Cloudflare R2','Bucket 名称','WebDAV 用户名'],['阿里云 OSS（Beta）','地域','仓库所有者'],['GitHub','仓库名称','WebDAV 基目录地址'],['GitLab','项目 ID 或完整路径','Bucket 名称']]) {
     await click(provider);await click('下一步');assert.match(await text(),new RegExp(required));assert.doesNotMatch(await text(),new RegExp(absent));assert.equal(await evaluate('!!document.querySelector("input[autocomplete=new-password]")'),false);await click('上一步');
   }
   await click('WebDAV\n推荐');await click('下一步');

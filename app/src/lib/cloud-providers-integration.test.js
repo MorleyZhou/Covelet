@@ -22,7 +22,7 @@ const json = (value, status = 200, headers) => new Response(JSON.stringify(value
 const xml = (value) => new Response(value, { headers: { 'content-type': 'application/xml' } });
 const escapeXml = (value) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
-function protocolFixture(profile) {
+function protocolFixture(profile, { emptyTreeStatus = 404 } = {}) {
   const objects = new Map(), calls = [], writes = [];
   let unknownWrite, readStatus;
   const directChildren = (prefix) => {
@@ -76,7 +76,7 @@ function protocolFixture(profile) {
         assert.equal(request.method, 'GET'); assert.equal(url.searchParams.get('ref'), profile.branch);
         assert.equal(url.searchParams.get('recursive'), 'false');
         const children = directChildren(url.searchParams.get('path'));
-        if (!children.length) return json({}, 404);
+        if (!children.length && emptyTreeStatus === 404) return json({}, 404);
         const page = Number(url.searchParams.get('page')), count = Number(url.searchParams.get('per_page'));
         return json(children.slice((page - 1) * count, page * count), 200, {
           'x-page': String(page), 'x-next-page': page * count < children.length ? String(page + 1) : '',
@@ -193,6 +193,18 @@ for (const profile of profiles) {
     }
   });
 }
+
+test('GitLab synthetic protocol: legacy empty-directory 200 responses initialize safely and exchange full data', async () => {
+  const remote = protocolFixture(profiles.find(profile => profile.provider === 'gitlab'), { emptyTreeStatus: 200 });
+  const a = device(remote, 'a', [record('covelet.tools.v1', tools('legacy empty-directory fixture'))]);
+  const b = device(remote, 'b');
+  await saved(a); await saved(b);
+  assert.deepEqual(b.records, a.records);
+  assert.ok(remote.calls.some(call => new URL(call.address).pathname.includes('/repository/branches/')), 'an empty response must verify branch visibility');
+  const writes = remote.writes.length;
+  await saved(a); await saved(b);
+  assert.equal(remote.writes.length, writes);
+});
 
 test('full-data engine does not trust a forged provider code or arbitrary transport message', async () => {
   const fixture = protocolFixture(profiles[0]);

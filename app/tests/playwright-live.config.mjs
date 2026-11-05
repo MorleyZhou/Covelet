@@ -1,5 +1,10 @@
 import { defineConfig } from '@playwright/test';
 
+// Playwright 1.64 also captures an automatic failure ARIA snapshot independently
+// of trace/screenshot settings. Disable it for forms with live credentials.
+// Keep this guard checked when upgrading the locked Playwright version.
+process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1';
+
 // Live tests deliberately omit traces, videos, HTML/JSON attachments and request
 // logs: browser form values contain real credentials supplied on this machine.
 export default defineConfig({
