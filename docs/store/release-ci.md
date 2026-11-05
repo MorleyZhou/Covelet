@@ -1,12 +1,18 @@
-# Chrome / Edge 自动发布 CI
+# GitHub 发布与可选商店提交 CI
 
-**WARNING：推送 `v*` tag 会自动构建 ZIP、创建或更新 GitHub Release，并向 Chrome Web Store 和 Microsoft Edge Add-ons 两个商店上传并提交审核。** `workflow_dispatch` 也会执行完整流程。审核通过后的上线时间由商店决定；CI 成功不代表已上线。
+推送 `v*` tag 会构建 ZIP、生成校验文件并创建或更新 GitHub Release，**不会提交商店**。手动运行 `workflow_dispatch` 时，只有显式设置 **`submit_stores=true`** 才会向 Chrome Web Store 和 Microsoft Edge Add-ons 两个商店上传并提交审核；默认值为 `false`。本轮 0.3.0 不提交商店。
 
-工作流：[release-stores.yml](../../.github/workflows/release-stores.yml)。仅 CI 与文档变化不会执行商店操作；推送发布 tag 或手动运行工作流才会触发。
+工作流：[release-stores.yml](../../.github/workflows/release-stores.yml)，Actions 名称为 **GitHub release and optional store submission**。审核通过后的上线时间由商店决定；CI 成功不代表商店已上线。
+
+| 触发方式 | GitHub Release | 两个商店 |
+| --- | --- | --- |
+| 推送 `vX.Y.Z` tag | 构建并创建或更新 | 跳过 |
+| 手动运行，`submit_stores=false`（默认） | 构建并创建或更新 | 跳过 |
+| 手动运行，`submit_stores=true` | 构建并创建或更新 | 上传并提交审核 |
 
 ## 首次配置
 
-在 GitHub **Settings → Environments** 创建以下环境，分别配置 Environment secrets。建议两个环境都启用 **Required reviewers**，在构建及 GitHub Release 完成后、商店上传前审批；不配置审批时会自动提交。环境的部署规则需要允许发布 tag，以及手动运行时选择的工作流分支。
+仅发布 GitHub 包不需要商店凭据。需要提交商店时，在 GitHub **Settings → Environments** 创建以下环境，分别配置 Environment secrets。建议两个环境都启用 **Required reviewers**，在构建及 GitHub Release 完成后、商店上传前审批；显式开启商店提交且未配置审批时会自动提交。环境的部署规则需要允许发布 tag，以及手动运行时选择的工作流分支。
 
 | Environment | 必需 Secrets |
 | --- | --- |
@@ -17,7 +23,7 @@ Chrome 沿用 **Chrome Web Store API v2 + Service Account**，扩展 ID 为 `clk
 
 Edge 使用 **Add-ons API v1.1 API key**，请求头为 `Authorization: ApiKey ...` 和 `X-ClientID: ...`，不使用旧版 OAuth client secret。设置步骤：
 
-1. 先在 **Microsoft Partner Center** 创建扩展产品。**首次提交必须手动在 Partner Center 完成，API 只能更新已有产品，不能创建产品或替代首次提交。** 因此 **0.2.1 的 Edge 发布需要先准备产品、手动首次提交以及下面的 secrets**。
+1. 先在 **Microsoft Partner Center** 创建扩展产品。**首次提交必须手动在 Partner Center 完成，API 只能更新已有产品，不能创建产品或替代首次提交。** 后续 API 更新需要完成首次提交并配置下面的 secrets。
 2. 在 **Microsoft Edge → Publish API** 页面点击 **enable the new experience → Enable**，再点击 **Create API credentials**。
 3. 将 Client ID 保存为 `EDGE_CLIENT_ID`，API key 保存为 `EDGE_API_KEY`，Partner Center 产品 ID 保存为 `EDGE_PRODUCT_ID`。产品 ID 与公开扩展 ID 不同；留意 API key 到期并及时轮换。
 
@@ -25,24 +31,24 @@ Edge 使用 **Add-ons API v1.1 API key**，请求头为 `Authorization: ApiKey .
 
 ## 发布一个版本
 
-1. 将 `app/package.json` 和 `app/extension.manifest.json` 的版本同时改为 `X.Y.Z`，并按需更新 `app/package-lock.json` 的版本元数据；提交并确保提交已在远端。
-2. 在目标提交上创建并推送 annotated tag（例如 `v0.2.1`）：
+1. 将 `app/package.json` 和 `app/extension.manifest.json` 的版本同时改为 `X.Y.Z`，按需更新 `app/package-lock.json` 的版本元数据，并编写 `docs/releases/X.Y.Z.md`；提交并确保提交已在远端。
+2. 在目标提交上创建并推送 annotated tag（例如 `v0.3.0`）：
 
    ```bash
    git tag -a vX.Y.Z -m "Release vX.Y.Z"
    git push origin vX.Y.Z
    ```
 
-3. 在 GitHub Actions 查看 **Release to Chrome and Edge**。启用 Required reviewers 时批准两个环境的部署。之后分别查看两个商店的审核结果。
+3. 在 GitHub Actions 查看 **GitHub release and optional store submission**，核对 GitHub Release 附件与校验结果。tag 运行中的两个商店 job 应跳过。
 
 构建 job 精确检出 tag，使用 Node.js 22 和 `npm ci`，执行 `build:extension` 及存在时的 `check:extension`。tag 必须是 `vX.Y.Z`，去掉 `v` 后必须与 package、源 manifest 以及 `app/dist/extension/manifest.json` 的版本一致，否则终止。
 
-工作流只分发本次构建的 `app/dist/covelet-X.Y.Z.zip`：计算 SHA256 后上传 Actions artifact，下游三个 job 下载并校验同一 ZIP。GitHub Release 附件会自动创建，已存在则覆盖同名附件并更新生成的 release notes（包含当前 SHA256）。无需手动准备或上传 ZIP，也无需外部 ZIP 地址或固定校验值。不要将 ZIP 提交进 git。
+工作流只分发本次构建的 `app/dist/covelet-X.Y.Z.zip`：计算 SHA256 后，将 ZIP、`SHA256SUMS.txt` 和 release notes 上传 Actions artifact。GitHub 发布及显式开启的商店 job 下载并校验同一 ZIP。发布正文读取 `docs/releases/X.Y.Z.md`，附上包名与 SHA256；缺少该说明时构建失败。GitHub Release 附件包含 ZIP 和 `SHA256SUMS.txt`；已存在则覆盖同名附件并更新正文。无需手动准备或上传 ZIP，也无需外部 ZIP 地址或固定校验值。不要将 ZIP 提交进 git。
 
-GitHub Release 成功后，Chrome 与 Edge 独立运行：Chrome 上传成功才提交，异步上传会轮询 `fetchStatus`；Edge 上传和提交都根据 `Location` 中的 operation ID 轮询，必须得到 `Succeeded`。网络、HTTP、处理失败、未知状态或轮询超时都会使对应 job 失败，不能视为成功提交。一个商店失败不阻止另一个商店提交，也不会撤销已创建的 GitHub Release。全流程使用 `release-stores` concurrency group，不取消正在执行的发布。
+只有手动运行并设置 `submit_stores=true` 时，GitHub Release 成功后才会运行 Chrome 与 Edge job；启用 Required reviewers 时还需批准对应环境。两个商店独立运行：Chrome 上传成功才提交，异步上传会轮询 `fetchStatus`；Edge 上传和提交都根据 `Location` 中的 operation ID 轮询，必须得到 `Succeeded`。网络、HTTP、处理失败、未知状态或轮询超时都会使对应 job 失败，不能视为成功提交。一个商店失败不阻止另一个商店提交，也不会撤销已创建的 GitHub Release。全流程使用 `release-stores` concurrency group，不取消正在执行的发布。
 
 ## 手动重跑
 
-在 **Actions → Release to Chrome and Edge → Run workflow** 选择包含此工作流的分支，并填写必需输入 **`tag`**（例如 `v0.2.1`）。即使选的是工作流分支，构建代码仍会精确检出输入的 tag，而不是分支最新提交。该工作流需要先合入默认分支，GitHub 才会提供手动运行入口。
+在 **Actions → GitHub release and optional store submission → Run workflow** 选择包含此工作流的分支，填写必需输入 **`tag`**（例如 `v0.3.0`），并保持 **`submit_stores=false`** 即可只重建和更新 GitHub Release。只有另行明确决定提交两个商店时才设为 `true`。即使选的是工作流分支，构建代码仍会精确检出输入的 tag，而不是分支最新提交。该工作流需要先合入默认分支，GitHub 才会提供手动运行入口。
 
-补齐产品、权限或 secrets 后，可用该入口重跑。**手动重跑会重新构建、覆盖 GitHub Release 同名附件并重新提交两个商店**，不会自动跳过已成功的商店；商店可能拒绝重复版本或正在审核中的提交，错误会直接失败。需要只重试失败的商店时，可在同一次运行中使用 GitHub 的 **Re-run failed jobs**，复用该运行仍未过期的 artifact。
+手动重跑会重新构建并覆盖 GitHub Release 的同名附件和正文。**设置 `submit_stores=true` 会再次提交两个商店**，不会自动跳过已成功的商店；商店可能拒绝重复版本或正在审核中的提交，错误会直接失败。需要只重试失败的商店时，可在同一次已开启商店提交的运行中使用 GitHub 的 **Re-run failed jobs**，复用该运行仍未过期的 artifact。

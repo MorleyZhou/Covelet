@@ -11957,6 +11957,60 @@
     "fr": "{0} URL importées ; {1} URL en doublon ignorées.",
     "ru": "Импортировано адресов: {0}; пропущено повторов: {1}."
   },
+  "{0} 更新内容": {
+    "en": "What's new in {0}",
+    "zh-TW": "{0} 更新內容",
+    "ja": "{0} の更新内容",
+    "ko": "{0} 업데이트 내용",
+    "de": "Neu in {0}",
+    "fr": "Nouveautés de la version {0}",
+    "ru": "Что нового в {0}"
+  },
+  "新安装默认空桌面。时间和日期移到搜索框上方，可在极简模式中隐藏。": {
+    "en": "New installations start with an empty desktop. Time and date appear above search and can be hidden in minimal mode.",
+    "zh-TW": "新安裝預設為空桌面。時間和日期移到搜尋框上方，可在極簡模式中隱藏。",
+    "ja": "新規インストールでは空のデスクトップで始まります。時刻と日付は検索欄の上に表示され、シンプルモードで非表示にできます。",
+    "ko": "새로 설치하면 빈 데스크톱으로 시작합니다. 시간과 날짜는 검색창 위에 표시되며 미니멀 모드에서 숨길 수 있습니다.",
+    "de": "Bei einer Neuinstallation ist der Desktop leer. Uhrzeit und Datum stehen über der Suche und lassen sich im Minimalmodus ausblenden.",
+    "fr": "Les nouvelles installations s’ouvrent sur un bureau vide. L’heure et la date apparaissent au-dessus de la recherche et peuvent être masquées en mode minimaliste.",
+    "ru": "Новая установка начинается с пустого рабочего стола. Время и дата отображаются над поиском; их можно скрыть в минимальном режиме."
+  },
+  "自备存储同步（Beta）：冲突时整组选择本机或云端版本，改进图片同步和中断重试。": {
+    "en": "Sync with your own storage (Beta): choose the entire local or cloud version of a conflicting group. Improved image sync and retries after interruptions.",
+    "zh-TW": "自備儲存同步（Beta）：衝突時整組選擇本機或雲端版本，改善圖片同步和中斷後重試。",
+    "ja": "自分のストレージとの同期（Beta）：競合時はグループ全体で端末内かクラウドのバージョンを選択します。画像の同期と中断後の再試行を改善しました。",
+    "ko": "내 저장소 동기화(Beta): 충돌 시 그룹 전체에 대해 로컬 또는 클라우드 버전을 선택합니다. 이미지 동기화와 중단 후 재시도를 개선했습니다.",
+    "de": "Synchronisierung mit eigenem Speicher (Beta): Bei Konflikten die lokale oder die Cloud-Version einer ganzen Gruppe wählen. Bildsynchronisierung und Wiederholungen nach Unterbrechungen wurden verbessert.",
+    "fr": "Synchronisation avec votre stockage (Beta) : en cas de conflit, choisissez la version locale ou cloud du groupe entier. La synchronisation des images et les nouvelles tentatives après interruption ont été améliorées.",
+    "ru": "Синхронизация со своим хранилищем (Beta): при конфликте выбирайте локальную или облачную версию всей группы. Улучшены синхронизация изображений и повторные попытки после сбоев."
+  },
+  "完整备份可恢复导航、便笺和图片；恢复前保留一份副本。": {
+    "en": "Complete backups restore shortcuts, notes and images. A copy of your current data is kept before restoration.",
+    "zh-TW": "完整備份可還原導航、便箋和圖片；還原前保留一份副本。",
+    "ja": "完全バックアップからショートカット、メモ、画像を復元できます。復元前に現在のデータのコピーを保存します。",
+    "ko": "전체 백업으로 바로가기, 메모, 이미지를 복원할 수 있습니다. 복원 전에 현재 데이터의 사본을 보관합니다.",
+    "de": "Vollständige Sicherungen stellen Verknüpfungen, Notizen und Bilder wieder her. Vor der Wiederherstellung wird eine Kopie der aktuellen Daten behalten.",
+    "fr": "Les sauvegardes complètes permettent de restaurer raccourcis, notes et images. Une copie des données actuelles est conservée avant la restauration.",
+    "ru": "Полная резервная копия позволяет восстановить ссылки, заметки и изображения. Перед восстановлением сохраняется копия текущих данных."
+  },
+  "取消文件夹重命名不再关闭文件夹，弹窗焦点也已修正。": {
+    "en": "Canceling a folder rename no longer closes the folder. Dialog focus has also been fixed.",
+    "zh-TW": "取消資料夾重新命名不再關閉資料夾，對話框焦點也已修正。",
+    "ja": "フォルダー名の変更をキャンセルしても、フォルダーが閉じなくなりました。ダイアログのフォーカスも修正しました。",
+    "ko": "폴더 이름 변경을 취소해도 폴더가 닫히지 않습니다. 대화상자 포커스 문제도 수정했습니다.",
+    "de": "Beim Abbrechen einer Ordnerumbenennung bleibt der Ordner geöffnet. Auch der Dialogfokus wurde korrigiert.",
+    "fr": "L’annulation du renommage d’un dossier ne ferme plus le dossier. Le focus des boîtes de dialogue a aussi été corrigé.",
+    "ru": "Отмена переименования папки больше не закрывает её. Также исправлен фокус в диалоговых окнах."
+  },
+  "阿里云 OSS 仍为 Beta。": {
+    "en": "Alibaba Cloud OSS remains in Beta.",
+    "zh-TW": "阿里雲 OSS 仍為 Beta。",
+    "ja": "Alibaba Cloud OSS は引き続き Beta です。",
+    "ko": "Alibaba Cloud OSS는 계속 Beta로 제공됩니다.",
+    "de": "Alibaba Cloud OSS bleibt in der Beta-Phase.",
+    "fr": "Alibaba Cloud OSS reste en version Beta.",
+    "ru": "Alibaba Cloud OSS остаётся в Beta."
+  },
   "0.2.2 更新内容": {
     "en": "What's new in 0.2.2",
     "zh-TW": "0.2.2 更新內容",

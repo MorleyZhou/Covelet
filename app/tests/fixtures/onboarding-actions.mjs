@@ -37,9 +37,10 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   const credentials = async () => {await fill('WebDAV 基目录地址','https://www.bing.com/covelet-setup-fixture/');await fill('WebDAV 用户名','FIXTURE-USER');await fill('WebDAV 应用密码','FIXTURE-APP-PASSWORD');};
   const screenTools = { evaluate, send, delay, writeFile, output };
   await openSettings();await click('数据');
-  await keyboardDisclosure(screenTools, '0.2.2 更新内容');
-  assert.match(await text(), /导出的 JSON\/ZIP 备份未加密/);
-  assert.match(await text(), /保存配置不代表连接已验证/);
+  const version = await evaluate('chrome.runtime.getManifest().version');
+  await keyboardDisclosure(screenTools, `${version} 更新内容`);
+  assert.match(await text(), /导出的备份文件未加密/);
+  assert.match(await text(), /阿里云 OSS 仍为 Beta/);
   await polishScreens(screenTools, 'data-whats-new', '.settings-modal', '.settings-content');
   await click('隐私自查');await wait(has('当前权限与用途'),'privacy page');
   assert.match(await text(),/未记录网络请求历史/);assert.match(await text(),/Bing 每日壁纸/);assert.match(await text(),/chrome.storage.session/);

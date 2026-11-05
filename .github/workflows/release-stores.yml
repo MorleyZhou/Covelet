@@ -1,5 +1,7 @@
-name: Release to Chrome and Edge
+name: GitHub release and optional store submission
 
+# Tags publish the GitHub package only. Store submission requires a manual run
+# with submit_stores explicitly enabled; its default is false.
 on:
   push:
     tags:
@@ -7,9 +9,14 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag to build and submit (e.g. v0.2.1)
+        description: Existing tag to build and publish on GitHub (e.g. v0.3.0)
         type: string
         required: true
+      submit_stores:
+        description: Upload and submit to both Chrome and Edge stores
+        type: boolean
+        required: false
+        default: false
 
 permissions: {}
 
@@ -73,13 +80,13 @@ jobs:
           npm run build:extension
           npm run check:extension --if-present
 
-      - name: Verify built version and hash ZIP
+      - name: Verify package and prepare release notes and checksum
         id: package
         run: |
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
-          import { appendFileSync, readFileSync, statSync } from 'node:fs';
+          import { appendFileSync, readFileSync, statSync, writeFileSync } from 'node:fs';
           const version = process.env.RELEASE_TAG.slice(1);
           const manifest = JSON.parse(readFileSync('app/dist/extension/manifest.json', 'utf8'));
           assert.equal(manifest.version, version, 'Built manifest version must equal tag version');
@@ -87,6 +94,11 @@ jobs:
           const zipPath = `app/dist/${zipName}`;
           assert(statSync(zipPath).isFile() && statSync(zipPath).size > 0, `Missing or empty ZIP: ${zipPath}`);
           const sha = createHash('sha256').update(readFileSync(zipPath)).digest('hex');
+          const notesPath = `docs/releases/${version}.md`;
+          const notes = readFileSync(notesPath, 'utf8').trim();
+          assert(notes, `Missing or empty release notes: ${notesPath}`);
+          writeFileSync('app/dist/release-notes.md', `${notes}\n\nPackage: \`${zipName}\`\n\nSHA256: \`${sha}\`\n`);
+          writeFileSync('app/dist/SHA256SUMS.txt', `${sha}  ${zipName}\n`);
           appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nzip_name=${zipName}\nsha=${sha}\n`);
           console.log(`${zipName} SHA256: ${sha}`);
           NODE
@@ -94,7 +106,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: extension-package
-          path: app/dist/${{ steps.package.outputs.zip_name }}
+          path: |
+            app/dist/${{ steps.package.outputs.zip_name }}
+            app/dist/release-notes.md
+            app/dist/SHA256SUMS.txt
           if-no-files-found: error
           compression-level: 0
 
@@ -122,19 +137,20 @@ jobs:
         run: |
           set -euo pipefail
           printf '%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" | sha256sum --check --strict
-          notes_file="${RUNNER_TEMP}/release-notes.md"
-          printf 'Covelet %s\n\nPackage: `%s`\n\nSHA256: `%s`\n' \
-            "$RELEASE_TAG" "$ZIP_NAME" "$EXPECTED_SHA" > "$notes_file"
+          printf '%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" | cmp -s - SHA256SUMS.txt
+          sha256sum --check --strict SHA256SUMS.txt
+          test -s release-notes.md
           if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" "$ZIP_NAME" --clobber --repo "$GITHUB_REPOSITORY"
-            gh release edit "$RELEASE_TAG" --notes-file "$notes_file" --repo "$GITHUB_REPOSITORY"
+            gh release upload "$RELEASE_TAG" "$ZIP_NAME" SHA256SUMS.txt --clobber --repo "$GITHUB_REPOSITORY"
+            gh release edit "$RELEASE_TAG" --notes-file release-notes.md --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$RELEASE_TAG" "$ZIP_NAME" --verify-tag \
-              --title "Covelet ${RELEASE_TAG}" --notes-file "$notes_file" --repo "$GITHUB_REPOSITORY"
+            gh release create "$RELEASE_TAG" "$ZIP_NAME" SHA256SUMS.txt --verify-tag \
+              --title "Covelet ${RELEASE_TAG}" --notes-file release-notes.md --repo "$GITHUB_REPOSITORY"
           fi
 
   chrome:
     needs: github-release
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.submit_stores == true }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: chrome-web-store
@@ -228,6 +244,7 @@ jobs:
 
   edge:
     needs: github-release
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.submit_stores == true }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: edge-addons

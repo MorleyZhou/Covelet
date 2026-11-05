@@ -2,11 +2,13 @@ import { tr } from '../i18n/index.js';
 import { Disclosure } from './ui/disclosure.jsx';
 
 export default function WhatsNew() {
-  return <Disclosure title={tr('0.2.2 更新内容')}>
+  return <Disclosure title={tr('{0} 更新内容', ['0.3.0'])}>
     <ul>
-      <li>{tr('WebDAV 支持分步设置和连接测试，重启浏览器后需重新解锁。')}</li>
-      <li>{tr('可导入浏览器书签 HTML 文件，导入前可预览，默认保留已有网址。')}</li>
-      <li>{tr('新增隐私自查，可查看权限用途、联网功能和数据位置。')}</li>
+      <li>{tr('新安装默认空桌面。时间和日期移到搜索框上方，可在极简模式中隐藏。')}</li>
+      <li>{tr('自备存储同步（Beta）：冲突时整组选择本机或云端版本，改进图片同步和中断重试。')}</li>
+      <li>{tr('完整备份可恢复导航、便笺和图片；恢复前保留一份副本。')}</li>
+      <li>{tr('取消文件夹重命名不再关闭文件夹，弹窗焦点也已修正。')}</li>
     </ul>
+    <p className="hint">{tr('阿里云 OSS 仍为 Beta。')}</p>
   </Disclosure>;
 }

@@ -2,7 +2,7 @@
 
 Covelet 是无需账号的新标签页扩展，提供网站导航、文件夹、搜索、外观与布局，以及便笺、稍后读和 GitHub 贡献组件。首页显示时间和日期，可在极简模式中隐藏。支持八种界面语言，没有广告、遥测或 Covelet 数据服务器。
 
-本分支正在收口 **0.3 开发候选**，包版本仍为 **0.2.2**。本轮没有合并、发布或提交商店，也未重新核实商店线上版本。扩展 ID：`clkholbmabommppnlpcnhdgmibibblgb`。[发布状态](docs/store/发布状态.md) · [0.3 使用说明](docs/0.3使用说明.md)
+当前源码与包版本为 **0.3.0**。发行包及发布结果以 [v0.3.0](https://github.com/MorleyZhou/Covelet/releases/tag/v0.3.0) 和 [GitHub Actions](https://github.com/MorleyZhou/Covelet/actions/workflows/release-stores.yml) 为准。本轮未提交商店，也未重新核实商店线上版本。扩展 ID：`clkholbmabommppnlpcnhdgmibibblgb`。[0.3.0 发布说明](docs/releases/0.3.0.md) · [发布状态](docs/store/发布状态.md) · [0.3.0 使用说明](docs/0.3使用说明.md)
 
 新安装从空桌面开始。旧时钟组件已退役，原有配置和数据保留，仍可读取旧备份。
 

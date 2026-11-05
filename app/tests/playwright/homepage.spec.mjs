@@ -49,6 +49,10 @@ test('web search uses the chosen engine and keyboard Enter', async ({ extension,
 test('data settings use user copy and retain the unencrypted-backup warning', async ({ extension }) => {
   const page = await extension.newtab();
   const settings = await openSettings(page, '数据');
+  const version = await page.evaluate(() => chrome.runtime.getManifest().version);
+  await settings.getByRole('button', { name: `${version} 更新内容`, exact: true }).click();
+  await expect(settings).toContainText('新安装默认空桌面。');
+  await expect(settings).toContainText('阿里云 OSS 仍为 Beta。');
   await expect(settings).toContainText('导出的备份文件未加密，请妥善保管。');
   await expect(settings.getByRole('button', { name: '恢复上一份导航副本', exact: true })).toBeVisible();
   await expect(settings).not.toContainText('真实云账号验收仍待完成');
