@@ -49,6 +49,8 @@ const messages = {
   get DATA_SYNC_TARGET() { return tr('还有待上传内容或冲突版本，请处理后再切换存储位置。'); },
   get DATA_SYNC_REQUEST() { return tr('同步未完成，请检查连接后重试；本机数据已保留。'); },
   get CLOUD_LOCKED() { return tr('请先解锁存储连接，再开始同步。'); },
+  get CLOUD_PERMISSION() { return tr('尚未授权访问这个云服务，请先在设置中授权。'); },
+  get CLOUD_UNAVAILABLE() { return tr('请加载 Chrome 或 Edge 扩展，再授权使用云同步。'); },
   get CLOUD_DECRYPT() { return tr('无法解密同步数据，请检查同步密码。若密码正确，云端数据可能已损坏。'); },
   get REVISION_CONFLICT() { return tr('数据已在其他页面更新，本次未覆盖，请重新同步。'); },
 };

@@ -1,18 +1,18 @@
 # Covelet
 
-Covelet 是无需账号的新标签页扩展，提供网站导航、文件夹、搜索、外观与布局，以及时钟、便笺、稍后读和 GitHub 贡献组件。支持八种界面语言，没有广告、遥测或 Covelet 数据服务器。
+Covelet 是无需账号的新标签页扩展，提供网站导航、文件夹、搜索、外观与布局，以及便笺、稍后读和 GitHub 贡献组件。首页显示时间和日期，可在极简模式中隐藏。支持八种界面语言，没有广告、遥测或 Covelet 数据服务器。
 
-Chrome 当前线上版本为 **v0.2.0**，扩展 ID：`clkholbmabommppnlpcnhdgmibibblgb`。本分支 **v0.2.2 是开发候选，尚未提交审核**；不会自动合并或发布。[发布状态](docs/store/发布状态.md)
+本分支正在收口 **0.3 开发候选**，包版本仍为 **0.2.2**。本轮没有合并、发布或提交商店，也未重新核实商店线上版本。扩展 ID：`clkholbmabommppnlpcnhdgmibibblgb`。[发布状态](docs/store/发布状态.md) · [0.3 使用说明](docs/0.3使用说明.md)
 
-本轮以 main `13095d9` 的工作树为实现起点，剥离 17 项工具包以接近商店 0.2.0 的功能范围，再削减权限形成 0.2.1；`13095d9` 不是产品基线。候选版移除标签快照、浏览器阅读清单导入及其界面，保留手动稍后读与便笺。
+新安装从空桌面开始。旧时钟组件已退役，原有配置和数据保留，仍可读取旧备份。
 
 数据以本机加密 IndexedDB 为主副本，浏览器原生同步已停用。用户可选择默认关闭的自备存储同步（Beta），直接连接自己配置的服务；设备密钥、隐藏密码和会话凭据不随同步传播。JSON/ZIP 导出文件不等于加密备份，应妥善保管。[隐私说明](docs/隐私说明.md) · [自备存储同步（Beta）](docs/自定义存储同步.md)
 
-0.2.2 同步以 **WebDAV** 为主要路径，提供独立连接测试、中文错误提示和整条记录二选一的冲突处理；真实坚果云／Nextcloud 账号验收仍待完成。R2、OSS、GitHub、GitLab 已实现但均为 **Beta**，尚未通过真实云账号验收。包版本为 0.2.2；本 PR 仅为草稿，不发布。
+同步以 **WebDAV** 为推荐入口，提供独立连接测试和整组二选一的冲突处理。OSS 保留独立 **Beta** 标识。后续真云验收按维护者要求仅使用 GitHub；其他渠道的历史结果与当前边界见[收口记录](docs/verification/0.3-closeout.md)。
 
 设置引导位于「设置 → 数据 → 自备存储同步（Beta）」（原扩展入口仍可用）：选择渠道 → 填写最少连接字段并测试 → 设置同步密码并首次同步。失败可转为仅本机使用；仅保存配置不会验证连接或启动同步。「设置 → 隐私自查」展示当前权限与用途、已知联网场景及数据位置；没有近 7 天请求日志，页面不虚构次数，也不添加分析服务。
 
-在 `app/` 中运行 `npm ci`、`npm test`、`npm run build:extension`。解压输出为 `app/dist/extension/`，候选 ZIP 为 `app/dist/covelet-0.2.2.zip`。构建与静态检查不能替代实际浏览器验收或商店审核。
+在 `app/` 中运行 `npm ci`、`npm test`、`npm run build:unpacked`、`npm run check:extension`。加载目录为 `app/dist/extension/`。`npm run test:e2e` 验证真实扩展页面，运行前执行 `npx playwright install chromium`。[浏览器测试说明](app/tests/playwright/README.md)。构建与测试结果不表示已通过商店审核。
 
 [0.2.2 发布检查](docs/releases/0.2.2.md) · [书签 HTML 导入说明](docs/bookmark-html-import-0.2.2.md)
 

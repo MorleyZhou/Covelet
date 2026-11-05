@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
 import { createCloudProvider, cloudOrigin } from './cloud-providers.js';
 import { createFullDataSync } from './full-data-sync.js';
+import { createCloudSync } from './cloud-sync.js';
 import { createEmptyState } from './model.js';
 
 // These are synthetic HTTP protocol fixtures, not real-service acceptance.
@@ -22,9 +23,10 @@ const json = (value, status = 200, headers) => new Response(JSON.stringify(value
 const xml = (value) => new Response(value, { headers: { 'content-type': 'application/xml' } });
 const escapeXml = (value) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
-function protocolFixture(profile, { emptyTreeStatus = 404 } = {}) {
+function protocolFixture(profile, { emptyTreeStatus = 404, timeoutMs } = {}) {
   const objects = new Map(), calls = [], writes = [];
-  let unknownWrite, readStatus;
+  let unknownWrite, readStatus, readFault, delayedWrite;
+  const readObject = (path) => readFault?.path === path ? readFault.respond() : objects.has(path) ? new Response(objects.get(path)) : json({}, 404);
   const directChildren = (prefix) => {
     const items = new Map();
     for (const [path, bytes] of objects) {
@@ -39,6 +41,9 @@ function protocolFixture(profile, { emptyTreeStatus = 404 } = {}) {
     if (objects.has(path)) return json({}, profile.provider === 'gitlab' ? 400 : profile.provider === 'github' ? 422 : profile.provider === 'oss' ? 409 : 412);
     objects.set(path, bytes.slice()); writes.push({ path, bytes: bytes.slice() });
     const area = path.includes('/blobs/') ? 'chunk' : 'index';
+    if (delayedWrite?.area === area) {
+      const gate = delayedWrite; delayedWrite = null; gate.started.resolve(); return gate.response.promise;
+    }
     if (unknownWrite === area) { unknownWrite = null; throw new TypeError('SYNTHETIC lost response after commit'); }
     return json({}, ['github', 'gitlab'].includes(profile.provider) ? 201 : 200);
   };
@@ -62,7 +67,7 @@ function protocolFixture(profile, { emptyTreeStatus = 404 } = {}) {
         return commit(path, new Uint8Array(Buffer.from(body.content, 'base64')));
       }
       assert.equal(url.searchParams.get('ref'), profile.branch);
-      if (objects.has(path)) { assert.equal(headers.get('accept'), 'application/vnd.github.raw+json'); return new Response(objects.get(path)); }
+      if (objects.has(path)) { assert.equal(headers.get('accept'), 'application/vnd.github.raw+json'); return readObject(path); }
       const children = directChildren(path);
       return children.length ? json(children.map(item => ({ ...item, type: item.type === 'tree' ? 'dir' : 'file' }))) : json({}, 404);
     }
@@ -92,7 +97,7 @@ function protocolFixture(profile, { emptyTreeStatus = 404 } = {}) {
         return commit(path, new Uint8Array(Buffer.from(body.content, 'base64')));
       }
       assert.ok(raw); assert.equal(url.searchParams.get('ref'), profile.branch);
-      return objects.has(path) ? new Response(objects.get(path)) : json({}, 404);
+      return readObject(path);
     }
     assert.match(headers.get('authorization'), profile.provider === 'r2' ? /^AWS4-HMAC-SHA256 / : /^OSS4-HMAC-SHA256 /);
     const path = decodeURIComponent(url.pathname).slice(profile.provider === 'r2' ? profile.bucket.length + 2 : 1);
@@ -109,32 +114,35 @@ function protocolFixture(profile, { emptyTreeStatus = 404 } = {}) {
       return commit(path, new Uint8Array(request.body));
     }
     assert.equal(request.method, 'GET');
-    return objects.has(path) ? new Response(objects.get(path)) : json({}, 404);
+    return readObject(path);
   }
-  const at = (suffix) => createCloudProvider({ ...profile, prefix: `${profile.prefix}/${suffix}` }, credentials, { signer, fetcher });
+  const factory = (profile, secrets, options = {}) => createCloudProvider(profile, secrets, { ...options, signer, fetcher, timeoutMs });
+  const at = (suffix) => factory({ ...profile, prefix: `${profile.prefix}/${suffix}` }, credentials);
   return { provider: at('all-data-v1'), assetProvider: at('all-data-v1/blobs'), objects, calls, writes,
-    set unknownWrite(area) { unknownWrite = area; }, set readStatus(status) { readStatus = status; } };
+    factory, set unknownWrite(area) { unknownWrite = area; }, set readStatus(status) { readStatus = status; },
+    set readFault(value) { readFault = value; }, set delayedWrite(value) { delayedWrite = value; } };
 }
 function memory(initial = null) {
   let current = clone(initial);
-  return { async read() { return clone(current); }, async write(next) { current = clone(next); }, get value() { return clone(current); } };
+  return { async read() { return clone(current); }, async write(next) { current = clone(next); }, async clear() { current = null; }, get value() { return clone(current); } };
 }
 function device(remote, actor, initial = []) {
-  let records = clone(initial), revision = 0;
+  let records = clone(initial), revision = 0, applied = 0;
   const store = memory(), pending = new Map();
   const pendingStore = { async get(key) { return clone(pending.get(key)); }, async set(key, value) { pending.set(key, clone(value)); },
     async remove(key) { pending.delete(key); }, async entries() { return clone([...pending]); } };
   const snapshotStore = { async snapshot() { return { version: 1, records: clone(records), token: String(revision) }; },
-    async apply(next, { expectedToken }) { assert.equal(expectedToken, String(revision)); records = clone(next.records); revision++; return snapshotStore.snapshot(); } };
+    async apply(next, { expectedToken }) { assert.equal(expectedToken, String(revision)); records = clone(next.records); revision++; applied++; return snapshotStore.snapshot(); } };
   const make = () => createFullDataSync({ store, pendingStore, snapshotStore, uuid: () => actor.repeat(32), locks: null, eventWindow: null, eventDocument: null,
     access: async () => ({ target: 'a'.repeat(64), password: 'synthetic provider integration password', autoSync: false, ...remote, check: async () => {} }) });
-  return { api: make(), make, store, pending, get records() { return clone(records); },
+  return { api: make(), make, store, pending, pendingStore, snapshotStore, get applied() { return applied; }, get records() { return clone(records); },
     edit(change) { change(records); revision++; } };
 }
 const record = (key, value, namespace = 'preferences') => ({ namespace, key, value });
 const tools = (body) => ({ version: 3, revision: 0, notes: [{ id: 'note-a', title: 'QA note', body, pinned: false, revision: 1, createdAt: 1, updatedAt: 1 }], reading: [], snapshots: [], trash: [] });
 const saved = async (client) => { const result = await client.api.syncFullDataNow(); assert.equal(result.phase, 'saved', `${result.code}: ${result.message}`); };
 const valueOf = (client, key) => client.records.find(record => record.key === key)?.value;
+const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
 
 for (const profile of profiles) {
   test(`${profile.provider} full-data engine keeps actionable adapter HTTP errors, retains local data and can retry`, async () => {
@@ -192,7 +200,129 @@ for (const profile of profiles) {
       assert.deepEqual(valueOf(b, 'covelet.tools.v1'), valueOf(a, 'covelet.tools.v1'));
     }
   });
+
+  test(`${profile.provider} image pull faults reject the entire batch, preserve local records and allow an explicit retry`, async () => {
+    const remote = protocolFixture(profile, { timeoutMs: 100 });
+    const bytes = Uint8Array.from({ length: 340 * 1024 }, (_, index) => index % 251);
+    const a = device(remote, 'a', [record('remote-image', { blob: new Blob([bytes], { type: 'image/png' }) }, 'assets')]);
+    await saved(a);
+    // Fail the second image chunk after a full first chunk has been received.
+    const imagePath = remote.writes.filter(item => item.path.includes('/blobs/'))[1].path;
+    const original = remote.objects.get(imagePath), corrupt = original.slice(); corrupt[0] ^= 1;
+    const b = device(remote, 'b', [record('covelet.local-note.v1', { body: 'local unsynced note' }),
+      record('local-image', { blob: new Blob(['local image'], { type: 'image/webp' }) }, 'assets')]);
+    const before = b.records, writes = remote.writes.length;
+    let streamController;
+    const faults = [
+      ['CLOUD_NETWORK', () => { throw new TypeError('SYNTHETIC private transport failure'); }],
+      ['CLOUD_TIMEOUT', () => new Response(new ReadableStream({ start(controller) { streamController = controller; controller.enqueue(original.slice(0, 17)); } }))],
+      ['CLOUD_NOT_FOUND', () => json({ message: 'SYNTHETIC private missing image' }, 404)],
+      ['CLOUD_INTEGRITY', () => new Response(corrupt)],
+    ];
+    for (const [code, respond] of faults) {
+      remote.readFault = { path: imagePath, respond };
+      try {
+        const result = await b.api.syncFullDataNow();
+        assert.equal(result.phase, 'error'); assert.equal(result.code, code);
+        assert.doesNotMatch(result.message, /SYNTHETIC|private transport|private missing/);
+        assert.deepEqual(b.records, before); assert.equal(b.applied, 0);
+        assert.equal(await valueOf(b, 'local-image').blob.text(), 'local image');
+        assert.equal(b.store.value, null); assert.equal(b.pending.size, 0);
+        assert.equal(remote.writes.length, writes, 'a partial image download must not publish any local revision');
+      } finally { streamController?.close(); streamController = undefined; }
+    }
+    remote.readFault = null; b.api = b.make(); await saved(b);
+    assert.deepEqual(new Uint8Array(await valueOf(b, 'remote-image').blob.arrayBuffer()), bytes);
+    assert.equal(valueOf(b, 'remote-image').blob.type, 'image/png');
+    assert.deepEqual(valueOf(b, 'local-image'), before.find(item => item.key === 'local-image').value);
+    assert.equal(await valueOf(b, 'local-image').blob.text(), 'local image');
+    assert.deepEqual(valueOf(b, 'covelet.local-note.v1'), before.find(item => item.key === 'covelet.local-note.v1').value);
+    const afterRetry = remote.writes.length; await saved(b);
+    assert.equal(remote.writes.length, afterRetry);
+  });
+
+  test(`${profile.provider} late write responses after timeout cannot acknowledge pending ciphertext, including after restart`, async () => {
+    for (const area of ['chunk', 'index']) {
+      const remote = protocolFixture(profile, { timeoutMs: 100 });
+      const bytes = Uint8Array.from({ length: 270 * 1024 }, (_, index) => (index * 7) % 251);
+      const a = device(remote, 'a', [record('retry-image', { blob: new Blob([bytes], { type: 'image/png' }) }, 'assets')]);
+      const gate = { area, started: deferred(), response: deferred() }; remote.delayedWrite = gate;
+      try {
+        const result = await a.api.syncFullDataNow();
+        assert.equal(result.code, 'CLOUD_TIMEOUT'); assert.equal(result.phase, 'error');
+        const pending = a.store.value.metadata.pending;
+        assert.ok(pending); assert.ok(a.pending.size); assert.equal(a.store.value.metadata.lastSync, 0);
+        assert.equal(remote.writes.some(item => area === 'chunk' ? item.path.includes('/blobs/') : !item.path.includes('/blobs/')), true);
+        gate.response.resolve(json({}, ['github', 'gitlab'].includes(profile.provider) ? 201 : 200));
+        await new Promise(resolve => setImmediate(resolve));
+        assert.deepEqual(a.store.value.metadata.pending, pending, 'late success must not clear the durable retry record');
+        assert.equal(a.api.getFullDataSyncStatus().phase, 'error');
+        a.api = a.make(); await saved(a);
+        assert.deepEqual(remote.objects.get(`${profile.prefix}/all-data-v1/${pending.name}`), encoder.encode(pending.body));
+        const paths = remote.writes.map(item => item.path);
+        assert.equal(new Set(paths).size, paths.length, 'a retry must read the committed object instead of creating a duplicate');
+        assert.equal(a.store.value.metadata.pending, null); assert.equal(a.pending.size, 0);
+        const b = device(remote, 'b'); await saved(b);
+        assert.deepEqual(new Uint8Array(await valueOf(b, 'retry-image').blob.arrayBuffer()), bytes);
+        assert.equal(valueOf(b, 'retry-image').blob.type, 'image/png');
+      } finally { gate.response.resolve(json({})); }
+    }
+  });
 }
+
+function fullController(remote, profile, client, stores = {}) {
+  const configStore = stores.configStore || memory(), sessionStore = stores.sessionStore || memory();
+  const make = (options = {}) => createCloudSync({ configStore, sessionStore, fullData: true, legacySeed: false, fullSyncStore: client.store,
+    fullPendingStore: client.pendingStore, snapshotStore: client.snapshotStore, providerFactory: remote.factory, signer, locks: null,
+    hasPermission: async () => true, stateStore: { async loadState() { return createEmptyState(); } }, toolSyncStore: memory(),
+    uuid: () => 'a'.repeat(32), eventWindow: null, eventDocument: null, ...options });
+  return { api: make(), make, configStore, sessionStore, profile };
+}
+
+test('full-data controller locking during a committed GitLab write keeps the exact pending image revision until explicit unlock', async () => {
+  const profile = profiles.find(item => item.provider === 'gitlab'), remote = protocolFixture(profile);
+  const client = device(remote, 'a', [record('controller-image', { blob: new Blob(['private image'], { type: 'image/webp' }) }, 'assets')]);
+  const controller = fullController(remote, profile, client), password = 'synthetic controller password';
+  await controller.api.saveCloudSyncSettings(profile, credentials, password);
+  const gate = { area: 'chunk', started: deferred(), response: deferred() }; remote.delayedWrite = gate;
+  try {
+    const running = controller.api.syncCloudNow(); await gate.started.promise;
+    const pending = client.store.value.metadata.pending; assert.ok(pending);
+    await controller.api.lockCloudSync(); gate.response.resolve(json({}, 201));
+    const result = await running;
+    assert.equal(result.phase, 'locked'); assert.equal(result.code, 'CLOUD_LOCKED');
+    assert.deepEqual(client.store.value.metadata.pending, pending);
+    assert.equal(controller.api.getCloudSyncStatus().unlocked, false);
+    const calls = remote.calls.length;
+    controller.api = controller.make();
+    assert.equal((await controller.api.loadCloudSyncSettings()).unlocked, false);
+    assert.equal((await controller.api.syncCloudNow()).code, 'CLOUD_LOCKED'); assert.equal(remote.calls.length, calls);
+    await controller.api.unlockCloudSync(credentials, password);
+    assert.equal((await controller.api.syncCloudNow()).phase, 'saved');
+    assert.equal(client.store.value.metadata.pending, null);
+    const paths = remote.writes.map(item => item.path); assert.equal(new Set(paths).size, paths.length);
+  } finally { gate.response.resolve(json({}, 201)); }
+});
+
+test('full-data controller reports denied permission and unavailable browser access without trusting exception text or contacting the provider', async () => {
+  const profile = profiles.find(item => item.provider === 'gitlab'), remote = protocolFixture(profile);
+  const client = device(remote, 'a', [record('covelet.local-note.v1', { body: 'retained locally' })]);
+  const controller = fullController(remote, profile, client);
+  await controller.api.saveCloudSyncSettings(profile, credentials, 'synthetic controller password');
+  const failures = [
+    ['CLOUD_PERMISSION', async () => false],
+    ['CLOUD_PERMISSION', async () => { throw { code: 'CLOUD_PERMISSION', message: 'SYNTHETIC private forged permission token https://private.example/' }; }],
+    ['CLOUD_UNAVAILABLE', async () => { throw Object.assign(Error('SYNTHETIC private unavailable token https://private.example/'), { code: 'CLOUD_UNAVAILABLE' }); }],
+  ];
+  for (const [code, hasPermission] of failures) {
+    controller.api = controller.make({ hasPermission });
+    const before = client.records, result = await controller.api.syncCloudNow();
+    assert.equal(result.code, code); assert.equal(result.phase, 'error');
+    assert.doesNotMatch(result.message, /SYNTHETIC|private|forged|token|http/);
+    assert.deepEqual(client.records, before); assert.equal(remote.calls.length, 0); assert.equal(client.store.value, null);
+    assert.equal(client.applied, 0); assert.equal(client.pending.size, 0);
+  }
+});
 
 test('GitLab synthetic protocol: legacy empty-directory 200 responses initialize safely and exchange full data', async () => {
   const remote = protocolFixture(profiles.find(profile => profile.provider === 'gitlab'), { emptyTreeStatus: 200 });

@@ -31,8 +31,14 @@ jobs:
       - run: npm ci
       - name: Install official Chromium and OS dependencies
         run: npx playwright install --with-deps chromium
+      - name: Check live-test failure privacy with fake credentials
+        run: npm run test:live-privacy
       - name: Build unpacked extension
         run: npm run build:unpacked
+      - name: Check packaged extension
+        run: npm run check:extension
+      - name: Test persistence and sync boundaries
+        run: npm test
       - name: Test real extension pages
         run: npm run test:e2e
       - name: Save report, screenshots and failure traces

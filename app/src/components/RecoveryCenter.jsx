@@ -30,6 +30,7 @@ export default function RecoveryCenter({ onBusyChange, onRestored }) {
     finally { working.current = false; setBusy(false); onBusyChange?.(false); recoveryCenter.getRecoveryPoint().then(setPoint).catch(() => {}); }
   }
   const show = (next) => { setPlan(next); setSelected(next.categories); setConfirmed(false); };
+  const clearPreview = () => { setPlan(null); setSelected([]); setConfirmed(false); };
   const names = labels();
   return <div className="form-stack recovery-center">
     <p className="hint">{tr('备份包含私人内容，请勿公开分享。登录凭据、同步连接和密码不会备份。')}</p>
@@ -38,6 +39,7 @@ export default function RecoveryCenter({ onBusyChange, onRestored }) {
       <Button variant="secondary" disabled={busy} onClick={() => input.current?.click()}>{tr('选择备份文件')}</Button>
       <Input ref={input} type="file" accept=".json,.zip,application/json,application/zip" hidden tabIndex={-1} onChange={(event) => {
         const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
+        clearPreview();
         source.current = file; sourcePointId.current = null; run(async () => show(await recoveryCenter.preview(file)));
       }} />
     </div>
@@ -65,7 +67,7 @@ export default function RecoveryCenter({ onBusyChange, onRestored }) {
       <span>{formatDateTime(new Date(item.createdAt))}</span>
       {['applying', 'needs-recovery'].includes(item.status) && <p role="alert" className="form-error">{tr('上次恢复未完成，请预览「恢复前副本」，选择需要找回的内容。')}</p>}
       <div className="recovery-actions">
-        <Button variant="secondary" disabled={busy} onClick={() => run(async () => { source.current = null; sourcePointId.current = item.id; show(await recoveryCenter.previewRecoveryPoint(item.id)); })}>{tr('预览副本')}</Button>
+        <Button variant="secondary" disabled={busy} onClick={() => run(async () => { clearPreview(); source.current = null; sourcePointId.current = item.id; show(await recoveryCenter.previewRecoveryPoint(item.id)); })}>{tr('预览副本')}</Button>
         <Button variant="ghost" disabled={busy} onClick={() => run(async () => downloadRecoveryFile(await recoveryCenter.exportRecoveryPoint(item.id), 'Covelet-recovery-point.json'))}>{tr('导出副本')}</Button>
       </div>
     </section>)}
@@ -88,7 +90,7 @@ export default function RecoveryCenter({ onBusyChange, onRestored }) {
           if (result.iconReport) setIconReport(result.iconReport);
           setPlan(null); setConfirmed(false); setMessage(tr('恢复完成。')); onRestored?.(result.state);
         })}>{busy ? tr('正在恢复…') : tr('开始恢复')}</Button>
-        <Button variant="ghost" disabled={busy} onClick={() => run(async () => show(source.current ? await recoveryCenter.preview(source.current) : await recoveryCenter.previewRecoveryPoint(sourcePointId.current)))}>{tr('重新预览')}</Button>
+        <Button variant="ghost" disabled={busy} onClick={() => run(async () => { clearPreview(); show(source.current ? await recoveryCenter.preview(source.current) : await recoveryCenter.previewRecoveryPoint(sourcePointId.current)); })}>{tr('重新预览')}</Button>
       </div>
     </section>}
     {message && <p role="status">{message}</p>}

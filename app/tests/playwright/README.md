@@ -26,6 +26,12 @@ request is blocked and fails the test. WebDAV stores encrypted bytes in memory.
 The two-profile conflict case uses the production setup, encryption, storage,
 sync, version-choice and CAS code; it does not replace the sync engine.
 
+The suite also exercises full-backup image bytes and note recovery, cancelled
+and stale restores, invalid-file preview replacement, consecutive add/edit
+focus, folder rename Escape, real pointer grouping/layout, keyboard save and
+two-tab edit protection. UI image fixtures enter through the supported backup
+file picker; they never write application storage directly.
+
 Reports, screenshots, request summaries and failure traces are saved under
 `output/playwright/covelet/` at the repository root, outside tracked source.
 Screenshots use only generated fixture data. The separate browser-test workflow
@@ -39,3 +45,33 @@ with composition events and real keyboard Enter. Real service credentials and
 permission dialogs require separate acceptance testing.
 
 The setup follows the [official Playwright extension guide](https://playwright.dev/docs/chrome-extensions).
+
+## Separate live suite
+
+Current user scope is **GitHub only**. `tests/live/live-session.mjs` has an explicit
+provider allowlist; R2/GitLab/OSS are not contacted even if an old local entry is
+enabled. Deterministic protocol/unit tests still cover all adapters.
+
+From `app/`, with the ignored local QA configuration prepared:
+
+```powershell
+$env:COVELET_QA_CONFIG = (Resolve-Path ../output/playwright/covelet/live-config.local.json).Path
+npx playwright test --config tests/playwright-live.config.mjs
+```
+
+The live suite uses a temporary build copy with only the exact storage origin
+pre-granted; it does not validate the native permission prompt. It uses two
+isolated Chromium profiles, not physical machines. Credentials stay out of
+traces, screenshots and automatic ARIA failure snapshots. Do not override the
+live reporter/recording settings. Recheck Playwright's snapshot guard on upgrades.
+Locator assertion failures are rethrown as redacted plain errors so their
+matcher-attached form snapshots cannot reach the runner. `npm run test:live-privacy`
+checks both plaintext and password fields with fake values and a deliberately
+failed text assertion; it cannot load the real QA configuration and runs in CI.
+
+The closeout case uploads two decodable PNGs larger than 256 KiB and a note,
+compares persisted image bytes after true-cloud transfer, edits offline and
+retries, then discards a real successful chunk-write response. After browser
+restart it verifies an exact ciphertext read, unchanged image/note content and
+no second write at that object. Both unchanged-sync and conflict-choice cases
+remain separately covered. GitHub's test branch and local profiles are removed.

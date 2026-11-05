@@ -335,8 +335,13 @@ function Modal({ title, titleContent, onClose, onBack, backLabel = tr("返回"),
       className={`modal ${wide ? "wide" : ""} ${className} ${maximized ? 'is-maximized' : ''}`}
       data-maximized={maximized || undefined}
       onOpenAutoFocus={(event) => { event.preventDefault(); focusContent(); }}
-      onCloseAutoFocus={(event) => { event.preventDefault(); if (opener.current?.isConnected && !opener.current.matches(':disabled')) opener.current.focus({ preventScroll: true }); }}
-      onEscapeKeyDown={(event) => { if (closeDisabled) event.preventDefault(); }}
+      onCloseAutoFocus={(event) => {
+        event.preventDefault();
+        // Radix restores focus after unmount; another dialog may already be open.
+        if (document.querySelector('[data-ui-modal][data-state="open"]')) return;
+        if (opener.current?.isConnected && !opener.current.matches(':disabled')) opener.current.focus({ preventScroll: true });
+      }}
+      onEscapeKeyDown={(event) => { if (closeDisabled || event.target?.closest('.folder-name-editor')) event.preventDefault(); }}
       onInteractOutside={(event) => { if (closeDisabled) event.preventDefault(); }}
       onKeyDown={(event) => event.stopPropagation()}
       onContextMenu={(event) => event.stopPropagation()}
@@ -741,6 +746,7 @@ export function App() {
     }
   }
   function newEntry() {
+    setNotice(null);
     setIconPreview(null); setEntryIconInfo({ phase: 'idle' }); iconOperation.current?.abort();
     setEntry({
       id: uid(),
@@ -762,6 +768,7 @@ export function App() {
   }
   function editEntry(item) {
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
+    setNotice(null);
     if (item.type === 'widget') {
       setContext(null); setError('');
       setModal({ kind: 'extensions', initialExtension: item.extensionId, editingId: item.id });
