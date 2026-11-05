@@ -76,6 +76,10 @@ export function tr(key, values = []) {
   if (recentMessages.size > 512) recentMessages.delete(recentMessages.keys().next().value);
   return text;
 }
+export function isAppMessage(value) {
+  return typeof value === 'string' && (Object.hasOwn(messages, value.trim())
+    || recentMessages.has(value) || translatedSources.has(value));
+}
 export const formatNumber = (value, options) => new Intl.NumberFormat(locale, options).format(value);
 export function builtinName(id, savedName) {
   const key = ({ clock: '时钟', 'github-contributions': 'GitHub 贡献', notes: '便笺', 'read-later': '稍后读' })[id];

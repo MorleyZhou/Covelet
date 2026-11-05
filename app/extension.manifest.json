@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Covelet",
   "default_locale": "en",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "minimum_chrome_version": "120",
   "description": "__MSG_extensionDescription__",
   "icons": {
@@ -30,9 +30,7 @@
     "scripting",
     "alarms"
   ],
-  "optional_permissions": [
-    "notifications"
-  ],
+  "optional_permissions": [],
   "host_permissions": [
     "https://www.bing.com/*"
   ],

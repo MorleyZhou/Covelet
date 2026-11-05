@@ -143,9 +143,9 @@ h2 {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px 6px 8px;
-  height: 32px;
-  border-right: 1px solid #0000001a;
+  padding: 8px;
+  min-height: 44px;
+  border: 0;
   font-size: 16px;
   color: #424245;
   border-radius: 8px;
@@ -159,7 +159,7 @@ h2 {
   min-width: 0;
   width: 100%;
   height: 100%;
-  padding: 0 20px;
+  padding: 0 12px;
   border: 0;
   background: transparent;
   color: #1d1d1f;
@@ -853,7 +853,6 @@ legend {
 .theme-dark .search-box { --search-surface: #242426df; }
 .theme-dark .search-box input, .theme-dark .engine-button, .theme-dark .search-submit { color: #f5f5f7; }
 .theme-dark .search-box input::placeholder { color: #aeaeb2; }
-.theme-dark .engine-button { border-color: #ffffff26; }
 .adaptive-wallpaper {
   --panel: var(--adaptive-panel-light);
   --accent: var(--adaptive-accent-light);
@@ -892,7 +891,6 @@ legend {
   .theme-system .search-box { --search-surface: #242426df; }
   .theme-system .search-box input, .theme-system .engine-button, .theme-system .search-submit { color: #f5f5f7; }
   .theme-system .search-box input::placeholder { color: #aeaeb2; }
-  .theme-system .engine-button { border-color: #ffffff26; }
   .adaptive-wallpaper.theme-system { --panel: var(--adaptive-panel-dark); --accent: var(--adaptive-accent-dark); --adaptive-glass: var(--adaptive-glass-dark); --adaptive-button-ink: var(--adaptive-button-dark); }
   .adaptive-wallpaper.theme-system .search-box { --search-surface: var(--adaptive-glass); }
 }
@@ -912,7 +910,7 @@ legend {
   .clock-time { font-size: 76px; letter-spacing: -3px; }
   .clock-date { font-size: 14px; margin-top: 8px; }
   .search-box { height: 56px; padding: 0 10px; border-radius: 18px; }
-  .engine-button { font-size: 14px; gap: 6px; padding: 5px 10px 5px 2px; }
+  .engine-button { font-size: 14px; gap: 6px; padding: 8px 6px; }
   .engine-button .provider-logo, .engine-button .provider-symbol { width: 22px; height: 22px; }
   .engine-button .engine-caret { width: 12px; height: 12px; }
   .engine-button .provider-name { max-width: 86px; }

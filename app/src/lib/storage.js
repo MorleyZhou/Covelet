@@ -41,10 +41,10 @@ async function verifyIconResource(record, tools) {
     || normalizeIconAddress(record.url) !== record.url || !Number.isInteger(record.width) || !Number.isInteger(record.height)
     || record.width < 1 || record.height < 1 || record.width > 4096 || record.height > 4096 || record.width * record.height > 4_000_000
     || typeof record.vector !== 'boolean' || typeof record.adaptive !== 'boolean' || !Number.isFinite(record.updatedAt) || record.updatedAt < 0
-    || (!record.adaptive && record.darkBlob !== undefined)) fail(tr('备份资源清单无效。'));
+    || (!record.adaptive && record.darkBlob !== undefined)) fail(tr('图标文件无法读取。'));
   const result = [];
   for (const blob of [record.blob, ...(record.adaptive ? [record.darkBlob] : [])]) {
-    if (!(blob instanceof Blob) || blob.size > LIMITS.icon) fail(tr('备份资源清单无效。'));
+    if (!(blob instanceof Blob) || blob.size > LIMITS.icon) fail(tr('图标文件无法读取。'));
     const bytes = await verifyImage(blob, tools), header = imageHeader(bytes, blob.type);
     if (!((header.width === record.width && header.height === record.height)
       || (header.width === record.height && header.height === record.width))) fail(tr('图片尺寸信息不一致。'));
@@ -310,7 +310,7 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
   let config;
   let assets;
   let serial = Promise.resolve();
-  const retiredSyncStatus = () => ({ enabled: false, phase: 'disabled', message: tr("浏览器同步已停用，请使用自选存储同步。") });
+  const retiredSyncStatus = () => ({ enabled: false, phase: 'disabled', message: tr("浏览器同步已停用，请使用自备存储同步。") });
   const getConfig = () => config ??= configStore || browserConfig();
   const getAssets = () => assets ??= assetStore || encryptedAssets();
   const readEnvelope = async () => {
@@ -324,7 +324,7 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
   const exclusive = (action) => {
     const manager = locks || globalThis.navigator?.locks;
     if (manager?.request) return manager.request(LOCK_NAME, { mode: 'exclusive' }, action);
-    if (getConfig().requireLocks) return Promise.reject(Object.assign(new Error(tr("浏览器事务锁不可用，未保存以免覆盖其他标签页。")), { code: 'LOCK_UNAVAILABLE' }));
+    if (getConfig().requireLocks) return Promise.reject(Object.assign(new Error(tr("本次修改未保存，请稍后重试。")), { code: 'LOCK_UNAVAILABLE' }));
     const next = serial.then(action, action);
     serial = next.catch(() => {});
     return next;
@@ -372,7 +372,7 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
     async exportBackup(state) {
       const data = migrateNavigationState(state);
       const references = [...assetReferences(data)];
-      if (references.length + 2 > LIMITS.entries) fail(tr("备份资源数量超出限制。"));
+      if (references.length + 2 > LIMITS.entries) fail(tr("图片数量超出备份限制，请减少自定义图片。"));
       const files = Object.create(null);
       files['data.json'] = strToU8(JSON.stringify(data));
       if (files['data.json'].length > LIMITS.json) fail(tr("配置数据超过 2 MiB。"));
@@ -380,7 +380,7 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
       let total = files['data.json'].length;
       for (const [index, id] of references.entries()) {
         const asset = await getAssets().get(id);
-        if (!asset?.blob) fail(tr("备份缺少图片资源：{0}", [id]), 'MISSING_ASSET');
+        if (!asset?.blob) fail(tr("有图片无法读取，未能导出备份。"), 'MISSING_ASSET');
         const bytes = await verifyImage(asset.blob, imageTools);
         const path = `assets/${index}.${MIME_EXT[asset.blob.type]}`;
         manifest.assets.push({ id, path, mime: asset.blob.type, bytes: bytes.length, sha256: await sha256(bytes) });
@@ -396,19 +396,19 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
         if (!record) continue;
         let blobs;
         try { blobs = await verifyIconResource(record, imageTools); } catch { continue; }
-        if (record.url !== source) fail(tr('备份资源清单无效。'));
+        if (record.url !== source) fail(tr('无法读取图标，备份未导出。'));
         const item = { url: source, width: record.width, height: record.height, vector: record.vector, adaptive: record.adaptive, updatedAt: record.updatedAt };
         for (const [index, bytes] of blobs.entries()) {
           const field = index ? 'darkBlob' : 'blob', blob = record[field];
           const path = `icons/${manifest.icons.length}${index ? '-dark' : ''}.${MIME_EXT[blob.type]}`;
           item[field] = { path, mime: blob.type, bytes: bytes.length, sha256: await sha256(bytes) };
           files[path] = bytes; total += bytes.length;
-          if (total > LIMITS.expanded || Object.keys(files).length + 1 > LIMITS.entries) fail(tr('备份清单或资源超出限制。'));
+          if (total > LIMITS.expanded || Object.keys(files).length + 1 > LIMITS.entries) fail(tr('备份内容过多，请减少自定义图片后重试。'));
         }
         manifest.icons.push(item);
       }
       files['manifest.json'] = strToU8(JSON.stringify(manifest));
-      if (files['manifest.json'].length > LIMITS.json || total + files['manifest.json'].length > LIMITS.expanded) fail(tr("备份清单或资源超出限制。"));
+      if (files['manifest.json'].length > LIMITS.json || total + files['manifest.json'].length > LIMITS.expanded) fail(tr("备份内容过多，请减少自定义图片后重试。"));
       const zip = zipSync(files, { level: 6 });
       if (zip.length > LIMITS.archive) fail(tr("完整备份超过 30 MiB，请减少自定义图片。"));
       return new Blob([zip], { type: 'application/zip' });
@@ -426,50 +426,50 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
       const restoredAssets = new Map();
       const paths = new Set(['manifest.json', 'data.json']);
       for (const asset of manifest.assets) {
-        if (!asset || typeof asset.id !== 'string' || !references.has(asset.id) || restoredAssets.has(asset.id) || !MIME_EXT[asset.mime] || typeof asset.path !== 'string' || !asset.path.startsWith('assets/') || paths.has(asset.path) || !Number.isSafeInteger(asset.bytes) || !/^[a-f0-9]{64}$/.test(asset.sha256)) fail(tr("备份资源清单无效。"));
+        if (!asset || typeof asset.id !== 'string' || !references.has(asset.id) || restoredAssets.has(asset.id) || !MIME_EXT[asset.mime] || typeof asset.path !== 'string' || !asset.path.startsWith('assets/') || paths.has(asset.path) || !Number.isSafeInteger(asset.bytes) || !/^[a-f0-9]{64}$/.test(asset.sha256)) fail(tr("备份中的图片信息无法读取。"));
         const bytes = files.get(asset.path);
-        if (!bytes || bytes.length !== asset.bytes || asset.path.split('.').at(-1) !== MIME_EXT[asset.mime] || await sha256(bytes) !== asset.sha256) fail(tr("备份图片缺失、大小或哈希校验不一致。"));
+        if (!bytes || bytes.length !== asset.bytes || asset.path.split('.').at(-1) !== MIME_EXT[asset.mime] || await sha256(bytes) !== asset.sha256) fail(tr("备份中的图片缺失或已损坏，请重新选择备份文件。"));
         const blob = new Blob([bytes], { type: asset.mime });
         await verifyImage(blob, imageTools);
         restoredAssets.set(asset.id, { blob, mime: asset.mime, sha256: asset.sha256 });
         paths.add(asset.path);
       }
       const restoredIcons = new Map(), sourceReferences = iconReferences(state);
-      if ((manifest.icons?.length || 0) > sourceReferences.size) fail(tr('备份资源清单无效。'));
+      if ((manifest.icons?.length || 0) > sourceReferences.size) fail(tr('备份中的图片信息无法读取。'));
       for (const item of manifest.icons || []) {
         if (!item || typeof item !== 'object' || Array.isArray(item) || !sourceReferences.has(item.url) || restoredIcons.has(item.url)
-          || Object.keys(item).some((key) => !['url', 'blob', 'darkBlob', 'width', 'height', 'vector', 'adaptive', 'updatedAt'].includes(key))) fail(tr('备份资源清单无效。'));
+          || Object.keys(item).some((key) => !['url', 'blob', 'darkBlob', 'width', 'height', 'vector', 'adaptive', 'updatedAt'].includes(key))) fail(tr('备份中的图片信息无法读取。'));
         const record = { ...item };
         for (const field of ['blob', ...(item.adaptive ? ['darkBlob'] : [])]) {
           const resource = item[field];
           if (!resource || typeof resource !== 'object' || Array.isArray(resource) || Object.keys(resource).length !== 4
             || Object.keys(resource).some((key) => !['path', 'mime', 'bytes', 'sha256'].includes(key))
             || !MIME_EXT[resource.mime] || typeof resource.path !== 'string' || !/^icons\/[A-Za-z0-9_-]{1,80}\.(png|jpg|webp)$/.test(resource.path)
-            || paths.has(resource.path) || !Number.isSafeInteger(resource.bytes) || !/^[a-f0-9]{64}$/.test(resource.sha256)) fail(tr('备份资源清单无效。'));
+            || paths.has(resource.path) || !Number.isSafeInteger(resource.bytes) || !/^[a-f0-9]{64}$/.test(resource.sha256)) fail(tr('备份中的图片信息无法读取。'));
           const bytes = files.get(resource.path);
           if (!bytes || bytes.length !== resource.bytes || resource.path.split('.').at(-1) !== MIME_EXT[resource.mime]
-            || await sha256(bytes) !== resource.sha256) fail(tr('备份图片缺失、大小或哈希校验不一致。'));
+            || await sha256(bytes) !== resource.sha256) fail(tr('备份中的图片缺失或已损坏，请重新选择备份文件。'));
           record[field] = new Blob([bytes], { type: resource.mime }); paths.add(resource.path);
         }
         await verifyIconResource(record, imageTools); restoredIcons.set(item.url, record);
       }
-      if (references.size !== restoredAssets.size || paths.size !== files.size) fail(tr("备份未完整包含所有图片资源。"));
+      if (references.size !== restoredAssets.size || paths.size !== files.size) fail(tr("备份中的图片不完整，请重新选择备份文件。"));
       return { state, assets: restoredAssets, icons: restoredIcons, summary: { sites: state.entries.filter((entry) => entry.type !== 'folder').length, folders: state.entries.filter((entry) => entry.type === 'folder').length, groups: state.groups.length, assets: restoredAssets.size, bytes: raw.length } };
     },
     async validateBackupPlan(plan) {
       const legacyState = checkedState(plan?.state), state = migrateNavigationState(legacyState);
       if (!(plan.assets instanceof Map)) fail(tr('请先检查备份文件。'));
       const references = assetReferences(state);
-      if (assetReferences(legacyState).size !== plan.assets.size || [...references].some((id) => !plan.assets.has(id))) fail(tr('备份图片引用不完整。'));
+      if (assetReferences(legacyState).size !== plan.assets.size || [...references].some((id) => !plan.assets.has(id))) fail(tr('备份中的图片不完整，请重新选择备份文件。'));
       for (const id of assetReferences(legacyState)) {
         const asset = plan.assets.get(id);
-        if (!asset?.blob || await sha256(await verifyImage(asset.blob, imageTools)) !== asset.sha256) fail(tr('恢复前的图片校验失败。'));
+        if (!asset?.blob || await sha256(await verifyImage(asset.blob, imageTools)) !== asset.sha256) fail(tr('备份中的图片无法读取，未开始恢复。'));
       }
       const icons = plan.icons === undefined ? new Map() : plan.icons;
-      if (!(icons instanceof Map)) fail(tr('备份资源清单无效。'));
+      if (!(icons instanceof Map)) fail(tr('备份中的图片信息无法读取。'));
       const sources = iconReferences(legacyState);
       for (const [source, record] of icons) {
-        if (!sources.has(source) || record?.url !== source) fail(tr('备份资源清单无效。'));
+        if (!sources.has(source) || record?.url !== source) fail(tr('备份中的图片信息无法读取。'));
         await verifyIconResource(record, imageTools);
       }
       return { ...plan, state: legacyState, assets: new Map(plan.assets), icons: new Map(icons) };
@@ -481,14 +481,14 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
       const state = migrateNavigationState(legacyState);
       if (!(plan.assets instanceof Map)) fail(tr("请先检查备份文件。"));
       const references = assetReferences(state);
-      if (assetReferences(legacyState).size !== plan.assets.size || [...references].some((id) => !plan.assets.has(id))) fail(tr("备份图片引用不完整。"));
+      if (assetReferences(legacyState).size !== plan.assets.size || [...references].some((id) => !plan.assets.has(id))) fail(tr("备份中的图片不完整，请重新选择备份文件。"));
       const ids = new Map();
       const staged = [];
       const releaseIcons = iconResources.retain?.(state);
       try {
         for (const id of assetReferences(legacyState)) {
           const asset = plan.assets.get(id);
-          if (!asset?.blob || await sha256(await verifyImage(asset.blob, imageTools)) !== asset.sha256) fail(tr("恢复前的图片校验失败。"));
+          if (!asset?.blob || await sha256(await verifyImage(asset.blob, imageTools)) !== asset.sha256) fail(tr("备份中的图片无法读取，未开始恢复。"));
         }
         for (const record of checked.icons.values()) {
           if (!await iconResources.restore(record)) fail(tr('图片保存失败。'), 'MISSING_ASSET');
@@ -511,8 +511,8 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
       const envelope = await readEnvelope();
       if (envelope.state.revision !== expectedRevision) fail(tr("数据已在另一个标签页更新。"), 'REVISION_CONFLICT');
       const previous = envelope.snapshots[0] && migrateNavigationState(envelope.snapshots[0]);
-      if (!previous) fail(tr("还没有可恢复的本地快照。"), 'NO_SNAPSHOT');
-      for (const id of assetReferences(previous)) if (!(await getAssets().get(id))?.blob) fail(tr("快照依赖的图片不存在，未改变当前数据。"), 'MISSING_ASSET');
+      if (!previous) fail(tr("还没有可恢复的导航副本。"), 'NO_SNAPSHOT');
+      for (const id of assetReferences(previous)) if (!(await getAssets().get(id))?.blob) fail(tr("导航副本中的图片已丢失，当前数据未改变。"), 'MISSING_ASSET');
       // Image preparation may involve an explicit one-time download. Leave
       // ordinary navigation writes available and recheck the revision at CAS.
       const releaseIcons = iconResources.retain?.(previous);

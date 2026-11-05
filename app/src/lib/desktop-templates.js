@@ -9,13 +9,16 @@ export const DESKTOP_TEMPLATE_MAX_BYTES = 256 * 1024;
 export const DESKTOP_TEMPLATE_MAX_SAVED = 20;
 const FORMAT = 'covelet-desktop-template';
 const SAFE_WIDGETS = new Set([CLOCK_WIDGET_ID, NOTES_WIDGET_ID, READING_WIDGET_ID]);
+// Old templates retain their clock configuration when read or backed up, but
+// new captures and applications no longer add or reposition the retired widget.
+export const activeTemplateWidgets = (template) => template.widgets.filter((widget) => widget.extensionId !== CLOCK_WIDGET_ID);
 const APPEARANCE_KEYS = ['theme', 'background', 'shade', 'blur', 'width', 'iconSize', 'gap', 'columns', 'showLabels', 'showClock', 'visualEnhancement'];
 const encoder = new TextEncoder();
 const copy = (value) => structuredClone(value);
 const fail = (message) => { throw Error(message); };
 const newId = (kind) => `${kind}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`}`;
 function fields(value, allowed) {
-  if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some((key) => !allowed.includes(key))) fail(tr('桌面方案包含无效或不允许的字段。'));
+  if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some((key) => !allowed.includes(key))) fail(tr('无法读取这份桌面方案，请重新选择文件。'));
 }
 function templateName(value) {
   if (typeof value !== 'string' || !value.trim() || value.length > 200 || /[\u0000-\u001f\u007f]/u.test(value)) fail(tr('方案名称须为 1 至 200 个字符。'));
@@ -49,7 +52,7 @@ export function inspectDesktopTemplate(input) {
   let raw = input;
   if (typeof raw === 'string') {
     if (encoder.encode(raw).byteLength > DESKTOP_TEMPLATE_MAX_BYTES) fail(tr('桌面方案不能超过 256 KB。'));
-    try { raw = JSON.parse(raw); } catch { fail(tr('桌面方案 JSON 格式无效。')); }
+    try { raw = JSON.parse(raw); } catch { fail(tr('无法读取这份桌面方案，请重新选择文件。')); }
   }
   encoded(raw);
   fields(raw, ['format', 'version', 'name', 'appearance', 'widgets', 'sites']);
@@ -84,7 +87,7 @@ export function inspectDesktopTemplate(input) {
 
 export function createDesktopTemplate(input, { name = tr('我的桌面方案'), publicSiteIds = [], privateEntryIds = [] } = {}) {
   const state = migrateNavigationState(input), privateIds = new Set(privateEntryIds), selected = new Set(publicSiteIds);
-  const widgets = state.entries.filter((entry) => entry.type === 'widget' && !entry.detached && SAFE_WIDGETS.has(entry.extensionId) && !privateIds.has(entry.id));
+  const widgets = state.entries.filter((entry) => entry.type === 'widget' && entry.extensionId !== CLOCK_WIDGET_ID && !entry.detached && SAFE_WIDGETS.has(entry.extensionId) && !privateIds.has(entry.id));
   const sites = state.entries.filter((entry) => entry.type === 'site' && selected.has(entry.id) && !privateIds.has(entry.id) && !privateIds.has(entry.parentId));
   const pages = [...new Set([...widgets, ...sites].map((entry) => entry.page ?? 0))].sort((a, b) => a - b);
   const pageMap = new Map(pages.map((page, index) => [page, index]));
@@ -99,7 +102,7 @@ export function applyDesktopTemplate(input, value, { appearance = true, widgets 
   let state = migrateNavigationState(input);
   const originalPages = new Set(state.settings.pages);
   if (appearance) state.settings = { ...state.settings, ...copy(template.appearance) };
-  const selectedWidgets = widgets ? template.widgets : [], selectedSites = sites ? template.sites : [];
+  const selectedWidgets = widgets ? activeTemplateWidgets(template) : [], selectedSites = sites ? template.sites : [];
   const sourcePages = [...new Set([...selectedWidgets, ...selectedSites].map((entry) => entry.page))].sort((a, b) => a - b);
   const firstPage = sourcePages.length ? nextDesktopPage(state.entries, state.settings.pages) : null;
   if (sourcePages.length && (firstPage === null || firstPage + sourcePages.length - 1 > MAX_DESKTOP_PAGE)) fail(tr('主屏幕数量已达上限。'));
@@ -156,12 +159,6 @@ export const BUILTIN_DESKTOP_TEMPLATES = Object.freeze([
   builtin('阅读记录', { background: { kind: 'color', value: '#eef4ef' }, columns: 8 }, [
     { extensionId: NOTES_WIDGET_ID, config: { size: 'medium' }, page: 0, position: { row: 0, column: 0 } },
     { extensionId: READING_WIDGET_ID, config: { size: 'medium' }, page: 0, position: { row: 0, column: 4 } },
-    { extensionId: CLOCK_WIDGET_ID, config: { size: 'small', style: 'digital', timeZone: 'local' }, page: 0, position: { row: 3, column: 0 } },
-  ]),
-  builtin('时区协作', { background: { kind: 'gradient', value: 'linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%)' }, columns: 8 }, [
-    { extensionId: CLOCK_WIDGET_ID, config: { size: 'large', style: 'digital', zones: ['Asia/Shanghai', 'Europe/London', 'America/New_York'] }, page: 0, position: { row: 0, column: 0 } },
-    { extensionId: NOTES_WIDGET_ID, config: { size: 'medium' }, page: 0, position: { row: 0, column: 4 } },
-    { extensionId: READING_WIDGET_ID, config: { size: 'small' }, page: 0, position: { row: 3, column: 4 } },
   ]),
 ]);
 
@@ -182,7 +179,7 @@ function checkSaved(input) {
 }
 async function readSaved() {
   try { return checkSaved((await localData.get(STORAGE_KEY))[STORAGE_KEY]); }
-  catch (reason) { fail(reason.message || tr('无法读取本机桌面方案。')); }
+  catch (reason) { if (reason instanceof Error) throw reason; fail(tr('无法读取本机桌面方案。')); }
 }
 export async function loadSavedDesktopTemplates() { return copy((await readSaved()).templates); }
 export const validateSavedDesktopTemplates = (value) => checkSaved(copy(value));
@@ -207,7 +204,7 @@ async function mutateSaved(update) {
     return copy(result);
   };
   if (globalThis.navigator?.locks?.request) return navigator.locks.request(STORAGE_KEY, action);
-  if (native() || typeof document !== 'undefined') fail(tr('浏览器事务锁不可用，未保存以免覆盖其他页面的方案。'));
+  if (native() || typeof document !== 'undefined') fail(tr('方案未保存，请稍后重试。'));
   const pending = queue.then(action, action); queue = pending.catch(() => {}); return pending;
 }
 export async function saveDesktopTemplate(name, value) {

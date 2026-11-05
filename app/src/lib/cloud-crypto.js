@@ -11,7 +11,7 @@ const aad = encoder.encode('covelet-cloud:v1');
 const fail = (message, code = 'CLOUD_CRYPTO') => { throw Object.assign(new Error(message), { code }); };
 
 export function validateCloudPassword(password) {
-  if (typeof password !== 'string' || password.trim().length < 12 || encoder.encode(password).length > 1024) fail(tr("加密口令至少需要 12 个字符，且不能超过 1024 字节。"), 'CLOUD_PASSWORD');
+  if (typeof password !== 'string' || password.trim().length < 12 || encoder.encode(password).length > 1024) fail(tr("同步密码至少需要 12 个字符，且不能超过 1024 字节。"), 'CLOUD_PASSWORD');
   return password;
 }
 
@@ -64,6 +64,6 @@ export async function decryptCloudPayload(bytes, password, { crypto = globalThis
     const key = await derive(password, salt, crypto);
     return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv, additionalData: aad, tagLength: 128 }, key, ciphertext));
   } catch {
-    fail(tr("无法解密同步数据：请检查加密口令，或确认云端文档未损坏。"), 'CLOUD_DECRYPT');
+    fail(tr("无法解密同步数据，请检查同步密码。若密码正确，云端数据可能已损坏。"), 'CLOUD_DECRYPT');
   }
 }

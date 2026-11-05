@@ -3,6 +3,7 @@ import { FileArrowUp, Folder, Link, MagnifyingGlass } from '@phosphor-icons/reac
 import { tr, formatNumber } from '../i18n/index.js';
 import { readBookmarkFile } from '../lib/bookmark-file.js';
 import { parseBulkLinks, prepareImport } from '../lib/import-plan.js';
+import { userErrorMessage } from '../lib/user-error.js';
 import { PresentationContext } from '../lib/presentation.js';
 import { Button } from './ui/button.jsx';
 import { Input } from './ui/input.jsx';
@@ -30,7 +31,7 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
   const prepared = useMemo(() => {
     if (!plan) return null;
     try { return prepareImport(state, plan, { selectedIndices: selected, page, columns, skipDuplicates, targetFolderId: targetFolderId === 'original' ? null : targetFolderId }); }
-    catch (reason) { return { error: reason.message }; }
+    catch (reason) { return { error: userErrorMessage(reason) }; }
   }, [state, plan, selected, page, columns, skipDuplicates, targetFolderId]);
   const hiddenDestination = useMemo(() => {
     if (!presentation.active) return false;
@@ -71,7 +72,7 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
     if (gate.current) return;
     gate.current = true; setBusy(true); setError(''); onBusyChange?.(true);
     try { return await action(); }
-    catch (reason) { if (active.current) setError(reason.message); }
+    catch (reason) { if (active.current) setError(userErrorMessage(reason)); }
     finally { gate.current = false; if (active.current) setBusy(false); onBusyChange?.(false); }
   }
   const loadFile = (event) => {
@@ -94,7 +95,7 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
       <p className="hint">{tr('支持 Chrome、Firefox 和 Edge 导出的书签 HTML 文件，仅在本机处理。')}</p>
       <Disclosure title={tr('导入提示')}>
         <p className="hint">{tr('使用浏览器导出的书签 HTML。嵌套文件夹会展平成路径名称；无效地址会列出并跳过。')}</p>
-        <p className="hint">{tr('重复网址不替换本地内容。取消「保留本地」只会添加副本。')}</p>
+        <p className="hint">{tr('取消「跳过重复网址」后，相同网址也会重复添加；已有网址不会被替换。')}</p>
       </Disclosure>
       {plan && <>
         <div className="bookmark-import-target">
@@ -107,7 +108,7 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
         </div>
         {hiddenDestination && <div className="form-stack"><p className="form-error" role="alert">{tr('请先输入密码解除隐藏。')}</p>
           <Button type="button" variant="secondary" disabled={busy} onClick={presentation.requestUnlock}>{tr('输入密码查看隐藏内容')}</Button></div>}
-        <label className="bookmark-import-check"><Checkbox checked={skipDuplicates} disabled={busy} onCheckedChange={(value) => setSkipDuplicates(value === true)} />{tr('保留本地：跳过桌面中已有和本次重复的网址')}</label>
+        <label className="bookmark-import-check"><Checkbox checked={skipDuplicates} disabled={busy} onCheckedChange={(value) => setSkipDuplicates(value === true)} />{tr('跳过重复网址')}</label>
         {prepared && !prepared.error && <p className="bookmark-import-summary" role="status">{tr('已选 {0} 项，将添加 {1} 个网址和 {2} 个文件夹，跳过 {3} 条重复网址。', [formatNumber(selected.size), formatNumber(prepared.addedSites), formatNumber(prepared.addedFolders), formatNumber(prepared.skippedDuplicates)])}</p>}
         <p className="hint">{tr('新内容会加入目标屏幕的空位；放不下时创建新屏幕，已有内容保持原位。')}</p>
         {plan.invalid?.length > 0 && <details className="bookmark-import-invalid"><summary>{tr('已跳过 {0} 项无效地址。', [formatNumber(plan.invalid.length)])}</summary>

@@ -15,6 +15,7 @@ const ownError = (message, code = 'CLOUD_INVALID_CONFIG') => {
   safeErrors.add(error);
   return error;
 };
+export const isCloudProviderError = (error) => safeErrors.has(error);
 const invalid = () => ownError(tr("云存储配置无效，请检查填写内容。"));
 const badResponse = () => ownError(tr("云存储返回的数据格式无效。"), 'CLOUD_INVALID_RESPONSE');
 const capacityError = () => ownError(tr("云端快照数量或大小超出安全限制，请使用单独的存储目录。"), 'CLOUD_LIMIT');
@@ -193,6 +194,23 @@ function bucketPage(bytes) {
   return { objects, next: truncated === 'true' ? next : null };
 }
 
+function requireUnversionedOssBucket(bytes) {
+  // https://www.alibabacloud.com/help/en/oss/developer-reference/getbucketversioning
+  // https://www.alibabacloud.com/help/en/oss/developer-reference/putobject
+  let source;
+  try { source = decoder.decode(bytes); } catch { throw badResponse(); }
+  if (/<!DOCTYPE|<!ENTITY|<!\[CDATA\[/i.test(source)) throw badResponse();
+  source = source.replace(/<!--[\s\S]*?-->/g, '');
+  const match = /^\s*(?:<\?xml[^?]*\?>\s*)?<VersioningConfiguration(?:\s+xmlns=(?:"http:\/\/doc\.oss-cn-hangzhou\.aliyuncs\.com"|'http:\/\/doc\.oss-cn-hangzhou\.aliyuncs\.com'))?\s*(?:\/>|>([\s\S]*?)<\/VersioningConfiguration>)\s*$/.exec(source);
+  if (!match) throw badResponse();
+  const content = (match[1] || '').trim();
+  if (!content) return;
+  if (!/^<Status>\s*(?:Enabled|Suspended)\s*<\/Status>$/.test(content)) throw badResponse();
+  // OSS explicitly ignores forbid-overwrite on both enabled and suspended
+  // versioned buckets. Only a never-versioned bucket supplies create-once PUT.
+  throw ownError(tr('此 OSS Bucket 已开启或暂停版本控制，无法防止覆盖同名文件。请使用从未开启版本控制的专用 Bucket。'), 'CLOUD_OSS_VERSIONING');
+}
+
 function base64(bytes) {
   let result = '';
   for (let offset = 0; offset < bytes.length; offset += 8192) result += String.fromCharCode(...bytes.subarray(offset, offset + 8192));
@@ -357,6 +375,11 @@ export function createCloudProvider(input, secrets, options = {}) {
     return result.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
   }
 
+  async function verifyGitlabBranch(request) {
+    const check = await request('GET', gitlabUrl('branch'));
+    if (check.response.status !== 200 || jsonBody(check.bytes)?.name !== profile.branch) throw statusError(check.response.status === 200 ? 404 : check.response.status, check.response.headers);
+  }
+
   return {
     list() {
       return operation(async (request) => {
@@ -367,8 +390,7 @@ export function createCloudProvider(input, secrets, options = {}) {
           for (let page = 1; page <= 51; page++) {
             const result = await request('GET', gitlabUrl('tree', undefined, page));
             if (result.response.status === 404 && page === 1) {
-              const check = await request('GET', gitlabUrl('branch'));
-              if (check.response.status !== 200 || jsonBody(check.bytes)?.name !== profile.branch) throw statusError(check.response.status === 200 ? 404 : check.response.status, check.response.headers);
+              await verifyGitlabBranch(request);
               return [];
             }
             if (result.response.status !== 200) throw statusError(result.response.status, result.response.headers);
@@ -380,10 +402,15 @@ export function createCloudProvider(input, secrets, options = {}) {
             const next = result.response.headers.get('x-next-page');
             const total = result.response.headers.get('x-total');
             const totalPages = result.response.headers.get('x-total-pages');
+            // GitLab's Gitaly offset headers can report zero pages for an empty
+            // collection, while its other paginator reports one empty page.
+            const emptyZeroPages = page === 1 && data.length === 0 && totalPages === '0'
+              && !next && (total === null || total === '0');
             if (pageHeader !== null && pageHeader !== String(page)
               || next !== null && next !== '' && next !== String(page + 1)
               || total !== null && (!/^\d+$/.test(total) || !Number.isSafeInteger(Number(total)))
-              || totalPages !== null && (!/^[1-9]\d*$/.test(totalPages) || Number(totalPages) < page)) throw badResponse();
+              || totalPages !== null && (!/^(0|[1-9]\d*)$/.test(totalPages) || !Number.isSafeInteger(Number(totalPages))
+                || Number(totalPages) < page && !emptyZeroPages)) throw badResponse();
             if (total !== null && Number(total) > MAX_OBJECTS || totalPages !== null && Number(totalPages) > 50) throw capacityError();
             if (total !== null && Number(total) < scanned || next && totalPages !== null && Number(totalPages) <= page) throw badResponse();
             for (const item of data) {
@@ -396,7 +423,8 @@ export function createCloudProvider(input, secrets, options = {}) {
               }
             }
             if (data.length < 100) {
-              if (next || totalPages !== null && Number(totalPages) !== page || total !== null && Number(total) !== scanned) throw badResponse();
+              if (next || totalPages !== null && Number(totalPages) !== page && !emptyZeroPages || total !== null && Number(total) !== scanned) throw badResponse();
+              if (page === 1 && data.length === 0) await verifyGitlabBranch(request);
               return finalList(objects);
             }
             if (!next && (totalPages !== null && Number(totalPages) === page || total !== null && Number(total) === scanned)) return finalList(objects);
@@ -467,6 +495,12 @@ export function createCloudProvider(input, secrets, options = {}) {
         if (await digest(bytes) !== metadata.digest) throw ownError(tr("待上传快照的内容与文件名不一致。"), 'CLOUD_INTEGRITY');
         const existing = await rawRead(request, name, true);
         if (existing) { if (!equalBytes(existing, bytes)) throw conflictError(); return; }
+        if (profile.provider === 'oss') {
+          const versioning = await request('GET', new URL(`${origin}/?versioning`));
+          if ([401, 403].includes(versioning.response.status)) throw ownError(tr('无法读取 OSS Bucket 版本状态，请检查凭据和 GetBucketVersioning 权限。'), 'CLOUD_OSS_VERSIONING_CHECK');
+          if (versioning.response.status !== 200) throw statusError(versioning.response.status, versioning.response.headers);
+          requireUnversionedOssBucket(versioning.bytes);
+        }
         let result;
         if (profile.provider === 'github') {
           const body = encoder.encode(JSON.stringify({ message: 'Covelet encrypted sync snapshot', content: base64(bytes), branch: profile.branch }));

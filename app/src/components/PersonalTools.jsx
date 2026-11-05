@@ -17,6 +17,7 @@ import { Button } from './ui/button.jsx';
 import { Input } from './ui/input.jsx';
 import { Disclosure } from './ui/disclosure.jsx';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs.jsx';
+import { userErrorMessage } from '../lib/user-error.js';
 
 const newest = (items) => [...items].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
 const stop = (event) => event.stopPropagation();
@@ -28,7 +29,7 @@ function useAction(onBusyChange) {
     if (gate.current) return;
     gate.current = true; setBusy(true); setError(''); onBusyChange?.(true);
     try { return await action(); }
-    catch (reason) { if (active.current) setError(reason.message); }
+    catch (reason) { if (active.current) setError(userErrorMessage(reason)); }
     finally { gate.current = false; if (active.current) { setBusy(false); onBusyChange?.(false); } }
   }
   return { run, busy, error, setError };
@@ -55,10 +56,10 @@ export function PersonalToolsTrash({ data, run, busy = false, defaultOpen = fals
   const hidden = (key) => presentation.active && key && presentation.hiddenKeys.has(key);
   const items = [...(data?.trash || [])].filter((item) => ['notes', 'reading'].includes(item.kind) && !hidden(trashPrivacyKey(item))).sort((a, b) => b.deletedAt - a.deletedAt || a.id.localeCompare(b.id));
   const emptyIds = prompt?.kind === 'empty' ? prompt.items.filter((item) => !hidden(item.privacyKey)).map((item) => item.id) : [];
-  return <Disclosure className="personal-trash" title={tr('工具回收站')} defaultOpen={defaultOpen}>
-    <p>{tr('删除的便笺和稍后读保留 30 天，最多 200 条，与工具共用 4 MiB 容量。过期记录在下次读取或操作时清理。')}</p>
+  return <Disclosure className="personal-trash" title={tr('回收站')} defaultOpen={defaultOpen}>
+    <p>{tr('删除的便笺和稍后读保留 30 天，最多 200 条。')}</p>
     <div className="personal-trash-header"><span>{tr('{0} 条记录', [formatNumber(items.length)])}</span><Button variant="ghost" type="button" disabled={busy || !items.length} onClick={() => setPrompt({ kind: 'empty', revision: data.revision, items: items.map((item) => ({ id: item.id, privacyKey: trashPrivacyKey(item) })) })}>{tr('清空回收站')}</Button></div>
-    <div className="personal-trash-list" aria-label={tr('工具回收站')}>{items.map((item) => <div className="personal-trash-record" key={item.id}>
+    <div className="personal-trash-list" aria-label={tr('回收站')}>{items.map((item) => <div className="personal-trash-record" key={item.id}>
       <div><strong>{item.record.title}</strong><small>{item.kind === 'notes' ? tr('便笺') : tr('稍后读')} · {tr('删除于 {0}', [formatDate(item.deletedAt)])}</small></div>
       <Button variant="ghost" type="button" disabled={busy} onClick={() => run(() => restoreTrashedPersonalRecord(item.id, { expectedRevision: data.revision }))}>{tr('恢复')}</Button>
       <Button variant="ghost" type="button" disabled={busy} aria-label={tr('永久删除“{0}”', [item.record.title])} onClick={() => setPrompt({ kind: 'delete', id: item.id, title: item.record.title, privacyKey: trashPrivacyKey(item), revision: data.revision })}><Trash size={16} /></Button>
@@ -72,7 +73,7 @@ export function PersonalToolsTrash({ data, run, busy = false, defaultOpen = fals
 }
 export function PersonalToolsTrashDialog({ Dialog, onClose }) {
   const { data, error } = usePersonalTools({ loadCore: false }), action = useAction();
-  return <Dialog title={tr('工具回收站')} onClose={onClose} closeDisabled={action.busy} className="personal-tools-modal" wide maximizable>
+  return <Dialog title={tr('回收站')} onClose={onClose} closeDisabled={action.busy} className="personal-tools-modal" wide maximizable>
     <div className="personal-tools-body"><MessageDialog message={error || action.error} onClose={() => action.setError('')} />
       <PersonalToolsTrash data={data} run={action.run} busy={action.busy} defaultOpen />
     </div>
@@ -80,7 +81,7 @@ export function PersonalToolsTrashDialog({ Dialog, onClose }) {
 }
 function ToolDataActions({ data, run, busy, onImported }) {
   const input = useRef(null);
-  return <Disclosure className="tool-data-actions" title={tr("工具数据")}><div className="tool-data-buttons">
+  return <Disclosure className="tool-data-actions" title={tr("备份与回收站")}><div className="tool-data-buttons">
     <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => run(async () => {
       const blob = await exportPersonalTools(), url = URL.createObjectURL(blob), anchor = document.createElement('a');
       anchor.href = url; anchor.download = `Covelet-tools-${new Date().toISOString().slice(0, 10)}.json`; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -162,7 +163,7 @@ function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
       if (draft.document) validateNoteDocument(draft.document);
       if (draft.body.length > 60000 || draft.body.includes('\0')) throw Error(tr('便笺文档无效或超出大小限制。'));
       return '';
-    } catch (reason) { return reason.message; }
+    } catch (reason) { return userErrorMessage(reason, tr('这条便笺无法读取，请从备份恢复。')); }
   }, [draft.document, draft.body]);
   const metrics = useMemo(() => {
     if (documentError || !core) return null;
@@ -189,7 +190,7 @@ function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
         <Button variant="ghost" type="button" className="button quiet" disabled={!draft.body || action.busy} onClick={() => action.run(async () => { try { await navigator.clipboard.writeText(draft.document ? noteDocumentText(draft.document) : draft.body); } catch { throw Error(tr("无法复制，请手动选择文字。")); } })} aria-label={tr("复制便笺")}><Copy size={16} /></Button></div>
       <FolioNoteEditor key={editorKey} documentId={editorKey} document={draft.document} body={draft.body} preview={preview} disabled={action.busy || draftHidden}
         onInitialize={(document) => setDraft((current) => current.document ? current : { ...current, document, body: noteDocumentText(document) })}
-        onChange={(document) => patch({ document, body: noteDocumentText(document) })} onError={(reason) => action.setError(reason.message)} />
+        onChange={(document) => patch({ document, body: noteDocumentText(document) })} onError={(reason) => action.setError(userErrorMessage(reason, tr('便笺未能保存，请重试。')))} />
       {deleting && !draftHidden && <Confirm busy={action.busy} onCancel={() => setDeleting(false)} onConfirm={() => action.run(async () => { await deletePersonalRecord('notes', draft.id, draft.revision); select(null); })}>{tr("删除“{0}”？", [draft.title])}</Confirm>}
       <div className="note-editor-footer"><small>{tr("{0} 字符", [formatNumber(metrics?.characters ?? draft.body.length)])}</small>{draft.id && <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} onClick={() => setDeleting(true)} aria-label={tr("删除便笺")}><Trash size={16} /></Button>}<Button variant="default" type={changedElsewhere ? 'button' : 'submit'} className="button primary" onClick={changedElsewhere ? reopen : undefined} disabled={!data || !core || action.busy || !changedElsewhere && (!dirty || Boolean(documentError))}>{changedElsewhere ? tr('重新打开') : tr("保存")}</Button></div>
     </form></PrivateEditor></div><ToolDataActions data={rawData} run={action.run} busy={action.busy} />

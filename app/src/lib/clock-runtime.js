@@ -145,6 +145,15 @@ export async function restoreClockSchedules() {
     } catch { /* Leave malformed stored state for explicit recovery. */ }
   }
 }
+
+// Retirement only clears this feature's browser alarm plans. Retain navigation
+// entries and every encrypted runtime record for old backups and sync peers.
+export async function retireClockSchedules(browser = globalThis.chrome) {
+  if (!browser?.alarms?.getAll || !browser.alarms.clear) return;
+  for (const alarm of await browser.alarms.getAll()) {
+    if (typeof alarm.name === 'string' && alarm.name.startsWith(ALARM_PREFIX)) await browser.alarms.clear(alarm.name);
+  }
+}
 export async function removeClockState(id) {
   if (native()) {
     for (const alarm of await chrome.alarms.getAll()) if (alarm.name.startsWith(alarmScope(id))) await chrome.alarms.clear(alarm.name);

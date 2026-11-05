@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRecoveryCenter } from './recovery-center.js';
 import { createStorage } from './storage.js';
-import { createEmptyState, createInitialState } from './model.js';
+import { createEmptyState } from './model.js';
+import { createConfiguredNavigation } from '../../tests/fixtures/navigation-state.mjs';
 import { validatePersonalTools } from './personal-tools.js';
 import { validateContentPreferences } from './content-preferences.js';
 import { validateSavedDesktopTemplates, BUILTIN_DESKTOP_TEMPLATES } from './desktop-templates.js';
@@ -43,7 +44,7 @@ function harness() {
 
 test('complete backup round trip includes rich tools, schemes, privacy and a pre-restore recovery point', async () => {
   const subject = harness();
-  const state = await subject.nav.saveState(createInitialState(), 0);
+  const state = await subject.nav.saveState(createConfiguredNavigation(), 0);
   subject.tools.change({ notes: [note()], reading: [{ id: 'read-a', revision: 1, createdAt: 1, updatedAt: 1, title: 'Read', url: 'https://example.com/?a=1#part', status: 'read' }] });
   subject.templates.change({ templates: [{ id: 'scheme-a', name: 'mine', createdAt: 1, template: BUILTIN_DESKTOP_TEMPLATES[0] }] });
   subject.preferences.change({ aliases: { 'note:note-a': 'alias' }, privateKeys: ['note:note-a'], presentation: true });
@@ -77,9 +78,9 @@ test('selected categories replace same-ID note contents without touching reading
 
 test('append keeps current same-ID content, URL deduplication and existing navigation positions', async () => {
   const source = harness(), target = harness();
-  await source.nav.saveState(createInitialState(), 0); source.tools.change({ notes: [note()] });
+  await source.nav.saveState(createConfiguredNavigation(), 0); source.tools.change({ notes: [note()] });
   const file = await source.center.exportCompleteBackup();
-  const existing = createInitialState(); existing.entries = existing.entries.slice(0, 1); existing.entries[0].position = { row: 2, column: 2 };
+  const existing = createConfiguredNavigation(); existing.entries = existing.entries.slice(0, 1); existing.entries[0].position = { row: 2, column: 2 };
   await target.nav.saveState(existing, 0); target.tools.change({ notes: [note('keep local')] });
   const plan = await target.center.preview(file);
   await target.center.restore(plan, { selected: ['navigation', 'notes'], mode: 'append' });
@@ -122,7 +123,7 @@ test('restoring tools only never persists or hydrates navigation icons from an u
 
 test('old navigation ZIP and v2 tools JSON are previewed through the same recovery center', async () => {
   const subject = harness();
-  const zip = await subject.nav.exportBackup(createInitialState());
+  const zip = await subject.nav.exportBackup(createConfiguredNavigation());
   const navigation = await subject.center.preview(zip);
   assert.deepEqual(navigation.categories, ['navigation']);
   const tools = await subject.center.preview(new Blob([JSON.stringify({ format: 'covelet-personal-tools', version: 2, data: { version: 2, revision: 0, notes: [note()], reading: [], snapshots: [] } })]));
@@ -148,7 +149,7 @@ test('append renumbers independent root and folder order without moving existing
   const initial = createEmptyState();
   initial.entries.push({ id: 'local', type: 'site', name: 'local', url: 'https://local.test/', groupId: 'group-home', parentId: null, icon: { kind: 'letter', value: 'L' }, order: 0, page: 0, position: { row: 4, column: 4 } });
   await target.nav.saveState(initial, 0);
-  await source.nav.saveState(createInitialState(), 0);
+  await source.nav.saveState(createConfiguredNavigation(), 0);
   const plan = await target.center.preview(await source.center.exportCompleteBackup());
   await target.center.restore(plan, { selected: ['navigation'], mode: 'append' });
   const state = await target.nav.loadState();
@@ -166,9 +167,9 @@ test('checkpoint quota failure stops all domain writes', async () => {
 
 test('late domain failure rolls back already written domains, preserving the recovery point', async () => {
   const subject = harness(), file = await subject.center.exportCompleteBackup();
-  await subject.nav.saveState(createInitialState(), 0); const before = await subject.nav.loadState();
+  await subject.nav.saveState(createConfiguredNavigation(), 0); const before = await subject.nav.loadState();
   const plan = await subject.center.preview(file); subject.tools.failWrites();
-  await assert.rejects(subject.center.restore(plan), /回退/);
+  await assert.rejects(subject.center.restore(plan), /本次更改已撤销/);
   assert.deepEqual((await subject.nav.loadState()).entries, before.entries);
   assert.equal(subject.hydrations.length, 1, 'automatic rollback does not start a second image acquisition');
   assert.equal((await subject.center.getRecoveryPoint()).status, 'rolled-back');

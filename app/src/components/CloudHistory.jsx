@@ -8,6 +8,7 @@ import PromptDialog, { MessageDialog } from './PromptDialog.jsx';
 import { listCloudHistory, previewCloudHistory, restoreCloudHistory, clearCloudHistoryPreview } from '../lib/cloud-sync.js';
 import { revisionSelection, revisionChangeLabel, REVISION_FIELD_LABELS } from '../lib/revision-diff.js';
 import { loadToolsCore } from '../lib/tools-core.js';
+import { userErrorMessage } from '../lib/user-error.js';
 import { Button } from './ui/button.jsx';
 import { Checkbox } from './ui/checkbox.jsx';
 
@@ -42,7 +43,7 @@ export default function CloudHistory({ disabled, unlocked, onBusyChange }) {
   async function run(action) {
     if (gate.current || disabled) return;
     gate.current = true; setBusy(true); setError(''); setFeedback(''); onBusyChange(true);
-    try { await action(); } catch (reason) { if (active.current) { setError(reason.message); setConfirm(false); } }
+    try { await action(); } catch (reason) { if (active.current) { setError(userErrorMessage(reason)); setConfirm(false); } }
     finally { gate.current = false; if (active.current) { setBusy(false); onBusyChange(false); } }
   }
   const blocked = disabled || busy || !unlocked;
@@ -75,7 +76,7 @@ export default function CloudHistory({ disabled, unlocked, onBusyChange }) {
       })}{!changes.length && <p className="hint">{tr("没有差异")}</p>}</div>
       {changes.length > changeLimit && <Button variant="ghost" type="button" className="button quiet" onClick={() => setChangeLimit(changeLimit + 30)}>{tr("显示更多差异")}</Button>}
       <Button variant="default" type="button" className="button primary" disabled={blocked || !selected.length} onClick={() => setConfirm(true)}>{tr("恢复所选项目")}</Button>
-      {confirm && <PromptDialog title={tr('确认恢复')} action={tr('确认恢复')} busy={busy} confirmDisabled={blocked || !selected.length} onCancel={() => setConfirm(false)} onConfirm={() => run(async () => { await restoreCloudHistory(preview.token, selected); if (active.current) { setPreview(null); setSelected([]); setConfirm(false); setFeedback(tr('已恢复所选项目')); } })}><p>{tr('恢复所选 {0} 项？关联文件夹会一并恢复，其他子导航会保留在桌面；本机将保留恢复前的配置快照。', [formatNumber(selected.length)])}</p></PromptDialog>}
+      {confirm && <PromptDialog title={tr('确认恢复')} action={tr('确认恢复')} busy={busy} confirmDisabled={blocked || !selected.length} onCancel={() => setConfirm(false)} onConfirm={() => run(async () => { await restoreCloudHistory(preview.token, selected); if (active.current) { setPreview(null); setSelected([]); setConfirm(false); setFeedback(tr('已恢复所选项目')); } })}><p>{tr('恢复所选 {0} 项？关联文件夹会一并恢复，文件夹中的其他内容会保留在桌面。恢复前的设置将在当前浏览器中保留为本地快照。', [formatNumber(selected.length)])}</p></PromptDialog>}
     </div>}
     <MessageDialog message={error || feedback} onClose={() => { setError(''); setFeedback(''); }} />
   </section>;

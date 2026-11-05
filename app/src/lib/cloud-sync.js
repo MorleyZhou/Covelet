@@ -3,7 +3,7 @@ import { localData, syncDataStore as defaultSnapshotStore } from './local-data.j
 import * as navigationStorage from './storage.js';
 import { createEmptyState } from './model.js';
 import { createReplica, validateReplica, combineReplicas, recordChanges, portableState, materializeState, syncConflicts } from './sync.js';
-import { validateCloudConfig, createCloudProvider, cloudOrigin, parseCloudSnapshotName } from './cloud-providers.js';
+import { validateCloudConfig, createCloudProvider, cloudOrigin, parseCloudSnapshotName, isCloudProviderError } from './cloud-providers.js';
 import * as packagedWasm from './sync-wasm.js';
 import { encryptCloudPayload, decryptCloudPayload, validateCloudPassword, CLOUD_OBJECT_LIMIT, CLOUD_PLAINTEXT_LIMIT } from './cloud-crypto.js';
 import { revisionDiff, applyRevisionSelection } from './revision-diff.js';
@@ -26,14 +26,14 @@ const same = sameJson;
 const failure = (message, code = 'CLOUD_INVALID') => Object.assign(new Error(message), { code });
 const empty = () => ({ version: 1, profile: null, autoSync: false, metadata: null });
 const messages = {
-  get CLOUD_LOCKED() { return tr("云同步尚未解锁，请重新填写凭据和加密口令。"); },
+  get CLOUD_LOCKED() { return tr("同步尚未解锁，请重新填写连接凭据和同步密码。"); },
   get CLOUD_PERMISSION() { return tr("尚未授权访问这个云服务，请先在设置中授权。"); },
   get CLOUD_UNAVAILABLE() { return tr("请加载 Chrome 或 Edge 扩展，再授权使用云同步。"); },
-  get CLOUD_DECRYPT() { return tr("无法解密同步数据：请检查加密口令，或确认云端文档未损坏。"); },
-  get CLOUD_PASSWORD() { return tr("加密口令至少需要 12 个字符。"); },
+  get CLOUD_DECRYPT() { return tr("无法解密同步数据，请检查同步密码。若密码正确，云端数据可能已损坏。"); },
+  get CLOUD_PASSWORD() { return tr("同步密码至少需要 12 个字符。"); },
   get CLOUD_CAPACITY() { return tr("云同步数据或历史超出限制，已保留全部本地数据；请使用 ZIP 备份。"); },
   get CLOUD_INTEGRITY() { return tr("云端同步数据校验失败，未用部分数据覆盖本机。"); },
-  get CLOUD_INVALID() { return tr("云同步配置或文档无效，已保留本地数据。"); },
+  get CLOUD_INVALID() { return tr("同步配置或数据无效，本机数据已保留。"); },
   get CLOUD_LOCAL() { return tr("无法保存本机云同步状态，未上传新版本。"); },
   get CLOUD_INVALID_CONFIG() { return tr("云存储配置无效，请检查填写内容。"); },
   get CLOUD_CREDENTIALS() { return tr("请输入有效的云存储访问凭据。"); },
@@ -48,7 +48,7 @@ const messages = {
   get CLOUD_HISTORY_STALE() { return tr("版本预览已失效，或本机导航已更新，请重新查看差异。"); },
   get CLOUD_HISTORY_SELECTION() { return tr("所选项目不能恢复，请重新查看差异并选择关联的文件夹。"); },
   get CLOUD_TARGET_PENDING() { return tr("还有尚未上传的同步版本，请先完成当前云端同步，再切换存储位置。"); },
-  get CLOUD_TARGET_CONFLICTS() { return tr("当前云端还有可恢复的并发版本，请先恢复并完成同步，再切换存储位置。"); },
+  get CLOUD_TARGET_CONFLICTS() { return tr("当前云端还有冲突版本，请先选择保留的版本并完成同步，再切换存储位置。"); },
   get TOOLS_SYNC_TARGET() { return tr('工具内容还有待上传或冲突版本，请先处理后再切换存储位置。'); },
   get REVISION_CONFLICT() { return tr("数据已在另一个标签页更新，本次未覆盖；请重新同步。"); },
   get SYNC_DEVICE_CONFLICT() { return tr("同一设备出现不一致的同步版本，已保留本地数据。"); },
@@ -56,7 +56,7 @@ const messages = {
 };
 
 function publicError(cause) {
-  if (isWebdavError(cause)) return cause;
+  if (isWebdavError(cause) || isCloudProviderError(cause)) return cause;
   const code = Object.hasOwn(messages, cause?.code) ? cause.code : 'CLOUD_REQUEST';
   return failure(messages[code] || tr("云服务请求失败，请检查授权、凭据、网络及服务权限；本地数据仍然保留。"), code);
 }
@@ -151,7 +151,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
   };
   const exclusive = (action) => {
     if (locks?.request) return locks.request(LOCK, { mode: 'exclusive' }, action);
-    if (supportsCloudSync()) return Promise.reject(failure(tr("浏览器事务锁不可用，未开始同步。"), 'CLOUD_LOCAL'));
+    if (supportsCloudSync()) return Promise.reject(failure(tr("无法开始同步，请稍后重试。"), 'CLOUD_LOCAL'));
     const result = serial.then(action, action);
     serial = result.catch(() => {});
     return result;
@@ -629,7 +629,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
           const document = recordChanges(metadata.document, metadata.base, local, metadata.documents);
           let documents = combineReplicas(metadata.documents, { [document.actor]: document });
           const conflict = syncConflicts(documents).find((item) => item.id === id);
-          if (!conflict) throw failure(tr("此并发版本已处理。"));
+          if (!conflict) throw failure(tr("此冲突版本已处理。"));
           const recovered = recordChanges(document, local, local, documents, { [conflict.key]: conflict.value });
           documents = boundedDocuments(combineReplicas(documents, { [recovered.actor]: recovered }));
           const merged = materializeState(documents, local);
@@ -641,7 +641,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
           try { saved = await stateStore.saveState(merged, local.revision); } finally { applying = false; }
           metadata.base = portableState(saved);
           await persist(config);
-          report({ localChanges: true, conflicts: syncConflicts(documents).length, message: tr("已恢复所选并发版本，等待同步。") });
+          report({ localChanges: true, conflicts: syncConflicts(documents).length, message: tr("已采用所选版本，等待同步。") });
           schedule();
           return saved;
         });

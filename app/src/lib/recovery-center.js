@@ -130,7 +130,7 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       if (next.icon?.kind === 'image') {
         // ZIP resource IDs are untrusted and can collide with local assets.
         const id = crypto.randomUUID(), asset = incoming.assets.get(next.icon.value);
-        if (!asset) fail(tr('备份图片引用不完整。'));
+        if (!asset) fail(tr('备份中的图片不完整，请重新选择备份文件。'));
         assets.set(id, asset); next.icon = { ...next.icon, value: id };
       }
       next.order = state.entries.filter((item) => item.parentId === next.parentId && item.groupId === next.groupId).length;
@@ -149,8 +149,8 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       const snapshot = await capture(), before = snapshot.current, expected = versions(before);
       if (Object.keys(expected).some((key) => expected[key] !== plan.expected[key])) conflict();
       const existingPoint = await points.read(), sourcePoint = plan.recoveryPointId ? findPoint(existingPoint, plan.recoveryPointId) : null;
-      if (plan.recoveryPointId && !sourcePoint) fail(tr('恢复点已更新，请重新预览。'));
-      if (existingPoint && ['applying', 'needs-recovery'].includes(existingPoint.status) && !sourcePoint) fail(tr('请先处理未完成的恢复点，再导入其他备份。'));
+      if (plan.recoveryPointId && !sourcePoint) fail(tr('恢复前副本已更新，请重新预览。'));
+      if (existingPoint && ['applying', 'needs-recovery'].includes(existingPoint.status) && !sourcePoint) fail(tr('上次恢复未完成，请先从「恢复前副本」找回需要的内容，再导入其他备份。'));
       // Re-validate mutable preview values before any persistence.
       const next = {};
       if (selected.includes('navigation')) next.navigation = mode === 'append' ? await mergeNavigation(before.state, plan.navigation) : plan.navigation;
@@ -191,10 +191,10 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
           } catch { rollbackFailed.push(domain); }
         }
         await points.write({ ...point, status: rollbackFailed.length ? 'needs-recovery' : 'rolled-back', failedDomains: rollbackFailed }).catch(() => {});
-        throw Object.assign(Error(rollbackFailed.length ? tr('恢复未完成，部分数据无法自动回退。恢复前副本已保留，请使用恢复点。') : tr('恢复失败，已回退本次已写入的数据：{0}', [cause.message])), { code: rollbackFailed.length ? 'RECOVERY_REQUIRED' : cause.code, cause });
+        throw Object.assign(Error(rollbackFailed.length ? tr('恢复未完成，部分更改未能撤销。请打开「恢复前副本」，预览并恢复需要找回的内容。') : tr('恢复失败，本次更改已撤销。')), { code: rollbackFailed.length ? 'RECOVERY_REQUIRED' : cause.code, cause });
       }
     };
-    if (!locks?.request) fail(tr('浏览器事务锁不可用，未恢复数据。'));
+    if (!locks?.request) fail(tr('无法开始恢复，当前数据未改变。请稍后重试。'));
     return locks.request('covelet.complete-recovery.v1', action);
   }
   return {

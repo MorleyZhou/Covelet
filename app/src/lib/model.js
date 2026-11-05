@@ -1,5 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
-import { GITHUB_WIDGET_ID, CLOCK_WIDGET_ID, WIDGET_NAMES, validateWidgetConfig } from './widget-model.js';
+import { GITHUB_WIDGET_ID, WIDGET_NAMES, validateWidgetConfig, isRetiredClockWidget } from './widget-model.js';
 import { DESKTOP_ROWS, MAX_DESKTOP_PAGE } from './desktop-layout.js';
 import { validateGradient, gradientCss } from './background-colors.js';
 import { normalizeIconAddress, normalizeIconVariants } from './site-icons.js';
@@ -124,19 +124,37 @@ export function createEmptyState() {
   };
 }
 
-// Only fresh installations use these entries. Restores, sync materialization
-// and existing empty desktops keep using createEmptyState; deletions stay deleted.
+// Fresh installations start without navigation entries. Existing data is read
+// through the normal migration path; this factory never reseeds it.
 export function createInitialState() {
-  const state = createEmptyState();
-  state.entries = [
-    ['google', 'Google', 'https://www.google.com/', 'https://www.google.com/images/branding/googleg/2x/googleg_standard_color_128dp.png'],
-    ['youtube', 'YouTube', 'https://www.youtube.com/', 'https://www.youtube.com/s/desktop/2fe123f7/img/favicon_144x144.png'],
-    ['github', 'GitHub', 'https://github.com/', 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'],
-    ['x', 'X', 'https://x.com/', 'https://abs.twimg.com/responsive-web/client-web/icon-default-large.9ab12c3ecc9e8133a.png'],
-    ['chatgpt', 'ChatGPT', 'https://chatgpt.com/', 'https://cdn.oaistatic.com/assets/apple-touch-icon-mz9nytnj.webp'],
-    ['grok', 'Grok', 'https://grok.com/', 'https://grok.com/images/android-chrome-monochrome-512x512.png'],
-  ].map(([id, name, url, iconUrl], order) => ({ id: `default-${id}`, type: 'site', name, url,
-    groupId: 'group-home', parentId: null, page: 0, icon: letterIcon(name), iconUrl, order }));
+  return createEmptyState();
+}
+
+// Exact historical installation records only. A matching hostname, URL or ID
+// alone never proves a site is an untouched seed. Extra saved fields, changed
+// placement and separately stored aliases/privacy markers protect user choices.
+const RETIRED_INITIAL_SITES = [
+  ['google', 'Google', 'https://www.google.com/', 'https://www.google.com/images/branding/googleg/2x/googleg_standard_color_128dp.png'],
+  ['youtube', 'YouTube', 'https://www.youtube.com/', 'https://www.youtube.com/s/desktop/2fe123f7/img/favicon_144x144.png'],
+  ['github', 'GitHub', 'https://github.com/', 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'],
+  ['x', 'X', 'https://x.com/', 'https://abs.twimg.com/responsive-web/client-web/icon-default-large.9ab12c3ecc9e8133a.png'],
+  ['chatgpt', 'ChatGPT', 'https://chatgpt.com/', 'https://cdn.oaistatic.com/assets/apple-touch-icon-mz9nytnj.webp'],
+  ['grok', 'Grok', 'https://grok.com/', 'https://grok.com/images/android-chrome-monochrome-512x512.png'],
+].map(([id, name, url, iconUrl], order) => ({ id: `default-${id}`, type: 'site', name, url,
+  groupId: 'group-home', parentId: null, page: 0, icon: letterIcon(name), iconUrl, order }));
+const exactData = (left, right) => {
+  if (left === right) return true;
+  if (!left || !right || typeof left !== 'object' || typeof right !== 'object' || Array.isArray(left) !== Array.isArray(right)) return false;
+  const keys = Object.keys(left);
+  return keys.length === Object.keys(right).length && keys.every((key) => Object.hasOwn(right, key) && exactData(left[key], right[key]));
+};
+export function retirePristineInitialSites(input, { protectedIds = [] } = {}) {
+  const protectedSet = new Set(protectedIds);
+  const remove = new Set(input.entries.filter((entry) => !protectedSet.has(entry.id)
+    && RETIRED_INITIAL_SITES.some((seed) => exactData(entry, seed))).map((entry) => entry.id));
+  const state = migrateNavigationState(input);
+  state.entries = state.entries.filter((entry) => !remove.has(entry.id));
+  renumber(state);
   return validateState(state);
 }
 
@@ -205,8 +223,6 @@ function validateSettings(settings) {
   number(settings.gap, 8, 64, tr("图标间距"));
   integer(settings.columns, 2, 12, tr("每行图标数量"));
   for (const key of ['showLabels', 'showClock', 'openNewTab', 'minimal', 'visualEnhancement']) if (typeof settings[key] !== 'boolean') fail(tr("{0}须为开关值", [key]));
-  // Read the old field for backup/sync compatibility; the mode is retired.
-  settings.minimal = false;
 }
 
 export function validateState(input) {
@@ -319,7 +335,12 @@ export function migrateNavigationState(input) {
   const roots = state.entries.filter((entry) => entry.parentId === null)
     .sort((a, b) => groupOrder.get(a.groupId) - groupOrder.get(b.groupId) || a.order - b.order);
   roots.forEach((entry, order) => { entry.order = order; });
-  for (const entry of state.entries) entry.groupId = 'group-home';
+  for (const entry of state.entries) {
+    entry.groupId = 'group-home';
+    // Old clocks stay portable and retain their IDs/config/position/runtime.
+    // Detach on every read so a later old backup or sync import stays retired.
+    if (isRetiredClockWidget(entry)) entry.detached = true;
+  }
   state.groups = [{ id: 'group-home', name: '桌面' }];
   return validateState(state);
 }

@@ -1,3 +1,4 @@
+import { userErrorMessage } from './lib/user-error.js';
 import { tr, getLocale, builtinName, providerName, formatNumber } from "./i18n/index.js";
 import { useLanguage } from './i18n/react.js';
 import LanguageSettings from './components/LanguageSettings.jsx';
@@ -97,7 +98,7 @@ import { prepareImportedNavigationIcons, requestNavigationIconAccess } from './l
 import { iconFailureMessage } from './lib/icon-feedback.js';
 import NavigationIconStatus from './components/NavigationIconStatus.jsx';
 import IconArtwork from './components/IconArtwork.jsx';
-import ClockWidget from "./components/ClockWidget.jsx";
+import HomeTime from "./components/HomeTime.jsx";
 import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashDialog } from "./components/PersonalTools.jsx";
 import usePersonalTools from './lib/use-personal-tools.js';
 import { searchCoveletContent } from './lib/content-search.js';
@@ -111,8 +112,7 @@ import DesktopTemplates from './components/DesktopTemplates.jsx';
 import RecoveryCenter, { downloadRecoveryFile } from './components/RecoveryCenter.jsx';
 import { recoveryCenter } from './lib/recovery-center.js';
 import { focusDesktopNeighbor } from "./lib/desktop-focus.js";
-import { CLOCK_WIDGET_ID, GITHUB_WIDGET_ID } from "./lib/widget-model.js";
-import { removeClockState } from "./lib/clock-runtime.js";
+import { GITHUB_WIDGET_ID } from "./lib/widget-model.js";
 import "./owntab.css";
 import { DialogSurface } from './components/DialogSurface.jsx';
 import { MessageDialog } from './components/PromptDialog.jsx';
@@ -335,8 +335,13 @@ function Modal({ title, titleContent, onClose, onBack, backLabel = tr("返回"),
       className={`modal ${wide ? "wide" : ""} ${className} ${maximized ? 'is-maximized' : ''}`}
       data-maximized={maximized || undefined}
       onOpenAutoFocus={(event) => { event.preventDefault(); focusContent(); }}
-      onCloseAutoFocus={(event) => { event.preventDefault(); if (opener.current?.isConnected && !opener.current.matches(':disabled')) opener.current.focus({ preventScroll: true }); }}
-      onEscapeKeyDown={(event) => { if (closeDisabled) event.preventDefault(); }}
+      onCloseAutoFocus={(event) => {
+        event.preventDefault();
+        // Radix restores focus after unmount; a new dialog or menu may own it.
+        if (document.querySelector('[data-ui-modal][data-state="open"], [data-popover][data-state="open"]')) return;
+        if (opener.current?.isConnected && !opener.current.matches(':disabled')) opener.current.focus({ preventScroll: true });
+      }}
+      onEscapeKeyDown={(event) => { if (closeDisabled || event.target?.closest('.folder-name-editor')) event.preventDefault(); }}
       onInteractOutside={(event) => { if (closeDisabled) event.preventDefault(); }}
       onKeyDown={(event) => event.stopPropagation()}
       onContextMenu={(event) => event.stopPropagation()}
@@ -467,9 +472,7 @@ export function App() {
     onEnd: () => { stopLayoutPress(); setContext(null); setScreenManager(false); setDraftPage(null); focusDesktop(); },
     onSave: async (next, revision) => {
       const saved = demo ? { ...migrateNavigationState(next), revision: preferenceState.current.revision + 1 } : await saveState(next, revision);
-      const removedClocks = state.entries.filter((item) => item.type === 'widget' && item.extensionId === CLOCK_WIDGET_ID && !saved.entries.some((entry) => entry.id === item.id));
       setState(saved); preferenceState.current = saved; setError('');
-      for (const clock of removedClocks) await removeClockState(clock.id).catch((reason) => notify(reason.message, 'error'));
       return saved;
     },
   });
@@ -494,17 +497,12 @@ export function App() {
     try { await setPresentationMode(true); }
     catch (reason) {
       if (reason.code === 'PRIVACY_SETUP_REQUIRED') setPrivacyDialog('setup');
-      else setPresentationHint(reason.message || tr('无法切换隐藏状态，请重试。'));
+      else setPresentationHint(userErrorMessage(reason, tr('无法切换隐藏状态，请重试。')));
     } finally { privacyOperation.current = false; setPrivacyBusy(false); }
   }
   useEffect(() => {
-    if (['clock', 'personal-tool'].includes(modal?.kind) && state && !state.entries.some((item) => item.id === modal.id && item.type === 'widget' && !item.detached)) setModal(null);
+    if (modal?.kind === 'personal-tool' && state && !state.entries.some((item) => item.id === modal.id && item.type === 'widget' && !item.detached)) setModal(null);
   }, [state, modal?.kind, modal?.id]);
-  useEffect(() => {
-    const alert = (event) => { if (event.detail?.title) notify(`${event.detail.title}${event.detail.message ? ` · ${event.detail.message}` : ''}`); };
-    window.addEventListener('covelet-clock-alert', alert);
-    return () => window.removeEventListener('covelet-clock-alert', alert);
-  }, []);
   useEffect(() => {
     let mounted = true, initial = true;
     (demo ? Promise.resolve(createInitialState()) : loadState())
@@ -516,7 +514,7 @@ export function App() {
         }
       })
       .catch((e) => {
-        if (mounted) setError(e.message);
+        if (mounted) setError(userErrorMessage(e));
       });
     const off = demo
       ? () => {}
@@ -607,7 +605,7 @@ export function App() {
           revealDesktopEntry(saved, result.revealId);
           setDraftPage(null);
         }
-      } catch (err) { notify(err.message, "error"); }
+      } catch (err) { notify(userErrorMessage(err), "error"); }
     },
   });
   useNavigationContrast({ rootRef: mainRef, wallpaperRef, enabled: visualEnabled, background: settings?.background,
@@ -642,7 +640,7 @@ export function App() {
     cancelDrag(); setContext(null);
     setModal({ kind: 'layout-delete', ids: selected.map((item) => item.id), draft: desktopState,
       title: selected.length === 1 ? tr("删除“{0}”？", [selected[0].type === "widget" ? builtinName(selected[0].extensionId, selected[0].name) : selected[0].name]) : tr("删除所选 {0} 项？", [selected.length]),
-      children: children.length, clock: selected.some((item) => item.type === 'widget' && item.extensionId === CLOCK_WIDGET_ID) });
+      children: children.length });
   }
   function confirmLayoutDelete() {
     if (modal?.kind !== 'layout-delete' || !layoutEditor.editing || layoutEditor.saving || layoutEditor.conflict) return;
@@ -650,7 +648,7 @@ export function App() {
       if (modal.draft !== desktopState) throw Error(tr("所选项目已发生变化，请重新选择。"));
       layoutEditor.replaceDraft(deleteDesktopEntries(desktopState, modal.ids, desktopScreen.current.columns), []);
       setModal(null); focusDesktop();
-    } catch (reason) { notify(reason.message, 'error'); }
+    } catch (reason) { notify(userErrorMessage(reason), "error"); }
   }
   async function commit(next, message, expected = state.revision) {
     setError("");
@@ -663,8 +661,8 @@ export function App() {
       if (message) notify(message);
       return saved;
     } catch (e) {
-      setError(e.message);
-      notify(e.message, "error");
+      setError(userErrorMessage(e));
+      notify(userErrorMessage(e), "error");
       return null;
     }
   }
@@ -684,16 +682,16 @@ export function App() {
       return saved;
     } finally { release(); }
   }
-  function openClock(item) {
+  function openWidget(item) {
     if (presentation && hiddenKeys.has(`widget:${item.id}`)) { requestPrivacyUnlock(); return; }
     if (layoutEditor.editing || modal || drag) return;
     stopLayoutPress(); cancelDrag(); setContext(null); setEngineMenu(false); setQuery(''); setFocused(false);
-    setModal({ kind: item.extensionId === CLOCK_WIDGET_ID ? 'clock' : item.extensionId === GITHUB_WIDGET_ID ? 'github-tool' : 'personal-tool', id: item.id });
+    setModal({ kind: item.extensionId === GITHUB_WIDGET_ID ? 'github-tool' : 'personal-tool', id: item.id });
   }
   function openEntry(item) {
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
-    if (item.type === 'widget' && ([CLOCK_WIDGET_ID, GITHUB_WIDGET_ID, 'notes', 'read-later'].includes(item.extensionId))) {
-      revealDesktopEntry(state, item.id); openClock(item); return;
+    if (item.type === 'widget' && ([GITHUB_WIDGET_ID, 'notes', 'read-later'].includes(item.extensionId))) {
+      revealDesktopEntry(state, item.id); openWidget(item); return;
     }
     if (item.type === "folder") {
       revealDesktopEntry(state, item.id);
@@ -744,10 +742,11 @@ export function App() {
           newTab: settings.openNewTab,
         });
     } catch (e) {
-      notify(e.message, "error");
+      notify(userErrorMessage(e), "error");
     }
   }
   function newEntry() {
+    setNotice(null);
     setIconPreview(null); setEntryIconInfo({ phase: 'idle' }); iconOperation.current?.abort();
     setEntry({
       id: uid(),
@@ -769,6 +768,7 @@ export function App() {
   }
   function editEntry(item) {
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
+    setNotice(null);
     if (item.type === 'widget') {
       setContext(null); setError('');
       setModal({ kind: 'extensions', initialExtension: item.extensionId, editingId: item.id });
@@ -819,7 +819,6 @@ export function App() {
     const before = state,
       saved = await commit(deleteEntry(state, item.id), tr("已删除"));
     if (saved) {
-      if (item.type === 'widget' && item.extensionId === CLOCK_WIDGET_ID) await removeClockState(item.id).catch((reason) => notify(reason.message, 'error'));
       setUndo({ before, revision: saved.revision });
       if (folderId === item.id) setFolder(null);
     }
@@ -897,7 +896,7 @@ export function App() {
     if (!entry || entryIconPending || siteInfoPending || entrySaving) return;
     let source;
     try { source = normalizeIconAddress(entry.iconUrl || siteIconAddress(entry)); }
-    catch (reason) { setEntryIconInfo({ phase: 'error', message: reason.message }); return; }
+    catch (reason) { setEntryIconInfo({ phase: 'error', message: userErrorMessage(reason) }); return; }
     const sequence = ++siteRequest.current, id = entry.id;
     iconOperation.current?.abort(); const controller = new AbortController(); iconOperation.current = controller;
     const authorization = requestNavigationIconAccess([{ source }]);
@@ -960,7 +959,7 @@ export function App() {
         setEntry(null);
       }
     } catch (e) {
-      setError(e.message);
+      setError(userErrorMessage(e));
     } finally { entrySavePending.current = false; setEntrySaving(false); }
   }
   async function readBookmarks(e) {
@@ -972,7 +971,7 @@ export function App() {
       setImportPlan(plan);
       setModal({ kind: "bookmarks", revision: state.revision });
     } catch (e) {
-      notify(e.message, "error");
+      notify(userErrorMessage(e), "error");
     }
   }
   async function readBackup(e) {
@@ -984,7 +983,7 @@ export function App() {
       setBackupPlan(await inspectBackup(file));
       setModal({ kind: "restore", revision: state.revision });
     } catch (e) {
-      notify(e.message, "error");
+      notify(userErrorMessage(e), "error");
     } finally {
       setBusy(false);
     }
@@ -996,7 +995,7 @@ export function App() {
       const blob = await recoveryCenter.exportCompleteBackup();
       downloadRecoveryFile(blob, 'Covelet-complete-backup.json');
     } catch (e) {
-      notify(e.message, "error");
+      notify(userErrorMessage(e), "error");
     } finally {
       setBusy(false);
     }
@@ -1053,10 +1052,8 @@ export function App() {
           const box = source.getBoundingClientRect();
           setContext({ kind: editing ? 'layout' : "entry", item, source, keyboard: true, x: box.left, y: box.bottom + 6 });
         }}>
-        {item.type === 'widget' ? item.extensionId === CLOCK_WIDGET_ID
-          ? <ClockWidget entry={item} open={modal?.kind === 'clock' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} />
-          : ['notes', 'read-later'].includes(item.extensionId) ? <PersonalWidget entry={item} open={modal?.kind === 'personal-tool' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} Dialog={Modal} portalTarget={mainRef.current} />
-          : <GitHubWidget entry={item} open={modal?.kind === 'github-tool' && modal.id === item.id} onOpen={() => openClock(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} /> : item.type === "site" ? <a className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} href={item.url} draggable={false} target={settings.openNewTab ? "_blank" : undefined} rel="noreferrer noopener" title={`${item.name}\n${item.url}`}>
+        {item.type === 'widget' ? ['notes', 'read-later'].includes(item.extensionId) ? <PersonalWidget entry={item} open={modal?.kind === 'personal-tool' && modal.id === item.id} onOpen={() => openWidget(item)} onClose={() => setModal(null)} Dialog={Modal} portalTarget={mainRef.current} />
+          : <GitHubWidget entry={item} open={modal?.kind === 'github-tool' && modal.id === item.id} onOpen={() => openWidget(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} /> : item.type === "site" ? <a className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} href={item.url} draggable={false} target={settings.openNewTab ? "_blank" : undefined} rel="noreferrer noopener" title={`${item.name}\n${item.url}`}>
           <SiteIcon entry={item} /><span className="site-name">{item.name}</span>
         </a> : <Button variant="unstyled" size="unstyled" className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} title={item.name} aria-label={item.name} aria-haspopup="dialog" onClick={() => openEntry(item)}>
           <SiteIcon entry={item} children={children} /><span className="site-name">{item.name}</span>
@@ -1093,7 +1090,7 @@ export function App() {
       ...(item.type === 'widget' && item.extensionId === GITHUB_WIDGET_ID ? [{ label: tr('打开'), icon: <ArrowSquareOut size={18} />, action: () => window.open(`https://github.com/${item.config.username}`, '_blank', 'noopener,noreferrer') }] : []),
       { label: item.type === 'widget' ? tr("配置组件") : tr("编辑"), icon: <PencilSimple size={18} />, action: () => editEntry(item) },
       ...(item.type === 'site' ? [{ label: tr('搜索别名'), icon: <MagnifyingGlass size={18} />, action: () => setModal({ kind: 'content-preferences', key: `site:${item.id}` }) }] : []),
-      { label: contentPreferences.privateKeys.includes(`${item.type}:${item.id}`) ? tr('取消私密标记') : tr('标记为私密'), icon: <EyeSlash size={18} />, action: () => saveContentSettings(`${item.type}:${item.id}`, { private: !contentPreferences.privateKeys.includes(`${item.type}:${item.id}`) }).catch((reason) => notify(reason.message, 'error')) },
+      { label: contentPreferences.privateKeys.includes(`${item.type}:${item.id}`) ? tr('取消私密标记') : tr('标记为私密'), icon: <EyeSlash size={18} />, action: () => saveContentSettings(`${item.type}:${item.id}`, { private: !contentPreferences.privateKeys.includes(`${item.type}:${item.id}`) }).catch((reason) => notify(userErrorMessage(reason), "error")) },
       { label: tr("编辑布局"), icon: <SquaresFour size={18} />, action: layoutEditor.begin },
       { divider: true },
       { label: item.type === 'widget' ? tr("移除组件") : item.type === "folder" ? tr("解散文件夹") : tr("删除网站"), icon: <Trash size={18} />, danger: true, action: () => removeEntry(item) },
@@ -1105,7 +1102,7 @@ export function App() {
         {error || contentPreferencesError ? (
           <>
             <h1>{tr("暂时无法读取本地数据")}</h1>
-            <p>{tr(error || contentPreferencesError)}</p>
+            <p>{userErrorMessage(error || contentPreferencesError)}</p>
             <Button variant="unstyled" size="unstyled" onClick={() => location.reload()}>{tr("重新读取")}</Button>
           </>
         ) : (
@@ -1178,6 +1175,7 @@ export function App() {
         </header>
         {presentationHint && <p className="presentation-status" role="status">{presentationHint}</p>}
         <section className="search-area" aria-label={tr("搜索")} inert={layoutEditor.editing || undefined}>
+          {!settings.minimal && <HomeTime />}
           <form className="search-box" onSubmit={submit} role="search">
             <div className="engine-selector" data-popover>
               <DropdownMenu open={engineMenu} modal={false} onOpenChange={(open) => { if (open) engineChoice.current = false; setEngineMenu(open); }}>
@@ -1327,7 +1325,6 @@ export function App() {
         {modal?.kind === 'layout-delete' && layoutEditor.editing && <Modal title={modal.title} privacyKeys={modal.ids.flatMap((id) => desktopState.entries.filter((item) => item.id === id || item.parentId === id).map((item) => `${item.type}:${item.id}`))} onClose={() => setModal(null)}>
           <div className="form-stack">
             {modal.children > 0 && <p>{tr("文件夹内的 {0} 个网站也会删除。", [formatNumber(modal.children)])}</p>}
-            {modal.clock && <p>{tr("保存后将清除所选时钟的计时记录和倒计时提醒。")}</p>}
             <div className="modal-footer"><Button variant="secondary" type="button" className="button" data-autofocus onClick={() => setModal(null)}>{tr("取消")}</Button>
               <Button variant="destructive" type="button" className="button" disabled={layoutEditor.saving || layoutEditor.conflict} onClick={confirmLayoutDelete}>{tr("删除")}</Button></div>
           </div>
@@ -1418,9 +1415,9 @@ export function App() {
                 </>
               )}
               <div className="site-name-field">
-                <div className="field-heading"><label htmlFor="entry-name">{tr("名称")}</label>{entry.type === "site" && <Button variant="unstyled" size="unstyled" className="field-action" type="button" disabled={!entry.url || siteInfoPending || entryIconPending} aria-label={tr(siteInfoPending ? "正在获取信息…" : "获取信息")} aria-busy={siteInfoPending} onClick={getSiteInfo}>
+                <div className="field-heading"><label htmlFor="entry-name">{tr("名称")}</label>{entry.type === "site" && <Button variant="unstyled" size="unstyled" className="field-action" type="button" disabled={!entry.url || siteInfoPending || entryIconPending} aria-label={tr(siteInfoPending ? "正在获取…" : "获取名称和图标")} aria-busy={siteInfoPending} onClick={getSiteInfo}>
                   {siteInfoPending && <CircleNotch size={14} className="site-info-spinner" aria-hidden="true" />}
-                  <span role="status" aria-live="polite">{tr(siteInfoPending ? "正在获取信息…" : "获取信息")}</span>
+                  <span role="status" aria-live="polite">{tr(siteInfoPending ? "正在获取…" : "获取名称和图标")}</span>
                 </Button>}</div>
                 <Input
                   id="entry-name"
@@ -1540,9 +1537,9 @@ export function App() {
                 const result = await restoreSnapshot(latest.revision, { onIconProgress: setIconProgress });
                 setState(result);
                 setModal(null);
-                notify(tr("已恢复上一份本地快照"));
+                notify(tr("已恢复上一份导航副本"));
               } catch (e) {
-                notify(e.message, "error");
+                notify(userErrorMessage(e), "error");
               } finally { setBusy(false); }
             }}
             wallpaper={wallpaper}
@@ -1567,7 +1564,7 @@ export function App() {
           <Modal title={tr("恢复完整备份")} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
             <div className="form-stack">
               <p>{tr("备份包含 {0} 个网站和 {1} 个自定义图片。", [formatNumber(backupPlan.summary.sites), formatNumber(backupPlan.summary.assets)])}</p>
-              <p>{tr("恢复会替换当前网址、搜索选项、外观和布局，并保留上一份本地快照。")}</p>
+              <p>{tr("恢复会替换当前网址、搜索选项、外观和布局，并在此浏览器保留一份导航副本。")}</p>
               <NavigationIconStatus report={iconProgress} busy={busy} />
               {backupPlan.state.settings.background.kind === "image" && (
                 <p className="hint">{tr('此备份的壁纸无法恢复，将使用 Bing 每日壁纸。')}</p>
@@ -1589,7 +1586,7 @@ export function App() {
                       setModal(null);
                       notify(tr("完整备份已恢复"));
                     } catch (e) {
-                      notify(e.message, "error");
+                      notify(userErrorMessage(e), "error");
                     } finally {
                       setBusy(false);
                     }
@@ -1678,7 +1675,7 @@ function Settings({
       Promise.resolve(iconRequest).then(() => {
         onProviderIconReady();
       }).catch(() => {});
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(userErrorMessage(err)); }
   }
   function providerInputKeyDown(event) {
     if (event.key !== "Enter" || event.nativeEvent.isComposing || event.keyCode === 229) return;
@@ -1708,11 +1705,15 @@ function Settings({
           <>
             <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onDesktopTemplates)}><SquaresFour size={18} />{tr('桌面方案与分享')}</Button>
             <LanguageSettings />
+            <label className="check-label">
+              <Switch aria-label={tr("极简模式")} checked={draft.minimal} onCheckedChange={(minimal) => patch({ minimal })} />
+              <span>{tr("极简模式")}<span className="enhancement-description">{tr("隐藏时间和日期。")}</span></span>
+            </label>
             <Select label={tr("主题")} value={draft.theme} onChange={(theme) => patch({ theme })}
               options={[{ value: "system", label: tr("跟随系统") }, { value: "light", label: tr("浅色") }, { value: "dark", label: tr("深色") }]} />
             <BackgroundPicker value={draft.background} onChange={(background) => patch({ background })} wallpaper={wallpaper} />
             <Range
-              label={tr("背景遮罩")}
+              label={tr("背景变暗")}
               value={draft.shade}
               min={0}
               max={90}
@@ -1879,8 +1880,7 @@ function Settings({
         {tab === "data" && (
           <>
             <WhatsNew />
-            <p className="hint">{tr('同步默认关闭；保存配置不代表连接已验证。')}</p>
-            <p className="hint">{tr('导出的 JSON/ZIP 备份未加密，请妥善保管。')}</p>
+            <p className="hint">{tr('导出的备份文件未加密，请妥善保管。')}</p>
             <div className="data-actions">
               <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onCloudSync)}>
                 {tr('自备存储同步（Beta）')}</Button>
@@ -1891,9 +1891,9 @@ function Settings({
               <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onImport)}>
                 <UploadSimple size={19} />{tr('备份与恢复中心')}</Button>
               <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onToolsTrash)}>
-                <Trash size={19} />{tr('工具回收站')}</Button>
+                <Trash size={19} />{tr('回收站')}</Button>
               <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onSnapshot)}>
-                <ArrowUUpLeft size={19} />{tr("恢复上一份本地快照")}</Button>
+                <ArrowUUpLeft size={19} />{tr("恢复上一份导航副本")}</Button>
             </div>
             <NavigationIconStatus report={iconProgress} busy={busy} />
             <a className="settings-privacy-link" href="https://sites.google.com/view/covelet-privacy" target="_blank" rel="noopener noreferrer">{tr("隐私政策")}</a>
@@ -1907,14 +1907,14 @@ function Settings({
         )}
       </TabsContent>
       {saving.phase === "error" && <div className="settings-save-status">
-          <p className="form-error" role="alert">{tr(saving.error?.message) || tr("设置未保存，请重试。")}</p>
+          <p className="form-error" role="alert">{userErrorMessage(saving.error, tr("设置未保存，请重试。"))}</p>
           <div className="settings-retry-actions">
             {saving.error?.code !== "PREFERENCE_CONFLICT" && <Button variant="secondary" type="button" className="button" onClick={() => saver.retry().catch(() => {})}>{tr("重试")}</Button>}
             <Button variant="ghost" type="button" className="button quiet" onClick={async () => {
               try {
                 const latest = await saver.reload();
                 setDraft(structuredClone(latest.settings)); setProviderDraft(structuredClone(latest.providers));
-              } catch (reason) { setError(reason.message); }
+              } catch (reason) { setError(userErrorMessage(reason)); }
             }}>{tr("放弃修改并重新载入")}</Button>
           </div>
       </div>}
