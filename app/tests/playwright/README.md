@@ -20,6 +20,62 @@ the service worker's real runtime manifest and ID before opening the real
 add manifest permissions, connect to personal Chrome/Edge profiles, or change the
 extension version. Temporary profiles are closed and removed after the test.
 
+## In-place upgrades from 0.2.2
+
+From `app/`, after `npm run build:unpacked`:
+
+```sh
+npm run test:upgrade
+```
+
+This downloads the original public `v0.2.2` ZIP with `gh`, pins its SHA-256,
+and verifies every extracted file and the exact file set. `gh` must be
+available; CI provides its read-only GitHub token. The test first creates
+synthetic data through that release's UI, shuts its browser down, replaces
+only the program in the same absolute directory, and reopens the entire same
+profile with the current build. Runtime versions and the unchanged native
+extension ID are checked. The nonextractable IndexedDB device key and original
+encrypted records are retained, not copied into a new installation.
+Chrome's native CDP `Extensions.loadUnpacked` installer applies the replacement;
+relaunching with changed files alone can retain the old Service Worker cache.
+The suite verifies that the executing new background has removed the legacy
+clock-alarm listener. It never uninstalls the extension or clears its storage.
+
+To test the already published 0.3.0 package as a separate control:
+
+```powershell
+node tests/upgrade/prepare-packages.mjs --release
+$env:COVELET_UPGRADE_TARGET = 'release'
+npx playwright test --config tests/playwright-upgrade.config.mjs
+Remove-Item Env:COVELET_UPGRADE_TARGET
+```
+
+The published control also has a pinned ZIP digest; a changed release asset
+must be inspected before changing that pin. No historical ZIP or production
+manifest is modified. Reports are in `output/playwright/covelet/upgrade/`.
+The published control uses `output/playwright/covelet/upgrade-release/`.
+Original and replacement-phase traces are retained on failure. All profiles,
+passwords and HTTPS responses are synthetic; no local QA credentials are read.
+
+The suite covers seed retirement and recovery, edited/private content, notes,
+image bytes, old clock data, genuine pending ciphertext, whole-group conflicts,
+offline operation, and an aborted real IndexedDB migration transaction.
+Read-only inspection decrypts records with the original nonextractable key;
+Blob content is compared by bytes or SHA-256. Only the migration marker's
+transaction is deliberately aborted. Offline mode rejects even allowed
+fixture responses and checks both `navigator.onLine` and a failed HTTPS probe.
+These tests prove application-data compatibility; they do not certify store
+signatures, store delivery, or real cloud service availability.
+
+Only the legacy-reminder case pregrants the old declared optional notification
+permission by moving it to required permissions in its temporary old copy.
+The pinned archive, extracted cache and new production manifest stay unchanged.
+This lets the old UI create a real countdown alarm through native Chrome APIs;
+it does not validate the native permission bubble or OS notification delivery.
+All other upgrade cases run the unmodified historical manifest. The browser's
+unsafe-extension-debugging flag is confined to these synthetic QA profiles and
+only enables its native CDP installer.
+
 The network fixture accepts only the exact Bing wallpaper/search routes and a
 dedicated WebDAV path under the already granted Bing origin. Every other HTTP(S)
 request is blocked and fails the test. WebDAV stores encrypted bytes in memory.
