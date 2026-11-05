@@ -62,4 +62,10 @@
 .cloud-conflict-sides { display: flex; flex-direction: column; gap: 16px; white-space: normal; }
 .cloud-conflict-sides section { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .cloud-conflict-sides pre { margin: 0; max-height: 180px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.6 ui-monospace, monospace; }
+.cloud-conflict-scope { font-size: 12px; color: var(--muted); }
+.cloud-conflict-summary { margin: 0; padding-inline-start: 18px; font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
+.cloud-conflict-summary li + li { margin-top: 4px; }
+.cloud-conflict-impact, .cloud-conflict-delete { font-size: 13px; line-height: 1.65; }
+.cloud-conflict-delete { color: #b54545; }
+.cloud-conflict-details { min-width: 0; }
 .cloud-conflict-sides button[aria-pressed=true] { background: var(--accent); color: white; }

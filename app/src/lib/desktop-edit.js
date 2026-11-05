@@ -111,8 +111,8 @@ function placeGroup(state, ids, target, columns) {
 
 export function applyDesktopDrop(input, ids, target, columns, makeId) {
   const selected = [...new Set(ids)], source = input.entries.find((entry) => entry.id === selected[0]);
-  if (!source || !selected.length) throw Error(tr("没有可移动的导航。"));
-  if (selected.length > 1 && selected.some((id) => !input.entries.some((entry) => entry.id === id && visibleRoot(entry)))) throw Error(tr("多选仅支持主屏幕条目。"));
+  if (!source || !selected.length) throw Error(tr("没有可移动的项目，请重新选择。"));
+  if (selected.length > 1 && selected.some((id) => !input.entries.some((entry) => entry.id === id && visibleRoot(entry)))) throw Error(tr("只能多选桌面上的项目。"));
   const destination = input.entries.find((entry) => entry.id === target.id);
   const pages = new Set([...selected.map((id) => input.entries.find((entry) => entry.id === id)?.page ?? 0), destination?.page ?? target.page ?? 0]);
   const frozen = freezeDesktopPositions(input.entries, columns, pages, input.settings.pages);

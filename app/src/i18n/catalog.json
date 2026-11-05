@@ -12028,5 +12028,1454 @@
     "de": "Mit eigenem Speicher synchronisieren (Beta)",
     "fr": "Synchronisation avec votre stockage (Beta)",
     "ru": "Синхронизация со своим хранилищем (Beta)"
+  },
+  "正在获取…": {
+    "en": "Fetching…",
+    "zh-TW": "正在取得…",
+    "ja": "取得中…",
+    "ko": "가져오는 중…",
+    "de": "Wird abgerufen…",
+    "fr": "Récupération…",
+    "ru": "Получение…"
+  },
+  "获取名称和图标": {
+    "en": "Get name and icon",
+    "zh-TW": "取得名稱和圖示",
+    "ja": "名前とアイコンを取得",
+    "ko": "이름과 아이콘 가져오기",
+    "de": "Name und Symbol abrufen",
+    "fr": "Récupérer le nom et l’icône",
+    "ru": "Получить название и значок"
+  },
+  "已恢复上一份导航副本": {
+    "en": "Previous navigation copy restored",
+    "zh-TW": "已還原上一份導覽副本",
+    "ja": "前のナビゲーションのコピーを復元しました",
+    "ko": "이전 사이트 모음 사본을 복원했습니다",
+    "de": "Die vorherige Kopie der Navigation wurde wiederhergestellt",
+    "fr": "La copie précédente de la navigation a été restaurée",
+    "ru": "Предыдущая копия навигации восстановлена"
+  },
+  "恢复会替换当前网址、搜索选项、外观和布局，并在此浏览器保留一份导航副本。": {
+    "en": "Restoring replaces your current sites, search options, appearance and layout. A copy of your navigation will be kept in this browser.",
+    "zh-TW": "還原會取代目前網址、搜尋選項、外觀和版面配置，並在此瀏覽器保留一份導覽副本。",
+    "ja": "復元すると、現在のサイト、検索設定、外観、レイアウトが置き換わります。このブラウザに復元前のナビゲーションのコピーを保存します。",
+    "ko": "복원하면 현재 사이트, 검색 설정, 화면 설정과 배치가 바뀝니다. 이 브라우저에 복원 전 사이트 모음 사본을 보관합니다.",
+    "de": "Die Wiederherstellung ersetzt die aktuellen Websites, Suchoptionen, das Erscheinungsbild und das Layout. Eine Kopie der Navigation bleibt in diesem Browser erhalten.",
+    "fr": "La restauration remplace les sites, les options de recherche, l’apparence et la disposition actuels. Une copie de la navigation sera conservée dans ce navigateur.",
+    "ru": "Восстановление заменит текущие адреса, параметры поиска, оформление и расположение. Копия навигации останется в этом браузере."
+  },
+  "背景变暗": {
+    "en": "Dim background",
+    "zh-TW": "背景變暗",
+    "ja": "背景の暗さ",
+    "ko": "배경 어둡게",
+    "de": "Hintergrund abdunkeln",
+    "fr": "Assombrir le fond",
+    "ru": "Затемнение фона"
+  },
+  "导出的备份文件未加密，请妥善保管。": {
+    "en": "Exported backup files are not encrypted. Keep them somewhere safe.",
+    "zh-TW": "匯出的備份檔未加密，請妥善保管。",
+    "ja": "書き出したバックアップファイルは暗号化されていません。安全な場所に保管してください。",
+    "ko": "내보낸 백업 파일은 암호화되지 않았습니다. 안전한 곳에 보관하세요.",
+    "de": "Exportierte Sicherungsdateien sind nicht verschlüsselt. Bitte sicher aufbewahren.",
+    "fr": "Les fichiers de sauvegarde exportés ne sont pas chiffrés. Conservez-les en lieu sûr.",
+    "ru": "Экспортированный файл резервной копии не зашифрован. Храните его в надёжном месте."
+  },
+  "回收站": {
+    "en": "Trash",
+    "zh-TW": "資源回收筒",
+    "ja": "ゴミ箱",
+    "ko": "휴지통",
+    "de": "Papierkorb",
+    "fr": "Corbeille",
+    "ru": "Корзина"
+  },
+  "恢复上一份导航副本": {
+    "en": "Restore previous navigation copy",
+    "zh-TW": "還原上一份導覽副本",
+    "ja": "前のナビゲーションのコピーを復元",
+    "ko": "이전 사이트 모음 사본 복원",
+    "de": "Vorherige Navigationskopie wiederherstellen",
+    "fr": "Restaurer la copie précédente de la navigation",
+    "ru": "Восстановить предыдущую копию навигации"
+  },
+  "取消「跳过重复网址」后，相同网址也会重复添加；已有网址不会被替换。": {
+    "en": "Turn off Skip duplicate sites to add duplicate copies. Existing sites will not be replaced.",
+    "zh-TW": "取消「略過重複網址」後，相同網址也會重複新增；已有網址不會被取代。",
+    "ja": "「重複する URL をスキップ」をオフにすると、同じ URL も重複して追加されます。既存の URL は置き換えません。",
+    "ko": "‘중복 URL 건너뛰기’를 끄면 같은 URL도 중복해서 추가합니다. 기존 URL을 바꾸지는 않습니다.",
+    "de": "Wenn „Doppelte Websites überspringen“ deaktiviert ist, werden gleiche Adressen erneut hinzugefügt. Vorhandene Websites werden nicht ersetzt.",
+    "fr": "Si « Ignorer les sites en double » est désactivé, les mêmes adresses seront ajoutées à nouveau. Les sites existants ne seront pas remplacés.",
+    "ru": "Если отключить «Пропускать повторяющиеся адреса», одинаковые адреса будут добавлены повторно. Существующие адреса не будут заменены."
+  },
+  "跳过重复网址": {
+    "en": "Skip duplicate sites",
+    "zh-TW": "略過重複網址",
+    "ja": "重複する URL をスキップ",
+    "ko": "중복 URL 건너뛰기",
+    "de": "Doppelte Websites überspringen",
+    "fr": "Ignorer les sites en double",
+    "ru": "Пропускать повторяющиеся адреса"
+  },
+  "恢复所选 {0} 项？关联文件夹会一并恢复，文件夹中的其他内容会保留在桌面。恢复前的设置将在当前浏览器中保留为本地快照。": {
+    "en": "Restore the {0} selected items? Related folders will also be restored. Other content in those folders will remain on the desktop. A local snapshot of the current settings will be kept in this browser.",
+    "zh-TW": "還原所選 {0} 項？關聯資料夾會一併還原，資料夾中的其他內容會保留在桌面。還原前的設定將在目前瀏覽器中保留為本機快照。",
+    "ja": "選択した {0} 項目を復元しますか？関連するフォルダも復元し、フォルダ内のほかの内容はデスクトップに残します。復元前の設定は、このブラウザにローカルスナップショットとして保存します。",
+    "ko": "선택한 {0}개 항목을 복원할까요? 관련 폴더도 함께 복원하며, 폴더 안의 다른 내용은 데스크톱에 남깁니다. 복원 전 설정은 이 브라우저에 로컬 스냅샷으로 보관합니다.",
+    "de": "Die {0} ausgewählten Einträge wiederherstellen? Zugehörige Ordner werden ebenfalls wiederhergestellt. Andere Inhalte dieser Ordner bleiben auf dem Desktop erhalten. Die bisherigen Einstellungen werden als lokaler Schnappschuss in diesem Browser aufbewahrt.",
+    "fr": "Restaurer les {0} éléments sélectionnés ? Les dossiers associés seront aussi restaurés. Le reste du contenu de ces dossiers sera conservé sur le bureau. Un instantané local des réglages actuels sera conservé dans ce navigateur.",
+    "ru": "Восстановить выбранные элементы ({0})? Связанные папки тоже будут восстановлены. Остальное содержимое папок останется на рабочем столе. Настройки до восстановления сохранятся в этом браузере как локальный снимок."
+  },
+  "其他设备请更新 Covelet，并使用相同的保存目录和同步密码。": {
+    "en": "Update Covelet on your other devices and use the same storage folder and sync password.",
+    "zh-TW": "其他裝置請更新 Covelet，並使用相同的儲存目錄和同步密碼。",
+    "ja": "ほかの端末でも Covelet を更新し、同じ保存先フォルダと同期パスワードを使ってください。",
+    "ko": "다른 기기에서도 Covelet을 업데이트하고 같은 저장 폴더와 동기화 비밀번호를 사용하세요.",
+    "de": "Bitte Covelet auf den anderen Geräten aktualisieren und denselben Speicherordner sowie dasselbe Synchronisierungspasswort verwenden.",
+    "fr": "Mettez Covelet à jour sur les autres appareils et utilisez le même dossier de stockage et le même mot de passe de synchronisation.",
+    "ru": "Обновите Covelet на других устройствах и используйте ту же папку хранения и тот же пароль синхронизации."
+  },
+  "同步状态": {
+    "en": "Sync status",
+    "zh-TW": "同步狀態",
+    "ja": "同期の状態",
+    "ko": "동기화 상태",
+    "de": "Synchronisierungsstatus",
+    "fr": "État de la synchronisation",
+    "ru": "Состояние синхронизации"
+  },
+  "发生冲突的内容暂时保留本机版本。比较后，选择保留本机版本或采用一个云端版本。": {
+    "en": "Conflicting content keeps the local version until you choose. Compare the versions, then keep the local version or use a remote version.",
+    "zh-TW": "發生衝突的內容暫時保留本機版本。比較後，選擇保留本機版本或採用一個雲端版本。",
+    "ja": "競合した内容は、いったんローカル版を保持します。比較して、ローカル版を残すか、クラウド版を使うか選んでください。",
+    "ko": "충돌한 내용은 우선 로컬 버전을 유지합니다. 비교한 뒤 로컬 버전을 유지할지, 클라우드 버전을 적용할지 선택하세요.",
+    "de": "Bei Konflikten bleibt vorerst die lokale Version erhalten. Die Versionen vergleichen und dann die lokale Version behalten oder eine Cloud-Version übernehmen.",
+    "fr": "En cas de conflit, la version locale est conservée pour le moment. Comparez les versions, puis choisissez de garder la version locale ou d’adopter une version cloud.",
+    "ru": "Для конфликтующего содержимого пока сохраняется локальная версия. Сравните версии, затем сохраните локальную или выберите облачную."
+  },
+  "云端版本 {0}": {
+    "en": "Remote version {0}",
+    "zh-TW": "雲端版本 {0}",
+    "ja": "クラウド版 {0}",
+    "ko": "클라우드 버전 {0}",
+    "de": "Cloud-Version {0}",
+    "fr": "Version cloud {0}",
+    "ru": "Облачная версия {0}"
+  },
+  "选择保留的版本": {
+    "en": "Choose a version to keep",
+    "zh-TW": "選擇保留的版本",
+    "ja": "残すバージョンを選択",
+    "ko": "유지할 버전 선택",
+    "de": "Zu behaltende Version auswählen",
+    "fr": "Choisir la version à conserver",
+    "ru": "Выберите версию для сохранения"
+  },
+  "采用云端版本": {
+    "en": "Use remote version",
+    "zh-TW": "採用雲端版本",
+    "ja": "クラウド版を使う",
+    "ko": "클라우드 버전 적용",
+    "de": "Cloud-Version übernehmen",
+    "fr": "Adopter la version cloud",
+    "ru": "Использовать облачную версию"
+  },
+  "保留本机版本": {
+    "en": "Keep local version",
+    "zh-TW": "保留本機版本",
+    "ja": "ローカル版を残す",
+    "ko": "로컬 버전 유지",
+    "de": "Lokale Version behalten",
+    "fr": "Conserver la version locale",
+    "ru": "Сохранить локальную версию"
+  },
+  "选择已删除的版本，会删除本机对应的整组内容。": {
+    "en": "Choosing a deleted version deletes the entire corresponding group of content on this device.",
+    "zh-TW": "選擇已刪除的版本，會刪除本機對應的整組內容。",
+    "ja": "削除状態のバージョンを選ぶと、端末内の対応するグループ全体が削除されます。",
+    "ko": "내용이 삭제된 버전을 선택하면 이 기기에 있는 해당 그룹의 전체 내용이 삭제됩니다.",
+    "de": "Wenn eine gelöschte Version ausgewählt wird, wird die zugehörige lokale Datengruppe vollständig gelöscht.",
+    "fr": "Choisir une version supprimée supprime l’intégralité du groupe de données local correspondant.",
+    "ru": "Выбор версии с удалённым содержимым удалит на этом устройстве всю соответствующую группу содержимого."
+  },
+  "云端版本": {
+    "en": "Remote version",
+    "zh-TW": "雲端版本",
+    "ja": "クラウド版",
+    "ko": "클라우드 버전",
+    "de": "Cloud-Version",
+    "fr": "Version cloud",
+    "ru": "Облачная версия"
+  },
+  "影响范围：{0}": {
+    "en": "Affected content: {0}",
+    "zh-TW": "影響範圍：{0}",
+    "ja": "変更される範囲：{0}",
+    "ko": "변경 범위: {0}",
+    "de": "Betroffene Inhalte: {0}",
+    "fr": "Contenu concerné : {0}",
+    "ru": "Будет затронуто: {0}"
+  },
+  "摘要只显示部分内容；选择时会采用此版本的完整内容。": {
+    "en": "The summary shows only part of the content. Choosing this version applies its full content.",
+    "zh-TW": "摘要只顯示部分內容；選擇時會採用此版本的完整內容。",
+    "ja": "概要には一部の内容だけを表示しています。選択すると、このバージョンの内容全体を適用します。",
+    "ko": "요약에는 일부 내용만 표시합니다. 선택하면 이 버전의 전체 내용을 적용합니다.",
+    "de": "Die Zusammenfassung zeigt nur einen Teil der Inhalte. Bei der Auswahl wird der vollständige Inhalt dieser Version übernommen.",
+    "fr": "Le résumé ne montre qu’une partie du contenu. Le choix de cette version applique son contenu intégral.",
+    "ru": "Сводка показывает только часть содержимого. При выборе версии будет применено всё её содержимое."
+  },
+  "技术详情": {
+    "en": "Technical details",
+    "zh-TW": "技術詳細資料",
+    "ja": "技術的な詳細",
+    "ko": "기술 세부 정보",
+    "de": "Technische Details",
+    "fr": "Détails techniques",
+    "ru": "Технические сведения"
+  },
+  "这里保留升级前的导航历史。其他设备请更新 Covelet 后继续同步。": {
+    "en": "Navigation history from before the update is kept here. Update Covelet on your other devices before syncing again.",
+    "zh-TW": "這裡保留升級前的導覽歷史。其他裝置請更新 Covelet 後繼續同步。",
+    "ja": "更新前のナビゲーション履歴を保存しています。ほかの端末でも Covelet を更新してから同期を続けてください。",
+    "ko": "업데이트 전 사이트 모음 기록을 보관합니다. 다른 기기에서도 Covelet을 업데이트한 뒤 동기화를 계속하세요.",
+    "de": "Hier bleibt der Navigationsverlauf vor dem Update erhalten. Bitte Covelet auf den anderen Geräten aktualisieren, bevor die Synchronisierung fortgesetzt wird.",
+    "fr": "L’historique de navigation antérieur à la mise à jour est conservé ici. Mettez Covelet à jour sur les autres appareils avant de reprendre la synchronisation.",
+    "ru": "Здесь сохранена история навигации до обновления. Обновите Covelet на других устройствах, прежде чем продолжать синхронизацию."
+  },
+  "添加方案中的网址": {
+    "en": "Add sites from this layout",
+    "zh-TW": "新增方案中的網址",
+    "ja": "テンプレート内のサイトを追加",
+    "ko": "템플릿의 사이트 추가",
+    "de": "Websites aus der Vorlage hinzufügen",
+    "fr": "Ajouter les sites du modèle",
+    "ru": "Добавить адреса из макета"
+  },
+  "此方案不包含网址": {
+    "en": "This layout has no sites",
+    "zh-TW": "此方案不包含網址",
+    "ja": "このテンプレートにサイトはありません",
+    "ko": "이 템플릿에는 사이트가 없습니다",
+    "de": "Diese Vorlage enthält keine Websites",
+    "fr": "Ce modèle ne contient aucun site",
+    "ru": "В этом макете нет адресов"
+  },
+  "查看方案中的网址": {
+    "en": "View sites in this layout",
+    "zh-TW": "查看方案中的網址",
+    "ja": "テンプレート内のサイトを表示",
+    "ko": "템플릿의 사이트 보기",
+    "de": "Websites der Vorlage anzeigen",
+    "fr": "Voir les sites du modèle",
+    "ru": "Посмотреть адреса в макете"
+  },
+  "删除的便笺和稍后读保留 30 天，最多 200 条。": {
+    "en": "Deleted notes and read-later links are kept for 30 days, up to 200 items.",
+    "zh-TW": "刪除的便箋和稍後讀保留 30 天，最多 200 筆。",
+    "ja": "削除したメモとあとで読むリンクは、最大 200 件まで 30 日間保存します。",
+    "ko": "삭제한 메모와 나중에 읽을 링크는 최대 200개까지 30일 동안 보관합니다.",
+    "de": "Gelöschte Notizen und „Später lesen“-Einträge werden 30 Tage lang aufbewahrt, höchstens 200 Einträge.",
+    "fr": "Les notes et les éléments « À lire plus tard » supprimés sont conservés 30 jours, dans la limite de 200 éléments.",
+    "ru": "Удалённые заметки и ссылки из списка «Читать позже» хранятся 30 дней, не более 200 записей."
+  },
+  "备份与回收站": {
+    "en": "Backups and trash",
+    "zh-TW": "備份與資源回收筒",
+    "ja": "バックアップとゴミ箱",
+    "ko": "백업과 휴지통",
+    "de": "Sicherung und Papierkorb",
+    "fr": "Sauvegarde et corbeille",
+    "ru": "Резервные копии и Корзина"
+  },
+  "这条便笺无法读取，请从备份恢复。": {
+    "en": "This note cannot be read. Restore it from a backup.",
+    "zh-TW": "這則便箋無法讀取，請從備份還原。",
+    "ja": "このメモを読み込めません。バックアップから復元してください。",
+    "ko": "이 메모를 읽을 수 없습니다. 백업에서 복원하세요.",
+    "de": "Diese Notiz kann nicht gelesen werden. Bitte aus einer Sicherung wiederherstellen.",
+    "fr": "Impossible de lire cette note. Restaurez-la depuis une sauvegarde.",
+    "ru": "Не удалось прочитать эту заметку. Восстановите её из резервной копии."
+  },
+  "便笺未能保存，请重试。": {
+    "en": "The note could not be saved. Try again.",
+    "zh-TW": "便箋未能儲存，請重試。",
+    "ja": "メモを保存できませんでした。もう一度お試しください。",
+    "ko": "메모를 저장하지 못했습니다. 다시 시도하세요.",
+    "de": "Die Notiz wurde nicht gespeichert. Bitte erneut versuchen.",
+    "fr": "La note n’a pas pu être enregistrée. Réessayez.",
+    "ru": "Не удалось сохранить заметку. Повторите попытку."
+  },
+  "扩展不收集使用统计，也不自动上传日志。": {
+    "en": "The extension collects no usage statistics and uploads no logs automatically.",
+    "zh-TW": "擴充功能不收集使用統計，也不自動上傳記錄。",
+    "ja": "拡張機能は利用統計を収集せず、ログも自動送信しません。",
+    "ko": "확장 프로그램은 사용 통계를 수집하거나 로그를 자동으로 업로드하지 않습니다.",
+    "de": "Die Erweiterung erfasst keine Nutzungsstatistiken und lädt keine Protokolle automatisch hoch.",
+    "fr": "L’extension ne collecte pas de statistiques d’utilisation et n’envoie pas automatiquement de journaux.",
+    "ru": "Расширение не собирает статистику использования и не отправляет журналы автоматически."
+  },
+  "不保存网络请求历史。": {
+    "en": "Network request history is not saved.",
+    "zh-TW": "不儲存網路請求歷史。",
+    "ja": "ネットワーク通信の履歴は保存しません。",
+    "ko": "네트워크 요청 기록은 저장하지 않습니다.",
+    "de": "Es wird kein Verlauf der Netzwerkanfragen gespeichert.",
+    "fr": "Aucun historique des requêtes réseau n’est conservé.",
+    "ru": "История сетевых запросов не сохраняется."
+  },
+  "同步：测试连接及同步操作会访问你配置的存储服务。自动同步需要单独开启。": {
+    "en": "Sync: connection tests and sync actions contact your configured storage service. Automatic sync must be enabled separately.",
+    "zh-TW": "同步：測試連線及同步操作會存取你設定的儲存服務。自動同步需要另外開啟。",
+    "ja": "同期：接続テストや同期の操作時に、設定したストレージサービスに接続します。自動同期は別途オンにする必要があります。",
+    "ko": "동기화: 연결 테스트나 동기화 작업 시 설정한 저장소 서비스에 연결합니다. 자동 동기화는 별도로 켜야 합니다.",
+    "de": "Synchronisierung: Verbindungstests und Synchronisierung greifen auf den eingerichteten Speicherdienst zu. Die automatische Synchronisierung muss gesondert aktiviert werden.",
+    "fr": "Synchronisation : les tests de connexion et la synchronisation accèdent au service de stockage configuré. La synchronisation automatique doit être activée séparément.",
+    "ru": "Синхронизация: проверка подключения и действия синхронизации обращаются к настроенному хранилищу. Автоматическую синхронизацию нужно включить отдельно."
+  },
+  "每日壁纸会连接 Bing。改用颜色或渐变背景可停止每日壁纸请求。": {
+    "en": "Daily wallpapers connect to Bing. Choose a color or gradient background to stop daily wallpaper requests.",
+    "zh-TW": "每日桌布會連線 Bing。改用顏色或漸層背景可停止每日桌布請求。",
+    "ja": "毎日の壁紙は Bing に接続します。背景を単色やグラデーションにすると、毎日の壁紙の取得を停止できます。",
+    "ko": "매일 바뀌는 배경화면은 Bing에 연결합니다. 단색이나 그라데이션 배경을 선택하면 일일 배경화면 요청을 중지할 수 있습니다.",
+    "de": "Das tägliche Hintergrundbild stellt eine Verbindung zu Bing her. Mit einem Farb- oder Verlaufshintergrund werden diese Anfragen beendet.",
+    "fr": "Le fond d’écran quotidien se connecte à Bing. Choisir un fond uni ou dégradé arrête ces requêtes.",
+    "ru": "Ежедневные обои обращаются к Bing. Чтобы прекратить эти запросы, выберите однотонный или градиентный фон."
+  },
+  "获取网站信息、图片或修复导入图片时，可能访问相应网站和图片来源。日常显示导航只读取本机内容。": {
+    "en": "Fetching site information or images, or repairing imported images, may contact the relevant sites and image sources. Displaying navigation uses only locally saved content.",
+    "zh-TW": "取得網站資訊、圖片或修復匯入圖片時，可能存取相應網站和圖片來源。日常顯示導覽只讀取本機內容。",
+    "ja": "サイト情報や画像の取得、読み込んだ画像の修復時に、対象のサイトや画像の配信元に接続することがあります。通常のナビゲーション表示では、端末内の内容だけを読み込みます。",
+    "ko": "사이트 정보나 이미지를 가져오거나 가져온 이미지를 복구할 때 해당 사이트와 이미지 제공처에 연결할 수 있습니다. 평소 사이트 모음을 표시할 때는 이 기기에 저장된 내용만 읽습니다.",
+    "de": "Beim Abrufen von Website-Informationen oder Bildern sowie beim Wiederherstellen importierter Bilder können die jeweiligen Websites und Bildquellen aufgerufen werden. Die normale Anzeige der Navigation liest nur lokale Inhalte.",
+    "fr": "La récupération d’informations sur un site ou d’images, ainsi que la réparation d’images importées, peuvent accéder aux sites et aux sources d’images concernés. L’affichage habituel de la navigation lit uniquement le contenu local.",
+    "ru": "При получении сведений о сайтах, изображений или исправлении импортированных изображений возможны обращения к соответствующим сайтам и источникам изображений. Обычное отображение навигации использует только локальные данные."
+  },
+  "网页搜索会前往所选搜索引擎。加载便笺中的远程图片时，会连接图片来源。": {
+    "en": "Web searches go to your selected search engine. Loading remote images in notes connects to their image sources.",
+    "zh-TW": "網頁搜尋會前往所選搜尋引擎。載入便箋中的遠端圖片時，會連線圖片來源。",
+    "ja": "ウェブ検索は、選択した検索エンジンで開きます。メモ内のリモート画像を読み込むときは、画像の配信元に接続します。",
+    "ko": "웹 검색은 선택한 검색 엔진으로 이동합니다. 메모의 원격 이미지를 불러올 때는 이미지 제공처에 연결합니다.",
+    "de": "Websuchen öffnen die gewählte Suchmaschine. Beim Laden externer Bilder in Notizen wird die Bildquelle aufgerufen.",
+    "fr": "Les recherches web ouvrent le moteur choisi. Le chargement d’images distantes dans les notes se connecte à leur source.",
+    "ru": "Поиск в интернете открывает выбранную поисковую систему. При загрузке внешних изображений в заметках выполняется подключение к их источникам."
+  },
+  "同步服务：{0}": {
+    "en": "Sync service: {0}",
+    "zh-TW": "同步服務：{0}",
+    "ja": "同期サービス：{0}",
+    "ko": "동기화 서비스: {0}",
+    "de": "Synchronisierungsdienst: {0}",
+    "fr": "Service de synchronisation : {0}",
+    "ru": "Сервис синхронизации: {0}"
+  },
+  "可在浏览器的扩展详情中管理网站访问和通知权限。": {
+    "en": "Manage site access and notifications in your browser's extension details.",
+    "zh-TW": "可在瀏覽器的擴充功能詳細資料中管理網站存取和通知權限。",
+    "ja": "サイトへのアクセス権限と通知権限は、ブラウザの拡張機能の詳細で管理できます。",
+    "ko": "브라우저의 확장 프로그램 세부 정보에서 사이트 접근 권한과 알림 권한을 관리할 수 있습니다.",
+    "de": "Website-Zugriff und Benachrichtigungsrechte lassen sich in den Erweiterungsdetails des Browsers verwalten.",
+    "fr": "Les accès aux sites et les autorisations de notification se gèrent dans les détails de l’extension du navigateur.",
+    "ru": "Доступом к сайтам и уведомлениями можно управлять на странице расширения в браузере."
+  },
+  "权限详情": {
+    "en": "Permission details",
+    "zh-TW": "權限詳細資料",
+    "ja": "権限の詳細",
+    "ko": "권한 세부 정보",
+    "de": "Berechtigungsdetails",
+    "fr": "Détails des autorisations",
+    "ru": "Сведения о разрешениях"
+  },
+  "activeTab 仅在点击工具栏时临时生效。": {
+    "en": "activeTab grants temporary access only after you click the toolbar button.",
+    "zh-TW": "activeTab 僅在點擊工具列時暫時生效。",
+    "ja": "activeTab は、ツールバーボタンをクリックしたときだけ一時的に有効になります。",
+    "ko": "activeTab은 도구 모음 버튼을 클릭한 뒤에만 일시적으로 적용됩니다.",
+    "de": "activeTab gilt nur vorübergehend nach einem Klick auf das Symbol in der Symbolleiste.",
+    "fr": "activeTab n’est actif que temporairement après un clic sur l’icône de la barre d’outils.",
+    "ru": "activeTab предоставляет временный доступ только после нажатия кнопки на панели инструментов."
+  },
+  "当前浏览器": {
+    "en": "This browser",
+    "zh-TW": "目前瀏覽器",
+    "ja": "このブラウザ",
+    "ko": "이 브라우저",
+    "de": "Dieser Browser",
+    "fr": "Ce navigateur",
+    "ru": "Этот браузер"
+  },
+  "网站、便笺、稍后读、图片和设置在当前浏览器中加密保存。": {
+    "en": "Sites, notes, read-later links, images and settings are stored encrypted in this browser.",
+    "zh-TW": "網站、便箋、稍後讀、圖片和設定在目前瀏覽器中加密儲存。",
+    "ja": "サイト、メモ、あとで読むリンク、画像、設定は、このブラウザ内に暗号化して保存します。",
+    "ko": "사이트, 메모, 나중에 읽을 링크, 이미지와 설정은 이 브라우저에 암호화해 저장합니다.",
+    "de": "Websites, Notizen, „Später lesen“-Einträge, Bilder und Einstellungen werden verschlüsselt in diesem Browser gespeichert.",
+    "fr": "Les sites, les notes, les éléments « À lire plus tard », les images et les réglages sont chiffrés et enregistrés dans ce navigateur.",
+    "ru": "Сайты, заметки, список «Читать позже», изображения и настройки хранятся в этом браузере в зашифрованном виде."
+  },
+  "临时连接信息": {
+    "en": "Temporary connection details",
+    "zh-TW": "暫時連線資訊",
+    "ja": "一時的な接続情報",
+    "ko": "임시 연결 정보",
+    "de": "Temporäre Verbindungsdaten",
+    "fr": "Informations de connexion temporaires",
+    "ru": "Временные данные подключения"
+  },
+  "同步连接凭据和同步密码仅在本次浏览器会话中保留。锁定或退出浏览器后清除，不会加入备份或同步。": {
+    "en": "Storage credentials and your sync password are kept only for this browser session. They are cleared when you lock sync or quit the browser, and are not included in backups or sync.",
+    "zh-TW": "同步連線憑證和同步密碼僅在本次瀏覽器工作階段中保留。鎖定或結束瀏覽器後清除，不會加入備份或同步。",
+    "ja": "ストレージの認証情報と同期パスワードは、現在のブラウザセッション内だけに保持します。同期のロック時やブラウザ終了時に消去し、バックアップや同期には含めません。",
+    "ko": "저장소 연결 인증 정보와 동기화 비밀번호는 이번 브라우저 세션 동안만 보관합니다. 동기화를 잠그거나 브라우저를 종료하면 지우며, 백업이나 동기화에는 포함하지 않습니다.",
+    "de": "Zugangsdaten der Synchronisierungsverbindung und das Synchronisierungspasswort bleiben nur für diese Browsersitzung erhalten. Sie werden beim Sperren oder Beenden des Browsers gelöscht und weder gesichert noch synchronisiert.",
+    "fr": "Les identifiants de connexion et le mot de passe de synchronisation sont conservés uniquement pour cette session du navigateur. Ils sont effacés au verrouillage ou à la fermeture du navigateur, et ne sont ni sauvegardés ni synchronisés.",
+    "ru": "Данные доступа к хранилищу и пароль синхронизации сохраняются только на время текущего сеанса браузера. При блокировке или выходе из браузера они удаляются и не включаются в резервные копии или синхронизацию."
+  },
+  "你选择的存储服务": {
+    "en": "Your chosen storage service",
+    "zh-TW": "你選擇的儲存服務",
+    "ja": "選択したストレージサービス",
+    "ko": "선택한 저장소 서비스",
+    "de": "Gewählter Speicherdienst",
+    "fr": "Le service de stockage choisi",
+    "ru": "Выбранное хранилище"
+  },
+  "开启同步后，内容和图片加密后直接发送到你配置的服务。服务商仍可看到文件路径、请求时间和网络信息。": {
+    "en": "When sync is enabled, content and images are encrypted and sent directly to your configured service. The provider can still see file paths, request times and network information.",
+    "zh-TW": "開啟同步後，內容和圖片加密後直接傳送到你設定的服務。服務商仍可看到檔案路徑、請求時間和網路資訊。",
+    "ja": "同期をオンにすると、内容と画像を暗号化して、設定したサービスに直接送信します。サービス提供元には、ファイルのパス、通信時刻、ネットワーク情報が見えます。",
+    "ko": "동기화를 켜면 내용과 이미지를 암호화해 설정한 서비스로 직접 보냅니다. 서비스 제공업체는 파일 경로, 요청 시간과 네트워크 정보를 볼 수 있습니다.",
+    "de": "Nach dem Aktivieren der Synchronisierung werden Inhalte und Bilder verschlüsselt direkt an den eingerichteten Dienst gesendet. Der Anbieter kann weiterhin Dateipfade, Anfragezeiten und Netzwerkinformationen sehen.",
+    "fr": "Une fois la synchronisation activée, le contenu et les images sont chiffrés puis envoyés directement au service configuré. Le fournisseur peut toujours voir les chemins des fichiers, les heures des requêtes et les informations réseau.",
+    "ru": "После включения синхронизации содержимое и изображения шифруются и отправляются прямо в настроенное хранилище. Его провайдер всё равно видит пути к файлам, время запросов и сетевые сведения."
+  },
+  "备份和旧副本": {
+    "en": "Backups and older copies",
+    "zh-TW": "備份和舊副本",
+    "ja": "バックアップと以前のコピー",
+    "ko": "백업과 이전 사본",
+    "de": "Sicherungen und ältere Kopien",
+    "fr": "Sauvegardes et anciennes copies",
+    "ru": "Резервные и старые копии"
+  },
+  "导出的 JSON/ZIP 备份未加密。旧云端副本、其他设备和恢复点可能仍保留数据。": {
+    "en": "Exported JSON/ZIP backups are not encrypted. Older cloud copies, other devices and recovery points may still retain data.",
+    "zh-TW": "匯出的 JSON/ZIP 備份未加密。舊雲端副本、其他裝置和還原點可能仍保留資料。",
+    "ja": "書き出した JSON/ZIP バックアップは暗号化されていません。以前のクラウドコピー、ほかの端末、復元ポイントには、データが残っている場合があります。",
+    "ko": "내보낸 JSON/ZIP 백업은 암호화되지 않았습니다. 이전 클라우드 사본, 다른 기기와 복원 지점에는 데이터가 남아 있을 수 있습니다.",
+    "de": "Exportierte JSON-/ZIP-Sicherungen sind nicht verschlüsselt. Ältere Cloud-Kopien, andere Geräte und Wiederherstellungspunkte können weiterhin Daten enthalten.",
+    "fr": "Les sauvegardes JSON/ZIP exportées ne sont pas chiffrées. D’anciennes copies cloud, d’autres appareils et des points de restauration peuvent encore contenir des données.",
+    "ru": "Экспортированные резервные копии JSON/ZIP не зашифрованы. Старые облачные копии, другие устройства и точки восстановления могут по-прежнему содержать данные."
+  },
+  "本机存储详情": {
+    "en": "Local storage details",
+    "zh-TW": "本機儲存詳細資料",
+    "ja": "端末内の保存の詳細",
+    "ko": "기기 저장소 세부 정보",
+    "de": "Details zum lokalen Speicher",
+    "fr": "Détails du stockage local",
+    "ru": "Сведения о локальном хранилище"
+  },
+  "数据使用本机加密 IndexedDB 保存。设备密钥不可导出，但同源页面仍能使用；本机加密不能替代设备安全。": {
+    "en": "Data is stored in encrypted local IndexedDB. The device key cannot be exported, but pages from the same origin can still use it. Local encryption does not replace device security.",
+    "zh-TW": "資料使用本機加密 IndexedDB 儲存。裝置金鑰不可匯出，但同源頁面仍能使用；本機加密不能取代裝置安全。",
+    "ja": "データは端末内の IndexedDB に暗号化して保存します。端末の鍵は書き出せませんが、同じオリジンのページは使用できます。端末内の暗号化だけで、端末の安全性を保証することはできません。",
+    "ko": "데이터는 이 기기의 IndexedDB에 암호화해 저장합니다. 기기 키는 내보낼 수 없지만 동일 출처의 페이지에서는 사용할 수 있습니다. 기기 내 암호화가 기기 보안을 대신하지는 않습니다.",
+    "de": "Die Daten werden lokal verschlüsselt in IndexedDB gespeichert. Der Geräteschlüssel kann nicht exportiert werden, aber Seiten desselben Ursprungs können ihn weiterhin verwenden. Lokale Verschlüsselung ersetzt nicht die Sicherheit des Geräts.",
+    "fr": "Les données sont chiffrées localement et enregistrées dans IndexedDB. La clé de l’appareil ne peut pas être exportée, mais les pages de même origine peuvent toujours l’utiliser. Le chiffrement local ne remplace pas la sécurité de l’appareil.",
+    "ru": "Данные хранятся локально в зашифрованной IndexedDB. Ключ устройства нельзя экспортировать, но страницы того же источника могут его использовать. Локальное шифрование не заменяет защиту устройства."
+  },
+  "临时同步连接信息保存在 chrome.storage.session。浏览器原生同步已停用。": {
+    "en": "Temporary sync connection details are kept in chrome.storage.session. Browser-native sync is disabled.",
+    "zh-TW": "暫時同步連線資訊儲存在 chrome.storage.session。瀏覽器原生同步已停用。",
+    "ja": "一時的な同期接続情報は chrome.storage.session に保存します。ブラウザ標準の同期は無効になっています。",
+    "ko": "임시 동기화 연결 정보는 chrome.storage.session에 저장합니다. 브라우저 기본 동기화는 꺼져 있습니다.",
+    "de": "Temporäre Daten der Synchronisierungsverbindung werden in chrome.storage.session gespeichert. Die integrierte Browsersynchronisierung ist deaktiviert.",
+    "fr": "Les informations temporaires de connexion à la synchronisation sont conservées dans chrome.storage.session. La synchronisation native du navigateur est désactivée.",
+    "ru": "Временные данные подключения для синхронизации хранятся в chrome.storage.session. Встроенная синхронизация браузера отключена."
+  },
+  "恢复前会在当前浏览器保留一份副本。": {
+    "en": "A copy will be kept in this browser before restoring.",
+    "zh-TW": "還原前會在目前瀏覽器保留一份副本。",
+    "ja": "復元前に、このブラウザにコピーを保存します。",
+    "ko": "복원 전에 이 브라우저에 사본을 보관합니다.",
+    "de": "Vor der Wiederherstellung wird eine Kopie in diesem Browser aufbewahrt.",
+    "fr": "Une copie sera conservée dans ce navigateur avant la restauration.",
+    "ru": "Перед восстановлением в этом браузере сохраняется копия."
+  },
+  "上次恢复未完成，请预览「恢复前副本」，选择需要找回的内容。": {
+    "en": "The last restore did not finish. Preview the pre-restore copy and choose what to recover.",
+    "zh-TW": "上次還原未完成，請預覽「還原前副本」，選擇需要找回的內容。",
+    "ja": "前回の復元が完了していません。「復元前のコピー」をプレビューし、取り戻す内容を選んでください。",
+    "ko": "이전 복원이 완료되지 않았습니다. ‘복원 전 사본’을 미리 보고 되찾을 내용을 선택하세요.",
+    "de": "Die letzte Wiederherstellung wurde nicht abgeschlossen. Bitte die „Kopie vor der Wiederherstellung“ ansehen und die wiederherzustellenden Inhalte auswählen.",
+    "fr": "La dernière restauration n’a pas abouti. Prévisualisez la « Copie avant restauration » et choisissez le contenu à récupérer.",
+    "ru": "Предыдущее восстановление не завершено. Откройте предварительный просмотр «Копии до восстановления» и выберите нужное содержимое."
+  },
+  "预览副本": {
+    "en": "Preview copy",
+    "zh-TW": "預覽副本",
+    "ja": "コピーをプレビュー",
+    "ko": "사본 미리 보기",
+    "de": "Kopie ansehen",
+    "fr": "Prévisualiser la copie",
+    "ru": "Предпросмотр копии"
+  },
+  "导出副本": {
+    "en": "Export copy",
+    "zh-TW": "匯出副本",
+    "ja": "コピーを書き出す",
+    "ko": "사본 내보내기",
+    "de": "Kopie exportieren",
+    "fr": "Exporter la copie",
+    "ru": "Экспортировать копию"
+  },
+  "添加新内容，保留已有内容": {
+    "en": "Add new content and keep existing content",
+    "zh-TW": "新增內容，保留已有內容",
+    "ja": "新しい内容を追加し、既存の内容は残す",
+    "ko": "새 내용 추가, 기존 내용 유지",
+    "de": "Neue Inhalte hinzufügen, vorhandene behalten",
+    "fr": "Ajouter le nouveau contenu et conserver l’existant",
+    "ru": "Добавить новое, сохранив существующее"
+  },
+  "WebDAV 支持分步设置和连接测试，重启浏览器后需重新解锁。": {
+    "en": "WebDAV now has guided setup and connection testing. Unlock it again after restarting the browser.",
+    "zh-TW": "WebDAV 支援分步設定和連線測試，重新啟動瀏覽器後需重新解鎖。",
+    "ja": "WebDAV を手順に沿って設定し、接続をテストできます。ブラウザを再起動した後は、再度ロック解除が必要です。",
+    "ko": "WebDAV에서 단계별 설정과 연결 테스트를 지원합니다. 브라우저를 다시 시작하면 잠금을 다시 해제해야 합니다.",
+    "de": "WebDAV bietet eine schrittweise Einrichtung und einen Verbindungstest. Nach einem Browserneustart muss die Verbindung erneut entsperrt werden.",
+    "fr": "WebDAV propose une configuration par étapes et un test de connexion. La connexion doit être déverrouillée à nouveau après le redémarrage du navigateur.",
+    "ru": "WebDAV поддерживает пошаговую настройку и проверку подключения. После перезапуска браузера подключение нужно разблокировать снова."
+  },
+  "可导入浏览器书签 HTML 文件，导入前可预览，默认保留已有网址。": {
+    "en": "Import a browser bookmark HTML file and preview it first. Existing URLs are kept by default.",
+    "zh-TW": "可匯入瀏覽器書籤 HTML 檔案，匯入前可預覽，預設保留已有網址。",
+    "ja": "ブラウザのブックマーク HTML ファイルを、プレビューしてから読み込めます。標準では既存の URL を残します。",
+    "ko": "브라우저 북마크 HTML 파일을 미리 본 뒤 가져올 수 있습니다. 기본적으로 기존 URL을 유지합니다.",
+    "de": "HTML-Lesezeichen aus dem Browser können vor dem Import angesehen werden. Vorhandene Websites bleiben standardmäßig erhalten.",
+    "fr": "Les favoris HTML exportés par le navigateur peuvent être prévisualisés avant l’importation. Les sites existants sont conservés par défaut.",
+    "ru": "Можно импортировать HTML-файл закладок браузера с предварительным просмотром. По умолчанию существующие адреса сохраняются."
+  },
+  "新增隐私自查，可查看权限用途、联网功能和数据位置。": {
+    "en": "Privacy checkup now shows permission purposes, online features and where data is stored.",
+    "zh-TW": "新增隱私自查，可查看權限用途、連網功能和資料位置。",
+    "ja": "プライバシーチェックを追加しました。権限の用途、通信する機能、データの保存先を確認できます。",
+    "ko": "개인정보 점검을 추가했습니다. 권한의 용도, 인터넷을 사용하는 기능과 데이터 저장 위치를 확인할 수 있습니다.",
+    "de": "Die neue Datenschutzprüfung zeigt, wofür Berechtigungen verwendet werden, welche Funktionen auf das Internet zugreifen und wo Daten gespeichert sind.",
+    "fr": "Le nouveau bilan de confidentialité indique l’usage des autorisations, les fonctions qui se connectent à Internet et l’emplacement des données.",
+    "ru": "Новая проверка приватности показывает назначение разрешений, сетевые функции и места хранения данных."
+  },
+  "网站图标": {
+    "en": "Site icons",
+    "zh-TW": "網站圖示",
+    "ja": "サイトのアイコン",
+    "ko": "사이트 아이콘",
+    "de": "Website-Symbol",
+    "fr": "Icône du site",
+    "ru": "Значки сайтов"
+  },
+  "搜索引擎图标": {
+    "en": "Search engine icons",
+    "zh-TW": "搜尋引擎圖示",
+    "ja": "検索エンジンのアイコン",
+    "ko": "검색 엔진 아이콘",
+    "de": "Suchmaschinen-Symbol",
+    "fr": "Icône du moteur de recherche",
+    "ru": "Значки поисковых систем"
+  },
+  "此时钟": {
+    "en": "This clock",
+    "zh-TW": "此時鐘",
+    "ja": "この時計",
+    "ko": "이 시계",
+    "de": "Diese Uhr",
+    "fr": "Cette horloge",
+    "ru": "Эти часы"
+  },
+  "所选版本会替换这份图片或图标文件及其相关信息，并在下次同步时上传。": {
+    "en": "The selected version replaces this image or icon file and its related information. It will be uploaded during the next sync.",
+    "zh-TW": "所選版本會取代這份圖片或圖示檔案及其相關資訊，並在下次同步時上傳。",
+    "ja": "選択したバージョンで、この画像またはアイコンのファイルと関連情報を置き換え、次回の同期時にアップロードします。",
+    "ko": "선택한 버전으로 이 이미지 또는 아이콘 파일과 관련 정보를 바꾸며, 다음 동기화 때 업로드합니다.",
+    "de": "Die gewählte Version ersetzt diese Bild- oder Symboldatei samt zugehörigen Informationen und wird bei der nächsten Synchronisierung hochgeladen.",
+    "fr": "La version choisie remplacera ce fichier d’image ou d’icône et les informations associées. Elle sera envoyée lors de la prochaine synchronisation.",
+    "ru": "Выбранная версия заменит этот файл изображения или значка и связанные сведения. При следующей синхронизации они будут отправлены в хранилище."
+  },
+  "所选版本会替换这组扩展数据的全部内容，包括同组的其他修改，并在下次同步时上传。": {
+    "en": "The selected version replaces this entire group of extension data, including other changes in the same group. It will be uploaded during the next sync.",
+    "zh-TW": "所選版本會取代這組擴充功能資料的全部內容，包括同組的其他修改，並在下次同步時上傳。",
+    "ja": "選択したバージョンで、この拡張機能データのグループ全体を置き換えます。同じグループ内のほかの変更も置き換わり、次回の同期時にアップロードします。",
+    "ko": "선택한 버전으로 이 확장 프로그램 데이터 그룹의 전체 내용을 바꿉니다. 같은 그룹의 다른 변경 사항도 함께 바꾸며, 다음 동기화 때 업로드합니다.",
+    "de": "Die gewählte Version ersetzt den gesamten Inhalt dieser Datengruppe der Erweiterung, einschließlich aller anderen Änderungen in dieser Gruppe. Sie wird bei der nächsten Synchronisierung hochgeladen.",
+    "fr": "La version choisie remplacera l’intégralité de ce groupe de données de l’extension, y compris les autres modifications du même groupe. Elle sera envoyée lors de la prochaine synchronisation.",
+    "ru": "Выбранная версия заменит всю эту группу данных расширения, включая другие изменения в той же группе. При следующей синхронизации она будет отправлена в хранилище."
+  },
+  "所选版本会替换「{0}」中的全部内容，包括同组的其他修改，并在下次同步时上传。": {
+    "en": "The selected version replaces all content in “{0}”, including other changes in the same group. It will be uploaded during the next sync.",
+    "zh-TW": "所選版本會取代「{0}」中的全部內容，包括同組的其他修改，並在下次同步時上傳。",
+    "ja": "選択したバージョンで、「{0}」の内容全体を置き換えます。同じグループ内のほかの変更も置き換わり、次回の同期時にアップロードします。",
+    "ko": "선택한 버전으로 ‘{0}’의 전체 내용을 바꿉니다. 같은 그룹의 다른 변경 사항도 함께 바꾸며, 다음 동기화 때 업로드합니다.",
+    "de": "Die gewählte Version ersetzt den gesamten Inhalt von „{0}“, einschließlich aller anderen Änderungen in derselben Gruppe. Sie wird bei der nächsten Synchronisierung hochgeladen.",
+    "fr": "La version choisie remplacera tout le contenu de « {0} », y compris les autres modifications du même groupe. Elle sera envoyée lors de la prochaine synchronisation.",
+    "ru": "Выбранная версия заменит всё содержимое группы «{0}», включая другие изменения в той же группе. При следующей синхронизации она будет отправлена в хранилище."
+  },
+  "暂不支持此内容的摘要，请展开技术详情比较。": {
+    "en": "A summary is not available for this content. Expand Technical details to compare the versions.",
+    "zh-TW": "暫不支援此內容的摘要，請展開技術詳細資料比較。",
+    "ja": "この内容の概要はまだ表示できません。技術的な詳細を開いて比較してください。",
+    "ko": "이 내용의 요약은 아직 지원하지 않습니다. 기술 세부 정보를 펼쳐 비교하세요.",
+    "de": "Für diesen Inhalt ist noch keine Zusammenfassung verfügbar. Zum Vergleichen bitte die technischen Details aufklappen.",
+    "fr": "Aucun résumé n’est encore disponible pour ce contenu. Développez les détails techniques pour comparer.",
+    "ru": "Для этого содержимого пока нет сводки. Разверните технические сведения, чтобы сравнить версии."
+  },
+  "此版本已删除这组内容。采用此版本会保留删除结果。": {
+    "en": "This version deletes this group of content. Choosing it keeps the deletion.",
+    "zh-TW": "此版本已刪除這組內容。採用此版本會保留刪除結果。",
+    "ja": "このバージョンでは、このグループの内容が削除されています。このバージョンを使うと、削除された状態を適用します。",
+    "ko": "이 버전에서는 이 그룹의 내용이 삭제되었습니다. 이 버전을 적용하면 삭제된 상태를 유지합니다.",
+    "de": "Diese Version hat die Datengruppe gelöscht. Wenn diese Version übernommen wird, bleibt die Datengruppe gelöscht.",
+    "fr": "Cette version a supprimé ce groupe de données. L’adopter maintiendra cette suppression.",
+    "ru": "В этой версии вся группа содержимого удалена. При её выборе содержимое останется удалённым."
+  },
+  "内容较多，以下仅列出部分项目。": {
+    "en": "This contains many items. Only some are listed below.",
+    "zh-TW": "內容較多，以下僅列出部分項目。",
+    "ja": "内容が多いため、一部の項目だけを表示しています。",
+    "ko": "내용이 많아 일부 항목만 표시합니다.",
+    "de": "Es gibt viele Inhalte. Unten wird nur ein Teil der Einträge aufgeführt.",
+    "fr": "Le contenu est volumineux. Seule une partie des éléments est présentée ci-dessous.",
+    "ru": "Содержимого много. Ниже перечислена только часть элементов."
+  },
+  "网站 {0} 个 · 文件夹 {1} 个 · 组件 {2} 个": {
+    "en": "{0} sites · {1} folders · {2} widgets",
+    "zh-TW": "網站 {0} 個 · 資料夾 {1} 個 · 元件 {2} 個",
+    "ja": "サイト {0} 件 · フォルダ {1} 件 · ウィジェット {2} 件",
+    "ko": "사이트 {0}개 · 폴더 {1}개 · 위젯 {2}개",
+    "de": "{0} Websites · {1} Ordner · {2} Widgets",
+    "fr": "{0} sites · {1} dossiers · {2} widgets",
+    "ru": "Сайтов: {0} · Папок: {1} · Виджетов: {2}"
+  },
+  "网站：{0}": {
+    "en": "Sites: {0}",
+    "zh-TW": "網站：{0}",
+    "ja": "サイト：{0}",
+    "ko": "사이트: {0}",
+    "de": "Websites: {0}",
+    "fr": "Sites : {0}",
+    "ru": "Сайты: {0}"
+  },
+  "文件夹：{0}": {
+    "en": "Folders: {0}",
+    "zh-TW": "資料夾：{0}",
+    "ja": "フォルダ：{0}",
+    "ko": "폴더: {0}",
+    "de": "Ordner: {0}",
+    "fr": "Dossiers : {0}",
+    "ru": "Папки: {0}"
+  },
+  "组件：{0}": {
+    "en": "Widgets: {0}",
+    "zh-TW": "元件：{0}",
+    "ja": "ウィジェット：{0}",
+    "ko": "위젯: {0}",
+    "de": "Widgets: {0}",
+    "fr": "Widgets : {0}",
+    "ru": "Виджеты: {0}"
+  },
+  "还包含桌面布局、外观、搜索设置和导航历史。": {
+    "en": "Also includes desktop layout, appearance, search settings and navigation history.",
+    "zh-TW": "還包含桌面版面配置、外觀、搜尋設定和導覽歷史。",
+    "ja": "デスクトップのレイアウト、外観、検索設定、ナビゲーション履歴も含まれます。",
+    "ko": "데스크톱 배치, 화면 설정, 검색 설정과 사이트 모음 기록도 포함합니다.",
+    "de": "Enthält außerdem Desktoplayout, Erscheinungsbild, Sucheinstellungen und Navigationsverlauf.",
+    "fr": "Contient aussi la disposition du bureau, l’apparence, les réglages de recherche et l’historique de navigation.",
+    "ru": "Также включает расположение рабочего стола, оформление, настройки поиска и историю навигации."
+  },
+  "便笺 {0} 条 · 稍后读 {1} 条": {
+    "en": "{0} notes · {1} read-later links",
+    "zh-TW": "便箋 {0} 則 · 稍後讀 {1} 筆",
+    "ja": "メモ {0} 件 · あとで読むリンク {1} 件",
+    "ko": "메모 {0}개 · 나중에 읽기 {1}개",
+    "de": "{0} Notizen · {1} „Später lesen“-Einträge",
+    "fr": "{0} notes · {1} éléments « À lire plus tard »",
+    "ru": "Заметок: {0} · Ссылок в списке «Читать позже»: {1}"
+  },
+  "便笺：{0}": {
+    "en": "Notes: {0}",
+    "zh-TW": "便箋：{0}",
+    "ja": "メモ：{0}",
+    "ko": "메모: {0}",
+    "de": "Notizen: {0}",
+    "fr": "Notes : {0}",
+    "ru": "Заметки: {0}"
+  },
+  "稍后读：{0}": {
+    "en": "Read later: {0}",
+    "zh-TW": "稍後讀：{0}",
+    "ja": "あとで読むリンク：{0}",
+    "ko": "나중에 읽기: {0}",
+    "de": "Später lesen: {0}",
+    "fr": "À lire plus tard : {0}",
+    "ru": "Читать позже: {0}"
+  },
+  "另含回收站 {0} 项和旧版快照 {1} 份。": {
+    "en": "Also includes {0} items in Trash and {1} older snapshots.",
+    "zh-TW": "另含資源回收筒 {0} 項和舊版快照 {1} 份。",
+    "ja": "ゴミ箱の {0} 項目と旧バージョンのスナップショット {1} 件も含まれます。",
+    "ko": "휴지통 항목 {0}개와 이전 버전 스냅샷 {1}개도 포함합니다.",
+    "de": "Enthält außerdem {0} Papierkorbeinträge und {1} Schnappschüsse älterer Versionen.",
+    "fr": "Contient aussi {0} éléments dans la corbeille et {1} instantanés d’anciennes versions.",
+    "ru": "Также содержит элементы в Корзине ({0}) и старые снимки ({1})."
+  },
+  "桌面方案 {0} 个": {
+    "en": "{0} desktop layouts",
+    "zh-TW": "桌面方案 {0} 個",
+    "ja": "デスクトップテンプレート {0} 件",
+    "ko": "데스크톱 템플릿 {0}개",
+    "de": "{0} Desktopvorlagen",
+    "fr": "{0} modèles de bureau",
+    "ru": "Макетов рабочего стола: {0}"
+  },
+  "文件大小：{0} 字节 · 类型：{1}": {
+    "en": "File size: {0} bytes · Type: {1}",
+    "zh-TW": "檔案大小：{0} 位元組 · 類型：{1}",
+    "ja": "ファイルサイズ：{0} バイト · 種類：{1}",
+    "ko": "파일 크기: {0}바이트 · 유형: {1}",
+    "de": "Dateigröße: {0} Byte · Typ: {1}",
+    "fr": "Taille du fichier : {0} octets · Type : {1}",
+    "ru": "Размер файла: {0} байт · Тип: {1}"
+  },
+  "未知": {
+    "en": "Unknown",
+    "zh-TW": "未知",
+    "ja": "不明",
+    "ko": "알 수 없음",
+    "de": "Unbekannt",
+    "fr": "Inconnu",
+    "ru": "Неизвестно"
+  },
+  "尺寸：{0} × {1}": {
+    "en": "Dimensions: {0} × {1}",
+    "zh-TW": "尺寸：{0} × {1}",
+    "ja": "サイズ：{0} × {1}",
+    "ko": "크기: {0} × {1}",
+    "de": "Abmessungen: {0} × {1}",
+    "fr": "Dimensions : {0} × {1}",
+    "ru": "Размеры: {0} × {1}"
+  },
+  "包含深色外观图片。": {
+    "en": "Includes an image for dark appearance.",
+    "zh-TW": "包含深色外觀圖片。",
+    "ja": "ダークモード用の画像を含みます。",
+    "ko": "다크 모드용 이미지를 포함합니다.",
+    "de": "Enthält ein Bild für das dunkle Erscheinungsbild.",
+    "fr": "Contient une image pour l’apparence sombre.",
+    "ru": "Содержит изображение для тёмного оформления."
+  },
+  "这里只显示文件信息，不能判断两张图片是否相同。": {
+    "en": "Only file information is shown here. It cannot tell you whether the images are the same.",
+    "zh-TW": "這裡只顯示檔案資訊，無法判斷兩張圖片是否相同。",
+    "ja": "ここではファイル情報だけを表示しています。2 枚の画像が同じかどうかは判定できません。",
+    "ko": "파일 정보만 표시하므로 두 이미지가 같은지 판단할 수 없습니다.",
+    "de": "Hier werden nur Dateiinformationen angezeigt. Daraus lässt sich nicht erkennen, ob zwei Bilder gleich sind.",
+    "fr": "Seules les informations du fichier sont affichées ici. Elles ne permettent pas de savoir si deux images sont identiques.",
+    "ru": "Здесь показаны только сведения о файлах. По ним нельзя определить, одинаковы ли два изображения."
+  },
+  "内容较长，预览已截短；选择时仍会采用此版本的完整内容。": {
+    "en": "The preview is shortened. Choosing this version still applies its full content.",
+    "zh-TW": "內容較長，預覽已截短；選擇時仍會採用此版本的完整內容。",
+    "ja": "内容が長いため、プレビューを省略しています。選択すると、このバージョンの内容全体を適用します。",
+    "ko": "내용이 길어 미리 보기는 일부만 표시합니다. 선택하면 이 버전의 전체 내용을 적용합니다.",
+    "de": "Der Inhalt ist lang und die Vorschau wurde gekürzt. Bei der Auswahl wird dennoch der vollständige Inhalt dieser Version übernommen.",
+    "fr": "Le contenu est long et l’aperçu a été tronqué. Le choix de cette version appliquera tout de même son contenu intégral.",
+    "ru": "Предпросмотр сокращён. При выборе версии всё равно будет применено всё её содержимое."
+  },
+  "同步密码至少需要 12 个字符，且不能超过 1024 字节。": {
+    "en": "Your sync password must contain at least 12 characters and cannot exceed 1024 bytes.",
+    "zh-TW": "同步密碼至少需要 12 個字元，且不能超過 1024 位元組。",
+    "ja": "同期パスワードは 12 文字以上、1024 バイト以内にしてください。",
+    "ko": "동기화 비밀번호는 12자 이상, 1024바이트 이하여야 합니다.",
+    "de": "Das Synchronisierungspasswort muss mindestens 12 Zeichen enthalten und darf 1024 Byte nicht überschreiten.",
+    "fr": "Le mot de passe de synchronisation doit contenir au moins 12 caractères et ne pas dépasser 1024 octets.",
+    "ru": "Пароль синхронизации должен содержать не менее 12 символов и занимать не более 1024 байт."
+  },
+  "无法解密同步数据，请检查同步密码。若密码正确，云端数据可能已损坏。": {
+    "en": "Could not decrypt sync data. Check your sync password. If it is correct, the remote data may be damaged.",
+    "zh-TW": "無法解密同步資料，請檢查同步密碼。若密碼正確，雲端資料可能已損壞。",
+    "ja": "同期データを復号できません。同期パスワードを確認してください。パスワードが正しい場合は、クラウドのデータが破損している可能性があります。",
+    "ko": "동기화 데이터를 복호화할 수 없습니다. 동기화 비밀번호를 확인하세요. 비밀번호가 맞으면 클라우드 데이터가 손상되었을 수 있습니다.",
+    "de": "Die Synchronisierungsdaten können nicht entschlüsselt werden. Bitte das Synchronisierungspasswort prüfen. Ist es korrekt, sind die Cloud-Daten möglicherweise beschädigt.",
+    "fr": "Impossible de déchiffrer les données de synchronisation. Vérifiez le mot de passe de synchronisation. S’il est correct, les données cloud sont peut-être endommagées.",
+    "ru": "Не удалось расшифровать данные синхронизации. Проверьте пароль синхронизации. Если он верен, облачные данные могут быть повреждены."
+  },
+  "同步尚未解锁，请重新填写连接凭据和同步密码。": {
+    "en": "Sync is locked. Enter your storage credentials and sync password again.",
+    "zh-TW": "同步尚未解鎖，請重新填寫連線憑證和同步密碼。",
+    "ja": "同期がロックされています。接続の認証情報と同期パスワードをもう一度入力してください。",
+    "ko": "동기화 잠금이 해제되지 않았습니다. 연결 인증 정보와 동기화 비밀번호를 다시 입력하세요.",
+    "de": "Die Synchronisierung ist noch gesperrt. Bitte die Zugangsdaten und das Synchronisierungspasswort erneut eingeben.",
+    "fr": "La synchronisation est encore verrouillée. Saisissez à nouveau les identifiants de connexion et le mot de passe de synchronisation.",
+    "ru": "Синхронизация заблокирована. Снова введите данные подключения и пароль синхронизации."
+  },
+  "同步密码至少需要 12 个字符。": {
+    "en": "Your sync password must contain at least 12 characters.",
+    "zh-TW": "同步密碼至少需要 12 個字元。",
+    "ja": "同期パスワードは 12 文字以上にしてください。",
+    "ko": "동기화 비밀번호는 12자 이상이어야 합니다.",
+    "de": "Das Synchronisierungspasswort muss mindestens 12 Zeichen enthalten.",
+    "fr": "Le mot de passe de synchronisation doit contenir au moins 12 caractères.",
+    "ru": "Пароль синхронизации должен содержать не менее 12 символов."
+  },
+  "同步配置或数据无效，本机数据已保留。": {
+    "en": "The sync settings or data are invalid. Your local data has been kept.",
+    "zh-TW": "同步設定或資料無效，本機資料已保留。",
+    "ja": "同期の設定またはデータを使用できません。端末内のデータは保持しています。",
+    "ko": "동기화 설정이나 데이터를 사용할 수 없습니다. 이 기기의 데이터는 보존했습니다.",
+    "de": "Die Synchronisierungseinstellungen oder -daten sind ungültig. Die lokalen Daten bleiben erhalten.",
+    "fr": "La configuration ou les données de synchronisation sont invalides. Les données locales sont conservées.",
+    "ru": "Неверные настройки или данные синхронизации. Локальные данные сохранены."
+  },
+  "当前云端还有冲突版本，请先选择保留的版本并完成同步，再切换存储位置。": {
+    "en": "There are still conflicting remote versions. Choose a version to keep and finish syncing before changing storage locations.",
+    "zh-TW": "目前雲端還有衝突版本，請先選擇保留的版本並完成同步，再切換儲存位置。",
+    "ja": "クラウドに競合するバージョンが残っています。残すバージョンを選んで同期を完了してから、保存先を変更してください。",
+    "ko": "클라우드에 충돌한 버전이 남아 있습니다. 유지할 버전을 선택하고 동기화를 마친 뒤 저장 위치를 바꾸세요.",
+    "de": "In der Cloud liegen noch widersprüchliche Versionen vor. Bitte zuerst die zu behaltende Version auswählen und die Synchronisierung abschließen, bevor der Speicherort gewechselt wird.",
+    "fr": "Des versions cloud sont encore en conflit. Choisissez d’abord la version à conserver et terminez la synchronisation avant de changer d’emplacement de stockage.",
+    "ru": "В хранилище ещё есть конфликтующие версии. Выберите версию для сохранения и завершите синхронизацию, прежде чем менять хранилище."
+  },
+  "无法开始同步，请稍后重试。": {
+    "en": "Could not start sync. Try again later.",
+    "zh-TW": "無法開始同步，請稍後重試。",
+    "ja": "同期を開始できません。しばらくしてから再試行してください。",
+    "ko": "동기화를 시작하지 못했습니다. 잠시 후 다시 시도하세요.",
+    "de": "Die Synchronisierung konnte nicht gestartet werden. Versuche es später erneut.",
+    "fr": "Impossible de démarrer la synchronisation. Réessayez plus tard.",
+    "ru": "Не удалось начать синхронизацию. Повторите попытку позже."
+  },
+  "此冲突版本已处理。": {
+    "en": "This conflicting version has already been resolved.",
+    "zh-TW": "此衝突版本已處理。",
+    "ja": "この競合バージョンは処理済みです。",
+    "ko": "이미 처리한 충돌 버전입니다.",
+    "de": "Dieser Versionskonflikt wurde bereits bearbeitet.",
+    "fr": "Ce conflit de version a déjà été traité.",
+    "ru": "Этот конфликт версий уже разрешён."
+  },
+  "已采用所选版本，等待同步。": {
+    "en": "The selected version has been applied and is waiting to sync.",
+    "zh-TW": "已採用所選版本，等待同步。",
+    "ja": "選択したバージョンを適用しました。同期待ちです。",
+    "ko": "선택한 버전을 적용했습니다. 동기화를 기다리는 중입니다.",
+    "de": "Die gewählte Version wurde übernommen und wartet auf die Synchronisierung.",
+    "fr": "La version choisie a été adoptée et attend la synchronisation.",
+    "ru": "Выбранная версия применена и ожидает синхронизации."
+  },
+  "没有可移动的项目，请重新选择。": {
+    "en": "No items can be moved. Select them again.",
+    "zh-TW": "沒有可移動的項目，請重新選擇。",
+    "ja": "移動できる項目がありません。選び直してください。",
+    "ko": "이동할 수 있는 항목이 없습니다. 다시 선택하세요.",
+    "de": "Es sind keine verschiebbaren Einträge ausgewählt. Bitte erneut auswählen.",
+    "fr": "Aucun élément déplaçable n’est sélectionné. Choisissez à nouveau.",
+    "ru": "Нет элементов для перемещения. Выберите их заново."
+  },
+  "只能多选桌面上的项目。": {
+    "en": "Only desktop items can be selected together.",
+    "zh-TW": "只能多選桌面上的項目。",
+    "ja": "複数選択できるのは、デスクトップ上の項目だけです。",
+    "ko": "데스크톱에 있는 항목만 여러 개 선택할 수 있습니다.",
+    "de": "Mehrfachauswahl ist nur für Einträge auf dem Desktop möglich.",
+    "fr": "La sélection multiple est possible uniquement pour les éléments du bureau.",
+    "ru": "Одновременно можно выбирать только элементы на рабочем столе."
+  },
+  "无法读取这份桌面方案，请重新选择文件。": {
+    "en": "Could not read this desktop layout. Please choose another file.",
+    "zh-TW": "無法讀取這份桌面方案，請重新選擇檔案。",
+    "ja": "このデスクトップテンプレートを読み込めません。ファイルを選び直してください。",
+    "ko": "이 데스크톱 템플릿을 읽을 수 없습니다. 파일을 다시 선택하세요.",
+    "de": "Diese Desktopvorlage kann nicht gelesen werden. Bitte eine andere Datei auswählen.",
+    "fr": "Impossible de lire ce modèle de bureau. Choisissez un autre fichier.",
+    "ru": "Не удалось прочитать этот макет рабочего стола. Выберите файл заново."
+  },
+  "方案未保存，请稍后重试。": {
+    "en": "The layout was not saved. Please try again later.",
+    "zh-TW": "方案未儲存，請稍後重試。",
+    "ja": "テンプレートを保存できませんでした。しばらくしてからお試しください。",
+    "ko": "템플릿을 저장하지 못했습니다. 잠시 후 다시 시도하세요.",
+    "de": "Die Vorlage wurde nicht gespeichert. Bitte später erneut versuchen.",
+    "fr": "Le modèle n’a pas été enregistré. Réessayez plus tard.",
+    "ru": "Макет не сохранён. Повторите попытку позже."
+  },
+  "同步数据无效，本机数据已保留。": {
+    "en": "The sync data is invalid. Your local data has been kept.",
+    "zh-TW": "同步資料無效，本機資料已保留。",
+    "ja": "同期データを使用できません。端末内のデータは保持しています。",
+    "ko": "동기화 데이터를 사용할 수 없습니다. 이 기기의 데이터는 보존했습니다.",
+    "de": "Die Synchronisierungsdaten sind ungültig. Die lokalen Daten bleiben erhalten.",
+    "fr": "Les données de synchronisation sont invalides. Les données locales sont conservées.",
+    "ru": "Неверные данные синхронизации. Локальные данные сохранены."
+  },
+  "同步数据超出容量限制，本机数据已保留。": {
+    "en": "The sync data exceeds the size limit. Your local data has been kept.",
+    "zh-TW": "同步資料超出容量限制，本機資料已保留。",
+    "ja": "同期データが容量の上限を超えています。端末内のデータは保持しています。",
+    "ko": "동기화 데이터가 용량 제한을 초과했습니다. 이 기기의 데이터는 보존했습니다.",
+    "de": "Die Synchronisierungsdaten überschreiten die Speichergrenze. Die lokalen Daten bleiben erhalten.",
+    "fr": "Les données de synchronisation dépassent la capacité autorisée. Les données locales sont conservées.",
+    "ru": "Объём данных синхронизации превышает лимит. Локальные данные сохранены."
+  },
+  "无法保存同步状态，尚未确认上传。": {
+    "en": "Could not save the sync status. The upload has not been confirmed.",
+    "zh-TW": "無法儲存同步狀態，尚未確認上傳。",
+    "ja": "同期状態を保存できず、アップロードの完了を確認できていません。",
+    "ko": "동기화 상태를 저장할 수 없어 업로드 완료를 확인하지 못했습니다.",
+    "de": "Der Synchronisierungsstatus konnte nicht gespeichert werden. Der Upload wurde noch nicht bestätigt.",
+    "fr": "Impossible d’enregistrer l’état de la synchronisation. L’envoi n’a pas encore été confirmé.",
+    "ru": "Не удалось сохранить состояние синхронизации. Отправка ещё не подтверждена."
+  },
+  "还有待上传内容或冲突版本，请处理后再切换存储位置。": {
+    "en": "There are pending uploads or conflicting versions. Resolve them before changing storage locations.",
+    "zh-TW": "還有待上傳內容或衝突版本，請處理後再切換儲存位置。",
+    "ja": "未アップロードの内容または競合するバージョンが残っています。解決してから保存先を変更してください。",
+    "ko": "업로드할 내용이나 충돌한 버전이 남아 있습니다. 먼저 처리한 뒤 저장 위치를 바꾸세요.",
+    "de": "Es gibt noch ausstehende Uploads oder Versionskonflikte. Bitte diese zuerst bearbeiten, bevor der Speicherort gewechselt wird.",
+    "fr": "Des envois sont encore en attente ou des versions sont en conflit. Traitez-les avant de changer d’emplacement de stockage.",
+    "ru": "Есть неотправленное содержимое или конфликтующие версии. Разберитесь с ними, прежде чем менять хранилище."
+  },
+  "同步未完成，请检查连接后重试；本机数据已保留。": {
+    "en": "Sync did not finish. Check your connection and try again. Your local data has been kept.",
+    "zh-TW": "同步未完成，請檢查連線後重試；本機資料已保留。",
+    "ja": "同期が完了していません。接続を確認して、もう一度お試しください。端末内のデータは保持しています。",
+    "ko": "동기화가 완료되지 않았습니다. 연결을 확인한 뒤 다시 시도하세요. 이 기기의 데이터는 보존했습니다.",
+    "de": "Die Synchronisierung wurde nicht abgeschlossen. Bitte die Verbindung prüfen und erneut versuchen. Die lokalen Daten bleiben erhalten.",
+    "fr": "La synchronisation n’est pas terminée. Vérifiez la connexion et réessayez. Les données locales sont conservées.",
+    "ru": "Синхронизация не завершена. Проверьте подключение и повторите попытку. Локальные данные сохранены."
+  },
+  "请先解锁存储连接，再开始同步。": {
+    "en": "Unlock your storage connection before syncing.",
+    "zh-TW": "請先解鎖儲存連線，再開始同步。",
+    "ja": "ストレージ接続のロックを解除してから、同期を始めてください。",
+    "ko": "저장소 연결 잠금을 해제한 뒤 동기화를 시작하세요.",
+    "de": "Bitte zuerst die Speicherverbindung entsperren und dann die Synchronisierung starten.",
+    "fr": "Déverrouillez la connexion au stockage avant de lancer la synchronisation.",
+    "ru": "Разблокируйте подключение к хранилищу перед синхронизацией."
+  },
+  "同步完成。": {
+    "en": "Sync complete.",
+    "zh-TW": "同步完成。",
+    "ja": "同期が完了しました。",
+    "ko": "동기화를 완료했습니다.",
+    "de": "Synchronisierung abgeschlossen.",
+    "fr": "Synchronisation terminée.",
+    "ru": "Синхронизация завершена."
+  },
+  "{0}无法保存，请检查内容或缩短后重试。": {
+    "en": "{0} could not be saved. Check or shorten the content and try again.",
+    "zh-TW": "{0}無法儲存，請檢查內容或縮短後重試。",
+    "ja": "{0}を保存できません。内容を確認するか短くして、もう一度お試しください。",
+    "ko": "{0} 항목을 저장할 수 없습니다. 내용을 확인하거나 줄인 뒤 다시 시도하세요.",
+    "de": "{0} konnte nicht gespeichert werden. Bitte den Inhalt prüfen oder kürzen und erneut versuchen.",
+    "fr": "Impossible d’enregistrer {0}. Vérifiez ou raccourcissez le contenu, puis réessayez.",
+    "ru": "Не удалось сохранить: {0}. Проверьте содержимое или сократите его и повторите попытку."
+  },
+  "这条内容无法读取，请从备份恢复。": {
+    "en": "This item cannot be read. Restore it from a backup.",
+    "zh-TW": "這則內容無法讀取，請從備份還原。",
+    "ja": "この項目を読み込めません。バックアップから復元してください。",
+    "ko": "이 항목을 읽을 수 없습니다. 백업에서 복원하세요.",
+    "de": "Dieser Eintrag kann nicht gelesen werden. Bitte aus einer Sicherung wiederherstellen.",
+    "fr": "Impossible de lire cet élément. Restaurez-le depuis une sauvegarde.",
+    "ru": "Не удалось прочитать это содержимое. Восстановите его из резервной копии."
+  },
+  "便笺和稍后读数据无法读取，请从备份恢复。": {
+    "en": "Notes and read-later data cannot be read. Restore from a backup.",
+    "zh-TW": "便箋和稍後讀資料無法讀取，請從備份還原。",
+    "ja": "メモとあとで読むリンクのデータを読み込めません。バックアップから復元してください。",
+    "ko": "메모와 나중에 읽기 데이터를 읽을 수 없습니다. 백업에서 복원하세요.",
+    "de": "Notizen und „Später lesen“-Daten können nicht gelesen werden. Bitte aus einer Sicherung wiederherstellen.",
+    "fr": "Impossible de lire les notes et les données « À lire plus tard ». Restaurez-les depuis une sauvegarde.",
+    "ru": "Не удалось прочитать заметки и список «Читать позже». Восстановите их из резервной копии."
+  },
+  "存在重复内容，无法继续。": {
+    "en": "Duplicate items were found. This action cannot continue.",
+    "zh-TW": "存在重複內容，無法繼續。",
+    "ja": "内容が重複しているため、続行できません。",
+    "ko": "중복된 내용이 있어 계속할 수 없습니다.",
+    "de": "Es gibt doppelte Inhalte. Der Vorgang kann nicht fortgesetzt werden.",
+    "fr": "Du contenu est présent en double. Impossible de continuer.",
+    "ru": "Есть повторяющееся содержимое. Продолжить нельзя."
+  },
+  "这个稍后读链接无法读取，请从备份恢复。": {
+    "en": "This read-later link cannot be read. Restore it from a backup.",
+    "zh-TW": "這個稍後讀連結無法讀取，請從備份還原。",
+    "ja": "このあとで読むリンクを読み込めません。バックアップから復元してください。",
+    "ko": "이 ‘나중에 읽기’ 링크를 읽을 수 없습니다. 백업에서 복원하세요.",
+    "de": "Dieser „Später lesen“-Link kann nicht gelesen werden. Bitte aus einer Sicherung wiederherstellen.",
+    "fr": "Impossible de lire ce lien « À lire plus tard ». Restaurez-le depuis une sauvegarde.",
+    "ru": "Не удалось прочитать эту ссылку из списка «Читать позже». Восстановите её из резервной копии."
+  },
+  "存储空间已满，请先备份，再清理便笺、稍后读或回收站。": {
+    "en": "Storage is full. Make a backup, then remove items from notes, read later or trash.",
+    "zh-TW": "儲存空間已滿，請先備份，再清理便箋、稍後讀或資源回收筒。",
+    "ja": "保存容量がいっぱいです。バックアップを取ってから、メモ、あとで読むリンク、ゴミ箱の項目を整理してください。",
+    "ko": "저장 공간이 가득 찼습니다. 먼저 백업한 뒤 메모, 나중에 읽기 또는 휴지통의 항목을 정리하세요.",
+    "de": "Der Speicher ist voll. Bitte zuerst eine Sicherung erstellen und dann Notizen, „Später lesen“ oder den Papierkorb bereinigen.",
+    "fr": "L’espace de stockage est plein. Faites d’abord une sauvegarde, puis nettoyez les notes, « À lire plus tard » ou la corbeille.",
+    "ru": "Хранилище заполнено. Создайте резервную копию, затем очистите заметки, список «Читать позже» или Корзину."
+  },
+  "回收站内容无法读取，请从备份恢复。": {
+    "en": "Trash contents cannot be read. Restore from a backup.",
+    "zh-TW": "資源回收筒內容無法讀取，請從備份還原。",
+    "ja": "ゴミ箱の内容を読み込めません。バックアップから復元してください。",
+    "ko": "휴지통 내용을 읽을 수 없습니다. 백업에서 복원하세요.",
+    "de": "Die Inhalte des Papierkorbs können nicht gelesen werden. Bitte aus einer Sicherung wiederherstellen.",
+    "fr": "Impossible de lire le contenu de la corbeille. Restaurez-le depuis une sauvegarde.",
+    "ru": "Не удалось прочитать содержимое Корзины. Восстановите его из резервной копии."
+  },
+  "无法读取便笺和稍后读，请重试。": {
+    "en": "Notes and read later could not be loaded. Try again.",
+    "zh-TW": "無法讀取便箋和稍後讀，請重試。",
+    "ja": "メモとあとで読むリンクを読み込めません。もう一度お試しください。",
+    "ko": "메모와 나중에 읽기를 불러올 수 없습니다. 다시 시도하세요.",
+    "de": "Notizen und „Später lesen“ können nicht gelesen werden. Bitte erneut versuchen.",
+    "fr": "Impossible de lire les notes et « À lire plus tard ». Réessayez.",
+    "ru": "Не удалось прочитать заметки и список «Читать позже». Повторите попытку."
+  },
+  "内容已在其他页面更新，请重新打开后重试。": {
+    "en": "Content was updated in another page. Reopen it and try again.",
+    "zh-TW": "內容已在其他頁面更新，請重新開啟後重試。",
+    "ja": "内容が別のページで更新されました。開き直して、もう一度お試しください。",
+    "ko": "다른 페이지에서 내용이 업데이트되었습니다. 다시 연 뒤 시도하세요.",
+    "de": "Die Inhalte wurden auf einer anderen Seite aktualisiert. Bitte erneut öffnen und noch einmal versuchen.",
+    "fr": "Le contenu a été mis à jour sur une autre page. Rouvrez-le et réessayez.",
+    "ru": "Содержимое обновлено на другой странице. Откройте его заново и повторите попытку."
+  },
+  "内容未能保存，请重试。": {
+    "en": "Content could not be saved. Try again.",
+    "zh-TW": "內容未能儲存，請重試。",
+    "ja": "内容を保存できませんでした。もう一度お試しください。",
+    "ko": "내용을 저장하지 못했습니다. 다시 시도하세요.",
+    "de": "Die Inhalte wurden nicht gespeichert. Bitte erneut versuchen.",
+    "fr": "Le contenu n’a pas pu être enregistré. Réessayez.",
+    "ru": "Не удалось сохранить содержимое. Повторите попытку."
+  },
+  "回收站已满，请先备份或清理回收站。": {
+    "en": "Trash is full. Make a backup or remove items from trash first.",
+    "zh-TW": "資源回收筒已滿，請先備份或清理資源回收筒。",
+    "ja": "ゴミ箱がいっぱいです。先にバックアップを取るか、ゴミ箱の項目を削除してください。",
+    "ko": "휴지통이 가득 찼습니다. 먼저 백업하거나 휴지통을 정리하세요.",
+    "de": "Der Papierkorb ist voll. Bitte zuerst eine Sicherung erstellen oder den Papierkorb bereinigen.",
+    "fr": "La corbeille est pleine. Faites d’abord une sauvegarde ou videz une partie de la corbeille.",
+    "ru": "Корзина заполнена. Создайте резервную копию или очистите Корзину."
+  },
+  "这条内容已存在，未覆盖现有内容。": {
+    "en": "This item already exists. Existing content was not overwritten.",
+    "zh-TW": "這則內容已存在，未覆寫現有內容。",
+    "ja": "この項目はすでに存在します。既存の内容は上書きしていません。",
+    "ko": "이미 있는 항목입니다. 기존 내용을 덮어쓰지 않았습니다.",
+    "de": "Dieser Eintrag ist bereits vorhanden. Der bestehende Inhalt wurde nicht überschrieben.",
+    "fr": "Cet élément existe déjà. Le contenu existant n’a pas été remplacé.",
+    "ru": "Это содержимое уже существует. Существующее содержимое не заменено."
+  },
+  "保存设置和临时连接信息。内容数据在本机加密保存。": {
+    "en": "Saves settings and temporary connection details. Content is stored encrypted on this device.",
+    "zh-TW": "儲存設定和暫時連線資訊。內容資料在本機加密儲存。",
+    "ja": "設定と一時的な接続情報を保存します。内容データは端末内に暗号化して保存します。",
+    "ko": "설정과 임시 연결 정보를 저장합니다. 내용 데이터는 이 기기에 암호화해 저장합니다.",
+    "de": "Speichert Einstellungen und temporäre Verbindungsdaten. Die Inhalte werden lokal verschlüsselt gespeichert.",
+    "fr": "Enregistre les réglages et les informations de connexion temporaires. Le contenu est chiffré et enregistré localement.",
+    "ru": "Сохранение настроек и временных данных подключения. Содержимое хранится локально в зашифрованном виде."
+  },
+  "添加或导入网站时，读取浏览器已有的网站图标。": {
+    "en": "Reads existing browser icons when you add or import sites.",
+    "zh-TW": "新增或匯入網站時，讀取瀏覽器已有的網站圖示。",
+    "ja": "サイトの追加や読み込み時に、ブラウザに保存済みのアイコンを読み取ります。",
+    "ko": "사이트를 추가하거나 가져올 때 브라우저에 저장된 사이트 아이콘을 읽습니다.",
+    "de": "Liest beim Hinzufügen oder Importieren von Websites die bereits im Browser vorhandenen Website-Symbole.",
+    "fr": "Lit les icônes de sites déjà présentes dans le navigateur lors de l’ajout ou de l’importation de sites.",
+    "ru": "Чтение сохранённых в браузере значков при добавлении или импорте сайтов."
+  },
+  "点击工具栏后，临时读取当前网页的网址、标题和图标地址。": {
+    "en": "Temporarily reads the current page's URL, title and icon address after you click the toolbar button.",
+    "zh-TW": "點擊工具列後，暫時讀取目前網頁的網址、標題和圖示地址。",
+    "ja": "ツールバーボタンをクリックした後、現在のページの URL、タイトル、アイコンのアドレスを一時的に読み取ります。",
+    "ko": "도구 모음 버튼을 클릭한 뒤 현재 페이지의 URL, 제목과 아이콘 주소를 일시적으로 읽습니다.",
+    "de": "Liest nach einem Klick auf das Symbol in der Symbolleiste vorübergehend die Adresse, den Titel und die Symboladresse der aktuellen Webseite.",
+    "fr": "Lit temporairement l’adresse, le titre et l’adresse de l’icône de la page actuelle après un clic sur l’icône de la barre d’outils.",
+    "ru": "После нажатия кнопки на панели инструментов временно считываются адрес, заголовок и адрес значка текущей страницы."
+  },
+  "点击工具栏后读取当前网页信息，帮助添加网站。": {
+    "en": "Reads the current page's information after you click the toolbar button, to help add the site.",
+    "zh-TW": "點擊工具列後讀取目前網頁資訊，協助新增網站。",
+    "ja": "ツールバーボタンをクリックした後、サイトの追加に使うため、現在のページの情報を読み取ります。",
+    "ko": "도구 모음 버튼을 클릭한 뒤 사이트 추가에 사용할 현재 페이지 정보를 읽습니다.",
+    "de": "Liest nach einem Klick auf das Symbol in der Symbolleiste Informationen zur aktuellen Webseite, um sie hinzuzufügen.",
+    "fr": "Lit les informations de la page actuelle après un clic sur l’icône de la barre d’outils pour aider à ajouter le site.",
+    "ru": "Чтение сведений о текущей странице после нажатия кнопки на панели инструментов помогает добавить сайт."
+  },
+  "安排本机倒计时。通知时间可能受浏览器运行状态影响。": {
+    "en": "Schedules local countdowns. Notification timing may depend on whether the browser is running.",
+    "zh-TW": "安排本機倒數計時。通知時間可能受瀏覽器執行狀態影響。",
+    "ja": "端末内のカウントダウンを予約します。通知時刻はブラウザの動作状態に影響される場合があります。",
+    "ko": "이 기기의 카운트다운을 예약합니다. 알림 시간은 브라우저 실행 상태에 영향을 받을 수 있습니다.",
+    "de": "Richtet lokale Timer ein. Der Browserstatus kann den Zeitpunkt der Benachrichtigung beeinflussen.",
+    "fr": "Programme les comptes à rebours sur cet appareil. L’état de fonctionnement du navigateur peut affecter l’heure des notifications.",
+    "ru": "Планирование локальных таймеров. Время уведомления может зависеть от работы браузера."
+  },
+  "保存设置": {
+    "en": "Save settings",
+    "zh-TW": "儲存設定",
+    "ja": "設定の保存",
+    "ko": "설정 저장",
+    "de": "Einstellungen speichern",
+    "fr": "Enregistrer les réglages",
+    "ru": "Сохранение настроек"
+  },
+  "浏览器搜索": {
+    "en": "Browser search",
+    "zh-TW": "瀏覽器搜尋",
+    "ja": "ブラウザの検索",
+    "ko": "브라우저 검색",
+    "de": "Browsersuche",
+    "fr": "Recherche du navigateur",
+    "ru": "Поиск браузера"
+  },
+  "当前网页": {
+    "en": "Current page",
+    "zh-TW": "目前網頁",
+    "ja": "現在のページ",
+    "ko": "현재 페이지",
+    "de": "Aktuelle Webseite",
+    "fr": "Page actuelle",
+    "ru": "Текущая страница"
+  },
+  "读取网页信息": {
+    "en": "Read page information",
+    "zh-TW": "讀取網頁資訊",
+    "ja": "ページ情報の読み取り",
+    "ko": "페이지 정보 읽기",
+    "de": "Webseiteninformationen lesen",
+    "fr": "Lire les informations de la page",
+    "ru": "Чтение сведений о странице"
+  },
+  "通知": {
+    "en": "Notifications",
+    "zh-TW": "通知",
+    "ja": "通知",
+    "ko": "알림",
+    "de": "Benachrichtigungen",
+    "fr": "Notifications",
+    "ru": "Уведомления"
+  },
+  "备份中的图片不完整，请重新选择备份文件。": {
+    "en": "Some images are missing from this backup. Please choose another backup file.",
+    "zh-TW": "備份中的圖片不完整，請重新選擇備份檔。",
+    "ja": "バックアップ内の画像が不足しています。バックアップファイルを選び直してください。",
+    "ko": "백업의 이미지가 불완전합니다. 백업 파일을 다시 선택하세요.",
+    "de": "Diese Sicherung enthält nicht alle Bilder. Bitte eine andere Sicherungsdatei auswählen.",
+    "fr": "Cette sauvegarde ne contient pas toutes les images. Choisissez un autre fichier de sauvegarde.",
+    "ru": "В резервной копии недостаёт изображений. Выберите файл резервной копии заново."
+  },
+  "恢复前副本已更新，请重新预览。": {
+    "en": "The pre-restore copy has changed. Please preview it again.",
+    "zh-TW": "還原前副本已更新，請重新預覽。",
+    "ja": "復元前のコピーが更新されました。もう一度プレビューしてください。",
+    "ko": "복원 전 사본이 업데이트되었습니다. 다시 미리 보세요.",
+    "de": "Die Kopie vor der Wiederherstellung wurde aktualisiert. Bitte erneut ansehen.",
+    "fr": "La copie avant restauration a été mise à jour. Prévisualisez-la à nouveau.",
+    "ru": "Копия до восстановления обновлена. Откройте её предпросмотр заново."
+  },
+  "上次恢复未完成，请先从「恢复前副本」找回需要的内容，再导入其他备份。": {
+    "en": "The last restore did not finish. Recover what you need from the pre-restore copy before importing another backup.",
+    "zh-TW": "上次還原未完成，請先從「還原前副本」找回需要的內容，再匯入其他備份。",
+    "ja": "前回の復元が完了していません。先に「復元前のコピー」から必要な内容を取り戻してから、別のバックアップを読み込んでください。",
+    "ko": "이전 복원이 완료되지 않았습니다. 먼저 ‘복원 전 사본’에서 필요한 내용을 되찾은 뒤 다른 백업을 가져오세요.",
+    "de": "Die letzte Wiederherstellung wurde nicht abgeschlossen. Bitte zuerst benötigte Inhalte aus der „Kopie vor der Wiederherstellung“ wiederherstellen, bevor eine andere Sicherung importiert wird.",
+    "fr": "La dernière restauration n’a pas abouti. Récupérez d’abord le contenu nécessaire depuis la « Copie avant restauration » avant d’importer une autre sauvegarde.",
+    "ru": "Предыдущее восстановление не завершено. Сначала верните нужное содержимое из «Копии до восстановления», затем импортируйте другие резервные копии."
+  },
+  "恢复未完成，部分更改未能撤销。请打开「恢复前副本」，预览并恢复需要找回的内容。": {
+    "en": "The restore did not finish, and some changes could not be undone. Open the pre-restore copy to preview and recover the content you need.",
+    "zh-TW": "還原未完成，部分更改未能撤銷。請開啟「還原前副本」，預覽並還原需要找回的內容。",
+    "ja": "復元が完了せず、一部の変更を元に戻せませんでした。「復元前のコピー」を開き、プレビューして、取り戻す内容を復元してください。",
+    "ko": "복원이 완료되지 않았으며 일부 변경 사항을 되돌리지 못했습니다. ‘복원 전 사본’을 열어 미리 보고 되찾을 내용을 복원하세요.",
+    "de": "Die Wiederherstellung wurde nicht abgeschlossen. Einige Änderungen konnten nicht rückgängig gemacht werden. Bitte die „Kopie vor der Wiederherstellung“ öffnen, ansehen und die benötigten Inhalte wiederherstellen.",
+    "fr": "La restauration n’a pas abouti et certaines modifications n’ont pas pu être annulées. Ouvrez la « Copie avant restauration » pour prévisualiser et récupérer le contenu nécessaire.",
+    "ru": "Восстановление не завершено. Часть изменений не удалось отменить. Откройте «Копию до восстановления», просмотрите и восстановите нужное содержимое."
+  },
+  "恢复失败，本次更改已撤销。": {
+    "en": "Restore failed. The changes from this attempt have been undone.",
+    "zh-TW": "還原失敗，本次更改已撤銷。",
+    "ja": "復元に失敗しました。今回の変更は元に戻しました。",
+    "ko": "복원에 실패했습니다. 이번 변경 사항은 되돌렸습니다.",
+    "de": "Die Wiederherstellung ist fehlgeschlagen. Die Änderungen dieses Versuchs wurden rückgängig gemacht.",
+    "fr": "La restauration a échoué. Les modifications de cette tentative ont été annulées.",
+    "ru": "Восстановление не удалось. Внесённые изменения отменены."
+  },
+  "无法开始恢复，当前数据未改变。请稍后重试。": {
+    "en": "Could not start the restore. Your current data has not changed. Please try again later.",
+    "zh-TW": "無法開始還原，目前資料未改變。請稍後重試。",
+    "ja": "復元を開始できません。現在のデータは変更していません。しばらくしてからお試しください。",
+    "ko": "복원을 시작할 수 없습니다. 현재 데이터는 바뀌지 않았습니다. 잠시 후 다시 시도하세요.",
+    "de": "Die Wiederherstellung konnte nicht gestartet werden. Die aktuellen Daten wurden nicht verändert. Bitte später erneut versuchen.",
+    "fr": "Impossible de lancer la restauration. Les données actuelles n’ont pas été modifiées. Réessayez plus tard.",
+    "ru": "Не удалось начать восстановление. Текущие данные не изменены. Повторите попытку позже."
+  },
+  "图标文件无法读取。": {
+    "en": "Could not read the icon file.",
+    "zh-TW": "圖示檔案無法讀取。",
+    "ja": "アイコンファイルを読み込めません。",
+    "ko": "아이콘 파일을 읽을 수 없습니다.",
+    "de": "Die Symboldatei kann nicht gelesen werden.",
+    "fr": "Impossible de lire le fichier d’icône.",
+    "ru": "Не удалось прочитать файл значка."
+  },
+  "浏览器同步已停用，请使用自备存储同步。": {
+    "en": "Browser sync is no longer used. Use sync with your own storage instead.",
+    "zh-TW": "瀏覽器同步已停用，請使用自選儲存同步。",
+    "ja": "ブラウザの同期は無効になっています。自分のストレージで同期してください。",
+    "ko": "브라우저 동기화가 꺼져 있습니다. 직접 선택한 저장소로 동기화하세요.",
+    "de": "Die Browsersynchronisierung ist deaktiviert. Bitte über einen selbst gewählten Speicher synchronisieren.",
+    "fr": "La synchronisation du navigateur est désactivée. Utilisez la synchronisation avec le stockage de votre choix.",
+    "ru": "Синхронизация браузера отключена. Используйте синхронизацию со своим хранилищем."
+  },
+  "本次修改未保存，请稍后重试。": {
+    "en": "Your changes were not saved. Please try again later.",
+    "zh-TW": "本次修改未儲存，請稍後重試。",
+    "ja": "今回の変更は保存されていません。しばらくしてからお試しください。",
+    "ko": "이번 변경 사항은 저장되지 않았습니다. 잠시 후 다시 시도하세요.",
+    "de": "Die Änderungen wurden nicht gespeichert. Bitte später erneut versuchen.",
+    "fr": "Les modifications n’ont pas été enregistrées. Réessayez plus tard.",
+    "ru": "Изменения не сохранены. Повторите попытку позже."
+  },
+  "图片数量超出备份限制，请减少自定义图片。": {
+    "en": "There are too many images for this backup. Please remove some custom images.",
+    "zh-TW": "圖片數量超出備份限制，請減少自訂圖片。",
+    "ja": "画像の数がバックアップの上限を超えています。カスタム画像を減らしてください。",
+    "ko": "이미지 수가 백업 제한을 초과했습니다. 사용자 지정 이미지를 줄이세요.",
+    "de": "Die Anzahl der Bilder überschreitet die Sicherungsgrenze. Bitte einige benutzerdefinierte Bilder entfernen.",
+    "fr": "Le nombre d’images dépasse la limite de sauvegarde. Retirez quelques images personnalisées.",
+    "ru": "Слишком много изображений для резервной копии. Сократите число собственных изображений."
+  },
+  "有图片无法读取，未能导出备份。": {
+    "en": "Some images could not be read. The backup was not exported.",
+    "zh-TW": "有圖片無法讀取，未能匯出備份。",
+    "ja": "読み込めない画像があるため、バックアップを書き出せませんでした。",
+    "ko": "읽을 수 없는 이미지가 있어 백업을 내보내지 못했습니다.",
+    "de": "Einige Bilder konnten nicht gelesen werden. Die Sicherung wurde nicht exportiert.",
+    "fr": "Certaines images n’ont pas pu être lues. La sauvegarde n’a pas été exportée.",
+    "ru": "Не удалось прочитать некоторые изображения и экспортировать резервную копию."
+  },
+  "无法读取图标，备份未导出。": {
+    "en": "An icon could not be read. The backup was not exported.",
+    "zh-TW": "無法讀取圖示，備份未匯出。",
+    "ja": "アイコンを読み込めないため、バックアップは書き出していません。",
+    "ko": "아이콘을 읽을 수 없어 백업을 내보내지 않았습니다.",
+    "de": "Ein Symbol konnte nicht gelesen werden. Die Sicherung wurde nicht exportiert.",
+    "fr": "Une icône n’a pas pu être lue. La sauvegarde n’a pas été exportée.",
+    "ru": "Не удалось прочитать значки. Резервная копия не экспортирована."
+  },
+  "备份内容过多，请减少自定义图片后重试。": {
+    "en": "The backup is too large. Please remove some custom images and try again.",
+    "zh-TW": "備份內容過多，請減少自訂圖片後重試。",
+    "ja": "バックアップの内容が多すぎます。カスタム画像を減らして、もう一度お試しください。",
+    "ko": "백업 내용이 너무 많습니다. 사용자 지정 이미지를 줄인 뒤 다시 시도하세요.",
+    "de": "Die Sicherung ist zu groß. Bitte einige benutzerdefinierte Bilder entfernen und erneut versuchen.",
+    "fr": "La sauvegarde est trop volumineuse. Retirez quelques images personnalisées et réessayez.",
+    "ru": "В резервной копии слишком много содержимого. Сократите число собственных изображений и повторите попытку."
+  },
+  "备份中的图片信息无法读取。": {
+    "en": "Could not read the image information in this backup.",
+    "zh-TW": "備份中的圖片資訊無法讀取。",
+    "ja": "バックアップ内の画像情報を読み込めません。",
+    "ko": "백업의 이미지 정보를 읽을 수 없습니다.",
+    "de": "Die Bildinformationen in dieser Sicherung können nicht gelesen werden.",
+    "fr": "Impossible de lire les informations des images de cette sauvegarde.",
+    "ru": "Не удалось прочитать сведения об изображениях в резервной копии."
+  },
+  "备份中的图片缺失或已损坏，请重新选择备份文件。": {
+    "en": "Images in this backup are missing or damaged. Please choose another backup file.",
+    "zh-TW": "備份中的圖片缺失或已損壞，請重新選擇備份檔。",
+    "ja": "バックアップ内の画像が不足しているか、破損しています。バックアップファイルを選び直してください。",
+    "ko": "백업의 이미지가 없거나 손상되었습니다. 백업 파일을 다시 선택하세요.",
+    "de": "Bilder in dieser Sicherung fehlen oder sind beschädigt. Bitte eine andere Sicherungsdatei auswählen.",
+    "fr": "Des images de cette sauvegarde sont manquantes ou endommagées. Choisissez un autre fichier de sauvegarde.",
+    "ru": "В резервной копии отсутствуют или повреждены изображения. Выберите файл резервной копии заново."
+  },
+  "备份中的图片无法读取，未开始恢复。": {
+    "en": "Images in this backup could not be read. The restore has not started.",
+    "zh-TW": "備份中的圖片無法讀取，未開始還原。",
+    "ja": "バックアップ内の画像を読み込めないため、復元は開始していません。",
+    "ko": "백업의 이미지를 읽을 수 없어 복원을 시작하지 않았습니다.",
+    "de": "Die Bilder in dieser Sicherung können nicht gelesen werden. Die Wiederherstellung wurde nicht gestartet.",
+    "fr": "Impossible de lire les images de cette sauvegarde. La restauration n’a pas commencé.",
+    "ru": "Не удалось прочитать изображения в резервной копии. Восстановление не начато."
+  },
+  "还没有可恢复的导航副本。": {
+    "en": "No navigation copy is available to restore.",
+    "zh-TW": "還沒有可還原的導覽副本。",
+    "ja": "復元できるナビゲーションのコピーはありません。",
+    "ko": "복원할 탐색 복사본이 없습니다.",
+    "de": "Es gibt noch keine Navigationskopie zum Wiederherstellen.",
+    "fr": "Aucune copie de navigation n’est disponible pour la restauration.",
+    "ru": "Нет доступной копии навигации для восстановления."
+  },
+  "导航副本中的图片已丢失，当前数据未改变。": {
+    "en": "Images in the navigation copy are missing. Current data has not changed.",
+    "zh-TW": "導覽副本中的圖片已遺失，目前資料未變更。",
+    "ja": "ナビゲーションのコピーに含まれる画像が見つかりません。現在のデータは変更していません。",
+    "ko": "탐색 복사본의 이미지가 없습니다. 현재 데이터는 변경되지 않았습니다.",
+    "de": "Bilder in der Navigationskopie fehlen. Die aktuellen Daten wurden nicht geändert.",
+    "fr": "Des images de la copie de navigation sont introuvables. Les données actuelles n’ont pas été modifiées.",
+    "ru": "Изображения в копии навигации отсутствуют. Текущие данные не изменены."
+  },
+  "松开后确认删除": {
+    "en": "Release, then confirm deletion",
+    "zh-TW": "放開後確認刪除",
+    "ja": "離してから削除を確認",
+    "ko": "놓은 뒤 삭제 확인",
+    "de": "Loslassen und anschließend das Löschen bestätigen",
+    "fr": "Relâcher, puis confirmer la suppression",
+    "ru": "Отпустите, чтобы подтвердить удаление"
+  },
+  "无法打开本机数据，原数据已保留。": {
+    "en": "Could not open local data. Existing data has been preserved.",
+    "zh-TW": "無法開啟本機資料，原資料已保留。",
+    "ja": "端末内のデータを開けません。元のデータは保持しています。",
+    "ko": "이 기기의 데이터를 열 수 없습니다. 원본 데이터는 보존했습니다.",
+    "de": "Die lokalen Daten können nicht geöffnet werden. Die ursprünglichen Daten bleiben erhalten.",
+    "fr": "Impossible d’ouvrir les données locales. Les données d’origine sont conservées.",
+    "ru": "Не удалось открыть локальные данные. Исходные данные сохранены."
+  },
+  "无法打开本机数据，请重新打开 Covelet 后再试。": {
+    "en": "Could not open local data. Reopen Covelet and try again.",
+    "zh-TW": "無法開啟本機資料，請重新開啟 Covelet 後再試。",
+    "ja": "端末内のデータを開けません。Covelet を開き直して、もう一度お試しください。",
+    "ko": "이 기기의 데이터를 열 수 없습니다. Covelet을 다시 연 뒤 시도하세요.",
+    "de": "Die lokalen Daten können nicht geöffnet werden. Bitte Covelet erneut öffnen und noch einmal versuchen.",
+    "fr": "Impossible d’ouvrir les données locales. Rouvrez Covelet et réessayez.",
+    "ru": "Не удалось открыть локальные данные. Откройте Covelet заново и повторите попытку."
+  },
+  "请关闭其他 Covelet 页面后重试，原数据已保留。": {
+    "en": "Close other Covelet pages and try again. Existing data has been preserved.",
+    "zh-TW": "請關閉其他 Covelet 頁面後重試，原資料已保留。",
+    "ja": "ほかの Covelet ページを閉じて、もう一度お試しください。元のデータは保持しています。",
+    "ko": "다른 Covelet 페이지를 닫은 뒤 다시 시도하세요. 원본 데이터는 보존했습니다.",
+    "de": "Bitte andere Covelet-Seiten schließen und erneut versuchen. Die ursprünglichen Daten bleiben erhalten.",
+    "fr": "Fermez les autres pages Covelet et réessayez. Les données d’origine sont conservées.",
+    "ru": "Закройте другие страницы Covelet и повторите попытку. Исходные данные сохранены."
+  },
+  "无法打开加密数据，原数据已保留。": {
+    "en": "Could not open encrypted data. Existing data has been preserved.",
+    "zh-TW": "無法開啟加密資料，原資料已保留。",
+    "ja": "暗号化データを開けません。元のデータは保持しています。",
+    "ko": "암호화된 데이터를 열 수 없습니다. 원본 데이터는 보존했습니다.",
+    "de": "Die verschlüsselten Daten können nicht geöffnet werden. Die ursprünglichen Daten bleiben erhalten.",
+    "fr": "Impossible d’ouvrir les données chiffrées. Les données d’origine sont conservées.",
+    "ru": "Не удалось открыть зашифрованные данные. Исходные данные сохранены."
+  },
+  "无法读取加密数据，原数据已保留。": {
+    "en": "Could not read encrypted data. Existing data has been preserved.",
+    "zh-TW": "無法讀取加密資料，原資料已保留。",
+    "ja": "暗号化データを読み込めません。元のデータは保持しています。",
+    "ko": "암호화된 데이터를 읽을 수 없습니다. 원본 데이터는 보존했습니다.",
+    "de": "Die verschlüsselten Daten können nicht gelesen werden. Die ursprünglichen Daten bleiben erhalten.",
+    "fr": "Impossible de lire les données chiffrées. Les données d’origine sont conservées.",
+    "ru": "Не удалось прочитать зашифрованные данные. Исходные данные сохранены."
+  },
+  "数据未能保存，请重试。": {
+    "en": "Could not save your data. Try again.",
+    "zh-TW": "資料未能儲存，請重試。",
+    "ja": "データを保存できませんでした。もう一度お試しください。",
+    "ko": "데이터를 저장하지 못했습니다. 다시 시도하세요.",
+    "de": "Die Daten wurden nicht gespeichert. Bitte erneut versuchen.",
+    "fr": "Les données n’ont pas pu être enregistrées. Réessayez.",
+    "ru": "Не удалось сохранить данные. Повторите попытку."
+  },
+  "本机数据连接已关闭，请重新打开 Covelet。": {
+    "en": "The local data connection is closed. Reopen Covelet.",
+    "zh-TW": "本機資料連線已關閉，請重新開啟 Covelet。",
+    "ja": "端末内のデータへの接続が閉じられました。Covelet を開き直してください。",
+    "ko": "이 기기의 데이터 연결이 닫혔습니다. Covelet을 다시 여세요.",
+    "de": "Die Verbindung zu den lokalen Daten wurde geschlossen. Bitte Covelet erneut öffnen.",
+    "fr": "La connexion aux données locales est fermée. Rouvrez Covelet.",
+    "ru": "Подключение к локальным данным закрыто. Откройте Covelet заново."
+  },
+  "本机数据格式不受支持或超出容量限制。": {
+    "en": "The local data format is unsupported or exceeds the size limit.",
+    "zh-TW": "本機資料格式不受支援或超出容量限制。",
+    "ja": "端末内のデータ形式に対応していないか、容量の上限を超えています。",
+    "ko": "이 기기의 데이터 형식을 지원하지 않거나 용량 제한을 초과했습니다.",
+    "de": "Das Format der lokalen Daten wird nicht unterstützt oder die Speichergrenze wurde überschritten.",
+    "fr": "Le format des données locales n’est pas pris en charge ou leur volume dépasse la capacité autorisée.",
+    "ru": "Формат локальных данных не поддерживается или их объём превышает лимит."
+  },
+  "旧版数据未能转换，原数据已保留。": {
+    "en": "Could not update older data. Existing data has been preserved.",
+    "zh-TW": "舊版資料未能轉換，原資料已保留。",
+    "ja": "旧バージョンのデータを変換できませんでした。元のデータは保持しています。",
+    "ko": "이전 버전 데이터를 변환하지 못했습니다. 원본 데이터는 보존했습니다.",
+    "de": "Die Daten der älteren Version konnten nicht konvertiert werden. Die ursprünglichen Daten bleiben erhalten.",
+    "fr": "Les données de l’ancienne version n’ont pas pu être converties. Les données d’origine sont conservées.",
+    "ru": "Не удалось преобразовать данные старой версии. Исходные данные сохранены."
+  },
+  "旧版数据存在不同副本，暂未转换。原数据已保留。": {
+    "en": "Different copies of older data were found, so the update was stopped. Existing data has been preserved.",
+    "zh-TW": "舊版資料存在不同副本，暫未轉換。原資料已保留。",
+    "ja": "旧バージョンのデータに異なるコピーがあるため、まだ変換していません。元のデータは保持しています。",
+    "ko": "이전 버전 데이터에 서로 다른 사본이 있어 아직 변환하지 않았습니다. 원본 데이터는 보존했습니다.",
+    "de": "Es gibt unterschiedliche Kopien der Daten der älteren Version. Sie wurden noch nicht konvertiert. Die ursprünglichen Daten bleiben erhalten.",
+    "fr": "Il existe plusieurs copies différentes des données de l’ancienne version. Elles n’ont pas encore été converties. Les données d’origine sont conservées.",
+    "ru": "У данных старой версии есть разные копии. Преобразование пока не выполнено. Исходные данные сохранены."
+  },
+  "请先解锁本机隐藏内容，再采用删除版本。": {
+    "en": "Unlock hidden content on this device before choosing the deleted version.",
+    "zh-TW": "請先解鎖本機隱藏內容，再採用刪除版本。",
+    "ja": "端末内の非表示の内容をロック解除してから、削除状態のバージョンを適用してください。",
+    "ko": "이 기기의 숨긴 내용 잠금을 해제한 뒤 내용이 삭제된 버전을 적용하세요.",
+    "de": "Bitte zuerst die ausgeblendeten lokalen Inhalte entsperren, bevor die gelöschte Version übernommen wird.",
+    "fr": "Déverrouillez d’abord le contenu local masqué avant d’adopter la version supprimée.",
+    "ru": "Сначала разблокируйте скрытое содержимое на этом устройстве, затем выберите версию с удалением."
+  },
+  "数据已在其他页面更新，请重新打开后再试。": {
+    "en": "Data changed on another page. Reopen this page and try again.",
+    "zh-TW": "資料已在其他頁面更新，請重新開啟後再試。",
+    "ja": "データが別のページで更新されました。開き直して、もう一度お試しください。",
+    "ko": "다른 페이지에서 데이터가 업데이트되었습니다. 다시 연 뒤 시도하세요.",
+    "de": "Die Daten wurden auf einer anderen Seite aktualisiert. Bitte erneut öffnen und noch einmal versuchen.",
+    "fr": "Les données ont été mises à jour sur une autre page. Rouvrez et réessayez.",
+    "ru": "Данные обновлены на другой странице. Откройте их заново и повторите попытку."
+  },
+  "操作失败，请重试。": {
+    "en": "The action failed. Try again.",
+    "zh-TW": "操作失敗，請重試。",
+    "ja": "操作に失敗しました。もう一度お試しください。",
+    "ko": "작업에 실패했습니다. 다시 시도하세요.",
+    "de": "Der Vorgang ist fehlgeschlagen. Bitte erneut versuchen.",
+    "fr": "L’opération a échoué. Réessayez.",
+    "ru": "Не удалось выполнить действие. Повторите попытку."
+  },
+  "浏览器存储空间不足，请释放空间后重试。": {
+    "en": "Browser storage is full. Free up space and try again.",
+    "zh-TW": "瀏覽器儲存空間不足，請釋出空間後重試。",
+    "ja": "ブラウザの保存容量が不足しています。空き容量を確保して、もう一度お試しください。",
+    "ko": "브라우저 저장 공간이 부족합니다. 공간을 확보한 뒤 다시 시도하세요.",
+    "de": "Der Browserspeicher ist voll. Bitte Speicher freigeben und erneut versuchen.",
+    "fr": "L’espace de stockage du navigateur est insuffisant. Libérez de l’espace et réessayez.",
+    "ru": "Недостаточно места в хранилище браузера. Освободите место и повторите попытку."
+  },
+  "浏览器不允许访问本机数据，请检查浏览器的存储设置。": {
+    "en": "The browser blocked access to local data. Check its storage settings.",
+    "zh-TW": "瀏覽器不允許存取本機資料，請檢查瀏覽器的儲存設定。",
+    "ja": "ブラウザが端末内のデータへのアクセスを許可していません。ブラウザのストレージ設定を確認してください。",
+    "ko": "브라우저에서 이 기기의 데이터 접근을 허용하지 않습니다. 브라우저의 저장소 설정을 확인하세요.",
+    "de": "Der Browser erlaubt keinen Zugriff auf die lokalen Daten. Bitte die Speichereinstellungen des Browsers prüfen.",
+    "fr": "Le navigateur n’autorise pas l’accès aux données locales. Vérifiez ses réglages de stockage.",
+    "ru": "Браузер не разрешает доступ к локальным данным. Проверьте настройки хранилища в браузере."
   }
 }

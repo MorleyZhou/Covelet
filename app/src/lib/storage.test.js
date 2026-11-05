@@ -293,7 +293,7 @@ test('legacy backup validates wallpaper before migration but does not store or r
   assert.equal(subject.records.size, 1, 'only the icon is ingested');
   assert.equal(subject.envelope.state.settings.background.kind, 'bing');
   plan.assets.get('wallpaper').sha256 = '0'.repeat(64);
-  await assert.rejects(subject.store.restoreBackup(plan, restored.revision), /校验/u);
+  await assert.rejects(subject.store.restoreBackup(plan, restored.revision), /图片无法读取/u);
   await assert.rejects(subject.store.putImage(image(), 'background'), /停用/u);
 });
 

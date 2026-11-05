@@ -27,12 +27,24 @@ export async function readPrivacyPermissions(browser = globalThis.chrome) {
 
 export function permissionPurpose(permission) {
   return {
-    storage: tr('迁移设备设置并保存会话状态；业务数据使用本机加密 IndexedDB，不启用浏览器原生同步。'),
+    storage: tr('保存设置和临时连接信息。内容数据在本机加密保存。'),
     search: tr('按浏览器默认设置执行搜索，不更改默认搜索引擎。'),
-    favicon: tr('显式添加或导入网站时读取浏览器已有图标。'),
-    activeTab: tr('点击工具栏后临时读取当前页面的地址、标题和图标声明。'),
-    scripting: tr('点击工具栏后运行随扩展打包的页面信息读取代码。'),
-    alarms: tr('调度本机倒计时，送达时间受浏览器运行状态限制。'),
+    favicon: tr('添加或导入网站时，读取浏览器已有的网站图标。'),
+    activeTab: tr('点击工具栏后，临时读取当前网页的网址、标题和图标地址。'),
+    scripting: tr('点击工具栏后读取当前网页信息，帮助添加网站。'),
+    alarms: tr('安排本机倒计时。通知时间可能受浏览器运行状态影响。'),
     notifications: tr('仅在你启用后显示倒计时完成通知。'),
   }[permission] || tr('此权限由当前扩展声明；请在浏览器扩展详情中核对用途。');
+}
+
+export function permissionLabel(permission) {
+  return {
+    storage: tr('保存设置'),
+    search: tr('浏览器搜索'),
+    favicon: tr('网站图标'),
+    activeTab: tr('当前网页'),
+    scripting: tr('读取网页信息'),
+    alarms: tr('倒计时'),
+    notifications: tr('通知'),
+  }[permission] || permission;
 }

@@ -39,7 +39,7 @@ const safeMessages = {
   get TOOLS_SYNC_TARGET() { return tr('工具内容还有待上传或冲突版本，请先处理后再切换存储位置。'); },
   get CLOUD_LOCKED() { return tr('请先解锁自选存储连接，再同步便笺与阅读。'); },
   get CLOUD_PERMISSION() { return tr('尚未授权访问这个云服务，请先在设置中授权。'); },
-  get CLOUD_DECRYPT() { return tr('无法解密同步数据：请检查加密口令，或确认云端文档未损坏。'); },
+  get CLOUD_DECRYPT() { return tr('无法解密同步数据，请检查同步密码。若密码正确，云端数据可能已损坏。'); },
   get CLOUD_AUTH() { return tr('云存储身份验证失败，请检查凭据和访问权限。'); },
   get CLOUD_NOT_FOUND() { return tr('工具同步目录不可访问，请检查所选保存目录是否存在及其读写权限。'); },
   get CLOUD_RATE_LIMIT() { return tr('云服务请求过于频繁，请稍后重试。'); },

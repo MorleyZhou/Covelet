@@ -1,5 +1,6 @@
 import { tr, getLocale } from "../i18n/index.js";
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { PresentationContext } from '../lib/presentation.js';
 import { LockKey, ArrowsClockwise } from '@phosphor-icons/react';
 import { Disclosure } from './ui/disclosure.jsx';
 import CloudHistory from './CloudHistory.jsx';
@@ -7,7 +8,8 @@ import PromptDialog, { MessageDialog } from './PromptDialog.jsx';
 import { validateCloudConfig, cloudOrigin } from '../lib/cloud-providers.js';
 import { cloudProviderLabel, SYNC_PROVIDERS, finishCloudSetup } from '../lib/cloud-connection.js';
 import { validateCloudPassword } from '../lib/cloud-crypto.js';
-import { conflictRecordPreview } from '../lib/cloud-conflict-preview.js';
+import { conflictRecordPreview, conflictRecordScope, conflictRecordSummary, conflictRecordImpact } from '../lib/cloud-conflict-preview.js';
+import { userErrorMessage } from '../lib/user-error.js';
 import { requestSiteAccess } from '../lib/site-info.js';
 import {
   loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, useLocalOnlyCloudSync,
@@ -54,6 +56,9 @@ export function CloudSyncSummary({ id, extension, metadata, demo = false, onOpen
 }
 
 export default function CloudSyncSettings({ demo = false, onBusyChange = () => {}, introduction, onLocalOnly = () => {} }) {
+  const presentation = useContext(PresentationContext);
+  const presentationActive = useRef(presentation.active);
+  presentationActive.current = presentation.active;
   const [draft, setDraft] = useState(blank), [secrets, setSecrets] = useState(emptySecrets);
   const [password, setPassword] = useState(''), [autoSync, setAutoSync] = useState(false);
   const [saved, setSaved] = useState(null), [status, setStatus] = useState(() => getCloudSyncStatus());
@@ -61,6 +66,10 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
   const [draftTest, setDraftTest] = useState(null), [testing, setTesting] = useState(false), [testFailed, setTestFailed] = useState(false);
   const [conflicts, setConflicts] = useState([]);
   const [conflictChoice, setConflictChoice] = useState(null);
+  const conflictPreviewEpoch = useRef(0);
+  useEffect(() => {
+    if (presentation.active) { conflictPreviewEpoch.current++; setConflictChoice(null); }
+  }, [presentation.active]);
   const [step, setStep] = useState(demo ? 1 : null), [loaded, setLoaded] = useState(demo);
   const wasUnlocked = useRef(status.unlocked);
   const fieldsRef = useRef(null);
@@ -95,7 +104,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
   async function run(action) {
     setBusy(true); onBusyChange(true); setError('');
     try { await action(); setStatus(getCloudSyncStatus()); }
-    catch (reason) { setError(reason?.message || tr("同步操作未完成，本机数据已保留。")); }
+    catch (reason) { setError(userErrorMessage(reason, tr("同步操作未完成，本机数据已保留。"))); }
     finally { setBusy(false); onBusyChange(false); }
   }
   function saveConnection(firstSync = false) {
@@ -104,7 +113,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     try {
       profile = profileOf(draft);
       validateCloudPassword(password);
-    } catch (reason) { setError(reason.message); return; }
+    } catch (reason) { setError(userErrorMessage(reason)); return; }
     // Request the concrete origin directly in the user's click, before any await.
     const access = available ? requestSiteAccess(cloudOrigin(profile)) : Promise.resolve(true);
     run(async () => {
@@ -119,7 +128,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
   function testConnection() {
     if (busy || demo) return;
     let profile;
-    try { profile = profileOf(draft); } catch (reason) { setError(reason.message); return; }
+    try { profile = profileOf(draft); } catch (reason) { setError(userErrorMessage(reason)); return; }
     const access = requestSiteAccess(cloudOrigin(profile));
     setDraftTest(null); setTestFailed(true); setTesting(true);
     run(async () => {
@@ -152,17 +161,6 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     if (busy || !connectionMatches) return;
     run(async () => { setSaved(await unlockCloudSync(secrets, password)); setDraftTest(null); setSecrets(emptySecrets); setPassword(''); });
   }
-  function conflictLabel(item) {
-    if (item.namespace === 'assets' || item.namespace === 'navigation-icons' || item.namespace === 'provider-icons') return tr('图片与图标');
-    if (item.namespace === 'wallpaper') return tr('壁纸');
-    if (item.key === 'owntab.local.v1') return tr('导航、文件夹与外观');
-    if (item.key === 'covelet.tools.v1') return tr('便笺与稍后读');
-    if (item.key === 'covelet.content.preferences.v1') return tr('别名与隐私标记');
-    if (item.key === 'covelet.desktop-templates.v1') return tr('桌面方案');
-    if (item.key === 'covelet.recovery-point.v1') return tr('恢复前副本');
-    if (item.key.startsWith('covelet.clock.v1.')) return tr('时钟');
-    return tr('扩展数据');
-  }
   const connectionTest = !testFailed && (configuring || !status.unlocked ? draftTest : saved?.connectionTest);
   return <form className="cloud-sync-form form-stack" onSubmit={(event) => {
     event.preventDefault();
@@ -188,7 +186,6 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
         <p className="hint">{tr("凭据仅在本次浏览器会话保留；重启后需重新输入凭据和同步密码。")}</p>
         <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => { setStep(1); setDraftTest(null); setError(''); }}>{tr("修改配置")}</Button>
       </div>}
-      <p className="hint">{tr('WebDAV 优先；所有渠道的真实云账号验收仍待完成。')}</p>
       {(step === 2 || step === 3 || saved?.profile && !configuring) && <div className="cloud-connection-test" role="status" aria-live="polite">
         <p className="hint">{testing ? tr('正在测试连接…') : testFailed ? tr('最近连接测试未通过，请检查后重试。') : connectionTest ? tr('最近连接测试通过：{0}', [new Date(connectionTest.testedAt).toLocaleString(getLocale())]) : saved?.profile && !configuring ? tr('配置已保存；当前凭据的连接尚未验证。') : tr('连接尚未验证。')}</p>
         <p className="hint">{tr('测试只检查登录和目录读取，不验证写入或同步密码。保存配置不会执行连接测试。')}</p>
@@ -250,40 +247,54 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       <Disclosure className="context-help" title={tr("同步内容与隐私")}>
         <p className="hint">{tr('同步桌面、内置扩展、图片和图标。')}</p>
         <p className="hint">{tr('数据加密后上传，隐藏密码和隐藏状态不会同步。关闭浏览器后需重新输入访问凭据和同步密码。')}</p>
-        <p className="hint">{tr('首次同步会迁入旧版导航与便笺同步内容。其他设备请升级到支持全量同步的版本，使用相同目录和同步密码。')}</p>
+        <p className="hint">{tr('其他设备请更新 Covelet，并使用相同的保存目录和同步密码。')}</p>
       </Disclosure>
       {demo ? <p className="hint" role="status">{tr("演示模式无法连接存储。")}</p> : !available && <p className="hint" role="status">{tr("请在 Chrome 或 Edge 扩展中连接存储。")}</p>}
       {!configuring && <MessageDialog message={error || (status.phase === 'error' ? status.message : '')} onClose={() => { setError(''); }} />}
       {status.lastSync > 0 && <p className="hint">{tr("最近同步：")}{new Date(status.lastSync).toLocaleString(getLocale())}</p>}
-      {saved?.profile && !configuring && <section className="cloud-tool-sync" aria-label={tr('全部数据加密同步')}>
-        <strong>{tr('全部数据加密同步')}</strong>
+      {saved?.profile && !configuring && <section className="cloud-tool-sync" aria-label={tr('同步状态')}>
+        <strong>{tr('同步状态')}</strong>
         <div className="cloud-tool-sync-status" role="status"><span>{tr('待同步：{0} 项', [status.pending || 0])}</span><span>{tr('保留的冲突版本：{0}', [conflicts.length])}</span></div>
         {status.phase === 'syncing' && <p className="hint" role="status">{status.message || tr('正在同步…')}</p>}
       </section>}
       {conflicts.length > 0 && <div className="cloud-sync-conflicts"><strong>{tr("保留的冲突版本")}</strong>
-        <p className="hint">{tr('冲突内容保留本机版本，等待你选择。请查看两侧内容，整条采用本机或一个远端版本；不会合并记录内部字段。')}</p>
+        <p className="hint">{tr('发生冲突的内容暂时保留本机版本。比较后，选择保留本机版本或采用一个云端版本。')}</p>
+        {presentation.active && <p className="hint">{tr('输入密码以查看隐藏内容。')}</p>}
         {conflicts.filter(item => !item.local).map((item, index) => <div key={item.id}>
-          <span>{conflictLabel(item)} · {tr('远端版本 {0}', [index + 1])}{item.deleted ? tr("（删除版本）") : ''}</span>
-          <Button variant="secondary" type="button" disabled={busy || !status.unlocked} onClick={() => run(async () => {
-            const preview = await previewCloudSyncConflict(item.id); setConflictChoice({ ...preview, choice: null });
-          })}>{tr('查看并选择版本')}</Button>
+          <span>{conflictRecordScope(item)} · {tr('云端版本 {0}', [index + 1])}{item.deleted ? tr("（删除版本）") : ''}</span>
+          <Button variant="secondary" type="button" disabled={busy || !status.unlocked} onClick={() => {
+            if (presentationActive.current) { presentation.requestUnlock(); return; }
+            run(async () => {
+              const epoch = conflictPreviewEpoch.current;
+              const preview = await previewCloudSyncConflict(item.id);
+              if (!presentationActive.current && epoch === conflictPreviewEpoch.current) setConflictChoice({ ...preview, choice: null });
+            });
+          }}>{presentation.active ? tr('输入密码查看隐藏内容') : tr('查看并选择版本')}</Button>
         </div>)}
       </div>}
-      {conflictChoice && <PromptDialog title={tr('选择一条完整记录')} action={conflictChoice.choice === 'remote' ? tr('整条采用远端版本') : tr('整条保留本机版本')} busy={busy} confirmDisabled={!conflictChoice.choice} onCancel={() => setConflictChoice(null)}
-        onConfirm={() => run(async () => { await restoreCloudSyncConflict(conflictChoice.id, { choice: conflictChoice.choice, token: conflictChoice.token }); setConflictChoice(null); setConflicts(await getCloudSyncConflicts()); })}>
-        <p>{tr('此操作会替换这一整条记录，并在下次同步时上传。记录内其他修改也会一起替换，请确认已选对版本。')}</p>
-        <div className="cloud-conflict-sides" role="group" aria-label={tr('选择一条完整记录')}>
-          {['local', 'remote'].map(side => <section key={side}>
-            <strong>{side === 'local' ? tr('本机版本') : tr('远端版本')}</strong>
-            <pre>{conflictChoice[side].deleted ? tr('此版本已删除整条记录。') : conflictRecordPreview(conflictChoice[side].value)}</pre>
+      {conflictChoice && !presentation.active && <PromptDialog title={tr('选择保留的版本')} action={conflictChoice.choice === 'remote' ? tr('采用云端版本') : tr('保留本机版本')} busy={busy} confirmDisabled={!conflictChoice.choice} onCancel={() => setConflictChoice(null)}
+        onConfirm={() => { if (!presentationActive.current) run(async () => { await restoreCloudSyncConflict(conflictChoice.id, { choice: conflictChoice.choice, token: conflictChoice.token }); setConflictChoice(null); setConflicts(await getCloudSyncConflicts()); }); }}>
+        <p className="cloud-conflict-impact">{conflictRecordImpact(conflictChoice)}</p>
+        {(conflictChoice.local.deleted || conflictChoice.remote.deleted) && <p className="cloud-conflict-delete">{tr('选择已删除的版本，会删除本机对应的整组内容。')}</p>}
+        <div className="cloud-conflict-sides" role="group" aria-label={tr('选择保留的版本')}>
+          {['local', 'remote'].map(side => {
+            const summary = conflictRecordSummary(conflictChoice, conflictChoice[side]);
+            return <section key={side}>
+            <strong>{side === 'local' ? tr('本机版本') : tr('云端版本')}</strong>
+            <span className="cloud-conflict-scope">{tr('影响范围：{0}', [summary.scope])}</span>
+            <ul className="cloud-conflict-summary">{summary.lines.map((line, index) => <li key={index}>{line}</li>)}</ul>
+            {summary.partial && <p className="hint">{tr('摘要只显示部分内容；选择时会采用此版本的完整内容。')}</p>}
+            {!conflictChoice[side].deleted && <Disclosure className="context-help cloud-conflict-details" title={tr('技术详情')}>
+              <pre>{conflictRecordPreview(conflictChoice[side].value)}</pre>
+            </Disclosure>}
             <Button type="button" variant="secondary" disabled={busy} aria-pressed={conflictChoice.choice === side} onClick={() => setConflictChoice(current => ({ ...current, choice: side }))}>
-              {side === 'local' ? tr('整条保留本机版本') : tr('整条采用远端版本')}
+              {side === 'local' ? tr('保留本机版本') : tr('采用云端版本')}
             </Button>
-          </section>)}
+          </section>; })}
         </div>
       </PromptDialog>}
       {saved?.profile && !configuring && <Disclosure className="context-help" title={tr('旧版导航历史')}>
-        <p className="hint">{tr('这里保留升级前的导航历史。新版本的桌面、扩展数据和图标使用统一加密同步；旧版客户端请升级后继续使用。')}</p>
+        <p className="hint">{tr('这里保留升级前的导航历史。其他设备请更新 Covelet 后继续同步。')}</p>
         <CloudHistory disabled={busy || demo || !available} unlocked={status.unlocked} onBusyChange={(value) => { setBusy(value); onBusyChange(value); }} />
       </Disclosure>}
     </div>

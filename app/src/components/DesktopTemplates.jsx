@@ -3,6 +3,7 @@ import NavigationIconStatus from './NavigationIconStatus.jsx';
 import { BookOpen, Check, Clock, DownloadSimple, FileArrowUp, FloppyDisk, NotePencil, Trash } from '@phosphor-icons/react';
 import { tr, formatNumber } from '../i18n/index.js';
 import { layoutDesktop, DESKTOP_ROWS } from '../lib/desktop-layout.js';
+import { userErrorMessage } from '../lib/user-error.js';
 import { letterIcon } from '../lib/model.js';
 import { WIDGET_NAMES } from '../lib/widget-model.js';
 import { BUILTIN_DESKTOP_TEMPLATES, DESKTOP_TEMPLATE_MAX_BYTES, createDesktopTemplate, inspectDesktopTemplate, applyDesktopTemplate,
@@ -52,20 +53,20 @@ export default function DesktopTemplates({ state, privateEntryIds = [], iconProg
   const changed = state.revision !== openedRevision.current;
   useEffect(() => {
     active.current = true;
-    loadSavedDesktopTemplates().then((items) => { if (active.current) setSaved(items); }).catch((reason) => { if (active.current) setError(reason.message); });
+    loadSavedDesktopTemplates().then((items) => { if (active.current) setSaved(items); }).catch((reason) => { if (active.current) setError(userErrorMessage(reason)); });
     return () => { active.current = false; };
   }, []);
   async function run(action) {
     if (gate.current) return;
     gate.current = true; setBusy(true); setError(''); onBusyChange?.(true);
     try { return await action(); }
-    catch (reason) { if (active.current) setError(reason.message); }
+    catch (reason) { if (active.current) setError(userErrorMessage(reason)); }
     finally { gate.current = false; if (active.current) setBusy(false); onBusyChange?.(false); }
   }
   const choose = (next, id) => { setTemplate(next); setSelectedId(id); setWidgets(false); setSites(false); setError(''); setPendingDelete(null); };
   const prepared = useMemo(() => {
     try { return applyDesktopTemplate(state, template, { appearance, widgets, sites }); }
-    catch (reason) { return { error: reason.message }; }
+    catch (reason) { return { error: userErrorMessage(reason) }; }
   }, [state, template, appearance, widgets, sites]);
   const counts = useMemo(() => {
     const available = new Map();
@@ -84,7 +85,7 @@ export default function DesktopTemplates({ state, privateEntryIds = [], iconProg
   const currentTemplate = () => createDesktopTemplate(state, { name, publicSiteIds: selectedPublicIds, privateEntryIds });
   let capturePreview = null, captureError = '';
   try { capturePreview = createDesktopTemplate(state, { name: name.trim() || tr('我的桌面方案'), publicSiteIds: selectedPublicIds, privateEntryIds }); }
-  catch (reason) { captureError = reason.message; }
+  catch (reason) { captureError = userErrorMessage(reason); }
   const localSelection = saved.some((item) => item.id === selectedId);
   const selectedName = selectedId.startsWith('builtin-') ? builtinNames[Number(selectedId.slice(8))] : template.name;
   async function reloadSaved() { const items = await loadSavedDesktopTemplates(); if (active.current) setSaved(items); }
@@ -130,9 +131,9 @@ export default function DesktopTemplates({ state, privateEntryIds = [], iconProg
         <fieldset className="desktop-template-scopes"><legend>{tr('应用范围')}</legend>
           <label className={`desktop-template-option${appearance ? ' is-checked' : ''}`}><Checkbox checked={appearance} disabled={busy} onCheckedChange={(value) => setAppearance(value === true)} /><span><strong>{tr('应用外观')}</strong><small>{tr('主题、背景和密度设置；列数变化会调整桌面显示。')}</small></span></label>
           <label className={`desktop-template-option${widgets ? ' is-checked' : ''}`} data-disabled={!template.widgets.length || undefined}><Checkbox checked={widgets} disabled={busy || !template.widgets.length} onCheckedChange={(value) => setWidgets(value === true)} /><span><strong>{tr('应用组件布局')}</strong><small>{template.widgets.length ? tr('将 {0} 个现有组件移至新屏幕，新增 {1} 个组件。保留现有组件的内容、时区和样式。', [formatNumber(counts.moved), formatNumber(counts.added)]) : tr('此方案不包含组件')}</small></span></label>
-          <label className={`desktop-template-option${sites ? ' is-checked' : ''}`} data-disabled={!template.sites.length || undefined}><Checkbox checked={sites} disabled={busy || !template.sites.length} onCheckedChange={(value) => setSites(value === true)} /><span><strong>{tr('追加公开网址')}</strong><small>{template.sites.length ? tr('方案包含 {0} 个网址，将加入新屏幕；已有的完整网址会跳过。', [formatNumber(template.sites.length)]) : tr('此方案不包含公开网址')}</small></span></label>
+          <label className={`desktop-template-option${sites ? ' is-checked' : ''}`} data-disabled={!template.sites.length || undefined}><Checkbox checked={sites} disabled={busy || !template.sites.length} onCheckedChange={(value) => setSites(value === true)} /><span><strong>{tr('添加方案中的网址')}</strong><small>{template.sites.length ? tr('方案包含 {0} 个网址，将加入新屏幕；已有的完整网址会跳过。', [formatNumber(template.sites.length)]) : tr('此方案不包含网址')}</small></span></label>
         </fieldset>
-        {template.sites.length > 0 && <Disclosure className="desktop-template-public-preview" title={tr('查看方案中的全部公开网址')}><ul>{template.sites.map((site, index) => <li key={index}><strong>{site.name}</strong><small>{site.url}</small></li>)}</ul></Disclosure>}
+        {template.sites.length > 0 && <Disclosure className="desktop-template-public-preview" title={tr('查看方案中的网址')}><ul>{template.sites.map((site, index) => <li key={index}><strong>{site.name}</strong><small>{site.url}</small></li>)}</ul></Disclosure>}
         {!selectedId.startsWith('builtin-') && !localSelection && <Button className="desktop-template-save-import" type="button" variant="secondary" disabled={busy} onClick={() => run(async () => { const record = await saveDesktopTemplate(template.name, template); await reloadSaved(); choose(record.template, record.id); })}><FloppyDisk size={16} />{tr('保存方案')}</Button>}
       </section>
     </TabsContent>

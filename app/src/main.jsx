@@ -4,6 +4,8 @@ import { App } from "./App.jsx";
 import { initializeLanguage, tr } from "./i18n/index.js";
 import { initializeLocalData } from './lib/initialize-local-data.js';
 import { Button } from './components/ui/button.jsx';
+import { Disclosure } from './components/ui/disclosure.jsx';
+import { userErrorMessage } from './lib/user-error.js';
 import "./styles.css";
 
 const root = createRoot(document.getElementById('root'));
@@ -13,8 +15,8 @@ async function start() {
     await initializeLanguage(); await initializeLocalData();
     root.render(<React.StrictMode><App /></React.StrictMode>);
   } catch (error) {
-    root.render(<main className="local-data-startup"><p role="alert">{tr('本机数据迁移或读取失败，原数据已保留。请关闭旧版页面后重试。')}</p>
-      <p>{error.message}</p><Button onClick={start}>{tr('重试')}</Button></main>);
+    root.render(<main className="local-data-startup"><p role="alert">{userErrorMessage(error, tr('无法打开本机数据，原数据已保留。'))}</p>
+      <Disclosure title={tr('技术详情')}><p>{error.message}</p></Disclosure><Button onClick={start}>{tr('重试')}</Button></main>);
   }
 }
 start();

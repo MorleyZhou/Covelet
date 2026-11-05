@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { LockSimple } from '@phosphor-icons/react';
 import { tr } from '../i18n/index.js';
+import { userErrorMessage } from '../lib/user-error.js';
 import { changePrivacyPassword, getPrivacyLockStatus, setPresentationMode } from '../lib/content-preferences.js';
 import { validateNewPrivacyPassword } from '../lib/privacy-lock.js';
 import { Button } from './ui/button.jsx';
@@ -20,7 +21,7 @@ export function PrivacyPasswordForm({ purpose = 'unlock', onDone, onCancel, disa
     getPrivacyLockStatus().then(({ configured }) => {
       if (!active) return;
       setMode(!configured ? 'setup' : purpose === 'setup' ? 'unlock' : purpose); setReady(true);
-    }).catch((reason) => { if (active) setError(reason.message); });
+    }).catch((reason) => { if (active) setError(userErrorMessage(reason)); });
     return () => { active = false; };
   }, [purpose]);
   useEffect(() => { if (ready && !busy && !disabled) firstInput.current?.focus({ preventScroll: true }); }, [ready, mode, busy, disabled]);
@@ -44,7 +45,7 @@ export function PrivacyPasswordForm({ purpose = 'unlock', onDone, onCancel, disa
       if (mode === 'setup' && purpose === 'unlock') setMode('unlock');
       else onDone?.();
     } catch (reason) {
-      setError(reason.message || tr('无法切换隐藏状态，请重试。'));
+      setError(userErrorMessage(reason, tr('无法切换隐藏状态，请重试。')));
       if (reason.code === 'PRIVACY_CONFIGURED') { setMode('unlock'); setPassword(''); setConfirmation(''); }
       if (reason.code === 'PRIVACY_PASSWORD') { if (mode === 'change') setCurrent(''); else setPassword(''); }
       firstInput.current?.focus({ preventScroll: true });

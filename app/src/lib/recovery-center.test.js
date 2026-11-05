@@ -168,7 +168,7 @@ test('late domain failure rolls back already written domains, preserving the rec
   const subject = harness(), file = await subject.center.exportCompleteBackup();
   await subject.nav.saveState(createInitialState(), 0); const before = await subject.nav.loadState();
   const plan = await subject.center.preview(file); subject.tools.failWrites();
-  await assert.rejects(subject.center.restore(plan), /回退/);
+  await assert.rejects(subject.center.restore(plan), /本次更改已撤销/);
   assert.deepEqual((await subject.nav.loadState()).entries, before.entries);
   assert.equal(subject.hydrations.length, 1, 'automatic rollback does not start a second image acquisition');
   assert.equal((await subject.center.getRecoveryPoint()).status, 'rolled-back');

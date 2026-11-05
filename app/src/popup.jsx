@@ -1,3 +1,4 @@
+import { userErrorMessage } from './lib/user-error.js';
 import { tr, getLocale, initializeLanguage } from "./i18n/index.js";
 import { useLanguage } from './i18n/react.js';
 import { useEffect, useRef, useState } from 'react';
@@ -26,6 +27,7 @@ import './owntab.css';
 import './popup.css';
 import { Input } from './components/ui/input.jsx';
 import { Button } from './components/ui/button.jsx';
+import { Disclosure } from './components/ui/disclosure.jsx';
 
 const hiddenEntry = (entry, preferences) => Boolean(preferences.presentation && entry
   && privateContentKeys({ entries: [entry] }, preferences).has(`site:${entry.id}`));
@@ -83,7 +85,7 @@ function AddCurrentPage() {
           });
           await Promise.allSettled([hd, browser]);
         }
-      } catch (reason) { if (active) { setError(reason.message || tr("无法读取导航，请重新打开扩展。")); setInitializing(false); } }
+      } catch (reason) { if (active) { setError(userErrorMessage(reason, tr("无法读取导航，请重新打开扩展。"))); setInitializing(false); } }
     })();
     return () => { active = false; controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [contentPreferences.ready]);
@@ -128,7 +130,7 @@ function AddCurrentPage() {
     if (locked || initializing || !contentPreferences.ready || privateBlocked) return;
     let source;
     try { source = normalizeIconAddress(form.iconUrl || preferredIconAddress(normalizeUrl(form.url))); }
-    catch (reason) { setIconInfo({ phase: 'error', message: reason.message }); return; }
+    catch (reason) { setIconInfo({ phase: 'error', message: userErrorMessage(reason) }); return; }
     const authorization = requestNavigationIconAccess([{ source }]);
     iconOperation.current?.abort();
     const controller = new AbortController(); iconOperation.current = controller;
@@ -143,7 +145,7 @@ function AddCurrentPage() {
       setForm(next); setDisplayForm(next); previewBlob.current = null; setPreview(''); setFailed([]);
       setIconInfo({ phase: 'ready' });
     }).catch((reason) => {
-      if (!controller.signal.aborted) setIconInfo({ phase: 'error', message: reason.message });
+      if (!controller.signal.aborted) setIconInfo({ phase: 'error', message: userErrorMessage(reason) });
     });
   }
   async function save(event) {
@@ -182,7 +184,7 @@ function AddCurrentPage() {
       if (hiddenEntry(existing, await loadContentPreferences())) throw Error(tr('请先输入密码解除隐藏。'));
       await saveState({ ...latest, entries: existing ? latest.entries.map((item) => item.id === entry.id ? entry : item) : [...latest.entries, entry] }, latest.revision);
       window.close();
-    } catch (reason) { setError(reason.message || tr("添加失败，请重试。")); setBusy(false); }
+    } catch (reason) { setError(userErrorMessage(reason, tr("添加失败，请重试。"))); setBusy(false); }
   }
   const preferLocal = displayForm.icon?.kind === 'image';
   const variants = displayForm.iconVariants;
@@ -240,5 +242,5 @@ initializeLanguage().then(initializeLocalData).then(() => {
   document.body.classList.add('theme-system');
   createRoot(document.getElementById('root')).render(<AddCurrentPage />);
 }).catch((error) => {
-  createRoot(document.getElementById('root')).render(<main className="quick-add"><p role="alert">{tr('本机数据迁移或读取失败，原数据已保留。请关闭旧版页面后重试。')}</p><p>{error.message}</p></main>);
+  createRoot(document.getElementById('root')).render(<main className="quick-add"><p role="alert">{userErrorMessage(error, tr('无法打开本机数据，原数据已保留。'))}</p><Disclosure title={tr('技术详情')}><p>{error.message}</p></Disclosure></main>);
 });

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { tr } from '../i18n/index.js';
+import { userErrorMessage } from '../lib/user-error.js';
 import { useFloatingContainer } from './DialogSurface.jsx';
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel } from './ui/alert-dialog.jsx';
 import { Button } from './ui/button.jsx';
@@ -36,5 +37,5 @@ export function MessageDialog({ message, title = tr('提示'), onClose }) {
   const [dismissed, setDismissed] = useState(null);
   useEffect(() => { if (!message) setDismissed(null); }, [message]);
   if (!message || dismissed === message) return null;
-  return <PromptDialog title={title} onCancel={() => { setDismissed(message); onClose?.(); }}><p>{tr(message)}</p></PromptDialog>;
+  return <PromptDialog title={title} onCancel={() => { setDismissed(message); onClose?.(); }}><p>{userErrorMessage(message)}</p></PromptDialog>;
 }

@@ -43,13 +43,13 @@ function defaultStore() {
 const messages = {
   get LOCAL_DATA_PRIVACY_CONFLICT() { return tr('此删除版本会移除当前隐藏内容的标记，请先在本机解除隐藏，再重新选择。'); },
   get DATA_SYNC_CONFLICT_STALE() { return tr('冲突预览已过期或数据已更新，请重新查看两侧内容后选择。'); },
-  get DATA_SYNC_INVALID() { return tr('全量同步数据无效，全部本机数据已保留。'); },
-  get DATA_SYNC_CAPACITY() { return tr('全量同步数据超出容量限制，全部本机数据已保留。'); },
-  get DATA_SYNC_LOCAL() { return tr('无法保存全量同步状态，尚未确认上传。'); },
-  get DATA_SYNC_TARGET() { return tr('全量数据还有待上传或冲突版本，请处理后再切换存储位置。'); },
-  get DATA_SYNC_REQUEST() { return tr('全量加密同步未完成，请检查连接后重试；本机数据已保留。'); },
-  get CLOUD_LOCKED() { return tr('请先解锁自选存储连接，再同步所有数据。'); },
-  get CLOUD_DECRYPT() { return tr('无法解密同步数据：请检查加密口令，或确认云端文档未损坏。'); },
+  get DATA_SYNC_INVALID() { return tr('同步数据无效，本机数据已保留。'); },
+  get DATA_SYNC_CAPACITY() { return tr('同步数据超出容量限制，本机数据已保留。'); },
+  get DATA_SYNC_LOCAL() { return tr('无法保存同步状态，尚未确认上传。'); },
+  get DATA_SYNC_TARGET() { return tr('还有待上传内容或冲突版本，请处理后再切换存储位置。'); },
+  get DATA_SYNC_REQUEST() { return tr('同步未完成，请检查连接后重试；本机数据已保留。'); },
+  get CLOUD_LOCKED() { return tr('请先解锁存储连接，再开始同步。'); },
+  get CLOUD_DECRYPT() { return tr('无法解密同步数据，请检查同步密码。若密码正确，云端数据可能已损坏。'); },
   get REVISION_CONFLICT() { return tr('数据已在其他页面更新，本次未覆盖，请重新同步。'); },
 };
 function safeError(reason) {
@@ -501,7 +501,7 @@ export function createFullDataSync({ access, snapshotStore, store = defaultStore
         }
         const m = config.metadata, ownRemote = incoming.documents[m.document.actor];
         if (ownRemote && (ownRemote.clock > m.document.clock || ownRemote.clock === m.document.clock && !same(ownRemote, m.document))) fail();
-        report({ phase: 'syncing', code: null, message: tr('正在同步所有扩展数据和图标。') });
+        report({ phase: 'syncing', code: null, message: tr('正在同步…') });
         const received = combine(m.documents, incoming.documents, { [m.document.actor]: m.document });
         const receivedView = materialize(received); await decodeRecords(receivedView.values, reader); await validateConflicts(receivedView.conflicts, reader);
         // Finish the exact previous ciphertext before allocating a new clock.
@@ -530,7 +530,7 @@ export function createFullDataSync({ access, snapshotStore, store = defaultStore
         // can intentionally differ from the received materialization. Keep it
         // pending and author it in the next normal causal revision.
         if (status.pending) schedule();
-        return report({ phase: 'saved', code: null, message: tr('已完成所有数据的加密同步。'), lastSync: m.lastSync, conflicts: merged.conflicts.length });
+        return report({ phase: 'saved', code: null, message: tr('同步完成。'), lastSync: m.lastSync, conflicts: merged.conflicts.length });
       }).catch(async (reason) => {
         const safe = safeError(reason); try { await inspect(); } catch {}
         return report({ phase: safe.code === 'CLOUD_LOCKED' ? 'locked' : 'error', code: safe.code, message: safe.message });

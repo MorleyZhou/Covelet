@@ -69,7 +69,7 @@ export function useIconDrag({ state, page = 0, screenKey = `${page}:0`, editing 
     const hit = document.elementFromPoint(x, y);
     if (!hit) return null;
     const trash = hit.closest('[data-layout-trash]');
-    if (latest.current.editing && trash && !trash.disabled) return { kind: 'delete', label: tr("松开删除") };
+    if (latest.current.editing && trash && !trash.disabled) return { kind: 'delete', label: tr("松开后确认删除") };
     const pageSwitch = hit.closest('[data-page-switch]');
     if (pageSwitch && !pageSwitch.disabled) return current.pageTarget || pageTarget(pageSwitch, current);
     const folderPanel = current.element.closest('[data-folder-panel]');
