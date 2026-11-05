@@ -23,7 +23,19 @@ try {
   ws.onmessage = event => { const data = JSON.parse(event.data); if (data.id) { const job = pending.get(data.id); pending.delete(data.id); data.error ? job.reject(data.error) : job.resolve(data.result); } else { if (data.method === 'Runtime.exceptionThrown') errors.push(data.params.exceptionDetails); for (const fn of handlers.get(data.method) || []) Promise.resolve(fn(data.params)).catch(error => errors.push(String(error))); } };
   const send = (method, params = {}, sessionId) => new Promise((resolve, reject) => { const id = ++serial; pending.set(id,{resolve,reject}); ws.send(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})})); });
   let extId;
-  for (let i = 0; i < 100; i++) { const {targetInfos} = await send('Target.getTargets'); const worker = targetInfos.find(t => t.url.startsWith('chrome-extension://')); if (worker) {extId = new URL(worker.url).hostname;break;} await delay(100); }
+  for (let i = 0; i < 100 && !extId; i++) {
+    const {targetInfos} = await send('Target.getTargets');
+    // Chromium component extensions can also use background.js. Identify the
+    // unpacked app by its manifest before navigating or granting test access.
+    for (const worker of targetInfos.filter(t => t.type === 'service_worker' && t.url.startsWith('chrome-extension://') && t.url.endsWith('/background.js'))) {
+      const {sessionId} = await send('Target.attachToTarget', {targetId: worker.targetId, flatten: true});
+      try {
+        const result = await send('Runtime.evaluate', {expression: "(() => { const manifest = chrome.runtime.getManifest(); return manifest.name === 'Covelet' && manifest.chrome_url_overrides?.newtab === 'newtab.html'; })()", returnByValue: true}, sessionId);
+        if (result.result.value === true) { extId = new URL(worker.url).hostname; break; }
+      } finally { await send('Target.detachFromTarget', {sessionId}); }
+    }
+    if (!extId) await delay(100);
+  }
   if (!extId) throw Error('Extension did not load');
   const {targetId} = await send('Target.createTarget',{url:'about:blank'});
   const {sessionId} = await send('Target.attachToTarget',{targetId,flatten:true});

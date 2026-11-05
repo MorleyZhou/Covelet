@@ -32,7 +32,7 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   const has = value => `document.body.innerText.includes(${JSON.stringify(value)})`;
   const screenshot = async name => {const data=await send('Page.captureScreenshot',{format:'png'});await writeFile(`${output}/${name}.png`,Buffer.from(data.data,'base64'));};
   const openSettings = async () => {await wait('!!document.querySelector("button[title=设置]")','settings launcher');await evaluate('document.querySelector("button[title=设置]").click()');await delay(200);};
-  const openSync = async () => {await openSettings();await click('数据');await click('自定义存储同步');await wait('!!document.querySelector(".cloud-sync-form")','sync form');await delay(200);};
+  const openSync = async () => {await openSettings();await click('数据');await click('自备存储同步（Beta）');await wait('!!document.querySelector(".cloud-sync-form")','sync form');await delay(200);};
   const nextDisabled = () => evaluate('[...document.querySelectorAll("button")].find(b=>b.innerText.trim()==="下一步").disabled');
   const credentials = async () => {await fill('WebDAV 基目录地址','https://www.bing.com/covelet-setup-fixture/');await fill('WebDAV 用户名','FIXTURE-USER');await fill('WebDAV 应用密码','FIXTURE-APP-PASSWORD');};
   const screenTools = { evaluate, send, delay, writeFile, output };
@@ -50,7 +50,7 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:false});await delay(150);
   assert.equal(await evaluate('document.querySelector(".settings-content").scrollWidth<=document.querySelector(".settings-content").clientWidth+1'),true,'privacy fits narrow screen');await screenshot('privacy-narrow');
   await send('Emulation.setDeviceMetricsOverride',{width:1100,height:850,deviceScaleFactor:1,mobile:false});
-  await click('数据');await click('自定义存储同步');await wait(has('选择渠道'),'step one');
+  await click('数据');await click('自备存储同步（Beta）');await wait(has('选择渠道'),'step one');
   assert.equal(await evaluate('document.querySelector(".cloud-channel-option[aria-pressed=true]").innerText.includes("WebDAV")'),true);
   assert.equal(await evaluate('document.querySelectorAll(".cloud-channel-option").length'),5);await screenshot('step-one');
   await polishScreens(screenTools, 'step-one', '.cloud-sync-form', '.cloud-sync-fields');
@@ -81,6 +81,8 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await click('修改配置');await click('下一步');await credentials();await evaluate('document.querySelector(".cloud-sync-form").requestSubmit()');assert.equal(await nextDisabled(),true);assert.doesNotMatch(await text(),/至少需要 12 个字符/,'unverified step 2 submission cannot fall through to unlock');await click('测试连接');await wait(has('最近连接测试通过'),'retry connection');await click('下一步');await fill('同步密码','FIXTURE-SYNC-PASSWORD');await evaluate('document.querySelector("button[role=switch]").click()');failWrites=false;
   await click('保存并首次同步');await wait('!document.querySelector(".cloud-setup-steps")','first sync success',45000);await wait(has('最近同步：'),'successful sync timestamp');assert.ok(objects.size>0);assert.match(await text(),/自动同步已开启/);await screenshot('first-sync-complete');
   for(const bytes of objects.values()){assert.equal(bytes.includes('FIXTURE-SYNC-PASSWORD'),false);assert.equal(bytes.includes('FIXTURE-APP-PASSWORD'),false);}
+  // Stop the explicitly enabled background sync before measuring save-only I/O.
+  await click('锁定');await wait(has('需解锁'),'pause automatic sync before save-only');
   await click('修改配置');await click('下一步');await credentials();await click('测试连接');await wait(has('最近连接测试通过'),'save-only connection');await click('下一步');await fill('同步密码','FIXTURE-SYNC-PASSWORD');const beforeSave=requests.length;await click('保存配置');await wait('!document.querySelector(".cloud-setup-steps")','save only returns to management');assert.equal(requests.length,beforeSave,'save-only performs no WebDAV request');assert.doesNotMatch(await text(),/自动同步已开启/);
   await click('锁定');await wait(has('当前凭据的连接尚未验证'),'locking clears proof');assert.doesNotMatch(await text(),/最近连接测试通过/);
   await fill('WebDAV 用户名','FIXTURE-USER');await fill('WebDAV 应用密码','FIXTURE-APP-PASSWORD');await fill('同步密码','FIXTURE-SYNC-PASSWORD');const beforeUnlock=requests.length;await click('解锁');await wait(has('已解锁'),'unlock without verification');assert.equal(requests.length,beforeUnlock);assert.match(await text(),/当前凭据的连接尚未验证/);

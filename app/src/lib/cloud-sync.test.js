@@ -453,6 +453,80 @@ test('failed retests invalidate verification; locking or denied site access prev
   assert.equal(remote.calls.length, 0);
 });
 
+test('an explicit same-target and same-credential failed retest clears saved proof', async () => {
+  const remote = cloud(); let fails = false;
+  const subject = device(remote, 'a', { providerFactory: (...args) => ({ ...remote.factory(...args),
+    async testConnection() { if (fails) throw Error('offline'); },
+  }) });
+  await configure(subject); await subject.api.testCloudConnection();
+  const verified = (await subject.api.loadCloudSyncSettings()).connectionTest;
+  fails = true;
+  await assert.rejects(subject.api.testCloudConnection({ ...profile, prefix: 'another-directory' }, secrets));
+  assert.deepEqual((await subject.api.loadCloudSyncSettings()).connectionTest, verified, 'an unrelated draft cannot invalidate the saved connection');
+  await assert.rejects(subject.api.testCloudConnection(profile, secrets));
+  assert.equal((await subject.api.loadCloudSyncSettings()).connectionTest, null);
+  assert.equal((await subject.api.loadCloudSyncSettings()).unlocked, true);
+});
+
+test('a denied-permission retest clears saved proof before any provider request', async () => {
+  for (const explicit of [false, true]) {
+    const remote = cloud(); let allowed = true;
+    const subject = device(remote, 'a', { hasPermission: async () => allowed });
+    await configure(subject); await subject.api.testCloudConnection();
+    assert.ok((await subject.api.loadCloudSyncSettings()).connectionTest);
+    const calls = remote.calls.length;
+    allowed = false;
+    await assert.rejects(explicit ? subject.api.testCloudConnection(profile, secrets) : subject.api.testCloudConnection(), { code: 'CLOUD_PERMISSION' });
+    const settings = await subject.api.loadCloudSyncSettings();
+    assert.equal(settings.connectionTest, null);
+    assert.equal(settings.unlocked, true);
+    assert.equal(remote.calls.length, calls, 'permission denial must precede provider I/O');
+  }
+});
+
+test('locking during a test fingerprint cancels session and draft proof without reviving secrets', async () => {
+  for (const draft of [false, true]) {
+    const remote = cloud(); let armed = false, subject;
+    const checkedSigner = { ...signer, async sha256(value) {
+      if (armed && JSON.parse(decode(value)).secrets) {
+        armed = false;
+        await subject.api.lockCloudSync();
+      }
+      return signer.sha256(value);
+    } };
+    subject = device(remote, 'a', { signer: checkedSigner });
+    if (!draft) await configure(subject);
+    armed = true;
+    await assert.rejects(draft ? subject.api.testCloudConnection(profile, secrets) : subject.api.testCloudConnection(), { code: 'CLOUD_LOCKED' });
+    assert.equal(subject.sessionStore.value, null);
+    assert.equal(remote.calls.length, 0, 'cancellation before the probe prevents provider I/O');
+    const settings = await configure(subject);
+    assert.equal(settings.connectionTest, null, 'a later deliberate save cannot reuse cancelled test proof');
+    assert.equal(remote.calls.length, 0, 'saving still performs no connection test');
+  }
+});
+
+test('locking during a session write keeps an in-flight save or unlock locked', async () => {
+  for (const action of ['save', 'unlock']) {
+    const remote = cloud(), disk = memory(); let subject, lockDuringWrite = false;
+    const sessionStore = { ...disk, async write(value) {
+      if (lockDuringWrite) {
+        lockDuringWrite = false;
+        await subject.api.lockCloudSync();
+      }
+      await disk.write(value);
+    } };
+    subject = device(remote, 'a', { sessionStore });
+    if (action === 'unlock') { await configure(subject); await subject.api.lockCloudSync(); }
+    lockDuringWrite = true;
+    await assert.rejects(action === 'save' ? configure(subject) : subject.api.unlockCloudSync(secrets, password), { code: 'CLOUD_LOCKED' });
+    assert.equal(disk.value, null, 'a completed stale write cannot retain credentials after locking');
+    const settings = await subject.api.loadCloudSyncSettings();
+    assert.equal(settings.unlocked, false); assert.equal(settings.connectionTest, null);
+    assert.equal(remote.calls.length, 0);
+  }
+});
+
 test('safe WebDAV status and transport messages survive the public sync boundary without untrusted details', async () => {
   const dav = { provider: 'webdav', endpoint: 'https://cloud.example.test/dav/', prefix: 'covelet' };
   const credentials = { username: 'fake', appPassword: 'fake-app-password' };
