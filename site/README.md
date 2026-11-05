@@ -1,20 +1,26 @@
 # Covelet marketing site
 
-Pure static HTML/CSS/JS; no backend, analytics, SDKs, or user-data processing.
-Cloudflare Pages can publish `site/` directly with no build command. No deployment
-or DNS changes are included. Preview: `python3 -m http.server 8080 --directory site`.
+Static HTML/CSS/JS for the existing Cloudflare Pages project `covelet`:
+https://covelet.future-element.com/ (also https://covelet.pages.dev/).
+Publish `site/` directly with no build command. Keep the existing hosting,
+domains and website analytics configuration. The source contains no analytics SDK;
+the existing Pages configuration supplies website-only Cloudflare Web Analytics.
 
 One Chinese HTML shell + `i18n/{locale}.json` + a working language selector.
 Default: `zh-CN`; share another language with `?lang=en`. Locale codes match the
 extension exactly: `zh-CN`, `en`, `zh-TW`, `ja`, `ko`, `de`, `fr`, `ru`.
-All eight use the approved `/workspace/covelet-site-copy-i18n.md` pack.
-UI labels are localized too. No cookies or browser storage; Chinese works without JS.
-The explicit Chinese meta-title lock takes precedence over the pack's brand prefix.
+UI labels, metadata, privacy boundaries and install links are localized too.
+The page sets no cookies or browser storage. Chinese HTML works without JavaScript.
+`index.html` is the complete Chinese fallback; keep it aligned with `zh-CN.json`.
 
-Design: `/workspace/covelet-site-mock/index.html` (= `direction-c.html`) and
-`brand-direction-c-brutal.md`. White, black borders, hard shadows, large radii,
-`#B9FF66`; only the two referenced SVG assets are copied unchanged.
-Chrome and Edge links, WebDAV/Beta messaging, three setup steps, connection
-verification, and whole-record conflict choice follow the approved pack.
+The retained design uses white, black borders, hard shadows, large radii and
+`#B9FF66`. Both SVG assets remain unchanged. Copy puts everyday navigation,
+search and notes before data storage, optional sync and backup. Keep setup steps,
+connection-test limits and export exclusions in the extension's contextual help.
+The page retains the overall sync Beta label, explains local/remote version choice,
+and discloses unencrypted backups and hidden content.
 
-**Draft only. Do not merge — waiting exec.**
+For updates, check all eight dictionaries against the HTML bindings, preserve
+the Chrome/Edge destination URLs, and verify desktop/narrow layouts and language
+switching before publication. Website publishing does not release the extension,
+change its version, submit a store build, or authorize DNS changes.
