@@ -13,6 +13,11 @@ UI labels, metadata, privacy boundaries and install links are localized too.
 The page sets no cookies or browser storage. Chinese HTML works without JavaScript.
 `index.html` is the complete Chinese fallback; keep it aligned with `zh-CN.json`.
 
+The [privacy policy](https://covelet.future-element.com/privacy/) is available in
+Chinese and English without JavaScript. Keep `privacy/index.html` aligned with
+the [extension privacy policy](../docs/隐私说明.md). The path-specific rules in
+`_headers` prevent scripts from running on the policy page.
+
 The retained design uses white, black borders, hard shadows, large radii and
 `#B9FF66`. Both SVG assets remain unchanged. Copy puts everyday navigation,
 search and notes before data storage, optional sync and backup. Keep setup steps,

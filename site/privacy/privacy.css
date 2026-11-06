@@ -1,0 +1,10 @@
+.policy{max-width:52rem;padding-top:clamp(32px,6vw,64px);padding-bottom:64px}
+.policy h1,.policy-title{margin:0;font-size:clamp(2rem,6vw,3.25rem);line-height:1.15;letter-spacing:-.03em}
+.policy-date{color:var(--mute);font-size:.875rem}
+.policy article+article{border-top:var(--bd);margin-top:48px;padding-top:42px}
+.policy h2:not(.policy-title),.policy h3{margin:1.75em 0 .5em;font-size:1.25rem;line-height:1.4}
+.policy p,.policy ul{margin-top:0;margin-bottom:1em}
+.policy h1+p,.policy-title+p{margin-top:.75em}
+.policy ul{padding-inline-start:1.35em}
+.policy li+li{margin-top:.5em}
+.policy code,.policy a{overflow-wrap:anywhere}
