@@ -75,6 +75,15 @@ function device(remote, id, options = {}) {
 
 async function configure(subject, options = {}) { return subject.api.saveCloudSyncSettings(profile, secrets, password, options); }
 
+test('worker sync status is displayed in the receiving page language', () => {
+  const { api } = device(cloud(), 'a');
+  api.acceptBackgroundCloudSyncStatus({
+    phase: 'error', code: 'CLOUD_REQUEST_FAILED', message: 'The storage service couldn’t complete the request. Try again later.',
+  });
+  assert.equal(api.getCloudSyncStatus().message, '存储服务暂时无法完成请求。请稍后重试。');
+  assert.equal(api.getCloudSyncStatus().code, 'CLOUD_REQUEST_FAILED');
+});
+
 test('local-only fallback clears shared secrets and auto sync while preserving pending ciphertext and local data', async () => {
   const remote = cloud(), subject = device(remote, 'a');
   await configure(subject, { autoSync: true });

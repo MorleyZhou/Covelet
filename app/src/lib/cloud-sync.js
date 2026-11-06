@@ -698,7 +698,9 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     getCloudSyncTarget: fullTarget,
     acceptBackgroundCloudSyncStatus(value) {
       if (!value || !['syncing', 'saved', 'error', 'locked', 'conflict'].includes(value.phase)) return;
-      report({ ...value, unlocked: value.phase === 'locked' ? false : status.unlocked, autoSync: status.autoSync });
+      // The service worker and the visible page can start with different browser locales.
+      report({ ...value, ...(typeof value.message === 'string' && { message: tr(value.message) }),
+        unlocked: value.phase === 'locked' ? false : status.unlocked, autoSync: status.autoSync });
     },
     async resolveCloudSyncConflicts(choice, options) {
       if (fullSync) return fullSync.resolveFullDataConflicts(choice, options);
