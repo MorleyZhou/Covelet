@@ -8,6 +8,8 @@ const decoder = new TextDecoder('utf-8', { fatal: true });
 export const CLOUD_SNAPSHOT_MAX_BYTES = 768 * 1024;
 const MAX_RESPONSE_BYTES = 1024 * 1024;
 const MAX_OBJECTS = 5000;
+const GITHUB_DIRECTORY_LIMIT = 1000;
+const GITHUB_SEAL = 'Covelet sync layout 2\n';
 const NAME = /^covelet-([a-f0-9]{32})-([1-9][0-9]{0,15})-([a-f0-9]{64})\.json$/;
 const safeErrors = new WeakSet();
 const ownError = (message, code = 'CLOUD_INVALID_CONFIG') => {
@@ -103,14 +105,6 @@ function bytesOf(value) {
 
 function equalBytes(a, b) {
   return a.length === b.length && a.every((value, index) => value === b[index]);
-}
-
-function statusError(status, headers) {
-  if (status === 429 || headers?.get('x-ratelimit-remaining') === '0') return ownError(tr("云存储请求过于频繁，请稍后再试。"), 'CLOUD_RATE_LIMIT');
-  if (status === 401 || status === 403) return ownError(tr("云存储身份验证失败，请检查凭据和访问权限。"), 'CLOUD_AUTH');
-  if (status === 404) return ownError(tr("云端文件、仓库或分支不可访问，请检查存储配置和权限。"), 'CLOUD_NOT_FOUND');
-  if (status === 409 || status === 412) return conflictError();
-  return ownError(tr("云存储请求未成功，请检查服务配置后重试。"), 'CLOUD_REQUEST_FAILED');
 }
 
 async function boundedBody(response) {
@@ -225,11 +219,25 @@ export function createCloudProvider(input, secrets, options = {}) {
   const signer = options.signer;
   if (typeof fetcher !== 'function' || !signer || typeof signer.sha256 !== 'function' || typeof signer.hmacSha256 !== 'function') throw ownError(tr("本机同步计算模块尚未准备好。"), 'CLOUD_CRYPTO');
   if (options.beforeRequest !== undefined && typeof options.beforeRequest !== 'function') throw invalid();
-  const credentials = ['github', 'gitlab'].includes(profile.provider) ? { token: checkedSecret(secrets?.token) } : {
+  const usesToken = ['github', 'gitlab'].includes(profile.provider);
+  const credentials = usesToken ? { token: checkedSecret(secrets?.token) } : {
     accessKeyId: checkedSecret(secrets?.accessKeyId, 256), secretAccessKey: checkedSecret(secrets?.secretAccessKey, 500),
     sessionToken: secrets?.sessionToken ? checkedSecret(secrets.sessionToken, 8192) : '',
   };
   const timeoutMs = Number.isFinite(options.timeoutMs) ? Math.max(1, Math.min(60000, options.timeoutMs)) : 15000;
+
+  function statusError(status, headers, resource) {
+    if (status === 429 || headers?.get('x-ratelimit-remaining') === '0') return ownError(tr('云存储请求过于频繁，请稍后再试。'), 'CLOUD_RATE_LIMIT');
+    if (status === 401) return ownError(usesToken ? tr('登录失败。请检查访问令牌。') : tr('登录失败。请检查访问密钥。'), 'CLOUD_AUTH');
+    if (status === 403) return ownError(usesToken ? tr('访问被拒绝。请检查令牌权限。') : tr('访问被拒绝。请检查访问密钥的权限。'), 'CLOUD_AUTH');
+    if (status === 404) {
+      if (resource === 'file') return ownError(tr('无法访问同步文件。请检查存储配置和权限。'), 'CLOUD_NOT_FOUND');
+      return ownError(usesToken ? tr('无法访问仓库或分支。请检查名称和令牌权限。') : tr('无法访问存储桶。请检查名称和权限。'), 'CLOUD_NOT_FOUND');
+    }
+    if (status === 409 || status === 412) return conflictError();
+    if (status >= 500 && status <= 599) return ownError(tr('存储服务暂时无法完成请求。请稍后重试。'), 'CLOUD_REQUEST_FAILED');
+    return ownError(tr('云存储请求未成功，请检查服务配置后重试。'), 'CLOUD_REQUEST_FAILED');
+  }
 
   async function digest(bytes) {
     const result = await signer.sha256(bytes);
@@ -293,11 +301,15 @@ export function createCloudProvider(input, secrets, options = {}) {
     const path = profile.provider === 'r2' ? `/${encode(profile.bucket)}${key ? `/${encodedPath(key)}` : ''}` : `/${encodedPath(key)}`;
     return new URL(`${origin}${path}`);
   }
-  function githubUrl(name, branchCheck = false) {
-    const base = `${origin}/repos/${encode(profile.owner)}/${encode(profile.repo)}`;
-    const url = new URL(branchCheck ? `${base}/branches/${encode(profile.branch)}` : `${base}/contents/${encodedPath(profile.prefix)}${name ? `/${encode(name)}` : ''}`);
-    if (!branchCheck) url.search = queryOf({ ref: profile.branch });
+  const githubBase = profile.provider === 'github' ? `${origin}/repos/${encode(profile.owner)}/${encode(profile.repo)}` : null;
+  function githubUrl(name, branchCheck = false, ref = profile.branch) {
+    const url = new URL(branchCheck ? `${githubBase}/branches/${encode(profile.branch)}` : `${githubBase}/contents/${encodedPath(profile.prefix)}${name ? `/${encode(name)}` : ''}`);
+    if (!branchCheck) url.search = queryOf({ ref });
     return url;
+  }
+  function githubSha(value) {
+    if (typeof value !== 'string' || !/^[a-f0-9]{40}$/.test(value)) throw badResponse();
+    return value;
   }
   function gitlabUrl(kind = 'tree', name, page = 1) {
     const base = `${origin}/api/v4/projects/${encode(profile.project)}/repository`;
@@ -312,11 +324,12 @@ export function createCloudProvider(input, secrets, options = {}) {
     const abort = new AbortController();
     let timer;
     let expired = false;
+    const timeout = () => ownError(tr('连接超时。请稍后重试。'), 'CLOUD_TIMEOUT');
     const deadline = new Promise((_, reject) => {
-      timer = setTimeout(() => { expired = true; abort.abort(); reject(ownError(tr("云存储连接超时，未完成的操作会在下次同步时核对。"), 'CLOUD_TIMEOUT')); }, timeoutMs);
+      timer = setTimeout(() => { expired = true; abort.abort(); reject(timeout()); }, timeoutMs);
     });
     async function request(method, url, body, extras) {
-      if (abort.signal.aborted) throw ownError(tr("云存储连接超时。"), 'CLOUD_TIMEOUT');
+      if (abort.signal.aborted) throw timeout();
       if (url.origin !== origin || url.protocol !== 'https:' || url.username || url.password || url.hash) throw invalid();
       const headers = profile.provider === 'github' ? {
         accept: 'application/vnd.github+json', authorization: `Bearer ${credentials.token}`, 'x-github-api-version': '2026-03-10', ...extras,
@@ -330,7 +343,7 @@ export function createCloudProvider(input, secrets, options = {}) {
         if (cause?.code === 'CLOUD_UNAVAILABLE') throw ownError(tr("当前浏览器无法使用云同步，已停止请求。"), 'CLOUD_UNAVAILABLE');
         throw ownError(tr("云同步已锁定或目标已更改，已停止请求。"), 'CLOUD_LOCKED');
       }
-      if (abort.signal.aborted) throw ownError(tr("云存储连接超时。"), 'CLOUD_TIMEOUT');
+      if (abort.signal.aborted) throw timeout();
       const response = await fetcher(url.href, { method, body, headers, signal: abort.signal, credentials: 'omit', referrerPolicy: 'no-referrer', referrer: '', redirect: 'error', cache: 'no-store' });
       if (response.redirected || response.type === 'opaqueredirect' || response.url && new URL(response.url).origin !== origin) throw ownError(tr("云存储返回了不允许的跳转，已停止请求。"), 'CLOUD_REDIRECT');
       const bytes = await boundedBody(response);
@@ -338,18 +351,18 @@ export function createCloudProvider(input, secrets, options = {}) {
     }
     try { return await Promise.race([action(request), deadline]); }
     catch (error) {
-      if (expired) throw ownError(tr("云存储连接超时，未完成的操作会在下次同步时核对。"), 'CLOUD_TIMEOUT');
+      if (expired) throw timeout();
       if (safeErrors.has(error)) throw error;
       throw ownError(tr("无法连接云存储，请检查网络、站点授权和跨域配置。"), 'CLOUD_NETWORK');
     } finally { clearTimeout(timer); abort.abort(); }
   }
 
-  async function rawRead(request, name, optional = false) {
-    const url = profile.provider === 'github' ? githubUrl(name) : profile.provider === 'gitlab' ? gitlabUrl('raw', name) : objectUrl(name);
+  async function rawRead(request, name, optional = false, ref) {
+    const url = profile.provider === 'github' ? githubUrl(name, false, ref) : profile.provider === 'gitlab' ? gitlabUrl('raw', name) : objectUrl(name);
     const extras = profile.provider === 'github' ? { accept: 'application/vnd.github.raw+json' } : profile.provider === 'gitlab' ? { accept: 'application/octet-stream' } : undefined;
     const result = await request('GET', url, undefined, extras);
     if (optional && result.response.status === 404) return null;
-    if (result.response.status !== 200) throw statusError(result.response.status, result.response.headers);
+    if (result.response.status !== 200) throw statusError(result.response.status, result.response.headers, 'file');
     return bytesOf(result.bytes);
   }
 
@@ -375,13 +388,193 @@ export function createCloudProvider(input, secrets, options = {}) {
     return result.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
   }
 
+  function createGithubStorage() {
+    const prefix = profile.prefix.slice(0, -'/all-data-v1'.length);
+    const roots = { v1: 'all-data-v1', v2: 'all-data-v2' };
+    const staleHead = () => ownError(tr('冲突已变化，请同步后重试。'), 'CLOUD_STALE_HEAD');
+    let repositoryId;
+
+    const githubJson = async (request, method, path, input) => {
+      const body = input === undefined ? undefined : encoder.encode(JSON.stringify(input));
+      if (body && body.length > 2 * CLOUD_SNAPSHOT_MAX_BYTES) throw capacityError();
+      return request(method, new URL(`${githubBase}${path}`), body, body && { 'content-type': 'application/json' });
+    };
+    const requireStatus = ({ response, bytes }, status) => {
+      if (response.status >= 500) throw ownError(tr('存储服务暂时无法完成请求。请稍后重试。'), 'CLOUD_NETWORK');
+      if (response.status !== status) throw statusError(response.status, response.headers);
+      return jsonBody(bytes);
+    };
+    const branch = async (request) => {
+      const value = requireStatus(await request('GET', githubUrl(undefined, true)), 200);
+      if (value?.name !== profile.branch) throw badResponse();
+      return { head: githubSha(value.commit?.sha), tree: githubSha(value.commit?.commit?.tree?.sha) };
+    };
+    const marker = (bytes) => {
+      let value;
+      try { value = decoder.decode(bytes); } catch { throw badResponse(); }
+      const name = value.slice(GITHUB_SEAL.length, -1);
+      if (!parseCloudSnapshotName(name) || value !== `${GITHUB_SEAL}${name}\n`) throw badResponse();
+      return { layout: 'v2', epoch: name };
+    };
+    const readLayout = (pin) => {
+      const ref = pin === undefined ? profile.branch : githubSha(pin.head);
+      return operation(async (request) => {
+        const result = await request('GET', githubUrl(undefined, false, ref));
+        if (result.response.status === 404) return { layout: 'v1', epoch: null };
+        const value = requireStatus(result, 200);
+        if (Array.isArray(value)) return { layout: 'v1', epoch: null };
+        if (value?.type !== 'file' || value.path !== profile.prefix || value.encoding !== 'base64'
+          || !Number.isSafeInteger(value.size) || value.size < 1 || value.size > 256 || typeof value.content !== 'string'
+          || value.content.length > 512 || value.target) throw badResponse();
+        let bytes;
+        try { bytes = Uint8Array.from(atob(value.content), char => char.charCodeAt(0)); } catch { throw badResponse(); }
+        if (bytes.length !== value.size) throw badResponse();
+        return marker(bytes);
+      });
+    };
+    const gitTree = async (request, sha) => {
+      const value = requireStatus(await githubJson(request, 'GET', `/git/trees/${githubSha(sha)}`), 200);
+      if (value?.truncated === true || value?.tree?.length > MAX_OBJECTS) throw capacityError();
+      if (value?.sha !== sha || value.truncated !== false || !Array.isArray(value.tree)) throw badResponse();
+      const entries = new Map();
+      for (const item of value.tree) {
+        if (typeof item?.path !== 'string' || !item.path || item.path.includes('/') || entries.has(item.path)) throw badResponse();
+        githubSha(item.sha);
+        entries.set(item.path, item);
+      }
+      return entries;
+    };
+    const isTree = item => item?.type === 'tree' && item.mode === '040000';
+    const fileRecord = (item, kind) => {
+      const info = parseCloudSnapshotName(item?.path);
+      if (item?.type !== 'blob' || item.mode !== '100644' || !info || !Number.isSafeInteger(item.size) || item.size < 1
+        || kind === 'blob' && (info.clock !== 1 || info.actor !== info.digest.slice(0, 32))) throw badResponse();
+      if (item.size > CLOUD_SNAPSHOT_MAX_BYTES) throw capacityError();
+      return { name: item.path, sha: item.sha, size: item.size };
+    };
+    async function readFiles(request, pin, layout) {
+      let tree = githubSha(pin.tree);
+      for (const part of prefix.split('/')) {
+        const entry = (await gitTree(request, tree)).get(part);
+        if (!entry) return { indexes: [], blobs: [] };
+        if (!isTree(entry)) throw badResponse();
+        tree = entry.sha;
+      }
+      const root = (await gitTree(request, tree)).get(roots[layout]);
+      if (!root) return { indexes: [], blobs: [] };
+      if (!isTree(root)) {
+        if (layout === 'v1' && root.type === 'blob' && root.mode === '100644' && (await readLayout(pin)).layout === 'v2') return { indexes: [], blobs: [] };
+        throw badResponse();
+      }
+      const indexes = [], blobs = [];
+      for (const item of (await gitTree(request, root.sha)).values()) {
+        if (item.path !== 'blobs') { indexes.push(fileRecord(item, 'index')); continue; }
+        if (!isTree(item)) throw badResponse();
+        for (const file of (await gitTree(request, item.sha)).values()) blobs.push(fileRecord(file, 'blob'));
+      }
+      if (indexes.length + blobs.length > MAX_OBJECTS) throw capacityError();
+      return { indexes, blobs };
+    }
+
+    return {
+      pin(ref) {
+        if (ref !== undefined) githubSha(ref);
+        return operation(async (request) => {
+          let pinned;
+          if (ref === undefined) pinned = await branch(request);
+          else {
+            const value = requireStatus(await githubJson(request, 'GET', `/git/commits/${ref}`), 200);
+            if (value?.sha !== ref) throw badResponse();
+            pinned = { head: ref, tree: githubSha(value.tree?.sha) };
+          }
+          if (!repositoryId) {
+            const value = requireStatus(await githubJson(request, 'GET', ''), 200);
+            if (typeof value?.node_id !== 'string' || !/^[A-Za-z0-9_+=\/-]{1,256}$/.test(value.node_id)
+              || value.full_name?.toLowerCase() !== `${profile.owner}/${profile.repo}`.toLowerCase()) throw badResponse();
+            repositoryId = value.node_id;
+          }
+          return { ...pinned, repositoryId };
+        });
+      },
+      readLayout,
+      files(pin, layout) {
+        if (layout !== 'v1' && layout !== 'v2') throw invalid();
+        return operation(request => readFiles(request, pin, layout));
+      },
+      uploadBlob(input) {
+        const bytes = new Uint8Array(bytesOf(input));
+        return operation(async (request) => {
+          const blob = requireStatus(await githubJson(request, 'POST', '/git/blobs', { content: base64(bytes), encoding: 'base64' }), 201);
+          return githubSha(blob?.sha);
+        });
+      },
+      prepare(pin, { additions = [], deletions = [], seal } = {}) {
+        const head = githubSha(pin.head), baseTree = githubSha(pin.tree);
+        if (!Array.isArray(additions) || !Array.isArray(deletions)) throw invalid();
+        if (additions.length + deletions.length > MAX_OBJECTS) throw capacityError();
+        const paths = new Set();
+        function entry({ kind, name, sha }, deleting) {
+          if (kind !== 'index' && kind !== 'blob') throw invalid();
+          const info = checkedName(name);
+          if (kind === 'blob' && (info.clock !== 1 || info.actor !== info.digest.slice(0, 32))) throw invalid();
+          const path = `${prefix}/${roots.v2}/${kind === 'blob' ? 'blobs/' : ''}${name}`;
+          if (paths.has(path)) throw invalid();
+          paths.add(path);
+          return { path, mode: '100644', type: 'blob', sha: deleting ? null : githubSha(sha) };
+        }
+        const tree = [...additions.map(item => entry(item, false)), ...deletions.map(item => entry(item, true))];
+        if (seal !== undefined) {
+          checkedName(seal);
+          tree.push({ path: profile.prefix, mode: '100644', type: 'blob', content: `${GITHUB_SEAL}${seal}\n` });
+        }
+        if (!tree.length) throw invalid();
+        return operation(async (request) => {
+          // Replacing a v1 tree removes the whole subtree. Refuse any file
+          // outside Covelet's known index/blob structure before doing so.
+          if (seal !== undefined) await readFiles(request, pin, 'v1');
+          const staged = requireStatus(await githubJson(request, 'POST', '/git/trees', { base_tree: baseTree, tree }), 201);
+          const treeSha = githubSha(staged?.sha);
+          const commit = requireStatus(await githubJson(request, 'POST', '/git/commits', {
+            message: 'Covelet encrypted sync snapshot', tree: treeSha, parents: [head],
+          }), 201);
+          if (commit?.tree?.sha !== treeSha || commit.parents?.length !== 1 || commit.parents[0].sha !== head) throw badResponse();
+          return githubSha(commit.sha);
+        });
+      },
+      advance(pin, candidate) {
+        const head = githubSha(pin.head);
+        githubSha(candidate);
+        if (!repositoryId || pin.repositoryId !== repositoryId || candidate === head) throw invalid();
+        const input = {
+          repositoryId, clientMutationId: candidate,
+          refUpdates: [{ name: `refs/heads/${profile.branch}`, beforeOid: head, afterOid: candidate, force: false }],
+        };
+        const body = encoder.encode(JSON.stringify({ query: 'mutation($input: UpdateRefsInput!) { updateRefs(input: $input) { clientMutationId } }', variables: { input } }));
+        return operation(async (request) => {
+          const result = await request('POST', new URL(`${origin}/graphql`), body, { 'content-type': 'application/json', accept: 'application/json' });
+          if (result.response.status === 409 || result.response.status === 412) throw staleHead();
+          const value = requireStatus(result, 200);
+          if (value?.errors?.length) {
+            if (result.response.headers.get('x-ratelimit-remaining') === '0') throw statusError(429, result.response.headers);
+            const current = await branch(request);
+            if (current.head === candidate) return;
+            if (current.head !== head) throw staleHead();
+            throw badResponse();
+          }
+          if (value?.data?.updateRefs?.clientMutationId !== candidate) throw badResponse();
+        });
+      },
+    };
+  }
+
   async function verifyGitlabBranch(request) {
     const check = await request('GET', gitlabUrl('branch'));
     if (check.response.status !== 200 || jsonBody(check.bytes)?.name !== profile.branch) throw statusError(check.response.status === 200 ? 404 : check.response.status, check.response.headers);
   }
 
   return {
-    list() {
+    list(ref) {
+      if (ref !== undefined) githubSha(ref);
       return operation(async (request) => {
         if (profile.provider === 'gitlab') {
           const objects = [];
@@ -434,8 +627,9 @@ export function createCloudProvider(input, secrets, options = {}) {
           throw capacityError();
         }
         if (profile.provider === 'github') {
-          const result = await request('GET', githubUrl());
+          const result = await request('GET', githubUrl(undefined, false, ref));
           if (result.response.status === 404) {
+            if (ref !== undefined) throw statusError(result.response.status, result.response.headers);
             // A missing directory is normal on first sync; a missing branch,
             // private repository or permission is not an empty directory.
             const check = await request('GET', githubUrl(undefined, true));
@@ -446,7 +640,7 @@ export function createCloudProvider(input, secrets, options = {}) {
           const data = jsonBody(result.bytes);
           if (!Array.isArray(data)) throw badResponse();
           // Contents has a hard 1,000-entry directory limit with no pagination.
-          if (data.length >= 1000) throw capacityError();
+          if (data.length >= GITHUB_DIRECTORY_LIMIT) throw capacityError();
           const objects = [];
           for (const item of data) {
             if (item?.type !== 'file' || !parseCloudSnapshotName(item.name)) continue;
@@ -479,14 +673,57 @@ export function createCloudProvider(input, secrets, options = {}) {
         return finalList(found);
       });
     },
-    read(name) {
+    read(name, ref) {
       const metadata = checkedName(name);
+      if (ref !== undefined) githubSha(ref);
       return operation(async (request) => {
-        const bytes = await rawRead(request, name);
+        const bytes = await rawRead(request, name, false, ref);
         if (await digest(bytes) !== metadata.digest) throw ownError(tr("云端快照校验失败，已保留本地数据。"), 'CLOUD_INTEGRITY');
         return bytes;
       });
     },
+    ...(profile.provider === 'github' && profile.prefix.endsWith('/all-data-v1') && {
+      githubStorage: createGithubStorage(),
+      pinIndexes() {
+        return operation(async (request) => {
+          const { response, bytes } = await request('GET', githubUrl(undefined, true));
+          if (response.status !== 200) throw statusError(response.status, response.headers);
+          const branch = jsonBody(bytes);
+          if (branch?.name !== profile.branch) throw badResponse();
+          return githubSha(branch.commit?.sha);
+        });
+      },
+      pruneIndexes(head, names) {
+        githubSha(head);
+        if (!Array.isArray(names) || names.length === 0) throw badResponse();
+        if (names.length >= GITHUB_DIRECTORY_LIMIT) throw capacityError();
+        if (new Set(names).size !== names.length) throw badResponse();
+        const deletions = names.map(name => {
+          checkedName(name);
+          return { path: `${profile.prefix}/${name}` };
+        });
+        // GitHub checks the exact branch head and deletes all paths in one
+        // commit. A concurrent write or branch rewind rejects the mutation.
+        const body = encoder.encode(JSON.stringify({
+          query: 'mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }',
+          variables: { input: {
+            branch: { repositoryNameWithOwner: `${profile.owner}/${profile.repo}`, branchName: profile.branch },
+            expectedHeadOid: head, fileChanges: { deletions }, message: { headline: 'Covelet remove obsolete encrypted sync indexes' },
+          } },
+        }));
+        if (body.length > CLOUD_SNAPSHOT_MAX_BYTES) throw capacityError();
+        return operation(async (request) => {
+          const { response, bytes } = await request('POST', new URL(`${origin}/graphql`), body, { accept: 'application/json', 'content-type': 'application/json' });
+          if (response.status !== 200) throw statusError(response.status, response.headers);
+          const result = jsonBody(bytes);
+          if (result?.errors?.length) {
+            if (response.headers.get('x-ratelimit-remaining') === '0') throw statusError(response.status, response.headers);
+            throw badResponse();
+          }
+          if (githubSha(result?.data?.createCommitOnBranch?.commit?.oid) === head) throw badResponse();
+        });
+      },
+    }),
     write(name, inputBytes) {
       const metadata = checkedName(name);
       // Copy once so callers cannot mutate a payload after its hash is checked.
@@ -520,7 +757,7 @@ export function createCloudProvider(input, secrets, options = {}) {
           const competing = await rawRead(request, name, true);
           if (competing) { if (!equalBytes(competing, bytes)) throw conflictError(); return; }
         }
-        throw statusError(result.response.status, result.response.headers);
+        throw statusError(result.response.status, result.response.headers, 'file');
       });
     },
   };

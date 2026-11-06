@@ -27,7 +27,7 @@ test('空状态用于迁移和同步，历史测试示例不包含可切换分�
   assert.equal(empty.groups[0].name, '桌面');
   assert.equal(empty.entries.length, 0);
   assert.deepEqual(empty.providers.map((provider) => provider.id), ['bing', 'google', 'duckduckgo']);
-  assert.deepEqual(empty.settings.background, { kind: 'bing', value: 'daily' });
+  assert.deepEqual(empty.settings.background, { kind: 'builtin', value: 'alpine' });
   assert.deepEqual(validateState(empty), empty);
   const demo = createDemoState();
   assert.deepEqual(demo.groups, empty.groups);

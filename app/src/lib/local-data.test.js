@@ -258,6 +258,38 @@ test('full sync CAS, complete validation and a failed atomic commit preserve all
   await storage.close();
 });
 
+test('whole cloud replacement commits the local data and sync checkpoint atomically', async () => {
+  const storage = fixture(), { localData, syncDataStore, backend } = storage;
+  await localData.set({
+    'covelet.future': { prior: true },
+    'covelet.language.v1': 'en',
+    'covelet.privacy.lock.v1': { verifier: 'device-only' },
+    'covelet.content.preferences.v1': { version: 1, revision: 1, presentation: true, aliases: {}, privateKeys: ['site:protected'] },
+  });
+  await syncDataStore.syncMetadataStore.write({ pending: 'old' });
+  const incoming = { version: 1, records: [{ namespace: 'preferences', key: 'covelet.replacement', value: { exact: true } }] };
+  const checkpoint = { pending: 'new' };
+  const before = await syncDataStore.snapshot();
+  await assert.rejects(syncDataStore.apply(incoming, { expectedToken: before.token, syncMetadata: checkpoint }), { code: 'LOCAL_DATA_PRIVACY_CONFLICT' });
+  assert.equal((await syncDataStore.snapshot()).token, before.token);
+  assert.deepEqual(await syncDataStore.syncMetadataStore.read(), { pending: 'old' });
+  await localData.update('covelet.content.preferences.v1', value => ({ ...value, presentation: false }));
+  const commit = backend.commit;
+  backend.commit = async () => { throw Error('Interrupted commit'); };
+  await assert.rejects(syncDataStore.apply(incoming, { expectedToken: before.token, syncMetadata: checkpoint }), /Interrupted commit/);
+  assert.equal((await syncDataStore.snapshot()).token, before.token);
+  assert.deepEqual(await syncDataStore.syncMetadataStore.read(), { pending: 'old' });
+  backend.commit = commit;
+  await syncDataStore.apply(incoming, { expectedToken: before.token, syncMetadata: checkpoint });
+  const restarted = fixture({ backend });
+  assert.deepEqual((await restarted.syncDataStore.snapshot()).records, incoming.records);
+  assert.deepEqual(await restarted.syncDataStore.syncMetadataStore.read(), checkpoint);
+  assert.deepEqual(await restarted.localData.get(['covelet.language.v1', 'covelet.privacy.lock.v1']), {
+    'covelet.language.v1': 'en', 'covelet.privacy.lock.v1': { verifier: 'device-only' },
+  });
+  await storage.close(); await restarted.close();
+});
+
 test('sync imports rebase domain revisions without loops and cannot disable an active local privacy lock', async () => {
   const note = (title, revision) => ({ id: 'note-one', title, body: title, revision, pinned: false, createdAt: 1, updatedAt: 2 });
   const tools = (title, revision, noteRevision) => ({ version: 3, revision, notes: [note(title, noteRevision)], reading: [], snapshots: [], trash: [] });

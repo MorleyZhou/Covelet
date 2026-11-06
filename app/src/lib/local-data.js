@@ -376,12 +376,18 @@ export function createLocalData(options = {}) {
     const acquire = (index) => index < names.length ? locks.request(names[index], { mode: 'exclusive' }, () => acquire(index + 1)) : action();
     return acquire(0);
   }
+  const syncMetadataKey = 'covelet.data-sync.v1';
+  const syncMetadataStore = {
+    async read() { return (await localData.get(syncMetadataKey))[syncMetadataKey] || null; },
+    async write(value) { await localData.set({ [syncMetadataKey]: value }); },
+  };
   const syncDataStore = {
+    syncMetadataStore,
     snapshot: () => exclusive(async () => {
       const encryptionKey = await key(); await migrate('preferences', null, encryptionKey);
       return makeSnapshot(await allDecoded(encryptionKey));
     }),
-    apply: (snapshot, { expectedToken, wholeRecord } = {}) => withSyncLocks(snapshot, () => exclusive(async () => {
+    apply: (snapshot, { expectedToken, wholeRecord, syncMetadata } = {}) => withSyncLocks(snapshot, () => exclusive(async () => {
       if (!snapshot || Object.getPrototypeOf(snapshot) !== Object.prototype || snapshot.version !== 1 || !Array.isArray(snapshot.records)
         || snapshot.records.length > MAX_SYNC_RECORDS || typeof expectedToken !== 'string' || !/^[a-f0-9]{64}$/.test(expectedToken)
         || Object.keys(snapshot).some((field) => !['version', 'records', 'token'].includes(field))) throw invalid('Invalid synchronized extension snapshot.');
@@ -407,6 +413,11 @@ export function createLocalData(options = {}) {
       // its preferences record; deletion is never an implicit local unlock.
       const privacyId = recordIdentity('preferences', 'covelet.content.preferences.v1'), privacy = existing.get(privacyId);
       const selected = wholeRecord ? recordIdentity(wholeRecord.namespace, wholeRecord.key) : null;
+      const wholeSnapshot = syncMetadata !== undefined;
+      // A whole-cloud replacement must not expose any currently hidden item.
+      // Check inside the same locked transaction, including a lock on another tab.
+      if (wholeSnapshot && privacy?.value.presentation)
+        throw fail('LOCAL_DATA_PRIVACY_CONFLICT', 'Unlock hidden content on this device before replacing all synchronized data.');
       // Explicit conflict choices must not silently union portable fields.
       // Deleting an active local visibility record would also unlock this
       // device; require the user to unlock locally before choosing deletion.
@@ -419,7 +430,7 @@ export function createLocalData(options = {}) {
       for (const [id, entry] of incoming) {
         const previous = existing.get(id);
         if (previous && bytesEqual(await pack(normalizeSyncValue(entry.namespace, entry.key, previous.value)), await pack(normalizeSyncValue(entry.namespace, entry.key, entry.value)))) continue;
-        const value = prepareSyncValue(entry.namespace, entry.key, entry.value, previous?.value, { wholeRecord: selected === id });
+        const value = prepareSyncValue(entry.namespace, entry.key, entry.value, previous?.value, { wholeRecord: wholeSnapshot || selected === id });
         await validateSyncValue(entry.namespace, entry.key, value);
         if (previous && bytesEqual(await pack(normalizeSyncValue(entry.namespace, entry.key, previous.value)), await pack(normalizeSyncValue(entry.namespace, entry.key, value)))) continue;
         const encrypted = await encrypt(entry.namespace, entry.key, value, encryptionKey);
@@ -429,13 +440,15 @@ export function createLocalData(options = {}) {
       for (const [id, previous] of existing) if (isSyncRecord(previous.namespace, previous.key) && !incoming.has(id)) {
         remove.push(previous.record.id); change(previous.namespace, { key: previous.key, oldValue: previous.value, newValue: undefined, oldRecord: previous.record });
       }
+      const changed = records.length + remove.length;
+      if (wholeSnapshot) records.push((await encrypt('preferences', syncMetadataKey, syncMetadata, encryptionKey)).record);
       if (records.length || remove.length) {
         if (!backend.commit) throw fail('LOCAL_DATA_WRITE_FAILED', 'Atomic synchronized writes are unavailable. Local data was preserved.');
         await backend.commit(records, remove);
         for (const [namespace, list] of changes) announce(namespace, list[0].newRecord?.space || list[0].oldRecord.space, list);
-        signalSyncData('sync');
+        if (changed) signalSyncData('sync');
       }
-      return { ...await makeSnapshot(await allDecoded(encryptionKey)), changed: records.length + remove.length };
+      return { ...await makeSnapshot(await allDecoded(encryptionKey)), changed };
     })),
     subscribe: (listener) => { if (typeof listener !== 'function') throw invalid(); syncListeners.add(listener); openChannel(); return () => syncListeners.delete(listener); },
   };

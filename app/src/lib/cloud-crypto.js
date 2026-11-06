@@ -64,6 +64,6 @@ export async function decryptCloudPayload(bytes, password, { crypto = globalThis
     const key = await derive(password, salt, crypto);
     return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv, additionalData: aad, tagLength: 128 }, key, ciphertext));
   } catch {
-    fail(tr("无法解密同步数据，请检查同步密码。若密码正确，云端数据可能已损坏。"), 'CLOUD_DECRYPT');
+    fail(tr('无法解密云端数据。请确认使用了原来的同步密码。'), 'CLOUD_DECRYPT');
   }
 }

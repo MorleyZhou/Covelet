@@ -10,9 +10,13 @@ export const EXTENSION_CATEGORIES = Object.freeze([
   Object.freeze({ id: 'development', get label() { return tr("开发工具"); } }),
   Object.freeze({ id: 'productivity', get label() { return tr("记录与阅读"); } }),
   Object.freeze({ id: 'sync', get label() { return tr("数据同步"); } }),
+  Object.freeze({ id: 'appearance', get label() { return tr("外观"); } }),
 ]);
 
 export const BUNDLED_EXTENSIONS = Object.freeze([
+  Object.freeze({ id: 'random-wallpaper', type: 'functional', category: 'appearance',
+    get name() { return tr('随机壁纸'); }, get description() { return tr('从 Bing 或 Wikimedia Commons 更换桌面背景。'); },
+    keywords: Object.freeze(['壁纸', '背景', 'Bing', 'Wikimedia Commons', 'wallpaper']) }),
   Object.freeze({ id: 'notes', type: 'widget', category: 'productivity', get name() { return tr("便笺"); },
     get description() { return tr("随手记录，支持 Markdown 预览与置顶。"); }, core: 'tools-core.wasm',
     keywords: Object.freeze(['记录', '便笺', '笔记', 'Markdown', 'notes']) }),
@@ -32,7 +36,7 @@ export const BUNDLED_EXTENSIONS = Object.freeze([
     id: 'custom-storage-sync',
     type: 'functional',
     category: 'sync',
-    get name() { return tr("自备存储同步（Beta）"); },
+    get name() { return tr("自备存储同步"); },
     get description() { return tr("同步桌面、内置扩展、图片和图标。"); },
     core: 'sync-core.wasm',
     keywords: Object.freeze(['GitHub', 'GitLab', 'Cloudflare R2', 'OSS', 'WebDAV', '存储', '同步', '加密']),

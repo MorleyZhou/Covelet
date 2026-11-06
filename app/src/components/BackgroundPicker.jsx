@@ -1,6 +1,6 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { Globe, Plus, Trash, X } from '@phosphor-icons/react';
+import { Plus, Trash, X } from '@phosphor-icons/react';
 import Select from './Select.jsx';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover.jsx';
 import { useFloatingContainer } from './DialogSurface.jsx';
@@ -110,7 +110,7 @@ function CurveEditor({ value, onChange }) {
   </div>;
 }
 
-export default function BackgroundPicker({ value, onChange, wallpaper }) {
+export default function BackgroundPicker({ value, onChange }) {
   const [config, setConfig] = useState(() => readColorConfig(value));
   const [active, setActive] = useState(0), [open, setOpen] = useState(false);
   const custom = useRef(isColor(value) ? value : createColorBackground(config));
@@ -141,20 +141,13 @@ export default function BackgroundPicker({ value, onChange, wallpaper }) {
   return <Popover open={open} onOpenChange={setOpen}><fieldset className="background-settings">
     <legend>{tr("背景")}</legend>
     <div className="background-options">
-      <Button variant="unstyled" size="unstyled" type="button" className={`background-choice daily-choice ${value.kind === 'bing' ? 'selected' : ''}`}
-        aria-pressed={value.kind === 'bing'} onClick={() => { close(); onChange({ kind: 'bing', value: 'daily' }); }}>
-        <Globe size={29} aria-hidden="true" /><span>{tr("Bing 每日壁纸")}</span>
-      </Button>
-      <PopoverTrigger asChild><Button variant="unstyled" size="unstyled" type="button" ref={trigger} className={`background-choice color-choice ${selected ? 'selected' : ''}`}
+      <PopoverTrigger asChild><Button variant="unstyled" size="unstyled" type="button" ref={trigger} className="background-choice"
         aria-pressed={selected} aria-haspopup="dialog" aria-expanded={open} aria-controls={id}
         onClick={() => { if (!selected) onChange(custom.current); }}>
         <span className="background-choice-swatch" style={{ background: colorBackgroundCss(selected ? value : custom.current) }} aria-hidden="true" />
         <span>{tr("颜色")}</span>
       </Button></PopoverTrigger>
     </div>
-    {value.kind === 'bing' && (wallpaper?.stale || wallpaper?.source === 'builtin') && <p className="hint" role="status">
-      {wallpaper.stale ? tr("壁纸暂未更新，正在使用上次壁纸。") : tr("每日壁纸暂不可用，正在使用内置背景。")}
-    </p>}
     {container && <PopoverContent container={container} ref={panel} id={id} className="background-color-panel" side="right" align="start" aria-labelledby={`${id}-title`}
       onOpenAutoFocus={(event) => { event.preventDefault(); title.current?.focus({ preventScroll: true }); }}
       onEscapeKeyDown={(event) => event.stopPropagation()}>

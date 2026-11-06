@@ -51,12 +51,12 @@ function PrivateEditor({ hidden, busy, onBusyChange, onDiscard, className = '', 
     </DialogSurface.Provider>
   </div>;
 }
-export function PersonalToolsTrash({ data, run, busy = false, defaultOpen = false }) {
+export function PersonalToolsTrash({ data, run, busy = false, standalone = false }) {
   const presentation = useContext(PresentationContext), [prompt, setPrompt] = useState(null);
   const hidden = (key) => presentation.active && key && presentation.hiddenKeys.has(key);
   const items = [...(data?.trash || [])].filter((item) => ['notes', 'reading'].includes(item.kind) && !hidden(trashPrivacyKey(item))).sort((a, b) => b.deletedAt - a.deletedAt || a.id.localeCompare(b.id));
   const emptyIds = prompt?.kind === 'empty' ? prompt.items.filter((item) => !hidden(item.privacyKey)).map((item) => item.id) : [];
-  return <Disclosure className="personal-trash" title={tr('回收站')} defaultOpen={defaultOpen}>
+  const content = <>
     <p>{tr('删除的便笺和稍后读保留 30 天，最多 200 条。')}</p>
     <div className="personal-trash-header"><span>{tr('{0} 条记录', [formatNumber(items.length)])}</span><Button variant="ghost" type="button" disabled={busy || !items.length} onClick={() => setPrompt({ kind: 'empty', revision: data.revision, items: items.map((item) => ({ id: item.id, privacyKey: trashPrivacyKey(item) })) })}>{tr('清空回收站')}</Button></div>
     <div className="personal-trash-list" aria-label={tr('回收站')}>{items.map((item) => <div className="personal-trash-record" key={item.id}>
@@ -69,15 +69,16 @@ export function PersonalToolsTrash({ data, run, busy = false, defaultOpen = fals
       else await permanentlyDeletePersonalTrash(prompt.id, { expectedRevision: prompt.revision });
       setPrompt(null);
     })}><p>{prompt.kind === 'empty' ? presentation.active ? tr('永久删除当前可见的回收站记录？此操作无法撤销。') : tr('永久删除回收站中的所有记录？此操作无法撤销。') : tr('永久删除“{0}”？此操作无法撤销。', [prompt.title])}</p></PromptDialog>}
-  </Disclosure>;
+  </>;
+  return standalone ? <section className="personal-trash" aria-label={tr('回收站')}>{content}</section>
+    : <Disclosure className="personal-trash" title={tr('回收站')}>{content}</Disclosure>;
 }
-export function PersonalToolsTrashDialog({ Dialog, onClose }) {
-  const { data, error } = usePersonalTools({ loadCore: false }), action = useAction();
-  return <Dialog title={tr('回收站')} onClose={onClose} closeDisabled={action.busy} className="personal-tools-modal" wide maximizable>
-    <div className="personal-tools-body"><MessageDialog message={error || action.error} onClose={() => action.setError('')} />
-      <PersonalToolsTrash data={data} run={action.run} busy={action.busy} defaultOpen />
-    </div>
-  </Dialog>;
+export function PersonalToolsTrashPanel({ onBusyChange, disabled = false }) {
+  const { data, error } = usePersonalTools({ loadCore: false }), action = useAction(onBusyChange);
+  return <>
+    <PersonalToolsTrash data={disabled ? null : data} run={action.run} busy={disabled || action.busy} standalone />
+    {(error || action.error) && <p className="form-error" role="alert">{userErrorMessage(error || action.error)}</p>}
+  </>;
 }
 function ToolDataActions({ data, run, busy, onImported }) {
   const input = useRef(null);

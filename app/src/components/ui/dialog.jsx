@@ -9,10 +9,15 @@ const DialogPortal = DialogPrimitive.Portal;
 const DialogOverlay = forwardRef(function DialogOverlay({ className, ...props }, ref) {
   return <DialogPrimitive.Overlay ref={ref} data-slot="dialog-overlay" className={cn('ui-dialog-overlay', className)} {...props} />;
 });
-const DialogContent = forwardRef(function DialogContent({ className, children, container, overlayClassName, ...props }, ref) {
+const DialogContent = forwardRef(function DialogContent({ className, children, container, overlayClassName, onInteractOutside, ...props }, ref) {
   return <DialogPortal container={container}>
     <DialogOverlay className={overlayClassName} />
-    <DialogPrimitive.Content ref={ref} data-slot="dialog-content" data-ui-modal className={cn('ui-dialog-content', className)} {...props}>{children}</DialogPrimitive.Content>
+    <DialogPrimitive.Content ref={ref} data-slot="dialog-content" data-ui-modal className={cn('ui-dialog-content', className)}
+      onInteractOutside={(event) => {
+        // A close button can remove its toast before Radix delivers this event.
+        if (event.target?.closest?.('[data-slot="toast-viewport"], .toast')) event.preventDefault();
+        onInteractOutside?.(event);
+      }} {...props}>{children}</DialogPrimitive.Content>
   </DialogPortal>;
 });
 const DialogTitle = forwardRef(function DialogTitle({ className, ...props }, ref) {

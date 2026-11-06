@@ -3456,13 +3456,6 @@
     ]
   },
   {
-    "key": "拖到这里移回桌面",
-    "ui": true,
-    "files": [
-      "src/App.jsx"
-    ]
-  },
-  {
     "key": "外观",
     "ui": true,
     "files": [

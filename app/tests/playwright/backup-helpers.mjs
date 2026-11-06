@@ -26,46 +26,38 @@ export function makeImagePNG(rgba = [37, 99, 235, 255]) {
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', dimensions), chunk('IDAT', Buffer.from(zlibSync(raw))), chunk('IEND', Buffer.alloc(0))]);
 }
 
-export function uploadedSiteBackup({ name, url, image = makeImagePNG() }) {
+function uploadedSiteBackup(backup, { name, url, image }) {
   const assetId = `synthetic-image-${randomUUID()}`, siteId = `synthetic-site-${randomUUID()}`;
-  const state = { version: 1, revision: 0, groups: [{ id: 'group-home', name: '桌面' }],
-    entries: [{ id: siteId, type: 'site', name, url, groupId: 'group-home', parentId: null, page: 0, order: 0, icon: { kind: 'image', value: assetId } }],
-    providers: [], settings: { theme: 'system', background: { kind: 'color', value: '#f2f5f9' }, shade: 0, blur: 0,
-      width: 1120, iconSize: 64, gap: 24, columns: 8, showLabels: true, showClock: true, openNewTab: false, minimal: false, visualEnhancement: false, pages: [0] } };
-  const manifest = { format: 'owntab-backup', version: 2, createdAt: new Date().toISOString(), icons: [],
-    assets: [{ id: assetId, path: 'assets/0.png', mime: 'image/png', bytes: image.length, sha256: imageDigest(image) }] };
-  return Buffer.from(zipSync({ 'data.json': strToU8(JSON.stringify(state)), 'manifest.json': strToU8(JSON.stringify(manifest)), 'assets/0.png': image }));
+  const state = structuredClone(backup.navigation), manifest = structuredClone(backup.manifest);
+  const groupId = state.groups[0].id, page = state.settings.pages[0];
+  const order = state.entries.filter(entry => entry.groupId === groupId && entry.parentId === null).length;
+  const path = `assets/${manifest.assets.length}.png`;
+  state.entries.push({ id: siteId, type: 'site', name, url, groupId, parentId: null, page, order, icon: { kind: 'image', value: assetId } });
+  manifest.assets.push({ id: assetId, path, mime: 'image/png', bytes: image.length, sha256: imageDigest(image) });
+  return Buffer.from(zipSync({ ...backup.files, 'data.json': strToU8(JSON.stringify(state)), 'manifest.json': strToU8(JSON.stringify(manifest)), [path]: image }));
 }
 
 export async function openRecovery(page) {
-  const recovery = page.getByRole('dialog', { name: '备份与恢复中心', exact: true });
-  if (await recovery.isVisible()) return recovery;
-  await page.getByRole('button', { name: '打开设置', exact: true }).click();
   const settings = page.getByRole('dialog', { name: '设置', exact: true });
-  await settings.getByRole('tab', { name: '数据', exact: true }).click();
-  await settings.getByRole('button', { name: '备份与恢复中心', exact: true }).click();
+  if (!await settings.isVisible()) await page.getByRole('button', { name: '打开设置', exact: true }).click();
+  const recovery = settings.getByRole('tabpanel', { name: '备份与恢复', exact: true });
+  if (!await recovery.isVisible()) await settings.getByRole('tab', { name: '备份与恢复', exact: true }).click();
   await expect(recovery).toBeVisible();
   return recovery;
 }
 
 export async function chooseBackupFile(page, recovery, buffer, name = 'synthetic-backup.json') {
   const chooserReady = page.waitForEvent('filechooser');
-  await recovery.getByRole('button', { name: '选择备份文件', exact: true }).click();
+  await recovery.getByRole('button', { name: '恢复备份', exact: true }).click();
   const chooser = await chooserReady;
   await chooser.setFiles({ name, mimeType: name.endsWith('.zip') ? 'application/zip' : 'application/json', buffer });
 }
 
-export async function restorePreview(page, recovery, { mode = 'replace' } = {}) {
+export async function restorePreview(recovery) {
   await expect(recovery.locator('.recovery-preview')).toBeVisible();
-  const select = recovery.getByRole('combobox', { name: '恢复方式', exact: true });
-  const label = mode === 'append' ? '添加新内容，保留已有内容' : '替换所选类别';
-  if (!(await select.innerText()).includes(label)) {
-    await select.click();
-    await page.getByRole('option', { name: label, exact: true }).click();
-  }
-  await recovery.locator('.recovery-category').filter({ hasText: '我已确认所选类别和恢复方式' }).getByRole('checkbox').check();
-  await recovery.getByRole('button', { name: '开始恢复', exact: true }).click();
+  await recovery.getByRole('button', { name: '确认恢复', exact: true }).click();
   await expect(recovery.getByText('恢复完成。', { exact: true })).toBeVisible();
+  await expect(recovery.getByRole('button', { name: '导出备份', exact: true })).toBeEnabled();
 }
 
 export async function revealDesktopItem(page, item) {
@@ -85,11 +77,11 @@ export async function revealDesktopItem(page, item) {
 
 // Current Covelet has no upload control in the site editor. Importing a small
 // navigation ZIP through the production picker exercises the supported local
-// image path. Append preserves existing sites, settings and every note.
+// image path. Build on the exported navigation to preserve existing sites.
 export async function uploadedSiteImage(page, { name, url, image = makeImagePNG() }) {
-  const recovery = await openRecovery(page);
-  await chooseBackupFile(page, recovery, uploadedSiteBackup({ name, url, image }), 'synthetic-navigation-image.zip');
-  await restorePreview(page, recovery, { mode: 'append' });
+  const backup = await exportCompleteBackup(page), recovery = await openRecovery(page);
+  await chooseBackupFile(page, recovery, uploadedSiteBackup(backup, { name, url, image }), 'synthetic-navigation-image.zip');
+  await restorePreview(recovery);
   await page.keyboard.press('Escape');
   await expect(recovery).toBeHidden();
   const site = page.locator('.site-link').filter({ hasText: name });
@@ -141,7 +133,7 @@ export function inspectCompleteBackup(buffer) {
 
 export async function exportCompleteBackup(page) {
   const recovery = await openRecovery(page), ready = page.waitForEvent('download');
-  await recovery.getByRole('button', { name: '导出完整备份', exact: true }).click();
+  await recovery.getByRole('button', { name: '导出备份', exact: true }).click();
   const download = await ready, stream = await download.createReadStream(), chunks = [];
   for await (const chunk of stream) chunks.push(chunk);
   const buffer = Buffer.concat(chunks);

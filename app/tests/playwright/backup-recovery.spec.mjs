@@ -1,6 +1,7 @@
 import { test, expect, addSite } from './extension.fixture.mjs';
 import { zipSync, unzipSync, strToU8 } from 'fflate';
 import { uploadedSiteImage, createNote, openRecovery, chooseBackupFile, restorePreview, exportCompleteBackup, revealDesktopItem, inspectCompleteBackup } from './backup-helpers.mjs';
+import { BUILTIN_DESKTOP_TEMPLATES } from '../../src/lib/desktop-templates.js';
 
 const fixture = { site: '备份图片导航', url: 'https://example.com/covelet-backup-image', title: '备份便笺标题', body: '合成备份正文：导航、便笺和图片都应保留。' };
 
@@ -32,12 +33,6 @@ function damagedImageBackup(buffer) {
   data.navigation = Buffer.from(zipSync(files)).toString('base64');
   return Buffer.from(JSON.stringify(data));
 }
-async function confirmReplacement(page, recovery) {
-  await recovery.getByRole('combobox', { name: '恢复方式', exact: true }).click();
-  await page.getByRole('option', { name: '替换所选类别', exact: true }).click();
-  await recovery.locator('.recovery-category').filter({ hasText: '我已确认所选类别和恢复方式' }).getByRole('checkbox').check();
-}
-
 test('complete backup restores real navigation, note content and exact local image bytes in another profile', async ({ extension }, testInfo) => {
   const source = await extension.newtab(), image = await createContent(source), exported = await exportCompleteBackup(source);
   expect(exported.siteImages).toHaveLength(1);
@@ -45,9 +40,13 @@ test('complete backup restores real navigation, note content and exact local ima
   expect(exported.siteImages[0].sha256).toBe(image.sha256);
   expect(exported.tools.notes[0]).toMatchObject({ title: fixture.title, body: fixture.body });
 
+  const legacy = { id: 'qa-legacy-template', name: '以前保存的方案', createdAt: 1, template: BUILTIN_DESKTOP_TEMPLATES[0] };
+  const olderBackup = Buffer.from(JSON.stringify({ ...exported.data, templates: { version: 1, revision: 1, templates: [legacy] } }));
   const targetDevice = await extension.launch(), target = await targetDevice.newtab(), recovery = await openRecovery(target);
-  await chooseBackupFile(target, recovery, exported.buffer);
-  await restorePreview(target, recovery);
+  await chooseBackupFile(target, recovery, olderBackup);
+  await expect(target.getByRole('dialog')).toHaveCount(1);
+  await expect(recovery.locator('.recovery-preview')).toContainText('synthetic-backup.json');
+  await restorePreview(recovery);
   await closeRecovery(target, recovery);
   const restoredSite = target.locator('.site-link').filter({ hasText: fixture.site });
   await revealDesktopItem(target, restoredSite);
@@ -64,6 +63,7 @@ test('complete backup restores real navigation, note content and exact local ima
   await target.reload();
   await expect(target.getByRole('combobox', { name: '搜索或输入网址' })).toBeVisible();
   const restored = await exportCompleteBackup(target);
+  expect(restored.data.templates.templates).toEqual([legacy]);
   expect(restored.siteImages[0].bytes.equals(image.image)).toBe(true);
   expect(restored.siteImages[0].sha256).toBe(exported.siteImages[0].sha256);
   expect(restored.tools.notes.map(({ title, body, document }) => ({ title, body, document }))).toEqual(exported.tools.notes.map(({ title, body, document }) => ({ title, body, document })));
@@ -73,14 +73,15 @@ test('complete backup restores real navigation, note content and exact local ima
   await testInfo.attach('backup-restored', { path: screenshot, contentType: 'image/png' });
 });
 
-test('closing a confirmed restore preview preserves navigation, notes and image bytes', async ({ extension }) => {
+test('canceling inline restore preserves navigation, notes and image bytes', async ({ extension }) => {
   const page = await extension.newtab(); await createContent(page);
   const before = await exportCompleteBackup(page), recovery = await openRecovery(page);
   await chooseBackupFile(page, recovery, renamedBackup(before.buffer));
   await expect(recovery.locator('.recovery-preview')).toBeVisible();
-  await confirmReplacement(page, recovery);
-  await expect(recovery.getByRole('button', { name: '开始恢复', exact: true })).toBeEnabled();
-  await closeRecovery(page, recovery);
+  await expect(recovery.getByRole('button', { name: '确认恢复', exact: true })).toBeEnabled();
+  await recovery.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(recovery.locator('.recovery-preview')).toHaveCount(0);
+  await expect(recovery).toBeVisible();
   const after = await exportCompleteBackup(page);
   expect(contents(after)).toEqual(contents(before));
 });
@@ -90,11 +91,10 @@ test('damaged image rejection clears an earlier preview and keeps all original d
   const before = await exportCompleteBackup(page), recovery = await openRecovery(page);
   await chooseBackupFile(page, recovery, renamedBackup(before.buffer));
   await expect(recovery.locator('.recovery-preview')).toBeVisible();
-  await confirmReplacement(page, recovery);
   await chooseBackupFile(page, recovery, damagedImageBackup(before.buffer));
   await expect(recovery.getByRole('alert')).toContainText('备份中的图片缺失或已损坏');
   await expect(recovery.locator('.recovery-preview')).toHaveCount(0);
-  await expect(recovery.getByRole('button', { name: '开始恢复', exact: true })).toHaveCount(0);
+  await expect(recovery.getByRole('button', { name: '确认恢复', exact: true })).toHaveCount(0);
   expect(contents(await exportCompleteBackup(page))).toEqual(contents(before));
 });
 
@@ -106,8 +106,8 @@ test('a real later edit invalidates restore without overwriting navigation, note
   const other = await extension.newtab();
   await addSite(other, '预览后新增的导航', 'https://example.com/covelet-after-preview');
   const current = await exportCompleteBackup(page);
-  await confirmReplacement(page, recovery);
-  await recovery.getByRole('button', { name: '开始恢复', exact: true }).click();
-  await expect(recovery.getByRole('alert')).toContainText('恢复期间数据已更新，请重新预览');
+  await recovery.getByRole('button', { name: '确认恢复', exact: true }).click();
+  await expect(recovery.getByRole('alert')).toContainText('数据已更新，请重新选择备份文件。');
+  await expect(recovery.locator('.recovery-preview')).toHaveCount(0);
   expect(contents(await exportCompleteBackup(page))).toEqual(contents(current));
 });

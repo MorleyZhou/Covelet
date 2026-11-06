@@ -1,5 +1,5 @@
 import { test as base, expect, chromium } from '@playwright/test';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -7,19 +7,29 @@ import { createNetworkFixture } from './network.mjs';
 
 const extensionPath = fileURLToPath(new URL('../../dist/extension/', import.meta.url));
 export const test = base.extend({
+  pregrantedHosts: [[], { option: true }],
   network: async ({}, use) => { await use(createNetworkFixture()); },
-  extension: async ({ headless, viewport, locale, timezoneId, network }, use, testInfo) => {
+  extension: async ({ headless, viewport, locale, timezoneId, network, pregrantedHosts }, use, testInfo) => {
     const manifest = JSON.parse(await readFile(join(extensionPath, 'manifest.json'), 'utf8'));
     expect(manifest.name).toBe('Covelet');
     expect(manifest.chrome_url_overrides?.newtab).toBe('newtab.html');
     const sessions = [], errors = [];
-    async function launch() {
-      const profile = await mkdtemp(join(tmpdir(), 'covelet-playwright-'));
-      const session = { profile };
-      sessions.push(session);
+    async function launch(previous) {
+      const profile = previous?.profile || await mkdtemp(join(tmpdir(), 'covelet-playwright-'));
+      const session = previous || { profile };
+      if (!previous) sessions.push(session);
+      let path = extensionPath;
+      if (pregrantedHosts.length) {
+        // Synthetic provider tests grant only their exact host in a temporary copy.
+        path = join(profile, 'test-extension');
+        if (!previous) {
+          await cp(extensionPath, path, { recursive: true });
+          await writeFile(join(path, 'manifest.json'), JSON.stringify({ ...manifest, host_permissions: [...manifest.host_permissions, ...pregrantedHosts] }));
+        }
+      }
       const context = await chromium.launchPersistentContext(profile, {
         channel: 'chromium', headless, viewport, locale, timezoneId,
-        args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`, '--lang=zh-CN', '--no-first-run', '--disable-background-networking'],
+        args: [`--disable-extensions-except=${path}`, `--load-extension=${path}`, '--lang=zh-CN', '--no-first-run', '--disable-background-networking'],
       });
       session.context = context;
       await network.install(context);
@@ -41,6 +51,13 @@ export const test = base.extend({
         return null;
       }, { timeout: 20_000, message: 'Covelet MV3 worker must identify itself by its runtime manifest' }).not.toBeNull();
       Object.assign(session, { worker, id });
+      session.restart = async () => {
+        await context.tracing.stop();
+        session.tracing = false;
+        await context.close();
+        session.context = null;
+        return launch(session);
+      };
       session.newtab = async () => {
         const page = await context.newPage();
         await page.goto(`chrome-extension://${id}/${manifest.chrome_url_overrides.newtab}`);
@@ -97,10 +114,11 @@ export async function openSettings(page, tab) {
   return dialog;
 }
 export async function openSync(page) {
-  const settings = await openSettings(page, '数据');
-  await settings.getByRole('button', { name: '自备存储同步（Beta）', exact: true }).click();
-  await expect(page.locator('.cloud-sync-form')).toBeVisible();
-  return page.locator('.cloud-sync-form');
+  await page.getByRole('button', { name: '打开扩展', exact: true }).click();
+  await page.locator('#extension-custom-storage-sync').click();
+  const form = page.getByRole('dialog', { name: '自备存储同步', exact: true }).locator('.cloud-sync-form');
+  await expect(form).toBeVisible();
+  return form;
 }
 export async function addSite(page, name, url) {
   await page.getByRole('button', { name: '添加网站', exact: true }).click();

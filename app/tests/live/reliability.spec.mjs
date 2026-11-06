@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { zlibSync } from 'fflate';
 import { withLiveSession, LIVE_TEST_PROVIDERS, configure, sync, unlock } from './live-session.mjs';
-import { uploadedSiteImage, createNote, exportCompleteBackup, revealDesktopItem, imageDigest } from '../playwright/backup-helpers.mjs';
+import { uploadedSiteImage, createNote, openRecovery, exportCompleteBackup, revealDesktopItem, imageDigest } from '../playwright/backup-helpers.mjs';
 
 // A deterministic, decodable PNG larger than one 256 KiB sync chunk.
 // This exercises real multi-chunk image transfer without external artwork.
@@ -35,8 +35,8 @@ function largeImage(seed) {
 
 async function capture(page) {
   const backup = await exportCompleteBackup(page);
-  const recovery = page.getByRole('dialog', { name: '备份与恢复中心', exact: true });
-  await expect(recovery.getByRole('button', { name: '导出完整备份', exact: true })).toBeEnabled();
+  const recovery = await openRecovery(page);
+  await expect(recovery.getByRole('button', { name: '导出备份', exact: true })).toBeEnabled();
   await page.keyboard.press('Escape'); await expect(recovery).toBeHidden();
   return backup;
 }
@@ -70,7 +70,7 @@ for (const provider of LIVE_TEST_PROVIDERS) {
       expect(original.siteImages[0].sha256).toBe(imageDigest(first));
       at('first real-cloud image transfer');
       await configure(a.page, provider, config, token, password);
-      await configure(b.page, provider, config, token, password);
+      await configure(b.page, provider, config, token, password, { adoptInitialCloud: true });
       expect(content(await capture(b.page))).toEqual(content(original));
 
       at('offline local edit and readable failure');
@@ -97,14 +97,14 @@ for (const provider of LIVE_TEST_PROVIDERS) {
       expect(state.lostWrite.status).toBeGreaterThanOrEqual(200);
       expect(state.lostWrite.status).toBeLessThan(300);
       expect(state.lostWrite.attempts).toBe(1);
-      expect(lost.pending).not.toContain('待同步：0 项');
+      expect(lost.pending).toMatch(/待同步：[1-9]\d* 项/);
       expect(content(await capture(a.page))).toEqual(content(beforeFailure));
 
-      at('restart with pending ciphertext and re-enter session credentials');
+      at('restart with pending ciphertext and unlock with the sync password');
       const path = a.path; await a.context.close(); a.context = null;
       a = await launch(path);
       expect(content(await capture(a.page))).toEqual(content(beforeFailure));
-      await unlock(a.page, provider, config, token, password);
+      await unlock(a.page, provider, password);
       at('reconcile committed chunk and complete pending upload');
       await sync(a.page); await sync(b.page);
       expect(state.lostWrite.attempts).toBe(1);

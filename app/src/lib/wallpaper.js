@@ -1,11 +1,37 @@
-import { tr, getLocale } from "../i18n/index.js";
-import { createEncryptedStore } from './local-data.js';
+import { tr } from '../i18n/index.js';
+import { createEncryptedStore, localData } from './local-data.js';
 import { subscribeSyncedData } from './use-synced-data.js';
 import { migrateLegacyIndexedDb } from './legacy-indexed-data.js';
-// Daily image bytes join full encrypted sync in their own cache namespace.
 // No request is made until this provider loads.
 export const BING_METADATA_URL = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN';
+const BING_RECENT_METADATA_URL = BING_METADATA_URL.replace('&n=1&', '&n=8&');
 const BING_ORIGIN = 'https://www.bing.com';
+const COMMONS_ORIGIN = 'https://upload.wikimedia.org';
+const COMMONS_HEADERS = { 'Api-User-Agent': 'Covelet Wallpaper (https://github.com/MorleyZhou/Covelet)' };
+const SOURCE_KEY = 'covelet.wallpaper.source.v1';
+const INTERVAL_KEY = 'covelet.wallpaper.interval.v1';
+export const WALLPAPER_SOURCES = Object.freeze([
+  Object.freeze({ id: 'bing', label: 'Bing', origin: BING_ORIGIN }),
+  Object.freeze({ id: 'commons', label: 'Wikimedia Commons', origin: COMMONS_ORIGIN }),
+]);
+export const WALLPAPER_INTERVALS = Object.freeze([
+  ...[5, 10, 15, 30].map(amount => [amount, 'minute']),
+  ...[1, 3, 6, 12].map(amount => [amount, 'hour']),
+  ...[1, 3, 5, 10, 15].map(amount => [amount, 'day']),
+  [1, 'month'],
+].map(([amount, unit]) => Object.freeze({ id: `${amount}-${unit}`, amount, unit })));
+export const DEFAULT_WALLPAPER_INTERVAL = '1-day';
+const intervalsById = new Map(WALLPAPER_INTERVALS.map(interval => [interval.id, interval]));
+// Public-domain and CC0 landscape photos. Each file page lists the creator and license.
+const COMMONS_IMAGES = [
+  ['2/29', 'Moraine_lake_in_Banff_national_park.jpg', 'Moraine Lake', 'Bruno.menetrier'],
+  ['7/75', 'Lake_Mountain_Landscape.jpg', 'Lake Mountain Landscape', 'Bonnie Moreland'],
+  ['f/f4', 'Desert_dunes.jpg', 'Desert Dunes', 'Wikigab'],
+  ['8/89', 'Yellowstone_National_Park_at_Sunset_-_Flickr_-_isteeves.jpg', 'Yellowstone at Sunset', 'Irene Steeves'],
+].map(([directory, filename, title, copyright]) => ({
+  imageUrl: `${COMMONS_ORIGIN}/wikipedia/commons/${directory}/${filename}`,
+  title, copyright, copyrightUrl: `https://commons.wikimedia.org/wiki/File:${filename}`,
+}));
 const BUILTIN_URL = './assets/alpine-lake.png';
 const CACHE_LOCK = 'owntab.bing-wallpaper.v1';
 const MAX_METADATA = 64 * 1024;
@@ -21,25 +47,85 @@ export function migrateWallpaperCache() {
   return migrateLegacyIndexedDb('owntab.wallpaper.v1', 'daily', wallpaperRecords);
 }
 
+function validSource(source) {
+  return WALLPAPER_SOURCES.some(({ id }) => id === source);
+}
+
+export async function loadWallpaperSource() {
+  const source = (await localData.get(SOURCE_KEY))[SOURCE_KEY];
+  return validSource(source) ? source : 'bing';
+}
+
+export async function saveWallpaperSource(source) {
+  if (!validSource(source)) throw new TypeError('Invalid wallpaper source.');
+  await localData.set({ [SOURCE_KEY]: source });
+}
+
+export function subscribeWallpaperSource(listener) {
+  return localData.subscribe((changes) => {
+    if (!changes[SOURCE_KEY]) return;
+    const source = changes[SOURCE_KEY].newValue;
+    listener(validSource(source) ? source : 'bing');
+  });
+}
+
+const validInterval = (value) => intervalsById.has(value) ? value : DEFAULT_WALLPAPER_INTERVAL;
+export async function loadWallpaperInterval() {
+  return validInterval((await localData.get(INTERVAL_KEY))[INTERVAL_KEY]);
+}
+
+export async function saveWallpaperInterval(interval) {
+  if (!intervalsById.has(interval)) throw new TypeError('Invalid wallpaper interval.');
+  await localData.set({ [INTERVAL_KEY]: interval });
+}
+
+export function subscribeWallpaperInterval(listener) {
+  return localData.subscribe((changes) => {
+    if (changes[INTERVAL_KEY]) listener(validInterval(changes[INTERVAL_KEY].newValue));
+  });
+}
+
 function expectedResponseUrl(actual, requested) {
   if (!actual || actual === requested) return true;
   if (!DEVELOPMENT || !globalThis.location) return false;
   const proxy = new URL(actual);
   const original = new URL(requested);
-  return proxy.origin === globalThis.location.origin && proxy.pathname === `/__bing${original.pathname}` && proxy.search === original.search && !proxy.hash;
+  return original.origin === BING_ORIGIN && proxy.origin === globalThis.location.origin && proxy.pathname === `/__bing${original.pathname}` && proxy.search === original.search && !proxy.hash;
 }
 
 function defaultFetch(url, options) {
   // The fixed development proxy only makes browser QA possible. This branch is
   // removed from the extension build; production requests Bing directly.
-  const target = DEVELOPMENT ? `/__bing${new URL(url).pathname}${new URL(url).search}` : url;
+  const original = new URL(url);
+  const target = DEVELOPMENT && original.origin === BING_ORIGIN ? `/__bing${original.pathname}${original.search}` : url;
   return globalThis.fetch(target, options);
+}
+
+async function defaultSourceAccess(origin) {
+  if (origin === BING_ORIGIN) return true;
+  try { return await globalThis.chrome?.permissions?.contains({ origins: [`${origin}/*`] }) === true; }
+  catch { return false; }
 }
 
 function error(message) { throw new Error(message); }
 function dayAt(time) {
   const value = new Date(time);
   return `${value.getFullYear()}${String(value.getMonth() + 1).padStart(2, '0')}${String(value.getDate()).padStart(2, '0')}`;
+}
+function startOfDay(day) {
+  return new Date(Number(day.slice(0, 4)), Number(day.slice(4, 6)) - 1, Number(day.slice(6, 8))).getTime();
+}
+
+function nextRotation(fetchedAt, { amount, unit }) {
+  if (unit === 'minute') return fetchedAt + amount * 60_000;
+  if (unit === 'hour') return fetchedAt + amount * 3_600_000;
+  const date = new Date(fetchedAt);
+  if (unit === 'day') return date.setDate(date.getDate() + amount);
+  const originalDay = date.getDate();
+  date.setDate(1);
+  date.setMonth(date.getMonth() + amount);
+  const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  return date.setDate(Math.min(originalDay, lastDay));
 }
 function text(value, limit) {
   if (typeof value !== 'string' || value.length > limit) error(tr("Bing 图片说明无效。"));
@@ -62,9 +148,7 @@ export function validateBingImageUrl(value) {
   return `${BING_ORIGIN}/th?id=${encodeURIComponent(id)}`;
 }
 
-function metadataFrom(value) {
-  if (!value || !Array.isArray(value.images) || value.images.length < 1 || value.images.length > 8) error(tr("Bing 每日图片数据无效。"));
-  const image = value.images[0];
+function bingMetadata(image) {
   if (!image || !DAY.test(image.startdate) || !DAY.test(image.enddate)) error(tr("Bing 图片日期无效。"));
   const copyrightUrl = new URL(image.copyrightlink);
   if (copyrightUrl.origin !== BING_ORIGIN || copyrightUrl.username || copyrightUrl.password || copyrightUrl.hash || copyrightUrl.pathname !== '/search') error(tr("Bing 图片说明链接无效。"));
@@ -75,6 +159,19 @@ function metadataFrom(value) {
     title: text(image.title ?? '', 200),
     copyrightUrl: copyrightUrl.href,
   };
+}
+
+function metadataFrom(value, force, previous, random) {
+  if (!value || !Array.isArray(value.images) || value.images.length < 1 || value.images.length > 8) error(tr("Bing 每日图片数据无效。"));
+  if (!force) return bingMetadata(value.images[0]);
+  const alternatives = [];
+  for (const image of value.images) {
+    try {
+      const metadata = bingMetadata(image);
+      if (metadata.imageUrl !== previous && !alternatives.some(({ imageUrl }) => imageUrl === metadata.imageUrl)) alternatives.push(metadata);
+    } catch { /* Ignore invalid archive entries. */ }
+  }
+  return alternatives[Math.floor(random() * alternatives.length)];
 }
 
 // Header validation bounds decoding work before an image is handed to the UI.
@@ -160,6 +257,7 @@ async function request(fetcher, url, limit, timeoutMs, expectedType) {
         const response = await fetcher(url, {
           method: 'GET', credentials: 'omit', referrerPolicy: 'no-referrer',
           redirect: 'error', cache: 'no-store', signal: controller.signal,
+          ...(new URL(url).origin === COMMONS_ORIGIN && { headers: COMMONS_HEADERS }),
         });
         if (!response.ok || response.redirected || !expectedResponseUrl(response.url, url)) error(tr("Bing 请求失败或发生重定向。"));
         const mime = (response.headers.get('content-type') ?? '').split(';', 1)[0].trim().toLowerCase();
@@ -172,20 +270,33 @@ async function request(fetcher, url, limit, timeoutMs, expectedType) {
 }
 
 function createCache() {
+  async function cacheKey(source) {
+    if (source !== 'bing') return source;
+    await migrateWallpaperCache();
+    return 'current';
+  }
   return {
-    async read() { await migrateWallpaperCache(); return await wallpaperRecords.get('current') ?? null; },
-    async write(value, options) { await migrateWallpaperCache(); await wallpaperRecords.set('current', value, options); },
+    async read(source) { return await wallpaperRecords.get(await cacheKey(source)) ?? null; },
+    async write(value, options, source) { await wallpaperRecords.set(await cacheKey(source), value, options); },
   };
 }
 
-async function validRecord(value) {
+async function validRecord(value, source) {
   if (!value || value.version !== 1 || !DAY.test(value.attemptDay) || !Number.isFinite(value.attemptAt)) return null;
   const result = { version: 1, attemptDay: value.attemptDay, attemptAt: value.attemptAt };
   if (value.blob instanceof Blob && value.blob.size > 0 && value.blob.size <= MAX_IMAGE && IMAGE_TYPES.has(value.blob.type) && DAY.test(value.fetchedDay) && value.metadata) {
     try {
-      const metadata = metadataFrom({ images: [{ startdate: value.metadata.date, enddate: value.metadata.date, url: value.metadata.imageUrl, copyright: value.metadata.copyright, title: value.metadata.title, copyrightlink: value.metadata.copyrightUrl }] });
+      const { date, imageUrl, copyright, title, copyrightUrl } = value.metadata;
+      const commonsImage = COMMONS_IMAGES.find((image) => image.imageUrl === imageUrl);
+      const metadata = source === 'bing'
+        ? bingMetadata({ startdate: date, enddate: date, url: imageUrl, copyright, title, copyrightlink: copyrightUrl })
+        : commonsImage && DAY.test(date) && { ...commonsImage, date };
+      if (!metadata) return result;
       dimensions(new Uint8Array(await value.blob.arrayBuffer()), value.blob.type);
-      return { ...result, blob: value.blob, fetchedDay: value.fetchedDay, metadata };
+      const { fetchedAt, fetchedDay } = value;
+      const lastFetchedAt = Number.isSafeInteger(fetchedAt) && fetchedAt >= 0 && fetchedAt <= value.attemptAt ? fetchedAt
+        : dayAt(value.attemptAt) === fetchedDay ? value.attemptAt : startOfDay(fetchedDay);
+      return { ...result, blob: value.blob, fetchedDay, fetchedAt: lastFetchedAt, metadata };
     } catch { /* Keep the throttle record but discard invalid cached bytes. */ }
   }
   return result;
@@ -194,45 +305,64 @@ async function validRecord(value) {
 export function createWallpaperProvider({
   fetcher = defaultFetch,
   cache = createCache(), now = () => Date.now(),
+  hasSourceAccess = defaultSourceAccess, random = Math.random,
   extension = Boolean(globalThis.chrome?.runtime?.id) || DEVELOPMENT,
   locks = globalThis.navigator?.locks, timeoutMs = 12000,
   createObjectURL = (blob) => URL.createObjectURL(blob),
   revokeObjectURL = (url) => URL.revokeObjectURL(url),
   decode = globalThis.createImageBitmap ? (blob) => globalThis.createImageBitmap(blob) : null,
 } = {}) {
-  let volatileRecord = null;
-  let pending = null;
+  const states = new Map();
   let revision = 0;
   const ownedUrls = new Set();
-  const fallback = (message = '') => ({ url: BUILTIN_URL, title: tr('内置背景'), copyright: '', copyrightUrl: '', stale: false, source: 'builtin', status: 'fallback', message });
-  async function read(started) {
+  const fallback = (message = '', nextRefreshAt = Number(now()) + RETRY_DELAY) => ({ url: BUILTIN_URL, title: tr('内置背景'), copyright: '', copyrightUrl: '', stale: false, source: 'builtin', status: 'fallback', message, nextRefreshAt });
+  async function read(source, state, started) {
     let stored;
-    try { stored = await validRecord(await cache.read()); } catch { stored = null; }
+    try { stored = await validRecord(await cache.read(source), source); } catch { stored = null; }
     if (started !== revision) return null;
-    if (stored && (!volatileRecord || stored.attemptAt > volatileRecord.attemptAt)) volatileRecord = stored;
-    return volatileRecord;
+    if (stored && (!state.unpersisted || stored.attemptAt > state.record?.attemptAt)) state.record = stored;
+    return state.record;
   }
-  async function write(record, started) {
+  async function write(record, source, state, started) {
     if (started !== revision) return false;
-    volatileRecord = record;
-    try { await cache.write(record, { shouldWrite: () => started === revision }); } catch { /* A full/blocked cache must not prevent local use. */ }
+    state.record = record;
+    try { await cache.write(record, { shouldWrite: () => started === revision }, source); state.unpersisted = false; }
+    catch { state.unpersisted = true; }
     return started === revision;
   }
-  async function refresh(started) {
+  async function refresh({ id: source, origin }, state, started, force, interval) {
     if (started !== revision) return {};
     const timestamp = Number(now());
     const today = dayAt(timestamp);
-    let record = await read(started);
+    let record = await read(source, state, started);
     if (started !== revision) return {};
-    if (record?.fetchedDay === today && record.blob) return { record, status: 'cached', message: tr("正在使用今日缓存。") };
-    // A successful image is fetched once per local day. Failed updates have a
-    // 15-minute cooldown, so going offline briefly does not block the whole day.
-    if (record?.attemptDay === today && timestamp - record.attemptAt < RETRY_DELAY) return { record, status: record.blob ? 'stale' : 'fallback', message: tr("今日背景暂不可用；15 分钟后打开或返回页面时重试。") };
-    record = { ...record, version: 1, attemptDay: today, attemptAt: timestamp };
-    if (!await write(record, started)) return {};
+    const nextRefreshAt = interval && record?.blob && record.fetchedAt <= timestamp ? nextRotation(record.fetchedAt, interval) : timestamp;
+    const current = interval ? nextRefreshAt > timestamp : record?.fetchedDay === today && record.blob;
+    if (!force && current) return { record, status: 'cached', nextRefreshAt, message: tr("正在使用今日缓存。") };
+    const retryAt = record?.attemptAt + RETRY_DELAY;
+    // Failed updates have a separate cooldown. Successful rotations may run
+    // every five minutes without bypassing the retry throttle on failures.
+    const coolingDown = interval ? record?.attemptAt <= timestamp && record.attemptAt !== record.fetchedAt && retryAt > timestamp
+      : record?.attemptDay === today && timestamp - record.attemptAt < RETRY_DELAY;
+    if (!force && coolingDown) return { record, status: record.blob ? 'stale' : 'fallback', nextRefreshAt: retryAt, message: tr("今日背景暂不可用；15 分钟后打开或返回页面时重试。") };
+    const unavailable = () => ({ record, status: record?.blob ? 'stale' : 'fallback', nextRefreshAt: timestamp + RETRY_DELAY,
+      message: record?.blob ? tr("今日背景暂不可用，继续显示上次缓存。") : tr("今日背景暂不可用，已使用内置背景。") });
     try {
-      const metadataResponse = await request(fetcher, BING_METADATA_URL, MAX_METADATA, timeoutMs, (mime) => mime === 'application/json');
-      const metadata = metadataFrom(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(metadataResponse.bytes)));
+      if (!await hasSourceAccess(origin)) return unavailable();
+      record = { ...record, version: 1, attemptDay: today, attemptAt: timestamp };
+      if (!await write(record, source, state, started)) return {};
+      let metadata;
+      if (source === 'bing') {
+        const shuffle = force || Boolean(interval && record.blob);
+        const metadataResponse = await request(fetcher, shuffle ? BING_RECENT_METADATA_URL : BING_METADATA_URL, MAX_METADATA, timeoutMs, (mime) => mime === 'application/json');
+        const data = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(metadataResponse.bytes));
+        metadata = metadataFrom(data, shuffle, record.metadata?.imageUrl, random);
+        if (!metadata) return unavailable();
+      } else {
+        const alternatives = COMMONS_IMAGES.filter(({ imageUrl }) => imageUrl !== record.metadata?.imageUrl);
+        metadata = { ...alternatives[Math.floor(random() * alternatives.length)], date: today };
+      }
+      if (started !== revision) return {};
       const imageResponse = await request(fetcher, metadata.imageUrl, MAX_IMAGE, timeoutMs, (mime) => IMAGE_TYPES.has(mime));
       if (started !== revision) return {};
       dimensions(imageResponse.bytes, imageResponse.mime);
@@ -243,30 +373,45 @@ export function createWallpaperProvider({
           if (!image.width || !image.height || image.width > 8192 || image.height > 8192 || image.width * image.height > MAX_PIXELS) error(tr("Bing 图片尺寸超出限制。"));
         } finally { image.close?.(); }
       }
-      record = { ...record, blob, metadata, fetchedDay: today };
-      if (!await write(record, started)) return {};
-      return { record, status: 'fresh', message: tr("今日壁纸已更新。") };
-    } catch {
-      return { record, status: record.blob ? 'stale' : 'fallback', message: record.blob ? tr("今日背景暂不可用，继续显示上次缓存。") : tr("今日背景暂不可用，已使用内置背景。") };
-    }
+      record = { ...record, blob, metadata, fetchedDay: today, fetchedAt: timestamp };
+      if (!await write(record, source, state, started)) return {};
+      return { record, status: 'fresh', nextRefreshAt: interval ? nextRotation(timestamp, interval) : undefined, message: tr("今日壁纸已更新。") };
+    } catch { return unavailable(); }
   }
   return {
     // Existing rendered URLs remain owned until the caller disposes them.
     // A sync import only discards stale record/flight references in memory.
-    invalidate() { revision++; volatileRecord = null; pending = null; },
-    async load() {
+    invalidate() { revision++; states.clear(); },
+    async load({ source = 'bing', force = false, cachedOnly = false, interval: intervalId } = {}) {
       if (!extension) return fallback(tr('Bing 每日背景需要加载浏览器扩展后获取，网页预览使用内置背景。'));
+      const provider = WALLPAPER_SOURCES.find(({ id }) => id === source);
+      if (!provider) return fallback();
       const started = revision;
-      if (!pending) {
-        const work = (locks?.request ? locks.request(CACHE_LOCK, { mode: 'exclusive' }, () => refresh(started)) : refresh(started)).finally(() => { if (pending === work) pending = null; });
-        pending = work;
+      if (!states.has(source)) states.set(source, {});
+      const state = states.get(source);
+      const interval = intervalsById.get(intervalId);
+      let result;
+      if (cachedOnly) {
+        result = { record: await read(source, state, started), status: 'cached' };
+      } else {
+        // A manual shuffle or a change in cadence must be checked after the
+        // in-flight read finishes under the source lock.
+        if (state.pending && (force && !state.pending.force || state.pending.interval !== interval)) await state.pending.work;
+        if (started !== revision) return fallback();
+        if (!state.pending) {
+          const run = () => refresh(provider, state, started, force, interval);
+          const lock = source === 'bing' ? CACHE_LOCK : `${CACHE_LOCK}.${source}`;
+          const work = (locks?.request ? locks.request(lock, { mode: 'exclusive' }, run) : run()).finally(() => { state.pending = null; });
+          state.pending = { work, force, interval };
+        }
+        result = await state.pending.work;
       }
-      const { record, status, message = '' } = await pending;
+      const { record, status, message = '', nextRefreshAt } = result;
       if (started !== revision) return fallback();
-      if (!record?.blob) return fallback(message);
+      if (!record?.blob) return fallback(message, nextRefreshAt);
       const url = createObjectURL(record.blob);
       ownedUrls.add(url);
-      return { ...record.metadata, url, stale: status === 'stale', source: 'bing', status, message };
+      return { ...record.metadata, url, stale: status === 'stale', source, status, message, nextRefreshAt };
     },
     dispose(result) {
       if (result?.url && ownedUrls.delete(result.url)) revokeObjectURL(result.url);

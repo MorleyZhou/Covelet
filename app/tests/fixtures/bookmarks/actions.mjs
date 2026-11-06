@@ -31,12 +31,11 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
     await evaluate(`(() => { const b = [...document.querySelectorAll('button')].find(b => (b.innerText.trim() === ${JSON.stringify(text)} || b.getAttribute('aria-label') === ${JSON.stringify(text)})); if (!b || b.disabled) throw Error('Missing/disabled button: ' + ${JSON.stringify(text)}); b.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 })); b.click(); })()`);
     await delay(100);
   };
-  const openImport = async () => {
-    await wait('!!document.querySelector("button[title=设置]")', 'settings launcher');
-    await evaluate('document.querySelector("button[title=设置]").click()');
-    await delay(100);
-    await click('数据');
-    await click('导入网址与书签 HTML');
+  const openImport = async (label = '导入网址与书签 HTML') => {
+    await wait(exists('.desktop-page-viewport'), 'desktop');
+    await evaluate('document.querySelector(".desktop-page-viewport").dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 120, clientY: 240, button: 2 }))');
+    await wait(has(label), 'bookmark import menu item');
+    await evaluate(`[...document.querySelectorAll('[role=menuitem]')].find(item => item.textContent.trim() === ${JSON.stringify(label)}).click()`);
     await wait('!!document.querySelector(".bookmark-import")', 'bookmark importer');
   };
   const choose = async (file) => {
@@ -161,12 +160,9 @@ export default async ({ evaluate, send, delay, on, writeFile, extId, output }) =
   await send('Page.addScriptToEvaluateOnNewDocument', { source: "chrome.i18n.getUILanguage = () => 'en';" });
   await send('Page.reload');
   await wait('!!document.querySelector("button[title=Settings]")', 'English UI');
-  await evaluate('document.querySelector("button[title=Settings]").click()');
-  await delay(100);
-  await click('Data');
-  await click('Import URLs and bookmark HTML');
+  await openImport('Import URLs and bookmark HTML');
   await choose(path.join(output, 'empty.html'));
   await wait(has('The bookmark file is empty.'), 'English file error');
   await screenshot('bad-file-en');
-  await writeFile(path.join(output, 'results.json'), JSON.stringify({ passed: true, importedSites: 11, importHttpRequests: 0, importNativeFaviconRequests: 0, startupRequests: requests.slice(0, startupRequests), reloadRequests, checks: ['light/dark 1100/390px import tips and preview','Space disclosure activation and focus retention','settings/data/file-picker reachability', 'Chrome/Firefox/Edge fixtures', 'empty/non-HTML/oversize errors', 'failed replacement clears prior preview', 'skip duplicates default and counts', 'unsafe URLs excluded', 'hostile resources inert', 'desktop folders and links visible', 'encrypted local reload preserves IDs and content', 'zh-CN and English UI errors', 'eight locales covered by unit tests', 'desktop and narrow dialog geometry with pinned actions'] }, null, 2));
+  await writeFile(path.join(output, 'results.json'), JSON.stringify({ passed: true, importedSites: 11, importHttpRequests: 0, importNativeFaviconRequests: 0, startupRequests: requests.slice(0, startupRequests), reloadRequests, checks: ['light/dark 1100/390px import tips and preview','Space disclosure activation and focus retention','desktop context menu/file-picker reachability', 'Chrome/Firefox/Edge fixtures', 'empty/non-HTML/oversize errors', 'failed replacement clears prior preview', 'skip duplicates default and counts', 'unsafe URLs excluded', 'hostile resources inert', 'desktop folders and links visible', 'encrypted local reload preserves IDs and content', 'zh-CN and English UI errors', 'eight locales covered by unit tests', 'desktop and narrow dialog geometry with pinned actions'] }, null, 2));
 };

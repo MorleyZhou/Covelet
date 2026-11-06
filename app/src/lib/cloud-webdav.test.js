@@ -330,12 +330,15 @@ test('独立连接测试只做 Depth 0 PROPFIND，不写入、不创建目录且
   await provider(transport, { beforeRequest: () => { checks++; } }).testConnection();
   assert.deepEqual(transport.calls.map(call => call.method), ['PROPFIND']);
   assert.equal(transport.calls[0].headers.depth, '0'); assert.equal(checks, 1);
-  for (const [status, code, text] of [[401, 'CLOUD_AUTH', /用户名和应用密码/], [403, 'CLOUD_FORBIDDEN', /读写权限/], [404, 'CLOUD_NOT_FOUND', /路径不存在/]]) {
+  for (const [status, code, text] of [[401, 'CLOUD_AUTH', /用户名和应用密码/], [403, 'CLOUD_FORBIDDEN', /无法访问此目录/], [404, 'CLOUD_NOT_FOUND', /找不到保存目录/]]) {
     await assert.rejects(provider(queue([response('SECRET', status)])).testConnection(), error => {
       assert.equal(error.code, code); assert.match(error.message, text); assert.ok(!error.message.includes('SECRET')); return true;
     });
   }
   await assert.rejects(provider(queue([response('<html>login</html>', 200)])).testConnection(), codeIs('CLOUD_REQUEST_FAILED'));
+  await assert.rejects(provider(queue([response('', 404), response('', 403)])).write(name, payload), {
+    code: 'CLOUD_FORBIDDEN', message: '无法写入此目录。请检查目录的写入权限。',
+  });
 });
 
 test('传输错误区分离线、超时、TLS 和主机不可达，隐藏浏览器错误不猜测原因', async () => {
@@ -344,7 +347,7 @@ test('传输错误区分离线、超时、TLS 和主机不可达，隐藏浏览�
     ['ETIMEDOUT', 'CLOUD_TIMEOUT', /超时/], ['UND_ERR_CONNECT_TIMEOUT', 'CLOUD_TIMEOUT', /超时/],
     ['CERT_HAS_EXPIRED', 'CLOUD_TLS', /证书/], ['ERR_CERT_AUTHORITY_INVALID', 'CLOUD_TLS', /证书/], ['ERR_TLS_CERT_ALTNAME_INVALID', 'CLOUD_TLS', /证书/],
     ['ENOTFOUND', 'CLOUD_HOST', /域名/], ['ECONNREFUSED', 'CLOUD_HOST', /服务/],
-    ['UNRECOGNIZED', 'CLOUD_NETWORK', /浏览器可能未提供具体原因/],
+    ['UNRECOGNIZED', 'CLOUD_NETWORK', /请检查网络和服务器地址/],
   ]) {
     const cause = new TypeError('SECRET URL PASSWORD', { cause: { code: transportCode } });
     await assert.rejects(provider(queue([cause])).testConnection(), error => {

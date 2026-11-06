@@ -222,3 +222,123 @@ test('plain production web pages never make Bing requests without an extension e
   assert.equal(subject.calls.length, 0);
   assert.equal(subject.stored, null);
 });
+
+test('an explicit Bing shuffle selects a different validated image from the archive', async () => {
+  const subject = harness();
+  let archiveRequests = 0;
+  const alternative = { ...metadata().images[0], url: '/th?id=OHR.Ocean_1920x1080.jpg' };
+  const provider = createWallpaperProvider({ ...subject.options, random: () => 0, fetcher: async (url, init) => {
+    if (!url.includes('&n=8&')) return subject.options.fetcher(url, init);
+    archiveRequests++;
+    return Response.json({ images: [metadata().images[0], { ...alternative, url: 'https://evil.example/th' }, alternative] });
+  } });
+  const [daily, shuffled] = await Promise.all([provider.load(), provider.load({ force: true })]);
+  assert.equal(archiveRequests, 1);
+  assert.notEqual(shuffled.imageUrl, daily.imageUrl);
+  assert.equal(shuffled.imageUrl, 'https://www.bing.com/th?id=OHR.Ocean_1920x1080.jpg');
+  assert.equal(shuffled.status, 'fresh');
+  assert.equal((await provider.load()).imageUrl, shuffled.imageUrl);
+});
+
+test('scheduled rotation reads an old cache and concurrent reopened tabs fetch only one new picture', async () => {
+  const subject = harness();
+  const daily = await subject.provider.load();
+  delete subject.stored.fetchedAt;
+  const loadedAt = subject.stored.attemptAt;
+  let archiveRequests = 0;
+  const options = { ...subject.options, fetcher: async (url, init) => {
+    if (!url.includes('&n=8&')) return subject.options.fetcher(url, init);
+    archiveRequests++;
+    const [first] = metadata().images;
+    return Response.json({ images: [first, { ...first, url: '/th?id=OHR.Ocean_1920x1080.jpg' }] });
+  } };
+  const firstTab = createWallpaperProvider(options), secondTab = createWallpaperProvider(options);
+  const cadence = { interval: '5-minute' };
+  subject.advanceMinutes(4);
+  const cached = await firstTab.load(cadence);
+  assert.equal(cached.imageUrl, daily.imageUrl);
+  assert.equal(cached.nextRefreshAt, loadedAt + 5 * 60_000);
+  assert.equal(archiveRequests, 0);
+  subject.advanceMinutes(1);
+  const results = await Promise.all([firstTab.load(cadence), secondTab.load(cadence)]);
+  assert.equal(archiveRequests, 1);
+  assert.equal(results[0].status, 'fresh');
+  assert.equal(results[1].status, 'cached');
+  for (const result of results) {
+    assert.notEqual(result.imageUrl, daily.imageUrl);
+    assert.equal(result.nextRefreshAt, loadedAt + 10 * 60_000);
+  }
+});
+
+test('a failed scheduled refresh retains the last image and throttles requests across tabs', async () => {
+  const subject = harness();
+  const cadence = { interval: '5-minute' };
+  const first = await subject.provider.load(cadence);
+  let failures = 0;
+  const options = { ...subject.options, fetcher: async () => { failures++; throw new Error('offline'); } };
+  subject.advanceMinutes(5);
+  const failed = await createWallpaperProvider(options).load(cadence);
+  assert.equal(failed.imageUrl, first.imageUrl);
+  assert.equal(failed.status, 'stale');
+  assert.equal(failed.nextRefreshAt, first.nextRefreshAt + 15 * 60_000);
+  subject.advanceMinutes(5);
+  assert.equal((await createWallpaperProvider(options).load(cadence)).nextRefreshAt, failed.nextRefreshAt);
+  assert.equal(failures, 1);
+});
+
+test('monthly rotation lands on the last day of a shorter calendar month', async () => {
+  let timestamp = new Date(2026, 0, 31, 13).getTime();
+  const subject = harness({ now: () => timestamp, hasSourceAccess: async () => true });
+  const cadence = { source: 'commons', interval: '1-month' };
+  const first = await subject.provider.load(cadence);
+  assert.equal(first.nextRefreshAt, new Date(2026, 1, 28, 13).getTime());
+  timestamp = first.nextRefreshAt - 1;
+  assert.equal((await subject.provider.load(cadence)).imageUrl, first.imageUrl);
+  assert.equal(subject.calls.length, 1);
+  timestamp++;
+  assert.notEqual((await subject.provider.load(cadence)).imageUrl, first.imageUrl);
+  assert.equal(subject.calls.length, 2);
+});
+
+test('Wikimedia shuffles different licensed photos, uses an isolated cache and needs an origin grant to download', async () => {
+  const records = new Map();
+  const permissionsChecked = [];
+  let permission = false;
+  const subject = harness({
+    cache: {
+      read: async (source) => records.get(source),
+      write: async (value, _options, source) => { records.set(source, value); },
+    },
+    random: () => 0,
+    hasSourceAccess: async (origin) => { permissionsChecked.push(origin); return origin === 'https://www.bing.com' || permission; },
+  });
+  assert.equal((await subject.provider.load({ source: 'commons', force: true })).source, 'builtin');
+  assert.deepEqual(permissionsChecked, ['https://upload.wikimedia.org']);
+  assert.equal(subject.calls.length, 0);
+  assert.equal(records.size, 0);
+
+  permission = true;
+  const first = await subject.provider.load({ source: 'commons' });
+  assert.equal(first.source, 'commons');
+  assert.equal(first.status, 'fresh');
+  assert.equal(first.title, 'Moraine Lake');
+  assert.equal(first.copyright, 'Bruno.menetrier');
+  assert.match(first.copyrightUrl, /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
+  assert.equal(subject.calls[0].url, first.imageUrl);
+  assert.equal(subject.calls[0].init.credentials, 'omit');
+  assert.equal(subject.calls[0].init.referrerPolicy, 'no-referrer');
+
+  const shuffled = await subject.provider.load({ source: 'commons', force: true });
+  assert.equal(shuffled.status, 'fresh');
+  assert.notEqual(shuffled.imageUrl, first.imageUrl);
+  assert.equal(subject.calls.length, 2);
+  assert.equal((await subject.provider.load()).source, 'bing');
+  assert.deepEqual([...records.keys()], ['commons', 'bing']);
+
+  permission = false;
+  subject.nextDay();
+  const reopened = createWallpaperProvider(subject.options);
+  assert.equal((await reopened.load({ source: 'commons', cachedOnly: true })).imageUrl, shuffled.imageUrl);
+  assert.equal((await reopened.load({ source: 'commons' })).status, 'stale');
+  assert.equal(subject.calls.length, 4, 'a revoked origin cannot fetch but previously cached bytes still work');
+});

@@ -19,6 +19,8 @@ const LOCK = 'covelet.cloud.sync.v1';
 const MAX_OBJECTS = 2000;
 const MAX_ACTORS = 100;
 const MAX_TOTAL_BYTES = 4 * 1024 * 1024;
+const MAX_CREDENTIAL_ENVELOPE = 64 * 1024;
+const CREDENTIAL_FORMAT = 'covelet-local-cloud-credentials';
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
 const clone = (value) => structuredClone(value);
@@ -26,10 +28,12 @@ const same = sameJson;
 const failure = (message, code = 'CLOUD_INVALID') => Object.assign(new Error(message), { code });
 const empty = () => ({ version: 1, profile: null, autoSync: false, metadata: null });
 const messages = {
-  get CLOUD_LOCKED() { return tr("同步尚未解锁，请重新填写连接凭据和同步密码。"); },
+  get CLOUD_LOCKED() { return tr('同步连接已锁定，请先解锁。'); },
+  get CLOUD_CREDENTIAL_UNLOCK() { return tr('无法解锁本机保存的访问凭据，请检查同步密码。'); },
+  get CLOUD_CREDENTIALS_REQUIRED() { return tr('请填写访问凭据和同步密码。'); },
   get CLOUD_PERMISSION() { return tr("尚未授权访问这个云服务，请先在设置中授权。"); },
   get CLOUD_UNAVAILABLE() { return tr("请加载 Chrome 或 Edge 扩展，再授权使用云同步。"); },
-  get CLOUD_DECRYPT() { return tr("无法解密同步数据，请检查同步密码。若密码正确，云端数据可能已损坏。"); },
+  get CLOUD_DECRYPT() { return tr('无法解密云端数据。请确认使用了原来的同步密码。'); },
   get CLOUD_PASSWORD() { return tr("同步密码至少需要 12 个字符。"); },
   get CLOUD_CAPACITY() { return tr("云同步数据或历史超出限制，已保留全部本地数据；请使用 ZIP 备份。"); },
   get CLOUD_INTEGRITY() { return tr("云端同步数据校验失败，未用部分数据覆盖本机。"); },
@@ -54,6 +58,12 @@ const messages = {
   get SYNC_DEVICE_CONFLICT() { return tr("同一设备出现不一致的同步版本，已保留本地数据。"); },
   get SYNC_CAPACITY() { return tr("同步历史超出限制，已保留本地数据；请使用 ZIP 备份。"); },
 };
+
+function providerSecrets(profile, input) {
+  const keys = profile.provider === 'webdav' ? ['username', 'appPassword']
+    : ['github', 'gitlab'].includes(profile.provider) ? ['token'] : ['accessKeyId', 'secretAccessKey', 'sessionToken'];
+  return Object.fromEntries(keys.filter(key => typeof input?.[key] === 'string').map(key => [key, input[key]]));
+}
 
 function publicError(cause) {
   if (isWebdavError(cause) || isCloudProviderError(cause)) return cause;
@@ -129,7 +139,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
   signer = packagedWasm, hasPermission = defaultPermission, locks = globalThis.navigator?.locks,
   uuid = () => globalThis.crypto.randomUUID(), crypto = globalThis.crypto, now = () => Date.now(),
   autoDelay = 15_000, pullInterval = 60_000, eventWindow = globalThis.window, eventDocument = globalThis.document,
-  toolSyncStore, toolsStore, fullData = true, snapshotStore = defaultSnapshotStore, fullSyncStore, fullPendingStore, legacySeed = true } = {}) {
+  toolSyncStore, toolsStore, fullData = true, snapshotStore = defaultSnapshotStore, fullSyncStore, fullHistoryStore, fullPendingStore, legacySeed = true } = {}) {
   let serial = Promise.resolve();
   let flight;
   let started = false;
@@ -168,8 +178,12 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
   const read = async () => {
     const value = await configStore.read();
     if (!value) return empty();
-    if (value.version !== 1 || typeof value.autoSync !== 'boolean' || Object.keys(value).some((key) => !['version', 'profile', 'autoSync', 'metadata'].includes(key))) throw failure(tr("云同步本机设置无效。"));
+    if (value.version !== 1 || typeof value.autoSync !== 'boolean'
+      || Object.keys(value).some(key => !['version', 'profile', 'autoSync', 'metadata', 'credentialEnvelope'].includes(key))) throw failure(tr("云同步本机设置无效。"));
     const profile = value.profile === null ? null : validateConfig(value.profile);
+    const { credentialEnvelope } = value;
+    if (credentialEnvelope !== undefined && (!profile || typeof credentialEnvelope !== 'string'
+      || !credentialEnvelope.length || credentialEnvelope.length > MAX_CREDENTIAL_ENVELOPE)) throw failure(messages.CLOUD_CREDENTIAL_UNLOCK, 'CLOUD_CREDENTIAL_UNLOCK');
     let metadata = value.metadata;
     if (metadata) {
       if (!profile || metadata.version !== 1 || typeof metadata.target !== 'string' || !/^[a-f0-9]{64}$/.test(metadata.target)
@@ -183,17 +197,46 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
         || Object.keys(metadata.pending).some((key) => !['name', 'body'].includes(key)))) throw failure(tr("本机待上传版本无效。"));
       metadata = { ...clone(metadata), document, documents, base: portableState(metadata.base) };
     }
-    return { version: 1, profile, autoSync: value.autoSync, metadata };
+    return { version: 1, profile, autoSync: value.autoSync, metadata, ...(credentialEnvelope === undefined ? {} : { credentialEnvelope }) };
   };
   const persist = async (config) => {
     try { await configStore.write(clone(config)); } catch { throw failure(tr("无法保存本机云同步状态。"), 'CLOUD_LOCAL'); }
   };
   const targetOf = (profile) => hash(profile);
+  // The device-only config stores an authenticated envelope, never the sync
+  // password or an unwrapped provider credential. Its contents identify the
+  // intended provider target, so copying an envelope to another profile fails.
+  const sealCredentials = async (target, credentials, password) => {
+    const plaintext = encoder.encode(JSON.stringify({ format: CREDENTIAL_FORMAT, target, credentials }));
+    try { return decoder.decode(await encryptCloudPayload(plaintext, password, { crypto })); }
+    finally { plaintext.fill(0); }
+  };
+  const openCredentials = async (config, target, password) => {
+    let plaintext;
+    try {
+      plaintext = await decryptCloudPayload(encoder.encode(config.credentialEnvelope), password, { crypto });
+      const data = JSON.parse(decoder.decode(plaintext));
+      if (data?.format !== CREDENTIAL_FORMAT || data.target !== target || !data.credentials || typeof data.credentials !== 'object') throw Error();
+      const credentials = providerSecrets(config.profile, data.credentials);
+      if (!same(credentials, data.credentials)) throw Error();
+      providerFactory(config.profile, credentials, { signer });
+      return credentials;
+    } catch {
+      throw failure(messages.CLOUD_CREDENTIAL_UNLOCK, 'CLOUD_CREDENTIAL_UNLOCK');
+    } finally { plaintext?.fill(0); }
+  };
   const currentSession = async (target) => {
     const value = await sessionStore.read();
     if (!value || value.target !== target || typeof value.password !== 'string' || !value.secrets || typeof value.secrets !== 'object') return null;
     validateCloudPassword(value.password);
     return value;
+  };
+  const rememberSuccessfulSession = async (config, session) => {
+    if (config.credentialEnvelope || !config.profile || await targetOf(config.profile) !== session.target
+      || !same(await currentSession(session.target), session)) return;
+    const credentials = providerSecrets(config.profile, session.secrets);
+    const credentialEnvelope = await sealCredentials(session.target, credentials, session.password);
+    if (same(await currentSession(session.target), session)) await persist({ ...config, credentialEnvelope });
   };
   const checkLockGeneration = (generation) => {
     if (generation !== lockGeneration) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
@@ -215,18 +258,21 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     return { version: 1, target, document, documents: { [document.actor]: document }, base: portableState(createEmptyState()),
       pending: null, publishedClock: 0, lastSync: 0 };
   };
-  const inspectSettings = async () => {
+  const inspectSettings = async ({ clearError = false } = {}) => {
     const config = await read();
     const target = config.profile ? await targetOf(config.profile) : null;
     const session = target ? await currentSession(target) : null;
     if (fullData) await fullSync.loadFullDataSyncSettings();
     const fullStatus = fullData ? fullSync.getFullDataSyncStatus() : null;
     const conflicts = fullData ? fullStatus.conflicts : config.metadata ? syncConflicts(config.metadata.documents).length : 0;
-    report({ phase: config.profile ? (session ? (status.phase === 'syncing' ? 'syncing' : status.phase === 'saved' ? 'saved' : 'idle') : 'locked') : 'unconfigured',
-      message: config.profile ? (session ? tr("已解锁，凭据仅保留在当前浏览器会话。") : messages.CLOUD_LOCKED) : tr("尚未配置自定义云同步。"),
+    const preserveError = !clearError && Boolean(session) && status.phase === 'error';
+    const phase = session ? (['syncing', 'saved'].includes(status.phase) || preserveError ? status.phase : conflicts > 0 ? 'conflict' : 'idle') : config.profile ? 'locked' : 'unconfigured';
+    const message = preserveError ? status.message : phase === 'conflict' ? tr('有冲突待处理') : session ? tr('同步连接已解锁。') : config.profile ? messages.CLOUD_LOCKED : tr("尚未配置自定义云同步。");
+    report({ phase, message, code: preserveError ? status.code : null,
       autoSync: config.autoSync, unlocked: Boolean(session), lastSync: fullData ? fullStatus.lastSync : config.metadata?.lastSync || 0, conflicts,
       ...(fullData ? { pending: fullStatus.pending } : {}) });
-    return { profile: clone(config.profile), autoSync: config.autoSync, configured: Boolean(config.profile), unlocked: Boolean(session), connectionTest: clone(session?.connectionTest || null) };
+    return { profile: clone(config.profile), autoSync: config.autoSync, configured: Boolean(config.profile), unlocked: Boolean(session),
+      credentialsStored: Boolean(config.credentialEnvelope), connectionTest: clone(session?.connectionTest || null) };
   };
   const schedule = () => {
     clearTimeout(timer);
@@ -256,18 +302,33 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       return { target, password: session.password, autoSync: config.autoSync, check,
         provider: providerFactory(profile, session.secrets, { signer, beforeRequest: check }) };
     } });
-  const fullAccess = async () => {
+  const fullAccess = async ({ readOnly = false, expectedTarget } = {}) => {
+    const generation = lockGeneration;
     let config = await read();
     if (!config.profile) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
     const target = await targetOf(config.profile), session = await currentSession(target);
+    if (expectedTarget && expectedTarget !== target) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
     if (!session) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
-    await checkAccess(config, session);
-    await flushLegacyPending(config, session);
-    config = await read();
-    const check = () => checkAccess(config, session);
+    const check = async () => {
+      checkLockGeneration(generation);
+      await checkAccess(config, session);
+      checkLockGeneration(generation);
+    };
+    await check();
+    if (!readOnly) {
+      await flushLegacyPending(config, session);
+      config = await read();
+    }
     const providerAt = (suffix) => providerFactory(validateConfig({ ...config.profile, prefix: `${config.profile.prefix}/${suffix}` }), session.secrets, { signer, beforeRequest: check });
+    // Legacy sessions have no local password verifier. Remember their secrets
+    // only after successful sync, with the same session and target still active.
+    const afterSync = readOnly || config.credentialEnvelope ? undefined : () => exclusive(async () => {
+      await rememberSuccessfulSession(await read(), session);
+    }).catch(() => { /* A failed local migration does not invalidate a completed sync. */ });
+    const provider = providerAt('all-data-v1');
+    const githubV2 = provider.githubStorage ? { provider: providerAt('all-data-v2'), assetProvider: providerAt('all-data-v2/blobs') } : null;
     return { target, password: session.password, autoSync: config.autoSync, check,
-      provider: providerAt('all-data-v1'), assetProvider: providerAt('all-data-v1/blobs') };
+      provider, assetProvider: providerAt('all-data-v1/blobs'), githubV2, afterSync };
   };
   // The first upgraded device imports the old formats without asking old
   // clients to understand the new protocol. Once an all-data manifest exists,
@@ -342,10 +403,11 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     }
     return { version: 1, records };
   };
-  const fullSync = fullData ? createFullDataSync({ access: fullAccess, store: fullSyncStore, pendingStore: fullPendingStore, snapshotStore,
+  const fullTarget = async () => { const config = await read(); return config.profile ? targetOf(config.profile) : null; };
+  const fullSync = fullData ? createFullDataSync({ access: fullAccess, currentTarget: fullTarget, store: fullSyncStore, historyStore: fullHistoryStore, pendingStore: fullPendingStore, snapshotStore,
     signer, crypto, locks, uuid, now, autoDelay, pullInterval, eventWindow, eventDocument, seed: legacySeed ? seedLegacyData : undefined }) : null;
   if (fullSync) fullSync.subscribeFullDataSyncStatus((value) => {
-    if (['syncing', 'saved', 'error', 'locked'].includes(value.phase)) report({ ...value, unlocked: value.phase === 'locked' ? false : status.unlocked });
+    if (['syncing', 'saved', 'error', 'locked', 'conflict'].includes(value.phase)) report({ ...value, unlocked: value.phase === 'locked' ? false : status.unlocked });
   });
   async function flushLegacyPending(config, session) {
     if (config.metadata?.pending) {
@@ -480,16 +542,25 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
         });
       } catch (cause) { throw publicError(cause); }
     },
-    async saveCloudSyncSettings(profile, secrets, password, { autoSync = false } = {}) {
+    async saveCloudSyncSettings(profile, secrets, password, { autoSync = false, onlyIfCurrent = false } = {}) {
       const generation = lockGeneration;
       try {
-        if (typeof autoSync !== 'boolean') throw failure(tr("自动同步设置无效。"));
+        if (typeof autoSync !== 'boolean' || typeof onlyIfCurrent !== 'boolean') throw failure(tr("自动同步设置无效。"));
         const checked = validateConfig(profile);
         validateCloudPassword(password);
-        providerFactory(checked, secrets, { signer }); // Validate credentials without a network request.
+        if (!onlyIfCurrent) providerFactory(checked, secrets, { signer }); // No network request.
         await exclusive(async () => {
           const previous = await read();
           const target = await targetOf(checked);
+          if (onlyIfCurrent) {
+            const session = await currentSession(target);
+            if (!session || !same(previous.profile, checked) || session.password !== password || !same(session.secrets, secrets)) {
+              throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+            }
+            checkLockGeneration(generation);
+            await persist({ ...previous, autoSync });
+            return;
+          }
           const guard = fullData ? (action) => fullSync.guardFullDataTarget(target, action) : (action) => action();
           await guard(() => toolSync.guardToolTarget(target, async () => {
             if (previous.metadata && previous.metadata.target !== target) {
@@ -499,15 +570,17 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
               if (previous.metadata.pending) throw failure(messages.CLOUD_TARGET_PENDING, 'CLOUD_TARGET_PENDING');
               if (syncConflicts(previous.metadata.documents).length) throw failure(messages.CLOUD_TARGET_CONFLICTS, 'CLOUD_TARGET_CONFLICTS');
             }
-            const config = { version: 1, profile: checked, autoSync, metadata: previous.metadata };
+            const credentialEnvelope = await sealCredentials(target, providerSecrets(checked, secrets), password);
+            const config = { version: 1, profile: checked, autoSync, metadata: previous.metadata, credentialEnvelope };
             config.metadata = await metadataFor(config);
+            checkLockGeneration(generation);
             await persist(config);
             const fingerprint = await hash({ profile: checked, secrets });
-            await writeSession({ target: config.metadata.target, secrets: clone(secrets), password,
+            await writeSession({ id: crypto.randomUUID(), target: config.metadata.target, secrets: clone(secrets), password,
               connectionTest: lastConnectionTest?.fingerprint === fingerprint ? clone(lastConnectionTest.result) : null }, generation);
           }));
         });
-        const settings = await inspectSettings(); schedule(); return settings;
+        const settings = await inspectSettings({ clearError: true }); schedule(); return settings;
       } catch (cause) { throw publicError(cause); }
     },
     async unlockCloudSync(secrets, password) {
@@ -517,12 +590,19 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
         await exclusive(async () => {
           const config = await read();
           if (!config.profile) throw failure(tr("请先保存云同步配置。"));
-          providerFactory(config.profile, secrets, { signer });
-          const fingerprint = await hash({ profile: config.profile, secrets });
-          await writeSession({ target: await targetOf(config.profile), secrets: clone(secrets), password,
+          const target = await targetOf(config.profile);
+          let credentials;
+          if (config.credentialEnvelope) credentials = await openCredentials(config, target, password);
+          else {
+            if (!secrets) throw failure(messages.CLOUD_CREDENTIALS_REQUIRED, 'CLOUD_CREDENTIALS_REQUIRED');
+            providerFactory(config.profile, secrets, { signer });
+            credentials = clone(secrets);
+          }
+          const fingerprint = await hash({ profile: config.profile, secrets: credentials });
+          await writeSession({ id: crypto.randomUUID(), target, secrets: credentials, password,
             connectionTest: lastConnectionTest?.fingerprint === fingerprint ? clone(lastConnectionTest.result) : null }, generation);
         });
-        const settings = await inspectSettings(); schedule(); return settings;
+        const settings = await inspectSettings({ clearError: true }); schedule(); return settings;
       } catch (cause) { throw publicError(cause); }
     },
     async lockCloudSync() {
@@ -614,6 +694,16 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       try { const config = await read(); return config.metadata ? syncConflicts(config.metadata.documents) : []; }
       catch (cause) { throw publicError(cause); }
     },
+    async getCloudSyncRuns() { return fullSync ? fullSync.getFullDataRuns(await fullTarget()) : []; },
+    getCloudSyncTarget: fullTarget,
+    acceptBackgroundCloudSyncStatus(value) {
+      if (!value || !['syncing', 'saved', 'error', 'locked', 'conflict'].includes(value.phase)) return;
+      report({ ...value, unlocked: value.phase === 'locked' ? false : status.unlocked, autoSync: status.autoSync });
+    },
+    async resolveCloudSyncConflicts(choice, options) {
+      if (fullSync) return fullSync.resolveFullDataConflicts(choice, options);
+      throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
+    },
     async previewCloudSyncConflict(id) {
       if (fullData) return fullSync.previewFullDataConflict(id);
       throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
@@ -647,8 +737,8 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
         });
       } catch (cause) { throw publicError(cause); }
     },
-    async syncCloudNow() {
-      if (fullData) return fullSync.syncFullDataNow();
+    async syncCloudNow(options) {
+      if (fullData) return fullSync.syncFullDataNow(options);
       if (flight) return flight;
       flight = exclusive(async () => {
         const config = await read();
@@ -706,6 +796,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
         await checkAccess(config, session);
         metadata.lastSync = now();
         await persist(config);
+        await rememberSuccessfulSession(config, session).catch(() => { /* Retain legacy unlock if local migration fails. */ });
         lastObserved = JSON.stringify(portableState(saved));
         lastPull = now();
         await checkAccess(config, session);
@@ -761,6 +852,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
 
 const cloud = createCloudSync();
 export const { loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, useLocalOnlyCloudSync, syncCloudNow, getCloudSyncStatus,
-  subscribeCloudSyncStatus, startCloudSync, stopCloudSync, getCloudSyncConflicts, previewCloudSyncConflict, restoreCloudSyncConflict,
+  subscribeCloudSyncStatus, startCloudSync, stopCloudSync, getCloudSyncRuns, getCloudSyncConflicts, previewCloudSyncConflict, restoreCloudSyncConflict,
+  getCloudSyncTarget, acceptBackgroundCloudSyncStatus, resolveCloudSyncConflicts,
   listCloudHistory, previewCloudHistory, restoreCloudHistory, clearCloudHistoryPreview,
   loadToolSyncSettings, setToolSyncEnabled, getToolSyncStatus, subscribeToolSyncStatus, getToolSyncConflicts, useToolSyncConflict, syncToolCloudNow } = cloud;

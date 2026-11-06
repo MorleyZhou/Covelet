@@ -10,16 +10,20 @@ export function cloudProviderLabel(provider) {
   return provider === 'oss' ? tr('{0}（Beta）', [name]) : name;
 }
 
+export function requireCloudSyncSuccess(result) {
+  if (result?.phase !== 'saved') throw Object.assign(new Error(result?.message || tr('同步操作未完成，本机数据已保留。')), { code: result?.code || 'CLOUD_REQUEST' });
+}
+
 // A first attempt must not start background retries before the user has seen
 // its outcome. Saving alone still performs no provider I/O or connection test.
-export async function finishCloudSetup({ profile, secrets, password, autoSync = false, firstSync = true }, api) {
+export async function finishCloudSetup({ profile, secrets, password, autoSync = false, firstSync = true, onSaved }, api) {
   let saved = await api.saveCloudSyncSettings(profile, secrets, password, { autoSync: false });
+  onSaved?.(saved);
   if (firstSync) {
-    // The hardened controller resolves to a status on transport/decrypt errors.
-    // Only its actual saved phase completes onboarding or opts into auto sync.
     const result = await api.syncCloudNow();
-    if (result?.phase !== 'saved') throw Object.assign(new Error(result?.message || tr('同步操作未完成，本机数据已保留。')), { code: result?.code || 'CLOUD_REQUEST' });
-    if (autoSync) saved = await api.saveCloudSyncSettings(profile, secrets, password, { autoSync: true });
+    // A detected conflict preserves the configured connection for the choice.
+    if (result?.phase !== 'conflict') requireCloudSyncSuccess(result);
+    if (autoSync) saved = await api.saveCloudSyncSettings(profile, secrets, password, { autoSync: true, onlyIfCurrent: true });
   }
   return saved;
 }

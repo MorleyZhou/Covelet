@@ -1,6 +1,6 @@
 .layout-editing .header-actions, .layout-editing .search-area { opacity: .45; }
 .layout-editing .search-area { margin-top: 20px; }
-.owntab.layout-editing { padding-bottom: 170px; }
+.owntab.layout-editing { padding-bottom: 110px; }
 .layout-editing .navigation-shelf { -webkit-user-select: none; user-select: none; }
 .layout-editing .site-tile { cursor: grab; outline: none; touch-action: none; }
 .layout-editing .site-tile:active { cursor: grabbing; }
@@ -16,7 +16,6 @@
 .widget-tile .layout-selection-mark { top: 8px; right: 8px; left: auto; }
 .widget-size-mini .layout-selection-mark { top: calc(var(--rendered-icon-size, var(--icon-size)) - 9px); left: calc(50% + var(--rendered-icon-size, var(--icon-size)) / 2 - 16px); right: auto; }
 .widget-live-content { flex: 1; display: flex; width: 100%; min-height: 0; min-width: 0; }
-.layout-editing .desktop-pages { --desktop-controls-bottom: 111px; }
 .desktop-edit-bar { position: fixed; z-index: 15; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 9px; max-width: calc(100vw - 24px); color: #fff; }
 .desktop-edit-actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; max-width: 100%; gap: 4px; background: #1d1d1fdb; backdrop-filter: blur(20px); border-radius: 18px; padding: 6px; }
 .desktop-edit-actions button { display: flex; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; min-height: 34px; padding: 6px 12px; border-radius: 12px; font-size: 13px; }

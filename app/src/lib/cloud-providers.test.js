@@ -235,6 +235,150 @@ test('GitHub only creates immutable contents, encoding binary bytes as base64 an
   assert.equal(put.headers.authorization, 'Bearer FAKE-GITHUB-TOKEN');
 });
 
+test('GitHub cleanup pins the index and blob reads and commits only exact obsolete index paths', async () => {
+  const head = 'a'.repeat(40), next = 'd'.repeat(40);
+  const prefix = 'covelet/all-data-v1', profile = { ...github, prefix };
+  const queue = fakeQueue([
+    Response.json({ name: profile.branch, commit: { sha: head } }),
+    Response.json([{ name, path: `${prefix}/${name}`, type: 'file', size: payload.length }]),
+    response(payload), response(payload), Response.json({ data: { createCommitOnBranch: { commit: { oid: next } } } }),
+  ]);
+  const indexes = provider(profile, queue), blobs = provider({ ...profile, prefix: `${prefix}/blobs` }, queue);
+  assert.equal(blobs.pruneIndexes, undefined);
+  assert.equal(await indexes.pinIndexes(), head);
+  assert.deepEqual(await indexes.list(head), [{ name, size: payload.length }]);
+  assert.deepEqual(await indexes.read(name, head), payload);
+  assert.deepEqual(await blobs.read(name, head), payload);
+  await indexes.pruneIndexes(head, [name]);
+  const urls = queue.calls.map(call => new URL(call.url));
+  assert.match(urls[0].pathname, /\/branches\/sync%2Fcovelet$/);
+  assert.ok(urls.slice(1, 4).every(url => url.searchParams.get('ref') === head));
+  assert.equal(queue.calls[4].method, 'POST');
+  assert.equal(urls[4].href, 'https://api.github.com/graphql');
+  const body = JSON.parse(decoder.decode(queue.calls[4].body));
+  assert.match(body.query, /createCommitOnBranch/);
+  assert.deepEqual(body.variables.input, {
+    branch: { repositoryNameWithOwner: `${profile.owner}/${profile.repo}`, branchName: profile.branch },
+    expectedHeadOid: head,
+    fileChanges: { deletions: [{ path: `${prefix}/${name}` }] },
+    message: { headline: 'Covelet remove obsolete encrypted sync indexes' },
+  });
+});
+
+test('GitHub cleanup leaves a changed branch intact when the exact-head mutation is rejected', async () => {
+  const head = 'a'.repeat(40), profile = { ...github, prefix: 'covelet/all-data-v1' };
+  const queue = fakeQueue([Response.json({ data: { createCommitOnBranch: null }, errors: [{ message: 'Expected branch head has changed' }] })]);
+  const indexes = provider(profile, queue);
+  assert.throws(() => indexes.pruneIndexes(head, [`../${name}`]), codeIs('CLOUD_INVALID_NAME'));
+  await assert.rejects(indexes.pruneIndexes(head, [name]), codeIs('CLOUD_INVALID_RESPONSE'));
+  assert.deepEqual(queue.calls.map(call => call.method), ['POST']);
+  assert.equal(JSON.parse(decoder.decode(queue.calls[0].body)).variables.input.expectedHeadOid, head);
+});
+
+test('GitHub cleanup rejects a mutation body exceeding the byte limit before making a request', () => {
+  const prefix = `${'壁'.repeat(287)}/all-data-v1`, queue = fakeQueue([]);
+  const names = Array.from({ length: 950 }, (_, index) => snapshot(payload, index + 1));
+  assert.throws(() => provider({ ...github, prefix }, queue).pruneIndexes('a'.repeat(40), names), codeIs('CLOUD_LIMIT'));
+  assert.equal(queue.calls.length, 0);
+});
+
+const gitSha = letter => letter.repeat(40);
+const storageProfile = { ...github, prefix: 'covelet/all-data-v1' };
+const githubNode = 'R_testRepository';
+const gitBranch = (head = gitSha('a'), tree = gitSha('b')) => Response.json({ name: github.branch, commit: { sha: head, commit: { tree: { sha: tree } } } });
+const gitRepo = () => Response.json({ full_name: `${github.owner}/${github.repo}`, node_id: githubNode });
+const gitTree = (sha, tree, truncated = false) => Response.json({ sha, tree, truncated });
+const gitEntry = (path, sha, type = 'tree') => ({ path, sha, type, mode: type === 'tree' ? '040000' : '100644', ...(type === 'blob' && { size: payload.length }) });
+const gitBody = call => JSON.parse(decoder.decode(call.body));
+const gitSeal = epoch => {
+  const bytes = encoder.encode(`Covelet sync layout 2\n${epoch}\n`);
+  return Response.json({ type: 'file', path: storageProfile.prefix, size: bytes.length, encoding: 'base64', content: Buffer.from(bytes).toString('base64') });
+};
+
+test('GitHub probes the live layout and requires an exact seal marker at a pinned commit', async () => {
+  const head = gitSha('a');
+  const queue = fakeQueue([response('', 404), Response.json([]), gitSeal(name), gitSeal('../unrelated.txt'), response('', 503)]);
+  const { githubStorage } = provider(storageProfile, queue);
+  assert.deepEqual(await githubStorage.readLayout(), { layout: 'v1', epoch: null });
+  assert.deepEqual(await githubStorage.readLayout(), { layout: 'v1', epoch: null });
+  assert.deepEqual(await githubStorage.readLayout({ head }), { layout: 'v2', epoch: name });
+  await assert.rejects(githubStorage.readLayout({ head }), codeIs('CLOUD_INVALID_RESPONSE'));
+  await assert.rejects(githubStorage.readLayout({ head }), codeIs('CLOUD_NETWORK'));
+  assert.deepEqual(queue.calls.map(call => new URL(call.url).searchParams.get('ref')), [github.branch, github.branch, head, head, head]);
+});
+
+test('GitHub lists exact Git trees and more than 100 distinct encrypted blob actors', async () => {
+  const head = gitSha('a'), root = gitSha('b'), prefixTree = gitSha('c'), v2 = gitSha('d'), blobs = gitSha('e');
+  const entries = Array.from({ length: 120 }, (_, i) => {
+    const digest = hash(`blob-${i}`);
+    return gitEntry(`covelet-${digest.slice(0, 32)}-1-${digest}.json`, gitSha('f'), 'blob');
+  });
+  const queue = fakeQueue([gitBranch(), gitRepo(), gitTree(root, [gitEntry('covelet', prefixTree), gitEntry('unrelated', gitSha('9'))]),
+    gitTree(prefixTree, [gitEntry('all-data-v2', v2)]), gitTree(v2, [gitEntry(name, gitSha('8'), 'blob'), gitEntry('blobs', blobs)]), gitTree(blobs, entries)]);
+  const { githubStorage } = provider(storageProfile, queue);
+  const pin = await githubStorage.pin();
+  assert.deepEqual(pin, { head, tree: root, repositoryId: githubNode });
+  const files = await githubStorage.files(pin, 'v2');
+  assert.deepEqual(files.indexes, [{ name, sha: gitSha('8'), size: payload.length }]);
+  assert.equal(files.blobs.length, 120);
+  assert.ok(queue.calls.every(call => call.method === 'GET'));
+});
+
+test('GitHub pins a detached commit by SHA without following the branch', async () => {
+  const head = gitSha('a'), tree = gitSha('b');
+  const queue = fakeQueue([Response.json({ sha: head, tree: { sha: tree } }), gitRepo(), Response.json({ sha: gitSha('c'), tree: { sha: tree } })]);
+  const { githubStorage } = provider(storageProfile, queue);
+  assert.deepEqual(await githubStorage.pin(head), { head, tree, repositoryId: githubNode });
+  await assert.rejects(githubStorage.pin(head), codeIs('CLOUD_INVALID_RESPONSE'));
+  assert.ok(queue.calls[0].url.endsWith(`/git/commits/${head}`));
+});
+
+test('GitHub stages unattached blobs, a v2 tree and a seal, then advances only the pinned branch', async () => {
+  const head = gitSha('a'), root = gitSha('b'), prefixTree = gitSha('c'), v1 = gitSha('d'), nextTree = gitSha('e'), candidate = gitSha('f');
+  const digest = hash(payload), blobName = snapshot(payload, 1, digest.slice(0, 32)), blobSha = gitSha('7');
+  const queue = fakeQueue([gitBranch(), gitRepo(), Response.json({ sha: blobSha }, { status: 201 }),
+    gitTree(root, [gitEntry('covelet', prefixTree)]), gitTree(prefixTree, [gitEntry('all-data-v1', v1)]), gitTree(v1, [gitEntry(name, gitSha('9'), 'blob')]),
+    Response.json({ sha: nextTree }, { status: 201 }), Response.json({ sha: candidate, tree: { sha: nextTree }, parents: [{ sha: head }] }, { status: 201 }),
+    Response.json({ data: { updateRefs: { clientMutationId: candidate } } })]);
+  const { githubStorage } = provider(storageProfile, queue);
+  const pin = await githubStorage.pin();
+  assert.equal(await githubStorage.uploadBlob(payload), blobSha);
+  assert.equal(await githubStorage.prepare(pin, { additions: [{ kind: 'index', name, sha: blobSha }, { kind: 'blob', name: blobName, sha: blobSha }],
+    deletions: [{ kind: 'index', name: snapshot(payload, 2) }], seal: name }), candidate);
+  assert.deepEqual(gitBody(queue.calls[2]), { content: Buffer.from(payload).toString('base64'), encoding: 'base64' });
+  assert.deepEqual(gitBody(queue.calls[6]), { base_tree: root, tree: [
+    { path: `covelet/all-data-v2/${name}`, mode: '100644', type: 'blob', sha: blobSha },
+    { path: `covelet/all-data-v2/blobs/${blobName}`, mode: '100644', type: 'blob', sha: blobSha },
+    { path: `covelet/all-data-v2/${snapshot(payload, 2)}`, mode: '100644', type: 'blob', sha: null },
+    { path: storageProfile.prefix, mode: '100644', type: 'blob', content: `Covelet sync layout 2\n${name}\n` },
+  ] });
+  assert.deepEqual(gitBody(queue.calls[7]).parents, [head]);
+  assert.equal(queue.calls.length, 8, 'preparation leaves the branch alone');
+  await githubStorage.advance(pin, candidate);
+  assert.equal(queue.calls[8].url, 'https://api.github.com/graphql');
+  assert.deepEqual(gitBody(queue.calls[8]).variables.input, { repositoryId: githubNode, clientMutationId: candidate,
+    refUpdates: [{ name: `refs/heads/${github.branch}`, beforeOid: head, afterOid: candidate, force: false }] });
+});
+
+test('GitHub refuses to seal a foreign v1 file or an incomplete tree without preparing a commit', async () => {
+  const root = gitSha('b'), prefixTree = gitSha('c'), v1 = gitSha('d');
+  for (const leaf of [gitTree(v1, [gitEntry('unrelated.txt', gitSha('e'), 'blob')]), gitTree(v1, [], true)]) {
+    const queue = fakeQueue([gitTree(root, [gitEntry('covelet', prefixTree)]), gitTree(prefixTree, [gitEntry('all-data-v1', v1)]), leaf]);
+    const { githubStorage } = provider(storageProfile, queue);
+    await assert.rejects(githubStorage.prepare({ head: gitSha('a'), tree: root }, { seal: name }));
+    assert.deepEqual(queue.calls.map(call => call.method), ['GET', 'GET', 'GET']);
+  }
+});
+
+test('GitHub rejects changed exact heads and keeps a server outage retryable', async () => {
+  const candidate = gitSha('c');
+  const queue = fakeQueue([gitBranch(), gitRepo(), Response.json({ errors: [{ message: 'stale' }] }), gitBranch(gitSha('d')), response('', 503)]);
+  const { githubStorage } = provider(storageProfile, queue);
+  const pin = await githubStorage.pin();
+  await assert.rejects(githubStorage.advance(pin, candidate), codeIs('CLOUD_STALE_HEAD'));
+  await assert.rejects(githubStorage.advance(pin, candidate), codeIs('CLOUD_NETWORK'));
+});
+
 test('identical existing files are idempotent without PUT, but mismatched files are preserved', async () => {
   for (const profile of [r2, oss, github]) {
     const queue = fakeQueue([response(payload)]);
