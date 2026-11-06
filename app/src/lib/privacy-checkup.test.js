@@ -26,8 +26,8 @@ test('privacy snapshot distinguishes actual grants from optional declaration ran
 test('clock retirement requests no notification permission and describes any retained old grant honestly', () => {
   assert.deepEqual(manifest.optional_permissions, []);
   assert.ok(manifest.permissions.includes('alarms'), 'owned old browser reminders still need to be cleared');
-  assert.equal(permissionPurpose('alarms'), '清理旧版时钟留下的提醒。');
-  assert.equal(permissionLabel('alarms'), '旧版提醒清理');
+  assert.equal(permissionPurpose('alarms'), '接续后台同步并清理旧版时钟提醒。');
+  assert.equal(permissionLabel('alarms'), '后台任务');
   assert.equal(permissionPurpose('notifications'), '旧版时钟使用的通知权限，当前版本不再发送通知。');
 });
 
@@ -40,18 +40,15 @@ test('unavailable or denied permission inspection stays unknown, never falsely r
   }
 });
 
-test('every newly added privacy and setup phrase has all seven packaged translations', async () => {
+test('privacy and sync setup copy has all seven packaged translations', async () => {
   const catalog = JSON.parse(await readFile(new URL('../i18n/catalog.json', import.meta.url)));
-  const files = ['../components/PrivacyCheckup.jsx', './privacy-checkup.js'];
+  const files = ['../components/PrivacyCheckup.jsx', './privacy-checkup.js', '../components/CloudSyncSettings.jsx'];
+  const phrases = new Set(['已关闭同步，仅在本机保存数据。']);
   for (const file of files) {
     const source = await readFile(new URL(file, import.meta.url), 'utf8');
-    for (const match of source.matchAll(/\btr\('([^']+)'/g)) {
-      const phrase = match[1];
-      assert.ok(catalog[phrase], phrase);
-      for (const locale of ['en', 'zh-TW', 'ja', 'ko', 'de', 'fr', 'ru']) assert.ok(catalog[phrase][locale], `${locale}: ${phrase}`);
-    }
+    for (const [, singleQuoted, doubleQuoted] of source.matchAll(/\btr\((?:'([^'\n]+)'|"([^"\n]+)")/g)) phrases.add(singleQuoted ?? doubleQuoted);
   }
-  for (const phrase of ['正在读取同步设置…', '同步设置步骤', '选择渠道', '密码与首次同步', '推荐', '首次同步会检查写入权限和同步密码；失败后可重试，或仅在本机使用。', '测试时仅申请所选存储地址的访问权限。', '仅保存配置不会验证连接、开启自动同步或执行首次同步。', '首次同步成功后自动同步', '仅在本机使用', '上一步', '保存并首次同步', '下一步', '已关闭同步，仅在本机保存数据。', '隐私自查']) {
+  for (const phrase of phrases) {
     for (const locale of ['en', 'zh-TW', 'ja', 'ko', 'de', 'fr', 'ru']) assert.ok(catalog[phrase]?.[locale], `${locale}: ${phrase}`);
   }
 });

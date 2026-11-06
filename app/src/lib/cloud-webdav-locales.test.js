@@ -20,7 +20,7 @@ test('every active WebDAV error has a packaged translation in all supported lang
 
 test('WebDAV validation and authentication failures use the selected language without exposing secrets', async () => {
   const invalid = 'WebDAV 地址无效：请填写 HTTPS 基目录地址，不要使用分享链接、查询参数或带密码的地址。';
-  const unauthorized = 'WebDAV 登录失败（401）：请检查用户名和应用密码，不要使用网页登录密码。';
+  const unauthorized = '登录失败。请检查用户名和应用密码。';
   const secret = 'PRIVATE-APP-PASSWORD';
   const write = localData.set;
   localData.set = async () => {}; // This test changes locale only, without IndexedDB.

@@ -1,6 +1,6 @@
 import { tr } from '../i18n/index.js';
 import { useEffect, useRef, useState } from 'react';
-import { SquaresFour, Code, ArrowsClockwise, GithubLogo, MagnifyingGlass, X, NotePencil, BookOpen, ChartLine, Package } from '@phosphor-icons/react';
+import { SquaresFour, Code, ArrowsClockwise, GithubLogo, MagnifyingGlass, X, NotePencil, BookOpen, ChartLine, Package, Image as ImageIcon } from '@phosphor-icons/react';
 import { BUNDLED_EXTENSIONS, EXTENSION_CATEGORIES, extensionMetadata, extensionsForCatalog } from '../lib/extensions.js';
 import { WIDGET_SIZE_OPTIONS } from '../lib/widget-model.js';
 import { WIDGET_SIZES } from '../lib/desktop-layout.js';
@@ -25,10 +25,10 @@ function useCatalogAction() {
 }
 
 const catalogTabs = [{ id: 'all', get label() { return tr('全部扩展'); }, Icon: SquaresFour }, ...EXTENSION_CATEGORIES.map((category) => ({
-  id: category.id, get label() { return category.label; }, Icon: ({ development: Code, productivity: NotePencil, learning: BookOpen, finance: ChartLine, creative: SquaresFour, life: Package })[category.id] || ArrowsClockwise,
+  id: category.id, get label() { return category.label; }, Icon: ({ development: Code, productivity: NotePencil, learning: BookOpen, finance: ChartLine, creative: SquaresFour, life: Package, appearance: ImageIcon })[category.id] || ArrowsClockwise,
 }))];
 function ExtensionIcon({ extension }) {
-  const Icon = ({ notes: NotePencil, 'read-later': BookOpen, 'github-contributions': GithubLogo })[extension.id] || ArrowsClockwise;
+  const Icon = ({ notes: NotePencil, 'read-later': BookOpen, 'github-contributions': GithubLogo, 'random-wallpaper': ImageIcon })[extension.id] || ArrowsClockwise;
   return <span className={`extension-item-icon extension-${extension.id}-icon`}><Icon size="54%" aria-hidden="true" /></span>;
 }
 // Management only: no app panel, content data, or provider configuration here.

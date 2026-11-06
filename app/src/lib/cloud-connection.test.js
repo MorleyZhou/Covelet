@@ -7,10 +7,10 @@ const input = { profile: { provider: 'webdav' }, secrets: { appPassword: 'fixtur
 test('first setup saves without background sync, syncs once, then enables requested auto sync', async () => {
   const calls = [];
   const saved = await finishCloudSetup(input, {
-    async saveCloudSyncSettings(profile, secrets, password, options) { calls.push(['save', options.autoSync]); return { profile, autoSync: options.autoSync }; },
+    async saveCloudSyncSettings(profile, secrets, password, options) { calls.push(['save', options]); return { profile, autoSync: options.autoSync }; },
     async syncCloudNow() { calls.push(['sync']); return { phase: 'saved' }; },
   });
-  assert.deepEqual(calls, [['save', false], ['sync'], ['save', true]]);
+  assert.deepEqual(calls, [['save', { autoSync: false }], ['sync'], ['save', { autoSync: true, onlyIfCurrent: true }]]);
   assert.equal(saved.autoSync, true);
 });
 
@@ -25,11 +25,12 @@ test('a resolved failure status from the sync controller cannot complete setup o
 
 test('first-sync failure stays manual and propagates the existing actionable error', async () => {
   const calls = [], failure = Object.assign(new Error('无法解密同步数据'), { code: 'CLOUD_DECRYPT' });
-  await assert.rejects(finishCloudSetup(input, {
-    async saveCloudSyncSettings(profile, secrets, password, options) { calls.push(['save', options.autoSync]); return {}; },
+  const saved = { profile: input.profile, autoSync: false };
+  await assert.rejects(finishCloudSetup({ ...input, onSaved: (connection) => calls.push(['show', connection]) }, {
+    async saveCloudSyncSettings(profile, secrets, password, options) { calls.push(['save', options.autoSync]); return saved; },
     async syncCloudNow() { calls.push(['sync']); throw failure; },
   }), error => error === failure);
-  assert.deepEqual(calls, [['save', false], ['sync']], 'failure cannot opt into automatic retries');
+  assert.deepEqual(calls, [['save', false], ['show', saved], ['sync']]);
 });
 
 test('save-only setup never invokes connection testing or synchronization and keeps unverified state', async () => {

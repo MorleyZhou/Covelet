@@ -10,37 +10,50 @@ import { PresentationContext } from './presentation.js';
 
 const appRoot = fileURLToPath(new URL('../../', import.meta.url));
 const engineSource = `
-  const conflict = { id: 'notes-conflict', namespace: 'preferences', key: 'covelet.tools.v1', local: false, deleted: false };
   const profile = { provider: 'webdav', endpoint: 'https://dav.example.test/dav/', prefix: 'qa' };
+  const conflictRun = { id: 'run-1', startedAt: 1000, finishedAt: 2000, outcome: 'conflict', newConflictCount: 2 };
+  const subscribers = new Set();
   export const engine = {
-    previews: [], restores: [], counter: 0, deferNext: false, release: null, resolved: false,
-    reset() { this.previews = []; this.restores = []; this.counter = 0; this.deferNext = false; this.release = null; this.resolved = false; }
+    runs: [], choices: [], gate: null, status: null,
+    reset(legacy) {
+      this.runs = legacy ? [] : [conflictRun];
+      this.choices = []; this.gate = null;
+      this.status = { phase: 'conflict', unlocked: true, pending: 0, conflicts: 2, lastSync: 0, message: '有冲突待处理' };
+    },
+    update(change) {
+      this.status = { ...this.status, ...change };
+      for (const listener of subscribers) listener(this.status);
+    }
   };
   export const supportsCloudSync = () => true;
-  export const getCloudSyncStatus = () => ({ phase: 'saved', unlocked: true, pending: 0, lastSync: 0, message: '' });
-  export const subscribeCloudSyncStatus = () => () => {};
+  export const getCloudSyncStatus = () => engine.status;
+  export const acceptBackgroundCloudSyncStatus = value => engine.update(value);
+  export const subscribeCloudSyncStatus = (listener) => {
+    subscribers.add(listener); return () => subscribers.delete(listener);
+  };
+  export const subscribeBackgroundCloudSyncStatus = subscribeCloudSyncStatus;
+  export const getBackgroundCloudSyncStatus = getCloudSyncStatus;
   export const loadCloudSyncSettings = async () => ({ profile: { ...profile }, autoSync: false });
-  export const getCloudSyncConflicts = async () => engine.resolved ? [] : [{ ...conflict }];
-  export async function previewCloudSyncConflict(id) {
-    const token = 'preview-token-' + ++engine.counter;
-    engine.previews.push({ id, token });
-    const value = side => ({ notes: [{ id: 'hidden-note', title: 'HIDDEN_' + side + '_TITLE', body: 'HIDDEN_' + side + '_BODY' }], reading: [], rawCanary: 'PRIVATE_JSON_' + side });
-    const preview = { ...conflict, id, token, local: { deleted: false, value: value('LOCAL') }, remote: { deleted: false, value: value('REMOTE') } };
-    if (engine.deferNext) {
-      engine.deferNext = false;
-      return new Promise(resolve => { engine.release = () => resolve(preview); });
-    }
-    return preview;
+  export const getCloudSyncRuns = async () => engine.runs.slice();
+  export const getCloudSyncConflicts = async () => engine.status.conflicts ? [
+    { id: 'notes', namespace: 'preferences', key: 'covelet.tools.v1' },
+    { id: 'icon', namespace: 'navigation-icons', key: 'https://private.example/favicon.png' },
+  ] : [];
+  export async function resolveCloudSyncConflicts(choice) {
+    engine.choices.push(choice);
+    engine.update({ phase: 'syncing', message: '正在同步…' });
+    await engine.gate;
+    engine.runs = [{ id: 'run-2', startedAt: 2500, finishedAt: 3000, outcome: 'success', newConflictCount: 0 }, ...engine.runs];
+    engine.update({ phase: 'saved', conflicts: 0, lastSync: 3000, message: '' });
+    return engine.status;
   }
-  export async function restoreCloudSyncConflict(id, options) {
-    engine.restores.push({ id, ...options }); engine.resolved = true;
-  }
+  export const requestBackgroundCloudSync = resolveCloudSyncConflicts;
   const unexpected = () => { throw Error('Unexpected sync I/O in conflict UI test'); };
   export const testCloudConnection = unexpected, saveCloudSyncSettings = unexpected, unlockCloudSync = unexpected,
     lockCloudSync = unexpected, useLocalOnlyCloudSync = unexpected, syncCloudNow = unexpected;
 `;
 
-test('real conflict UI protects hidden content and renews previews after unlocking', async (t) => {
+test('sync settings offer one whole-snapshot choice without blocking the page', async (t) => {
   const temporary = await mkdtemp(join(appRoot, 'node_modules', '.covelet-conflict-ui-'));
   const output = join(temporary, 'settings.mjs');
   const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://covelet.test/', pretendToBeVisual: true });
@@ -70,7 +83,7 @@ test('real conflict UI protects hidden content and renews previews after unlocki
     plugins: [{
       name: 'conflict-engine-fixture',
       setup(builder) {
-        builder.onResolve({ filter: /(?:cloud-sync\.js|^fixture:cloud-sync)$/ }, () => ({ path: 'engine', namespace: 'conflict-fixture' }));
+        builder.onResolve({ filter: /(?:cloud-sync(?:-background)?\.js|^fixture:cloud-sync)$/ }, () => ({ path: 'engine', namespace: 'conflict-fixture' }));
         builder.onResolve({ filter: /CloudHistory\.jsx$/ }, () => ({ path: 'history', namespace: 'conflict-fixture' }));
         builder.onLoad({ filter: /.*/, namespace: 'conflict-fixture' }, ({ path }) => ({ contents: path === 'engine' ? engineSource : 'export default function CloudHistory() { return null; }', loader: 'js' }));
         // These must be the same React contexts/catalog used by the test host.
@@ -81,105 +94,74 @@ test('real conflict UI protects hidden content and renews previews after unlocki
   });
   const { CloudSyncSettings, engine } = await import(pathToFileURL(output).href);
   const { createRoot } = await import('react-dom/client');
-  async function fixture(active) {
-    engine.reset();
+  async function fixture(active, { legacy = false } = {}) {
+    engine.reset(legacy);
     document.body.innerHTML = '<div class="owntab"><div id="settings-root"></div></div>';
     const root = createRoot(document.querySelector('#settings-root'));
+    const busy = [];
     let unlocks = 0;
     const requestUnlock = () => { unlocks++; };
     const render = async (nextActive) => {
       await act(async () => root.render(React.createElement(PresentationContext.Provider, {
         value: { active: nextActive, hiddenKeys: new Set(['note:hidden-note']), requestUnlock },
-      }, React.createElement(CloudSyncSettings))));
+      }, React.createElement(CloudSyncSettings, { onBusyChange: value => busy.push(value) }))));
     };
     await render(active);
-    assert.ok(document.querySelector('.cloud-sync-conflicts button'), 'the actual conflict list must load');
-    return { render, get unlocks() { return unlocks; }, async close() { await act(async () => root.unmount()); } };
+    return { busy, render, get unlocks() { return unlocks; }, async close() { await act(async () => root.unmount()); } };
   }
-  async function click(button) {
-    assert.ok(button, 'expected a real rendered button');
-    assert.equal(button.disabled, false, 'the action must be enabled');
-    await act(async () => { button.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true })); });
+  const group = () => document.querySelector('[role="group"][aria-label="选择同步版本"]');
+  const button = (name, root = group()) => [...(root?.querySelectorAll('button') || [])].find(element => element.textContent.trim() === name);
+  async function click(control) {
+    assert.ok(control, 'expected a real rendered button');
+    assert.equal(control.disabled, false, 'the action must be enabled');
+    await act(async () => { control.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true })); });
   }
-  const open = () => click(document.querySelector('.cloud-sync-conflicts button'));
-  const dialog = () => document.querySelector('[role="alertdialog"]');
-  const confirm = () => dialog()?.querySelector('.prompt-dialog-actions button:last-child');
-  const remoteChoice = () => dialog()?.querySelector('.cloud-conflict-sides section:last-child button:last-child');
-  const assertPrivateAbsent = () => {
-    assert.doesNotMatch(document.body.innerHTML, /HIDDEN_(?:LOCAL|REMOTE)_(?:TITLE|BODY)|PRIVATE_JSON_(?:LOCAL|REMOTE)/);
-    assert.equal(dialog(), null);
-  };
 
-  await t.test('hidden mode requests the hide password without reading a conflict preview', async () => {
-    const ui = await fixture(true);
+  for (const side of ['local', 'remote']) {
+    await t.test('choosing ' + side + ' schedules one background operation for the whole snapshot', async () => {
+      const ui = await fixture(false);
+      let release;
+      engine.gate = new Promise(resolve => { release = resolve; });
+      try {
+        assert.equal(document.querySelectorAll('[role="group"][aria-label="选择同步版本"]').length, 1);
+        assert.equal(group().closest('[data-sync-run-id]').dataset.syncRunId, 'run-1');
+        assert.match(group().closest('[data-sync-run-id]').textContent, /有冲突/);
+        assert.ok(button('以本地为准'));
+        assert.ok(button('以云端为准'));
+        assert.equal(button('查看对比', document), undefined);
+        assert.doesNotMatch(document.body.textContent, /private\.example|网站图标/);
+        await click(button(side === 'local' ? '以本地为准' : '以云端为准'));
+        assert.deepEqual(engine.choices, [side]);
+        assert.notEqual(ui.busy.at(-1), true, 'background work must not leave page-wide busy state');
+        await act(async () => release());
+        assert.equal(group(), null, 'completed resolution removes the active choice');
+        assert.equal(document.querySelectorAll('[data-sync-run-id]').length, 2);
+        assert.deepEqual(engine.choices, [side], 'no per-record operation or second manual sync');
+      } finally { release(); await ui.close(); }
+    });
+  }
+
+  await t.test('hidden mode blocks the whole-snapshot choice until the user unlocks', async () => {
+    const ui = await fixture(false);
     try {
-      assertPrivateAbsent();
-      await open();
+      const stale = button('以云端为准');
+      await ui.render(true);
+      assert.ok(!button('以云端为准') || button('以云端为准').disabled);
+      await act(async () => { stale.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true })); });
+      assert.deepEqual(engine.choices, []);
+      await click(button('解锁隐藏内容', document));
       assert.equal(ui.unlocks, 1);
-      assert.equal(engine.previews.length, 0);
-      assert.equal(engine.restores.length, 0);
-      assertPrivateAbsent();
+      await ui.render(false);
+      assert.ok(button('以云端为准'));
     } finally { await ui.close(); }
   });
 
-  await t.test('locking an open real preview removes summaries and JSON and invalidates its choice', async () => {
-    const ui = await fixture(false);
+  await t.test('older unresolved conflicts without a history row still have one choice pair', async () => {
+    const ui = await fixture(false, { legacy: true });
     try {
-      await open();
-      assert.match(dialog().textContent, /HIDDEN_LOCAL_BODY/);
-      assert.match(dialog().textContent, /HIDDEN_REMOTE_BODY/);
-      assert.equal(confirm().disabled, true, 'no version is selected by default');
-      await click(dialog().querySelector('.cloud-conflict-details button'));
-      assert.match(dialog().textContent, /PRIVATE_JSON_LOCAL/, 'technical details use the actual preview renderer');
-      await click(remoteChoice());
-      const staleConfirm = confirm();
-      assert.equal(staleConfirm.disabled, false);
-      await ui.render(true);
-      assertPrivateAbsent();
-      await act(async () => { staleConfirm.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true })); });
-      assert.equal(engine.restores.length, 0, 'a removed confirmation cannot apply the old choice');
-      await ui.render(false);
-      assertPrivateAbsent();
-      await open();
-      assert.equal(engine.previews.length, 2);
-      assert.equal(confirm().disabled, true, 'reopening requires an explicit choice again');
-      await click(remoteChoice());
-      await click(confirm());
-      assert.deepEqual(engine.restores, [{ id: 'notes-conflict', choice: 'remote', token: 'preview-token-2' }]);
-    } finally { await ui.close(); }
-  });
-
-  await t.test('a preview response received while hidden never enters the DOM', async () => {
-    const ui = await fixture(false);
-    try {
-      engine.deferNext = true;
-      await open();
-      assert.equal(engine.previews.length, 1);
-      await ui.render(true);
-      await act(async () => { engine.release(); });
-      assertPrivateAbsent();
-      await ui.render(false);
-      assertPrivateAbsent();
-      await open();
-      assert.equal(engine.previews.length, 2);
-      assert.match(dialog().textContent, /HIDDEN_REMOTE_BODY/);
-    } finally { await ui.close(); }
-  });
-
-  await t.test('a pre-lock response arriving after unlocking cannot reopen an old token', async () => {
-    const ui = await fixture(false);
-    try {
-      engine.deferNext = true;
-      await open();
-      await ui.render(true);
-      await ui.render(false);
-      await act(async () => { engine.release(); });
-      assertPrivateAbsent();
-      await open();
-      assert.equal(engine.previews.length, 2);
-      await click(remoteChoice());
-      await click(confirm());
-      assert.deepEqual(engine.restores, [{ id: 'notes-conflict', choice: 'remote', token: 'preview-token-2' }]);
+      assert.equal(document.querySelectorAll('[role="group"][aria-label="选择同步版本"]').length, 1);
+      assert.ok(button('以本地为准'));
+      assert.ok(button('以云端为准'));
     } finally { await ui.close(); }
   });
 });

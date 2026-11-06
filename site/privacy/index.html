@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Covelet 隐私政策。了解扩展如何在本机保存数据，以及哪些功能会连接外部服务。">
+  <meta name="theme-color" content="#B9FF66">
+  <title>Covelet 隐私政策 / Privacy Policy</title>
+  <link rel="canonical" href="https://covelet.future-element.com/privacy/">
+  <link rel="icon" href="../assets/covelet-mark-brutal.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="privacy.css">
+</head>
+<body>
+  <a class="skip" href="#policy">跳至正文</a>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../"><img src="../assets/covelet-mark-brutal.svg" width="34" height="34" alt=""><span>Covelet</span></a>
+      <nav class="nav-links" aria-label="语言"><a href="#policy" lang="zh-CN">简体中文</a><a href="#english" lang="en">English</a></nav>
+    </div>
+  </header>
+  <main class="wrap policy" id="policy" tabindex="-1">
+    <article aria-labelledby="zh-title">
+      <h1 id="zh-title">隐私政策</h1>
+      <p class="policy-date">更新于 <time datetime="2026-11-06">2026 年 11 月 6 日</time> · 适用于 Covelet 0.3.1</p>
+      <p>发布者为 Morley。支持和隐私联系邮箱为 <a href="mailto:support@morley.work">support@morley.work</a>。</p>
+
+      <h2>本机数据</h2>
+      <p>网站、文件夹、便笺、稍后读、图片、外观和隐私标记保存在当前浏览器的加密 IndexedDB 中。扩展可使用不可导出的设备密钥，设备访问权限仍由你的设备保护。隐藏密码用于控制本机显示，与设备密钥和同步密码分开。退役功能的记录可能仍留在本机数据、同步副本或备份中。</p>
+      <p>首页时间使用设备时钟。时区、农历和星座在当前浏览器中计算，显示偏好保存在本机。首页时间无需定位或联网校时。</p>
+
+      <h2>自备存储同步</h2>
+      <p>同步默认关闭。配置并解锁后，Covelet 使用同步密码加密内容和图片，再直接发送到你选择的 R2、OSS、GitHub、GitLab 或 HTTPS WebDAV。服务商会接收加密内容、文件路径、请求时间和网络连接信息。自动同步需单独开启。</p>
+      <p>连接凭据使用同步密码加密后保存在本机。同步密码和解密后的凭据仅在解锁期间保存在浏览器会话中。设备密钥、隐藏密码、当前隐藏状态和连接凭据不随内容同步。浏览器原生同步已停用。旧云端副本、其他设备、恢复点和备份可能仍保有早期数据。</p>
+
+      <h2>何时会联网</h2>
+      <ul>
+        <li>搜索会把查询交给浏览器默认搜索服务或你选择的搜索引擎。</li>
+        <li>启用随机壁纸后，Bing 来源连接 <code>www.bing.com</code>，Wikimedia Commons 来源连接按需授权的 <code>upload.wikimedia.org</code>。来源会收到连接信息。请求不带 Cookie 或 Referer，图片缓存在本机。关闭随机壁纸或改用颜色背景即可停止壁纸请求。</li>
+        <li>添加或编辑网站时，主动获取网站信息或图片，以及确认导入或修复图片时，可能连接相关站点。Covelet 仅按需申请实际来源的访问权限，日常导航使用本机缓存。显示便笺中的远程图片时，也可能连接图片来源。</li>
+        <li>配置并授权 GitHub 贡献组件后，组件可按需请求所选账号的公开贡献日历。GitHub 会收到用户名和连接信息。组件只读取公开贡献数据。</li>
+      </ul>
+
+      <h2>扩展权限</h2>
+      <ul>
+        <li><code>storage</code> 用于迁移旧数据并保存会话连接信息。内容和设置使用加密 IndexedDB。</li>
+        <li><code>search</code> 用于调用浏览器默认搜索服务。</li>
+        <li><code>favicon</code> 用于主动添加或导入时读取浏览器已有图标。</li>
+        <li><code>activeTab</code> 和 <code>scripting</code> 用于点击工具栏后读取当前页的地址、标题和图标声明。保存前可修改或取消。</li>
+        <li><code>alarms</code> 用于接续后台同步及清理旧版时钟提醒。</li>
+        <li><code>www.bing.com</code> 是固定壁纸来源。可选 HTTP(S) 权限仅用于逐来源授权，安装时不会授予所有网站的访问权限。</li>
+      </ul>
+      <p>扩展不请求浏览历史、书签库、地理位置或通知权限。</p>
+
+      <h2>备份和数据控制</h2>
+      <p>书签 HTML 在本机解析。导出的备份未加密，可能包含标为私密或当前隐藏的网站、图片及正文。登录凭据、同步连接和密码不进入完整备份。恢复前会校验文件并请你确认，同时在浏览器中保留一份恢复前副本。</p>
+      <p>你可以编辑或删除内容、关闭同步、选择背景、撤销网站访问权限和导出备份。反馈由你主动发送，扩展不会自动附上日志、网址、图片或备份。</p>
+
+      <h2>扩展与官网</h2>
+      <p>Covelet 扩展无需注册账号。扩展无广告、使用统计、自动日志上传或 Covelet 数据服务器。Covelet 不出售数据，也不将数据用于广告画像或信用决定。数据使用限于上文列出的功能，并遵守 Chrome Web Store User Data Policy 的 Limited Use 要求。</p>
+      <p>官网由 Cloudflare Pages 托管。首页使用 Cloudflare Web Analytics 统计网站访问。</p>
+    </article>
+
+    <article lang="en" aria-labelledby="english">
+      <h2 class="policy-title" id="english">Privacy Policy</h2>
+      <p class="policy-date">Updated <time datetime="2026-11-06">November 6, 2026</time> · Applies to Covelet 0.3.1</p>
+      <p>Morley publishes Covelet. For support or privacy inquiries, email <a href="mailto:support@morley.work">support@morley.work</a>.</p>
+
+      <h3>Data on your device</h3>
+      <p>Sites, folders, notes, Read Later items, images, appearance preferences, and privacy markings are stored in encrypted IndexedDB in your current browser. The extension can use the non-extractable device key. Your device's access controls still apply. The hiding password controls local display and is separate from the device key and sync password. Records from retired features may remain in local data, synced copies, or backups.</p>
+      <p>The home page uses your device clock. It computes the selected time zone, lunar date, and zodiac sign in the browser and saves the display preferences on your device. The clock needs neither location access nor an online time service.</p>
+
+      <h3>Sync with your own storage</h3>
+      <p>Sync is off by default. When configured and unlocked, Covelet encrypts content and images with your sync password and sends them directly to your selected R2, OSS, GitHub, GitLab, or HTTPS WebDAV service. The provider receives encrypted content, file paths, request times, and network connection information. Automatic sync requires a separate opt-in.</p>
+      <p>Connection credentials are encrypted with the sync password and saved on this device. The password and decrypted credentials stay in browser session storage while sync is unlocked. Device keys, hiding passwords, the current hiding state, and connection credentials are excluded from synced content. Browser-native sync is disabled. Old cloud copies, other devices, recovery points, and backups may retain earlier data.</p>
+
+      <h3>When Covelet connects to the internet</h3>
+      <ul>
+        <li>Search sends your query to the browser's default search service or the search engine you choose.</li>
+        <li>When Random Wallpaper is on, the Bing source contacts <code>www.bing.com</code> and Wikimedia Commons contacts <code>upload.wikimedia.org</code> after you grant access. The selected host receives connection information. Requests omit cookies and referrers. Images are cached locally. Turn off Random Wallpaper or choose a color background to stop wallpaper requests.</li>
+        <li>Adding or editing a site, requesting site information or images, or confirming image import or repair may contact the relevant origin. Covelet requests access for each origin as needed. Everyday navigation uses the local cache. Displaying a remote image in a note may contact that image's host.</li>
+        <li>After authorization and configuration, the GitHub contributions widget can fetch the selected account's public contribution calendar. GitHub receives the username and connection information. The widget reads public contribution data only.</li>
+      </ul>
+
+      <h3>Extension permissions</h3>
+      <ul>
+        <li><code>storage</code> supports legacy data migration and session connection information. Content and settings use encrypted IndexedDB.</li>
+        <li><code>search</code> calls the browser's default search service.</li>
+        <li><code>favicon</code> reads existing browser icons during explicit add or import actions.</li>
+        <li><code>activeTab</code> and <code>scripting</code> read the current page's URL, title, and icon declarations after a toolbar click. You can edit the information or cancel before saving.</li>
+        <li><code>alarms</code> resumes background sync and clears legacy clock reminders.</li>
+        <li><code>www.bing.com</code> is a fixed wallpaper host. Optional HTTP(S) access is granted per origin and does not provide access to all sites at installation.</li>
+      </ul>
+      <p>The extension does not request browsing history, the browser bookmarks library, geolocation, or notifications.</p>
+
+      <h3>Backups and data controls</h3>
+      <p>Bookmark HTML is parsed locally. Exported backups are unencrypted and may contain private or hidden sites, images, and text. Complete backups exclude login credentials, sync connections, and passwords. Restoration validates the file, asks for confirmation, and keeps a pre-restore copy in the browser.</p>
+      <p>You can edit or delete content, turn off sync, change backgrounds, revoke site permissions, and export backups. Feedback is voluntary. Covelet does not automatically attach logs, URLs, images, or backups.</p>
+
+      <h3>The extension and the website</h3>
+      <p>Covelet requires no account. The extension includes no ads, usage analytics, automatic log upload, or Covelet data server. Covelet does not sell data or use it for advertising profiles or credit decisions. Data use is limited to the features described above and follows the Chrome Web Store User Data Policy, including Limited Use.</p>
+      <p>Cloudflare Pages hosts this website. The homepage uses Cloudflare Web Analytics to measure website visits.</p>
+    </article>
+  </main>
+  <footer><div class="wrap foot"><a href="../">Covelet</a><a href="mailto:support@morley.work">support@morley.work</a></div></footer>
+</body>
+</html>

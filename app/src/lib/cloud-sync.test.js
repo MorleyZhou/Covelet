@@ -75,6 +75,15 @@ function device(remote, id, options = {}) {
 
 async function configure(subject, options = {}) { return subject.api.saveCloudSyncSettings(profile, secrets, password, options); }
 
+test('worker sync status is displayed in the receiving page language', () => {
+  const { api } = device(cloud(), 'a');
+  api.acceptBackgroundCloudSyncStatus({
+    phase: 'error', code: 'CLOUD_REQUEST_FAILED', message: 'The storage service couldn’t complete the request. Try again later.',
+  });
+  assert.equal(api.getCloudSyncStatus().message, '存储服务暂时无法完成请求。请稍后重试。');
+  assert.equal(api.getCloudSyncStatus().code, 'CLOUD_REQUEST_FAILED');
+});
+
 test('local-only fallback clears shared secrets and auto sync while preserving pending ciphertext and local data', async () => {
   const remote = cloud(), subject = device(remote, 'a');
   await configure(subject, { autoSync: true });
@@ -105,14 +114,15 @@ test('local-only fallback works before any connection has been saved and is repe
   assert.equal(remote.calls.length, 0);
 });
 
-test('cloud settings persist only a nonsecret target and independent off-by-default controls; extension tabs share session unlock', async () => {
+test('cloud settings persist an encrypted credential envelope and keep decrypted credentials in the session', async () => {
   const remote = cloud();
   const subject = device(remote, 'a');
   assert.equal(supportsCloudSync(), false);
-  assert.deepEqual(await subject.api.loadCloudSyncSettings(), { profile: null, autoSync: false, configured: false, unlocked: false, connectionTest: null });
+  assert.deepEqual(await subject.api.loadCloudSyncSettings(), { profile: null, autoSync: false, configured: false, unlocked: false, credentialsStored: false, connectionTest: null });
   const result = await configure(subject);
   assert.equal(result.autoSync, false);
   assert.equal(result.unlocked, true);
+  assert.equal(result.credentialsStored, true);
   assert.equal(remote.calls.length, 0, 'saving and unlocking make no network request');
   const local = JSON.stringify(subject.configStore.value);
   assert.equal(local.includes(secrets.token), false);
@@ -122,6 +132,52 @@ test('cloud settings persist only a nonsecret target and independent off-by-defa
   await subject.api.lockCloudSync();
   assert.equal((await subject.make().loadCloudSyncSettings()).unlocked, false);
   assert.equal(subject.configStore.value.autoSync, false);
+});
+
+test('a restarted GitHub connection unlocks with only its sync password and rejects a wrong password or swapped envelope', async () => {
+  const remote = cloud(), initial = device(remote, 'a');
+  await configure(initial);
+  const savedConfig = initial.configStore.value;
+  const { salt, iv, ciphertext, kdf } = JSON.parse(savedConfig.credentialEnvelope);
+  assert.equal(kdf, 'PBKDF2-SHA256');
+  assert.ok(salt && iv && ciphertext);
+  const resumed = device(remote, 'a', { configStore: initial.configStore, providerFactory(checked, credentials) {
+    assert.equal(checked.provider, 'github');
+    assert.equal(credentials.token, secrets.token);
+    return remote.factory();
+  } });
+  assert.equal((await resumed.api.loadCloudSyncSettings()).unlocked, false);
+  // Supplying provider credentials cannot bypass a bad password once the vault exists.
+  await assert.rejects(resumed.api.unlockCloudSync(secrets, 'wrong long passphrase'), { code: 'CLOUD_CREDENTIAL_UNLOCK' });
+  assert.equal(resumed.sessionStore.value, null);
+  assert.deepEqual(resumed.configStore.value, savedConfig);
+  const unlocked = await resumed.api.unlockCloudSync(undefined, password);
+  assert.equal(unlocked.unlocked, true);
+  assert.equal(unlocked.connectionTest, null);
+  assert.deepEqual(resumed.sessionStore.value.secrets, secrets);
+  assert.equal(remote.calls.length, 0, 'password-only unlock is local');
+  assert.equal((await resumed.api.testCloudConnection()).scope, 'directory-read');
+
+  const displaced = device(remote, 'b', { configStore: memory({ ...savedConfig, profile: { ...profile, prefix: 'another-target' } }) });
+  await assert.rejects(displaced.api.unlockCloudSync(undefined, password), { code: 'CLOUD_CREDENTIAL_UNLOCK' });
+  assert.equal(displaced.sessionStore.value, null);
+});
+
+test('post-first-sync auto-enable changes only the active settings and cannot revive a locked or replaced session', async () => {
+  const remote = cloud(), subject = device(remote, 'a');
+  await configure(subject);
+  const original = subject.configStore.value;
+  const enable = () => subject.api.saveCloudSyncSettings(profile, secrets, password, { autoSync: true, onlyIfCurrent: true });
+  await enable();
+  assert.deepEqual(subject.configStore.value, { ...original, autoSync: true });
+  await subject.api.lockCloudSync();
+  await assert.rejects(enable(), { code: 'CLOUD_LOCKED' });
+  assert.equal(subject.sessionStore.value, null);
+  await subject.api.saveCloudSyncSettings({ ...profile, prefix: 'replacement-target' }, secrets, password);
+  const replacement = subject.configStore.value;
+  await assert.rejects(enable(), { code: 'CLOUD_LOCKED' });
+  assert.deepEqual(subject.configStore.value, replacement);
+  assert.equal(remote.calls.length, 0);
 });
 
 test('two devices merge portable navigation, keep original local icons and never upload credentials or image references', async () => {
@@ -190,13 +246,13 @@ test('an unknown write result retries exactly one persisted ciphertext and never
 
 test('wrong decryption passwords and one corrupt latest document reject the entire batch without local edits or uploads', async () => {
   const remote = cloud(); const a = device(remote, 'a'), b = device(remote, 'b');
-  await configure(a); await configure(b);
+  await configure(a);
+  await b.api.saveCloudSyncSettings(profile, secrets, 'wrong but long password');
   a.edit((state) => { state.entries.push(site('alpha')); }); await a.api.syncCloudNow();
-  await b.api.unlockCloudSync(secrets, 'wrong but long password');
   assert.equal((await b.api.syncCloudNow()).code, 'CLOUD_DECRYPT');
   assert.equal(b.state.entries.length, 0);
   assert.equal(remote.objects.size, 1);
-  await b.api.unlockCloudSync(secrets, password);
+  await b.api.saveCloudSyncSettings(profile, secrets, password);
   const badDocument = { version: 1, actor: actor('c'), clock: 1, records: {} };
   const bytes = await encryptCloudPayload(encode(JSON.stringify(badDocument)), password);
   const name = `covelet-${actor('c')}-1-${await signer.sha256(bytes)}.json`;
@@ -531,7 +587,7 @@ test('locking during a session write keeps an in-flight save or unlock locked', 
 test('safe WebDAV status and transport messages survive the public sync boundary without untrusted details', async () => {
   const dav = { provider: 'webdav', endpoint: 'https://cloud.example.test/dav/', prefix: 'covelet' };
   const credentials = { username: 'fake', appPassword: 'fake-app-password' };
-  for (const [status, code, text] of [[401, 'CLOUD_AUTH', /用户名和应用密码/], [403, 'CLOUD_FORBIDDEN', /读写权限/], [404, 'CLOUD_NOT_FOUND', /路径不存在/]]) {
+  for (const [status, code, text] of [[401, 'CLOUD_AUTH', /用户名和应用密码/], [403, 'CLOUD_FORBIDDEN', /无法访问此目录/], [404, 'CLOUD_NOT_FOUND', /找不到保存目录/]]) {
     const subject = device(cloud(), 'a', { providerFactory: (profile, secrets, options) => createWebdavProvider(profile, secrets, {
       ...options, fetcher: async () => new Response('PRIVATE-RESPONSE', { status }),
     }) });

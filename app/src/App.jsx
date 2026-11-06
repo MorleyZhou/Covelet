@@ -1,5 +1,5 @@
 import { userErrorMessage } from './lib/user-error.js';
-import { tr, getLocale, builtinName, providerName, formatNumber } from "./i18n/index.js";
+import { tr, builtinName, providerName, formatNumber } from "./i18n/index.js";
 import { useLanguage } from './i18n/react.js';
 import LanguageSettings from './components/LanguageSettings.jsx';
 import { createContext, useContext, useEffect, useLayoutEffect, useCallback, useMemo, useRef, useState } from "react";
@@ -23,8 +23,9 @@ import {
   ArrowUp,
   SquaresFour,
   UploadSimple,
-  DownloadSimple,
   Check,
+  CheckCircle,
+  WarningCircle,
   PuzzlePiece,
   CornersOut,
   CornersIn,
@@ -53,13 +54,9 @@ import {
   subscribeState,
   putImage,
   getAssetUrl,
-  exportBackup,
-  inspectBackup,
-  restoreBackup,
-  restoreSnapshot,
 } from "./lib/storage.js";
 import { submitWebSearch } from "./lib/search.js";
-import { createWallpaperProvider } from "./lib/wallpaper.js";
+import { createWallpaperProvider, DEFAULT_WALLPAPER_INTERVAL, loadWallpaperInterval, loadWallpaperSource, saveWallpaperInterval, saveWallpaperSource, subscribeWallpaperInterval, subscribeWallpaperSource } from './lib/wallpaper.js';
 import { useIconDrag } from "./lib/use-icon-drag.js";
 import { canReadSite, supportsSiteInfo } from "./lib/site-info.js";
 import { recognizeSite } from "./lib/site-recognition.js";
@@ -67,6 +64,7 @@ import Select from "./components/Select.jsx";
 import ContextMenu from "./components/ContextMenu.jsx";
 import IconBackground from "./components/IconBackground.jsx";
 import BackgroundPicker from "./components/BackgroundPicker.jsx";
+import RandomWallpaperSettings from './components/RandomWallpaperSettings.jsx';
 import FolderName from "./components/FolderName.jsx";
 import ProviderIcon from "./components/ProviderIcon.jsx";
 import { readCachedProviderIcon, fetchProviderIconForSave } from "./lib/provider-icons.js";
@@ -76,7 +74,8 @@ import { createAdaptiveAppearance } from "./lib/adaptive-appearance.js";
 import { useNavigationContrast } from "./lib/use-navigation-contrast.js";
 import { VISUAL_SHADE_BACKGROUND } from "./lib/navigation-contrast.js";
 import { colorBackgroundCss } from "./lib/background-colors.js";
-import { startCloudSync } from "./lib/cloud-sync.js";
+import { acceptBackgroundCloudSyncStatus } from './lib/cloud-sync.js';
+import { subscribeBackgroundCloudSyncStatus } from './lib/cloud-sync-background.js';
 import ExtensionCenter from "./components/ExtensionCenter.jsx";
 import CloudSyncSettings from './components/CloudSyncSettings.jsx';
 import PrivacyCheckup from './components/PrivacyCheckup.jsx';
@@ -94,12 +93,12 @@ import { useNavigationIcon } from './lib/use-navigation-icon.js';
 import { useSyncedDataRevision, subscribeSyncedData } from './lib/use-synced-data.js';
 import { prepareSavedNavigationIcon, retainNavigationIconResources, navigationIcon, getNavigationIconFailure } from './lib/navigation-icon-cache.js';
 import { prepareNavigationIconCache } from './lib/navigation-icon-startup.js';
-import { prepareImportedNavigationIcons, requestNavigationIconAccess } from './lib/navigation-icon-intake.js';
+import { requestNavigationIconAccess } from './lib/navigation-icon-intake.js';
 import { iconFailureMessage } from './lib/icon-feedback.js';
-import NavigationIconStatus from './components/NavigationIconStatus.jsx';
 import IconArtwork from './components/IconArtwork.jsx';
 import HomeTime from "./components/HomeTime.jsx";
-import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashDialog } from "./components/PersonalTools.jsx";
+import TimeAndDateSettings from './components/TimeAndDateSettings.jsx';
+import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashPanel } from "./components/PersonalTools.jsx";
 import usePersonalTools from './lib/use-personal-tools.js';
 import { searchCoveletContent } from './lib/content-search.js';
 import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode } from './lib/content-preferences.js';
@@ -107,10 +106,7 @@ import { PresentationContext, privateContentKeys } from './lib/presentation.js';
 import ContentPreferences from './components/ContentPreferences.jsx';
 import PrivacyPasswordDialog, { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
 import BookmarkImport from './components/BookmarkImport.jsx';
-import { readBookmarkFile } from './lib/bookmark-file.js';
-import DesktopTemplates from './components/DesktopTemplates.jsx';
-import RecoveryCenter, { downloadRecoveryFile } from './components/RecoveryCenter.jsx';
-import { recoveryCenter } from './lib/recovery-center.js';
+import RecoveryCenter from './components/RecoveryCenter.jsx';
 import { focusDesktopNeighbor } from "./lib/desktop-focus.js";
 import { GITHUB_WIDGET_ID } from "./lib/widget-model.js";
 import "./owntab.css";
@@ -120,6 +116,7 @@ import { Button } from './components/ui/button.jsx';
 import { Input } from './components/ui/input.jsx';
 import { Switch } from './components/ui/switch.jsx';
 import { Slider } from './components/ui/slider.jsx';
+import { Disclosure } from './components/ui/disclosure.jsx';
 
 const uid = () => crypto.randomUUID();
 const DialogError = createContext("");
@@ -181,50 +178,78 @@ function useAsset(id) {
   return asset.id === id ? asset : { id, url: '', phase: id ? 'loading' : 'missing' };
 }
 
-function useDailyWallpaper(enabled) {
+function useRandomWallpaper(enabled, source, interval, refreshRevision) {
   const syncRevision = useSyncedDataRevision();
   const [result, setResult] = useState(null);
+  const live = useRef(null);
+  useEffect(() => () => {
+    if (live.current) dailyWallpaper.dispose(live.current);
+    live.current = null;
+  }, []);
   useEffect(() => {
-    if (!enabled) { setResult(null); return; }
-    let active = true, loading = false, currentResult;
-    async function refresh() {
+    if (!enabled || !source || !interval) {
+      if (live.current) dailyWallpaper.dispose(live.current);
+      live.current = null;
+      setResult(null);
+      return;
+    }
+    let active = true, loading = false, timer;
+    const visible = () => document.visibilityState === 'visible';
+    function schedule(nextRefreshAt = Date.now() + 15 * 60_000) {
+      clearTimeout(timer);
+      if (active && visible()) {
+        // Cap the timer so a calendar month cannot exceed the browser's limit.
+        timer = setTimeout(wake, Math.min(86_400_000, Math.max(0, nextRefreshAt - Date.now())));
+      }
+    }
+    async function refresh(cachedOnly = false) {
       if (loading) return;
       loading = true;
       try {
-        const next = await dailyWallpaper.load();
+        const next = await dailyWallpaper.load({ source, interval, cachedOnly });
         if (!active) {
           dailyWallpaper.dispose(next);
           return;
         }
-        const unchanged = currentResult && next.source === currentResult.source && (next.source === 'bing'
+        schedule(next.nextRefreshAt);
+        const currentResult = live.current;
+        const unchanged = currentResult && next.source === currentResult.source && (next.imageUrl
           ? next.date === currentResult.date && next.imageUrl === currentResult.imageUrl
           : next.url === currentResult.url);
         if (unchanged) {
-          // Returning to a tab often reads the same day's cached image. Keep
+          // Returning to a tab often reads the same cached image. Keep
           // its live URL so the existing palette/sample remains valid.
           if (next.url !== currentResult.url) dailyWallpaper.dispose(next);
-          currentResult = { ...next, url: currentResult.url };
-          setResult(currentResult);
+          live.current = { ...next, url: currentResult.url };
+          setResult(live.current);
           return;
         }
         if (currentResult) dailyWallpaper.dispose(currentResult);
-        currentResult = next;
+        live.current = next;
         setResult(next);
       } catch {
-        if (active) setResult(currentResult || { source: "builtin", message: tr("每日壁纸暂不可用，正在显示内置背景。") });
-      } finally { loading = false; }
+        if (active) { setResult(live.current); schedule(); }
+      } finally {
+        loading = false;
+        if (active && cachedOnly && visible()) wake();
+      }
     }
-    refresh();
-    const timer = setInterval(() => { if (document.visibilityState === "visible") refresh(); }, 15 * 60 * 1000);
-    const visible = () => { if (document.visibilityState === "visible") refresh(); };
-    document.addEventListener("visibilitychange", visible);
+    function wake() {
+      clearTimeout(timer);
+      if (visible()) void refresh();
+    }
+    void refresh(!visible());
+    document.addEventListener('visibilitychange', wake);
+    window.addEventListener('pageshow', wake);
+    window.addEventListener('focus', wake);
     return () => {
       active = false;
-      clearInterval(timer);
-      document.removeEventListener("visibilitychange", visible);
-      if (currentResult) dailyWallpaper.dispose(currentResult);
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', wake);
+      window.removeEventListener('pageshow', wake);
+      window.removeEventListener('focus', wake);
     };
-  }, [enabled, syncRevision]);
+  }, [enabled, source, interval, syncRevision, refreshRevision]);
   return result;
 }
 function SiteIcon({ entry, small = false, children = [], initialAppearance }) {
@@ -378,7 +403,7 @@ export function App() {
   const [presentationHint, setPresentationHint] = useState('');
   const engineChoice = useRef(false);
   const composingSearch = useRef(false);
-  useEffect(() => { if (!demo) return startCloudSync(); }, []);
+  useEffect(() => { if (!demo) return subscribeBackgroundCloudSyncStatus(acceptBackgroundCloudSyncStatus); }, [demo]);
   const [state, setState] = useState(null),
     [folderId, setFolder] = useState(null);
   const [query, setQuery] = useState(""),
@@ -392,17 +417,13 @@ export function App() {
   const [notice, setNotice] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [undo, setUndo] = useState(null),
-    [importPlan, setImportPlan] = useState(null),
-    [backupPlan, setBackupPlan] = useState(null);
+    [undo, setUndo] = useState(null);
   const [siteInfo, setSiteInfo] = useState({ phase: "idle", message: "" });
   const [entryIconInfo, setEntryIconInfo] = useState({ phase: 'idle' }), [iconPreview, setIconPreview] = useState(null);
   const iconOperation = useRef(null);
   const entryIconPending = ['permission', 'loading'].includes(entryIconInfo.phase);
   const [entrySaving, setEntrySaving] = useState(false), entrySavePending = useRef(false);
   const siteInfoPending = ["loading", "permission"].includes(siteInfo.phase);
-  const [iconProgress, setIconProgress] = useState(null);
-  useEffect(() => { setIconProgress(null); }, [modal?.kind]);
   const preferenceState = useRef(state);
   preferenceState.current = state;
   const [activeScreen, setActiveScreen] = useState('0:0'), [draftPage, setDraftPage] = useState(null);
@@ -414,10 +435,7 @@ export function App() {
   const siteRequest = useRef(0), manualFields = useRef({ name: false }), originalSiteOrigin = useRef(null);
   useEffect(() => { if (entry && !manualFields.current.icon) setIconPreview(entry); }, [entry]);
   const siteAccess = useRef({ origin: '', granted: false });
-  const inputRef = useRef(null),
-    suggestionsRef = useRef(null),
-    bookmarkInput = useRef(null),
-    backupInput = useRef(null);
+  const inputRef = useRef(null), suggestionsRef = useRef(null);
   useEffect(() => {
     siteAccess.current = { origin: '', granted: false };
     if (modal?.kind !== 'entry' || entry?.type !== 'site' || !entry.url || !supportsSiteInfo()) return;
@@ -465,6 +483,9 @@ export function App() {
   }, [modal?.kind, entry?.id, entry?.url]);
   const notify = (text, kind = "info") =>
     setNotice({ text, kind, id: Date.now() });
+  function notifySync(result) {
+    setNotice(current => result ? { ...result, scope: 'sync' } : current?.scope === 'sync' ? null : current);
+  }
   const layoutEditor = useLayoutEdit({ state, columns: desktopScreen.current.columns, activeKey: activeScreen,
     blocked: Boolean(modal || folderId || context || screenManager), onActiveChange: setActiveScreen,
     onError: (message) => notify(message, 'error'), onCancelDrag: () => cancelDrag(),
@@ -556,7 +577,35 @@ export function App() {
     }
   }, [state, provider, folderId]);
   const settings = state?.settings;
-  const wallpaper = useDailyWallpaper(["bing", "image"].includes(settings?.background.kind));
+  const [wallpaperSource, setWallpaperSource] = useState(null), [wallpaperRefresh, setWallpaperRefresh] = useState(0);
+  const [wallpaperInterval, setWallpaperInterval] = useState(null);
+  useEffect(() => {
+    let active = true, sourceChanged = false, intervalChanged = false;
+    const stopSource = subscribeWallpaperSource(source => { sourceChanged = true; if (active) setWallpaperSource(source); });
+    const stopInterval = subscribeWallpaperInterval(interval => { intervalChanged = true; if (active) setWallpaperInterval(interval); });
+    loadWallpaperSource().catch(() => 'bing').then(source => { if (active && !sourceChanged) setWallpaperSource(source); });
+    loadWallpaperInterval().catch(() => DEFAULT_WALLPAPER_INTERVAL).then(interval => { if (active && !intervalChanged) setWallpaperInterval(interval); });
+    return () => { active = false; stopSource(); stopInterval(); };
+  }, []);
+  const wallpaper = useRandomWallpaper(['bing', 'image'].includes(settings?.background.kind), wallpaperSource, wallpaperInterval, wallpaperRefresh);
+  async function setWallpaperBackground(background) {
+    const latest = await loadState();
+    if (latest.settings.background.kind === background.kind && latest.settings.background.value === background.value) return;
+    const saved = await saveState({ ...latest, settings: { ...latest.settings, background } }, latest.revision);
+    if (saved.revision >= preferenceState.current.revision) preferenceState.current = saved;
+    setState(current => current.revision > saved.revision ? current : saved);
+  }
+  async function applyWallpaper(source) {
+    const next = await dailyWallpaper.load({ source, force: true, interval: wallpaperInterval });
+    try {
+      const changingCurrent = settings.background.kind === 'bing' && source === wallpaperSource;
+      if (next.source !== source || next.stale || changingCurrent && next.status !== 'fresh') throw Error(tr('暂时无法更新壁纸，请重试。'));
+      await saveWallpaperSource(source);
+      setWallpaperSource(source);
+      await setWallpaperBackground({ kind: 'bing', value: 'daily' });
+      setWallpaperRefresh(revision => revision + 1);
+    } finally { dailyWallpaper.dispose(next); }
+  }
   const imageUrl = ["bing", "image"].includes(settings?.background.kind)
     ? wallpaper?.url || "./assets/alpine-lake.png"
     : settings?.background.kind === "builtin" ? "./assets/alpine-lake.png" : null;
@@ -666,20 +715,13 @@ export function App() {
       return null;
     }
   }
-  async function commitImportedNavigation(next, addedIds, expected, message, { hydrateIcons = true } = {}) {
+  async function commitImportedNavigation(next, addedIds, expected, message) {
     const imported = { entries: next.entries.filter((item) => addedIds.has(item.id)) };
     const release = retainNavigationIconResources(imported);
     try {
-      // Bookmark/URL imports keep letter icons and never acquire favicons.
-      const icons = hydrateIcons ? await prepareImportedNavigationIcons(imported, {
-        onIconProgress: setIconProgress, isCurrent: () => preferenceState.current.revision === expected,
-      }) : { cancelled: false, failed: 0 };
-      if (icons.cancelled) throw Error(tr('数据已更新，已停止本次图标补齐，请重试。'));
       const preferences = await loadContentPreferences();
       if (preferences.presentation && imported.entries.some((item) => item.parentId && preferences.privateKeys.includes(`folder:${item.parentId}`))) throw Error(tr('请先输入密码解除隐藏。'));
-      const saved = await commit(next, message, expected);
-      if (saved && icons.failed) notify(tr('部分图标无法读取，可在备份与恢复中心授权图片网站后重试，或编辑网址后重新获取。'), 'error');
-      return saved;
+      return await commit(next, message, expected);
     } finally { release(); }
   }
   function openWidget(item) {
@@ -962,42 +1004,13 @@ export function App() {
       setError(userErrorMessage(e));
     } finally { entrySavePending.current = false; setEntrySaving(false); }
   }
-  async function readBookmarks(e) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
+  async function moveSiteToDesktop(item) {
     try {
-      const plan = await readBookmarkFile(file);
-      setImportPlan(plan);
-      setModal({ kind: "bookmarks", revision: state.revision });
-    } catch (e) {
-      notify(userErrorMessage(e), "error");
-    }
-  }
-  async function readBackup(e) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setBusy(true);
-    try {
-      setBackupPlan(await inspectBackup(file));
-      setModal({ kind: "restore", revision: state.revision });
-    } catch (e) {
-      notify(userErrorMessage(e), "error");
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function download(currentState) {
-    if (demo) return;
-    setBusy(true);
-    try {
-      const blob = await recoveryCenter.exportCompleteBackup();
-      downloadRecoveryFile(blob, 'Covelet-complete-backup.json');
-    } catch (e) {
-      notify(userErrorMessage(e), "error");
-    } finally {
-      setBusy(false);
+      const result = applyDesktopDrop(state, [item.id], { kind: 'move', parentId: null, page: desktopScreen.current.page }, desktopScreen.current.columns, uid);
+      const saved = await commit(result.state);
+      if (saved) { setFolder(null); revealDesktopEntry(saved, result.revealId); }
+    } catch (reason) {
+      notify(userErrorMessage(reason), 'error');
     }
   }
   function renderTiles(list, placements) {
@@ -1083,12 +1096,13 @@ export function App() {
       { label: tr("退出编辑"), icon: <X size={18} />, action: layoutEditor.cancel, disabled: layoutEditor.saving },
     ] : [
       { label: tr("编辑布局"), icon: <PencilSimple size={18} />, action: layoutEditor.begin },
-      { label: tr('桌面方案与分享'), icon: <SquaresFour size={18} />, action: () => setModal({ kind: 'desktop-templates' }) },
+      { label: tr('导入网址与书签 HTML'), icon: <UploadSimple size={18} />, action: () => setModal({ kind: 'bookmarks' }) },
     ]} />;
     const item = context.item;
     return <ContextMenu context={context} label={item.type === 'widget' ? tr("组件操作") : tr("网站操作")} onClose={() => setContext(null)} items={[
       ...(item.type === 'widget' && item.extensionId === GITHUB_WIDGET_ID ? [{ label: tr('打开'), icon: <ArrowSquareOut size={18} />, action: () => window.open(`https://github.com/${item.config.username}`, '_blank', 'noopener,noreferrer') }] : []),
       { label: item.type === 'widget' ? tr("配置组件") : tr("编辑"), icon: <PencilSimple size={18} />, action: () => editEntry(item) },
+      ...(item.parentId ? [{ label: tr('移到桌面'), icon: <ArrowLeft size={18} />, action: () => moveSiteToDesktop(item) }] : []),
       ...(item.type === 'site' ? [{ label: tr('搜索别名'), icon: <MagnifyingGlass size={18} />, action: () => setModal({ kind: 'content-preferences', key: `site:${item.id}` }) }] : []),
       { label: contentPreferences.privateKeys.includes(`${item.type}:${item.id}`) ? tr('取消私密标记') : tr('标记为私密'), icon: <EyeSlash size={18} />, action: () => saveContentSettings(`${item.type}:${item.id}`, { private: !contentPreferences.privateKeys.includes(`${item.type}:${item.id}`) }).catch((reason) => notify(userErrorMessage(reason), "error")) },
       { label: tr("编辑布局"), icon: <SquaresFour size={18} />, action: layoutEditor.begin },
@@ -1113,8 +1127,21 @@ export function App() {
   const background = ["color", "gradient"].includes(settings.background.kind)
     ? colorBackgroundCss(settings.background)
     : undefined;
+  const isSyncNotice = notice?.scope === 'sync';
+  const toast = notice && (
+    <div className={`toast ${notice.kind}${isSyncNotice ? ' sync-result-toast' : ''}`}
+      role={notice.kind === 'error' ? 'alert' : 'status'}
+      data-slot={isSyncNotice ? 'sync-toast' : undefined} data-tone={isSyncNotice ? notice.kind : undefined}>
+      {isSyncNotice && (notice.kind === 'error' ? <WarningCircle size={22} aria-hidden="true" /> : <CheckCircle size={22} aria-hidden="true" />)}
+      {isSyncNotice ? <div><strong>{notice.text}</strong>{notice.detail && <p>{notice.detail}</p>}</div> : <span>{tr(notice.text)}</span>}
+      {undo && !isSyncNotice && notice.kind !== 'error' && (
+        <Button variant="unstyled" size="unstyled" onClick={undoDelete}><ArrowUUpLeft size={17} />{tr('撤销')}</Button>
+      )}
+      <Button variant="unstyled" size="unstyled" className="icon-button" aria-label={tr('关闭提示')} onClick={() => setNotice(null)}><X size={17} /></Button>
+    </div>
+  );
   return (
-    <DialogError.Provider value={notice?.kind === "error" ? notice.text : ""}>
+    <DialogError.Provider value={!isSyncNotice && notice?.kind === 'error' ? notice.text : ''}>
       <PresentationContext.Provider value={presentationContext}>
       <AdaptIcons.Provider value={visualEnabled}>
       <main
@@ -1341,49 +1368,16 @@ export function App() {
               <div className="sites-grid folder-sites" data-drop-parent={currentFolder.id}>
                 {renderTiles(state.entries.filter((item) => item.parentId === currentFolder.id).sort((a,b) => a.order-b.order))}
               </div>
-              <div className={`folder-exit-zone ${drag?.target?.kind === "move" && drag.target.parentId === null ? "active" : ""}`} data-drop-root>
-                <ArrowLeft size={18} />{tr("拖到这里移回桌面")}</div>
               {renderContextMenu()}
               {renderDragGhost()}
             </div>
           </Modal>
         )}
-        {notice && (
-          <div
-            className={`toast ${notice.kind}`}
-            role={notice.kind === "error" ? "alert" : "status"}
-          >
-            <span>{tr(notice.text)}</span>
-            {undo && notice.kind !== "error" && (
-              <Button variant="unstyled" size="unstyled" onClick={undoDelete}>
-                <ArrowUUpLeft size={17} />{tr("撤销")}</Button>
-            )}
-            <Button variant="unstyled" size="unstyled"
-              className="icon-button"
-              aria-label={tr("关闭提示")}
-              onClick={() => setNotice(null)}
-            >
-              <X size={17} />
-            </Button>
-          </div>
-        )}
+        {/* Keep the live region mounted so dialogs leave it accessible. */}
+        <div data-slot="toast-viewport" aria-live="off">{toast}</div>
         {busy && (
           <div className="busy-indicator" role="status">{tr('处理中…')}</div>
         )}
-        <Input
-          ref={bookmarkInput}
-          type="file"
-          accept=".html,.htm,text/html"
-          hidden
-          onChange={readBookmarks}
-        />
-        <Input
-          ref={backupInput}
-          type="file"
-          accept=".zip,application/zip"
-          hidden
-          onChange={readBackup}
-        />
         {modal?.kind === "entry" && entry && (
           <Modal
             privacyKeys={modal.isNew ? [] : [`${entry.type}:${entry.id}`]}
@@ -1485,36 +1479,27 @@ export function App() {
           </Modal>
         )}
         {modal?.kind === "extensions" && (
-          <ExtensionCenter Dialog={Modal} state={state} initialExtension={modal.initialExtension} editingId={modal.editingId} onUseWidget={useWidget} onRemoveWidget={detachWidget} onConfigureFunctional={() => setModal({ kind: 'sync-settings' })} onClose={() => setModal(null)} />
+          <ExtensionCenter Dialog={Modal} state={state} initialExtension={modal.initialExtension} editingId={modal.editingId} onUseWidget={useWidget} onRemoveWidget={detachWidget}
+            onConfigureFunctional={id => setModal({ kind: id === 'random-wallpaper' ? 'random-wallpaper' : 'sync-settings' })} onClose={() => setModal(null)} />
         )}
-        {modal?.kind === 'sync-settings' && <Modal title={tr('自备存储同步（Beta）')} className="settings-modal sync-settings-modal" wide maximizable closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}><CloudSyncSettings demo={demo} onBusyChange={setBusy} onLocalOnly={() => { setModal(null); notify(tr('已关闭同步，仅在本机保存数据。')); }} /></Modal>}
+        {modal?.kind === 'random-wallpaper' && <Modal title={tr('随机壁纸')} onClose={() => setModal(null)}>
+          {wallpaperSource && wallpaperInterval ? <RandomWallpaperSettings source={wallpaperSource} interval={wallpaperInterval} onIntervalChange={saveWallpaperInterval} active={settings.background.kind === 'bing'} wallpaper={wallpaper} disabled={demo}
+            onApply={applyWallpaper} onDisable={() => setWallpaperBackground({ kind: 'builtin', value: 'alpine' })} /> : <p role="status">{tr('正在读取…')}</p>}
+        </Modal>}
+        {modal?.kind === 'sync-settings' && <Modal title={tr('自备存储同步')} className="settings-modal sync-settings-modal" wide maximizable closeDisabled={busy}
+          onClose={() => { if (!busy) setModal(null); }}>
+          <CloudSyncSettings demo={demo} onBusyChange={setBusy} onNotice={notifySync} toastVisible={isSyncNotice}
+            onLocalOnly={() => { setModal(null); notify(tr('已关闭同步，仅在本机保存数据。')); }} />
+        </Modal>}
         {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} Dialog={Modal} onClose={() => setModal(null)} />}
-        {modal?.kind === 'tools-trash' && <PersonalToolsTrashDialog Dialog={Modal} onClose={() => setModal(null)} />}
         {modal?.kind === 'content-preferences' && <Modal title={tr('内容与隐私')} privacyKeys={modal.key ? [modal.key] : []} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
           <ContentPreferences navigation={state} tools={personalData} preferences={contentPreferences} initialKey={modal.key} onBusyChange={setBusy} onClose={() => setModal(null)} />
-        </Modal>}
-        {modal?.kind === 'desktop-templates' && <Modal title={tr('桌面方案与分享')} className="desktop-templates-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide maximizable>
-          <DesktopTemplates state={state} privateEntryIds={privateEntryIds} iconProgress={iconProgress} onBusyChange={setBusy} onClose={() => setModal(null)} onApply={async (prepared) => {
-            const before = state;
-            const existing = new Set(before.entries.map((entry) => entry.id));
-            const added = new Set(prepared.state.entries.filter((entry) => !existing.has(entry.id)).map((entry) => entry.id));
-            const saved = await commitImportedNavigation(prepared.state, added, prepared.sourceRevision, tr('桌面方案已应用。'));
-            if (!saved) return false;
-            setUndo({ before, revision: saved.revision });
-            if (prepared.revealId) revealDesktopEntry(saved, prepared.revealId);
-            setModal(null); return true;
-          }} />
-        </Modal>}
-        {modal?.kind === 'recovery-center' && <Modal title={tr('备份与恢复中心')} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide>
-          <RecoveryCenter onBusyChange={setBusy} onRestored={(next) => {
-            if (next.revision >= preferenceState.current.revision) preferenceState.current = next;
-            setState((current) => current.revision > next.revision ? current : next); setFolder(null); setUndo(null);
-          }} />
         </Modal>}
         {modal?.kind === "settings" && (
           <Settings
             state={state}
-            busy={busy} iconProgress={iconProgress}
+            busy={busy}
+            onBusyChange={setBusy}
             onClose={() => setModal(null)}
             readPreferences={() => demo ? Promise.resolve(preferenceState.current) : loadState()}
             writePreferences={async (next, revision) => {
@@ -1523,81 +1508,31 @@ export function App() {
               setState(saved);
               return saved;
             }}
-            onExport={download}
-            onImport={() => setModal({ kind: 'recovery-center' })}
-            onBookmarks={() => { setImportPlan(null); setModal({ kind: 'bookmarks', revision: preferenceState.current.revision }); }}
             onContentPreferences={() => setModal({ kind: 'content-preferences' })}
-            onCloudSync={() => setModal({ kind: 'sync-settings' })}
-            onDesktopTemplates={() => setModal({ kind: 'desktop-templates' })}
-            onToolsTrash={() => setModal({ kind: 'tools-trash' })}
-            onSnapshot={async (latest) => {
-              if (busy) return;
-              setBusy(true);
-              try {
-                const result = await restoreSnapshot(latest.revision, { onIconProgress: setIconProgress });
-                setState(result);
-                setModal(null);
-                notify(tr("已恢复上一份导航副本"));
-              } catch (e) {
-                notify(userErrorMessage(e), "error");
-              } finally { setBusy(false); }
+            onRestored={(next) => {
+              if (next.revision >= preferenceState.current.revision) preferenceState.current = next;
+              setState((current) => current.revision > next.revision ? current : next);
+              setFolder(null); setUndo(null);
             }}
-            wallpaper={wallpaper}
             providerIconEpoch={providerIconEpoch}
             onProviderIconReady={() => setProviderIconEpoch((value) => value + 1)}
           />
         )}
         {modal?.kind === 'bookmarks' && <Modal title={tr('导入网址与书签 HTML')} className="bookmark-import-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide>
-          <BookmarkImport state={state} initialPlan={importPlan} initialPage={desktopScreen.current.page} columns={desktopScreen.current.columns}
+          <BookmarkImport state={state} initialPage={desktopScreen.current.page} columns={desktopScreen.current.columns}
             onBusyChange={setBusy} onClose={() => setModal(null)} onApply={async (prepared) => {
               const before = state;
               const added = new Set(prepared.rows.filter((row) => row.willAdd).map((row) => row.entryId));
               const saved = await commitImportedNavigation(prepared.state, added, prepared.sourceRevision,
-                tr('已导入 {0} 个网址，跳过 {1} 条重复网址。', [formatNumber(prepared.addedSites), formatNumber(prepared.skippedDuplicates)]), { hydrateIcons: false });
+                tr('已导入 {0} 个网址，跳过 {1} 条重复网址。', [formatNumber(prepared.addedSites), formatNumber(prepared.skippedDuplicates)]));
               if (!saved) return false;
               setUndo({ before, revision: saved.revision });
               if (prepared.revealId) revealDesktopEntry(saved, prepared.revealId);
               setModal(null); return true;
             }} />
         </Modal>}
-        {modal?.kind === "restore" && backupPlan && (
-          <Modal title={tr("恢复完整备份")} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
-            <div className="form-stack">
-              <p>{tr("备份包含 {0} 个网站和 {1} 个自定义图片。", [formatNumber(backupPlan.summary.sites), formatNumber(backupPlan.summary.assets)])}</p>
-              <p>{tr("恢复会替换当前网址、搜索选项、外观和布局，并在此浏览器保留一份导航副本。")}</p>
-              <NavigationIconStatus report={iconProgress} busy={busy} />
-              {backupPlan.state.settings.background.kind === "image" && (
-                <p className="hint">{tr('此备份的壁纸无法恢复，将使用 Bing 每日壁纸。')}</p>
-              )}
-              <div className="modal-footer">
-                <Button variant="secondary" className="button" disabled={busy} onClick={() => setModal(null)}>{tr("取消")}</Button>
-                <Button variant="default"
-                  className="button primary" disabled={busy}
-                  onClick={async () => {
-                    setBusy(true);
-                    try {
-                      const result = await restoreBackup(
-                        backupPlan,
-                        modal.revision,
-                        { onIconProgress: setIconProgress },
-                      );
-                      setState(result);
-                      setFolder(null);
-                      setModal(null);
-                      notify(tr("完整备份已恢复"));
-                    } catch (e) {
-                      notify(userErrorMessage(e), "error");
-                    } finally {
-                      setBusy(false);
-                    }
-                  }}
-                >{tr("替换并恢复")}</Button>
-              </div>
-            </div>
-          </Modal>
-        )}
         {privacyDialog && <PrivacyPasswordDialog purpose={privacyDialog} onClose={() => setPrivacyDialog(null)} />}
-        {settings.background.kind === "bing" && wallpaper?.source === "bing" && wallpaper.copyright && (
+        {settings.background.kind === 'bing' && wallpaper?.copyright && wallpaper.copyrightUrl && (
           <a className="wallpaper-credit" href={wallpaper.copyrightUrl} target="_blank" rel="noopener noreferrer" title={wallpaper.title}>
             {wallpaper.copyright}{wallpaper.stale ? tr(" · 缓存壁纸") : ""}
           </a>
@@ -1611,19 +1546,13 @@ export function App() {
 
 function Settings({
   state,
-  busy = false, iconProgress,
+  busy = false,
+  onBusyChange,
   onClose,
   readPreferences,
   writePreferences,
-  onExport,
-  onImport,
-  onBookmarks,
   onContentPreferences,
-  onCloudSync,
-  onDesktopTemplates,
-  onToolsTrash,
-  onSnapshot,
-  wallpaper,
+  onRestored,
   providerIconEpoch,
   onProviderIconReady,
 }) {
@@ -1658,6 +1587,11 @@ function Settings({
     try { const latest = await saver.flush(); await action(latest); } catch { /* The save error stays visible. */ }
   }
   function closeSettings() { afterSave(onClose); }
+  async function refreshPreferences() {
+    const latest = await saver.reload();
+    setDraft(structuredClone(latest.settings));
+    setProviderDraft(structuredClone(latest.providers));
+  }
   function addProvider() {
     try {
       if (!newName.trim()) throw Error(tr("请填写引擎名称"));
@@ -1683,7 +1617,8 @@ function Settings({
     addProvider();
   }
   const patch = (value) => { setDraft((d) => ({ ...d, ...value })); saver.queue({ settings: value }); };
-  const tabs = [["appearance", tr("外观")], ["layout", tr("布局")], ["search", tr("搜索")], ["enhancements", tr("增强")], ["data", tr("数据")], ["privacy", tr('隐私自查')]];
+  const tabs = [["appearance", tr("外观")], ["layout", tr("布局")], ["search", tr("搜索")], ["enhancements", tr("增强")],
+    ["time", tr('时间与日期')], ["backup", tr('备份与恢复')], ["trash", tr('回收站')], ["about", tr('关于')]];
   return (
     <Modal title={tr("设置")} closeDisabled={busy} onClose={closeSettings} className="settings-modal preferences-modal" wide>
       <Tabs className="settings-layout" value={tab} orientation="vertical" onValueChange={(value) => { setTab(value); setError(''); }}>
@@ -1691,6 +1626,7 @@ function Settings({
         {tabs.map(([id, name]) => (
           <TabsTrigger
             value={id}
+            disabled={busy}
             id={`settings-tab-${id}`}
             aria-controls="settings-panel"
             key={id}
@@ -1700,34 +1636,23 @@ function Settings({
         ))}
       </TabsList>
       <div className="settings-content">
-      <TabsContent value={tab} ref={panelRef} className="form-stack settings-scroll" id="settings-panel" aria-labelledby={`settings-tab-${tab}`} tabIndex={0}>
+      <TabsContent value={tab} ref={panelRef} className={`form-stack settings-scroll${tab === "appearance" ? " appearance-settings" : ""}`} id="settings-panel" aria-labelledby={`settings-tab-${tab}`} tabIndex={0}>
         {tab === "appearance" && (
           <>
-            <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onDesktopTemplates)}><SquaresFour size={18} />{tr('桌面方案与分享')}</Button>
-            <LanguageSettings />
-            <label className="check-label">
-              <Switch aria-label={tr("极简模式")} checked={draft.minimal} onCheckedChange={(minimal) => patch({ minimal })} />
-              <span>{tr("极简模式")}<span className="enhancement-description">{tr("隐藏时间和日期。")}</span></span>
-            </label>
-            <Select label={tr("主题")} value={draft.theme} onChange={(theme) => patch({ theme })}
-              options={[{ value: "system", label: tr("跟随系统") }, { value: "light", label: tr("浅色") }, { value: "dark", label: tr("深色") }]} />
-            <BackgroundPicker value={draft.background} onChange={(background) => patch({ background })} wallpaper={wallpaper} />
-            <Range
-              label={tr("背景变暗")}
-              value={draft.shade}
-              min={0}
-              max={90}
-              suffix="%"
-              onChange={(shade) => patch({ shade })}
-            />
-            <Range
-              label={tr("背景模糊")}
-              value={draft.blur}
-              min={0}
-              max={40}
-              suffix="px"
-              onChange={(blur) => patch({ blur })}
-            />
+            <div className="appearance-controls" role="group" aria-label={tr("外观")}>
+              <LanguageSettings />
+              <Select label={tr("主题")} value={draft.theme} onChange={(theme) => patch({ theme })}
+                options={[{ value: "system", label: tr("跟随系统") }, { value: "light", label: tr("浅色") }, { value: "dark", label: tr("深色") }]} />
+              <label className="check-label appearance-toggle">
+                <span>{tr("极简模式")}</span>
+                <Switch aria-label={tr("极简模式")} checked={draft.minimal} onCheckedChange={(minimal) => patch({ minimal })} />
+              </label>
+            </div>
+            <BackgroundPicker value={draft.background} onChange={(background) => patch({ background })} />
+            <div className="appearance-ranges">
+              <Range label={tr("背景变暗")} value={draft.shade} min={0} max={90} suffix="%" onChange={(shade) => patch({ shade })} />
+              <Range label={tr("背景模糊")} value={draft.blur} min={0} max={40} suffix="px" onChange={(blur) => patch({ blur })} />
+            </div>
           </>
         )}
         {tab === "enhancements" && (
@@ -1877,29 +1802,17 @@ function Settings({
             {editingProvider && <Button variant="ghost" type="button" className="button quiet" onClick={() => { setEditingProvider(null); setNewName(""); setNewTemplate(""); setError(""); }}>{tr("取消修改")}</Button>}
           </>
         )}
-        {tab === "data" && (
-          <>
-            <WhatsNew />
-            <p className="hint">{tr('导出的备份文件未加密，请妥善保管。')}</p>
-            <div className="data-actions">
-              <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onCloudSync)}>
-                {tr('自备存储同步（Beta）')}</Button>
-              <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onBookmarks)}>
-                <UploadSimple size={19} />{tr('导入网址与书签 HTML')}</Button>
-              <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onExport)}>
-                <DownloadSimple size={19} />{tr("导出完整备份")}</Button>
-              <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onImport)}>
-                <UploadSimple size={19} />{tr('备份与恢复中心')}</Button>
-              <Button variant="secondary" type="button" className="button" disabled={demo} onClick={() => afterSave(onToolsTrash)}>
-                <Trash size={19} />{tr('回收站')}</Button>
-              <Button variant="secondary" type="button" className="button" disabled={busy} onClick={() => afterSave(onSnapshot)}>
-                <ArrowUUpLeft size={19} />{tr("恢复上一份导航副本")}</Button>
-            </div>
-            <NavigationIconStatus report={iconProgress} busy={busy} />
-            <a className="settings-privacy-link" href="https://sites.google.com/view/covelet-privacy" target="_blank" rel="noopener noreferrer">{tr("隐私政策")}</a>
-          </>
-        )}
-        {tab === 'privacy' && <PrivacyCheckup demo={demo} />}
+        {tab === 'time' && <TimeAndDateSettings disabled={demo} />}
+        {tab === 'backup' && <RecoveryCenter disabled={demo} onBusyChange={onBusyChange} beforeOperation={() => saver.flush()} onRestored={async (next) => {
+          onRestored(next);
+          try { await refreshPreferences(); } catch (reason) { setError(userErrorMessage(reason)); }
+        }} />}
+        {tab === 'trash' && <PersonalToolsTrashPanel onBusyChange={onBusyChange} disabled={demo} />}
+        {tab === 'about' && <>
+          <WhatsNew />
+          <Disclosure title={tr('隐私自查')}><PrivacyCheckup demo={demo} /></Disclosure>
+          <a className="settings-privacy-link" href="https://covelet.future-element.com/privacy/" target="_blank" rel="noopener noreferrer">{tr("隐私政策")}</a>
+        </>}
         {error && (
           <p className="form-error" role="alert">
             {tr(error)}
@@ -1911,10 +1824,7 @@ function Settings({
           <div className="settings-retry-actions">
             {saving.error?.code !== "PREFERENCE_CONFLICT" && <Button variant="secondary" type="button" className="button" onClick={() => saver.retry().catch(() => {})}>{tr("重试")}</Button>}
             <Button variant="ghost" type="button" className="button quiet" onClick={async () => {
-              try {
-                const latest = await saver.reload();
-                setDraft(structuredClone(latest.settings)); setProviderDraft(structuredClone(latest.providers));
-              } catch (reason) { setError(userErrorMessage(reason)); }
+              try { await refreshPreferences(); } catch (reason) { setError(userErrorMessage(reason)); }
             }}>{tr("放弃修改并重新载入")}</Button>
           </div>
       </div>}

@@ -89,6 +89,7 @@ a:hover{opacity:.75}
   border:var(--bd);border-radius:18px;padding:16px 18px;background:var(--soft);font-size:14px;font-weight:600;
 }
 .callout strong{font-weight:800}
+.site-disclosure{font-size:13px;font-weight:500;color:var(--mute)}
 .status{
   display:inline-block;margin-top:12px;background:var(--lime);border:2px solid var(--ink);
   border-radius:8px;padding:4px 10px;font-size:12px;font-weight:800;

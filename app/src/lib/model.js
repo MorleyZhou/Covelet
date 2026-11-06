@@ -117,7 +117,7 @@ export function createEmptyState() {
       { id: 'duckduckgo', name: 'DuckDuckGo', template: 'https://duckduckgo.com/?q={query}' },
     ],
     settings: {
-      theme: 'system', background: { kind: 'bing', value: 'daily' }, shade: 0, blur: 0,
+      theme: 'system', background: { kind: 'builtin', value: 'alpine' }, shade: 0, blur: 0,
       width: 1120, iconSize: 64, gap: 24, columns: 8, showLabels: true, showClock: true, openNewTab: false, minimal: false,
       visualEnhancement: true, pages: [0],
     },

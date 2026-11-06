@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getLocale } from '../i18n/index.js';
 import { useLanguage } from '../i18n/react.js';
+import { DEFAULT_HOME_TIME, formatHomeTime } from '../lib/home-time.js';
+import { useHomeTimeSettings } from '../lib/use-home-time-settings.js';
 
 export default function HomeTime() {
-  useLanguage();
+  const { locale, tr } = useLanguage();
+  const settings = useHomeTimeSettings();
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     let timer;
@@ -23,9 +25,13 @@ export default function HomeTime() {
       window.removeEventListener('pageshow', refresh);
     };
   }, []);
-  const locale = getLocale();
+  const { time, date, lunar, zodiac } = formatHomeTime(now, locale, settings || DEFAULT_HOME_TIME);
   return <div className="clock home-time">
-    <time className="clock-time" dateTime={now.toISOString()}>{new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(now)}</time>
-    <span className="clock-date">{new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', weekday: 'long' }).format(now)}</span>
+    <time className="clock-time" dateTime={now.toISOString()}>{time}</time>
+    <span className="clock-date">
+      <span className="clock-gregorian">{date}</span>
+      {lunar && <>{' '}<span aria-hidden="true">· </span><span className="clock-lunar">{tr('农历 {0}', [lunar])}</span></>}
+      {zodiac && <>{' '}<span aria-hidden="true">· </span><span className="clock-zodiac">{tr(zodiac)}</span></>}
+    </span>
   </div>;
 }

@@ -1,12 +1,14 @@
 // Device/session management never overwrites another device's unlock state or
 // synchronizer. All content namespaces, including future extensions, are open
 // by default; this is deliberately not a business-data whitelist.
-const DEVICE_KEYS = new Set(['covelet.cloud.local.v1', 'covelet.tools.cloud.v1', 'covelet.data-sync.v1', 'covelet.cloud.session.v1', 'covelet.privacy.lock.v1', 'covelet.ai.connection.v1', 'covelet.language.v1', 'covelet.home-migration.v1']);
+export const SYNC_JOB_KEY = 'covelet.data-sync.job.v1';
+const DEVICE_KEYS = new Set(['covelet.cloud.local.v1', 'covelet.tools.cloud.v1', 'covelet.data-sync.v1', 'covelet.data-sync.runs.v1', 'covelet.cloud.session.v1', 'covelet.privacy.lock.v1', 'covelet.ai.connection.v1', 'covelet.language.v1', 'covelet.home-migration.v1', 'covelet.wallpaper.source.v1', 'covelet.wallpaper.interval.v1', 'covelet.home-time.v1', SYNC_JOB_KEY]);
 const PREFERENCES = 'covelet.content.preferences.v1';
 const NAVIGATION = 'owntab.local.v1';
 const TOOLS = 'covelet.tools.v1';
 const TEMPLATES = 'covelet.desktop-templates.v1';
-export const isSyncRecord = (namespace, key) => namespace !== 'full-data-pending' && (namespace !== 'preferences' || !DEVICE_KEYS.has(key) && !key.startsWith('covelet.app.v1.'));
+export const isSyncRecord = (namespace, key) => namespace !== 'full-data-pending' && (namespace !== 'wallpaper' || key !== 'commons')
+  && (namespace !== 'preferences' || !DEVICE_KEYS.has(key) && !key.startsWith('covelet.app.v1.'));
 const clone = (value) => structuredClone(value);
 const object = (value) => value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Blob);
 const revisioned = (namespace, key) => namespace === 'preferences' && (key === PREFERENCES || key === TOOLS || key === TEMPLATES || key.startsWith('covelet.clock.v1.'));
@@ -67,8 +69,12 @@ export function prepareSyncValue(namespace, key, input, previous, { wholeRecord 
   return value;
 }
 
-// Validators run before the single encrypted commit. Dynamic imports avoid a
-// persistence/module initialization cycle with the existing domain modules.
+let workerValidators;
+// The background module registers static imports because MV3 service workers
+// cannot execute import(). Pages keep lazy loading for startup and cycle safety.
+export function setWorkerSyncValidators(validators) { workerValidators = validators; }
+
+// Validators run before the single encrypted commit.
 export async function validateSyncValue(namespace, key, value) {
   if (namespace === 'preferences') {
     if (key.startsWith('covelet.app.v1.')) {
@@ -76,15 +82,15 @@ export async function validateSyncValue(namespace, key, value) {
     } else if (key === NAVIGATION) {
       if (!object(value) || value.version !== 1 || !Array.isArray(value.snapshots) || value.snapshots.length > 3
         || Object.keys(value).some((field) => !['version', 'state', 'snapshots', 'sync'].includes(field))) fail();
-      const { migrateNavigationState } = await import('./model.js');
+      const { migrateNavigationState } = workerValidators || await import('./model.js');
       migrateNavigationState(value.state);
       for (const state of value.snapshots) migrateNavigationState(state);
     } else if (key === TOOLS) {
-      const { validatePersonalTools } = await import('./personal-tools.js'); validatePersonalTools(value);
+      const { validatePersonalTools } = workerValidators || await import('./personal-tools.js'); validatePersonalTools(value);
     } else if (key === PREFERENCES) {
-      const { validateContentPreferences } = await import('./content-preferences.js'); validateContentPreferences(value);
+      const { validateContentPreferences } = workerValidators || await import('./content-preferences.js'); validateContentPreferences(value);
     } else if (key === TEMPLATES) {
-      const { validateSavedDesktopTemplates } = await import('./desktop-templates.js'); validateSavedDesktopTemplates(value);
+      const { validateSavedDesktopTemplates } = workerValidators || await import('./desktop-templates.js'); validateSavedDesktopTemplates(value);
     } else if (key.startsWith('covelet.clock.v1.')) {
       if (!object(value) || value.version !== 1 || !Number.isSafeInteger(value.revision) || value.revision < 0
         || !['clock', 'world', 'compare', 'countdown', 'stopwatch', 'alarm'].includes(value.mode) || typeof value.notify !== 'boolean'
@@ -94,7 +100,7 @@ export async function validateSyncValue(namespace, key, value) {
       if (typeof value.timer.completed !== 'boolean') fail();
     } else if (key === 'covelet.github.calendar.v1') {
       if (!object(value) || Object.keys(value).length > 200 || JSON.stringify(value).length > 1024 * 1024) fail();
-      const { validateContributionDays } = await import('./github-contributions.js');
+      const { validateContributionDays } = workerValidators || await import('./github-contributions.js');
       for (const entry of Object.values(value)) {
         if (!object(entry) || !Number.isFinite(entry.attemptedAt) || entry.attemptedAt < 0) fail();
         if (entry.days !== undefined) { validateContributionDays(entry.days); if (!Number.isFinite(entry.fetchedAt) || entry.fetchedAt < 0) fail(); }
@@ -103,7 +109,7 @@ export async function validateSyncValue(namespace, key, value) {
   } else if (['assets', 'navigation-icons', 'provider-icons', 'wallpaper'].includes(namespace)) {
     if (!object(value)) fail();
     if (namespace === 'navigation-icons') {
-      const { validateNavigationIconRecord } = await import('./icon-image-record.js');
+      const { validateNavigationIconRecord } = workerValidators || await import('./icon-image-record.js');
       try { await validateNavigationIconRecord(value, key); } catch { fail(); }
       return;
     }
@@ -111,7 +117,7 @@ export async function validateSyncValue(namespace, key, value) {
       const blob = value[field];
       if (!(blob instanceof Blob) || !['image/png', 'image/jpeg', 'image/webp'].includes(blob.type) || !blob.size || blob.size > 10 * 1024 * 1024) fail();
       if (namespace === 'navigation-icons' || namespace === 'provider-icons') {
-        const { validateIconBytes } = await import('./site-info.js'); validateIconBytes(new Uint8Array(await blob.arrayBuffer()), blob.type);
+        const { validateIconBytes } = workerValidators || await import('./site-info.js'); validateIconBytes(new Uint8Array(await blob.arrayBuffer()), blob.type);
       }
     }
     if (namespace === 'assets' && (value.id !== key || !(value.blob instanceof Blob))) fail();

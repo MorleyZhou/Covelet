@@ -159,7 +159,7 @@ for (const profile of profiles) {
     assert.deepEqual(valueOf(b, 'covelet.tools.v1'), valueOf(a, 'covelet.tools.v1'));
   });
 
-  test(`${profile.provider} synthetic protocol: two clients exchange full records/images, repeat sync and whole-record conflict choice`, async () => {
+  test(`${profile.provider} synthetic protocol: two clients exchange full records/images, repeat sync and choose the full cloud snapshot`, async () => {
     const remote = protocolFixture(profile), image = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7WQAAAAASUVORK5CYII=', 'base64')], { type: 'image/png' });
     const a = device(remote, 'a', [record('owntab.local.v1', { version: 1, state: createEmptyState(), snapshots: [] }), record('covelet.tools.v1', tools('PRIVATE-NOTE-SENTINEL')),
       record('qa-image', { id: 'qa-image', blob: image }, 'assets'), record('covelet.qa.large.v1', { text: 'PRIVATE-LARGE-SENTINEL'.repeat(18000) })]);
@@ -172,11 +172,15 @@ for (const profile of profiles) {
     assert.equal(remote.writes.length, writes, 'repeat sync must not upload unchanged ciphertext');
     a.edit(records => { records.find(record => record.key === 'covelet.tools.v1').value.notes[0].body = 'A changed the group'; });
     b.edit(records => { const value = records.find(record => record.key === 'covelet.tools.v1').value; value.notes[0].body = 'B changed the group'; value.reading.push({ id: 'b-only', title: 'B saved link', url: 'https://b-only.example.test/', status: 'unread', revision: 1, createdAt: 1, updatedAt: 1 }); });
-    await saved(a); await saved(b); await saved(a);
+    await saved(a);
+    const beforeChoice = remote.writes.length;
+    assert.equal((await b.api.syncFullDataNow()).phase, 'conflict');
+    assert.equal(remote.writes.length, beforeChoice, 'detecting a conflict must preserve both complete sides');
+    await saved(a);
     assert.equal(valueOf(b, 'covelet.tools.v1').notes[0].body, 'B changed the group', 'local content stays until a choice');
     const conflicts = await b.api.getFullDataConflicts(), chosen = conflicts.find(item => item.actor === 'a'.repeat(32));
     assert.ok(chosen, 'both versions of the tools record must remain available');
-    await b.api.restoreFullDataConflict(chosen.id); await saved(b); await saved(a);
+    assert.equal((await b.api.resolveFullDataConflicts('remote')).phase, 'saved'); await saved(a);
     assert.equal(valueOf(a, 'covelet.tools.v1').notes[0].body, 'A changed the group');
     assert.deepEqual(valueOf(a, 'covelet.tools.v1').reading, [], 'choosing one whole group must not silently merge the other version');
     assert.deepEqual(valueOf(b, 'covelet.tools.v1'), valueOf(a, 'covelet.tools.v1'));

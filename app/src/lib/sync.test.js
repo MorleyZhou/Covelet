@@ -157,7 +157,7 @@ test('portable synchronization removes image IDs while preserving unchanged icon
   const portable = portableState(local);
   assert.deepEqual(portable.entries[0].icon, { kind: 'url', value: 'https://alpha.example.com/favicon.ico' });
   assert.equal(portable.entries[0].iconBackground, '#b6d8fa');
-  assert.deepEqual(portable.settings.background, createEmptyState().settings.background);
+  assert.deepEqual(portable.settings.background, { kind: 'bing', value: 'daily' });
   const replica = recordChanges(createReplica('a'), baseline, local);
   const packedText = JSON.stringify(replica);
   assert.equal(packedText.includes('local-only-asset-id'), false);

@@ -74,7 +74,7 @@ export function useIconDrag({ state, page = 0, screenKey = `${page}:0`, editing 
     if (pageSwitch && !pageSwitch.disabled) return current.pageTarget || pageTarget(pageSwitch, current);
     const folderPanel = current.element.closest('[data-folder-panel]');
     const folderDialog = folderPanel?.closest('dialog, [data-ui-modal]');
-    if (current.item.parentId && folderPanel && (!folderDialog?.contains(hit) || hit.closest('[data-drop-root]'))) {
+    if (current.item.parentId && folderPanel && !folderDialog?.contains(hit)) {
       return { kind: 'move', parentId: null, page: latest.current.page, label: tr("移到桌面") };
     }
     const freeTarget = () => {

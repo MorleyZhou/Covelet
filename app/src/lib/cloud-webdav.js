@@ -78,13 +78,18 @@ function checkedSecrets(input) {
   return `Basic ${btoa(encoded)}`;
 }
 
-function statusError(status) {
+function statusError(status, method) {
   if (status === 429) return error(tr("WebDAV 请求过于频繁，请稍后再试。"), 'CLOUD_RATE_LIMIT');
-  if (status === 401) return error(tr("WebDAV 登录失败（401）：请检查用户名和应用密码，不要使用网页登录密码。"), 'CLOUD_AUTH');
-  if (status === 403) return error(tr("WebDAV 拒绝访问（403）：请确认账号已启用 WebDAV，并有此目录的读写权限。"), 'CLOUD_FORBIDDEN');
-  if (status === 404 || status === 409) return error(tr("WebDAV 路径不存在（404/409）：请检查基目录地址，并先创建填写的保存目录。"), 'CLOUD_NOT_FOUND');
+  if (status === 401) return error(tr('登录失败。请检查用户名和应用密码。'), 'CLOUD_AUTH');
+  if (status === 403) return error(method === 'PUT'
+    ? tr('无法写入此目录。请检查目录的写入权限。')
+    : tr('无法访问此目录。请检查目录权限。'), 'CLOUD_FORBIDDEN');
+  if (status === 404 || status === 409) return error(method === 'GET'
+    ? tr('无法读取同步文件。请检查保存目录和权限。')
+    : tr('找不到保存目录。请检查服务器地址和目录。'), 'CLOUD_NOT_FOUND');
   if (status === 412) return conflict();
   if (status === 507) return limit();
+  if (status >= 500 && status <= 599) return error(tr('存储服务暂时无法完成请求。请稍后重试。'), 'CLOUD_REQUEST_FAILED');
   return error(tr("WebDAV 请求未成功，请检查服务配置后重试。"), 'CLOUD_REQUEST_FAILED');
 }
 
@@ -318,7 +323,7 @@ export function createWebdavProvider(input, secrets, options = {}) {
   async function operation(action) {
     const controller = new AbortController();
     let timer, expired = false;
-    const timeout = () => error(tr("WebDAV 连接超时，未完成的操作会在下次同步时核对。"), 'CLOUD_TIMEOUT');
+    const timeout = () => error(tr('连接超时。请稍后重试。'), 'CLOUD_TIMEOUT');
     const deadline = new Promise((_, reject) => {
       timer = setTimeout(() => { expired = true; controller.abort(); reject(timeout()); }, timeoutMs);
     });
@@ -351,20 +356,20 @@ export function createWebdavProvider(input, secrets, options = {}) {
       if (safeErrors.has(cause)) throw cause;
       const code = cause?.cause?.code || cause?.code;
       if (globalThis.navigator?.onLine === false || code === 'ENETUNREACH' || code === 'ERR_INTERNET_DISCONNECTED')
-        throw error(tr('网络已断开，请联网后重新测试 WebDAV。'), 'CLOUD_OFFLINE');
+        throw error(tr('网络已断开。请联网后重试。'), 'CLOUD_OFFLINE');
       if (['ETIMEDOUT', 'UND_ERR_CONNECT_TIMEOUT', 'ERR_CONNECTION_TIMED_OUT'].includes(code) || cause?.name === 'TimeoutError') throw timeout();
       if (/^(?:ERR_TLS_|ERR_SSL_|ERR_CERT_|CERT_|DEPTH_ZERO_SELF_SIGNED_CERT|SELF_SIGNED_CERT_IN_CHAIN|UNABLE_TO_VERIFY_LEAF_SIGNATURE)/.test(code || ''))
         throw error(tr('WebDAV 安全连接失败，请检查服务器 HTTPS 证书和设备时间。'), 'CLOUD_TLS');
       if (['ENOTFOUND', 'EAI_AGAIN', 'ECONNREFUSED', 'EHOSTUNREACH', 'ERR_NAME_NOT_RESOLVED', 'ERR_CONNECTION_REFUSED'].includes(code))
         throw error(tr('找不到或无法访问 WebDAV 服务器，请检查域名、端口和服务是否运行。'), 'CLOUD_HOST');
       // Browser fetch deliberately hides DNS/TLS/CORS details. Do not guess.
-      throw error(tr('无法连接 WebDAV：请检查网络、服务器地址、HTTPS 证书和站点访问权限；浏览器可能未提供具体原因。'), 'CLOUD_NETWORK');
+      throw error(tr('无法连接 WebDAV。请检查网络和服务器地址。'), 'CLOUD_NETWORK');
     } finally { clearTimeout(timer); controller.abort(); }
   }
   async function readBytes(request, name, optional = false) {
     const { response, bytes } = await request('GET', objectUrl(name));
     if (optional && response.status === 404) return null;
-    if (response.status !== 200) throw statusError(response.status);
+    if (response.status !== 200) throw statusError(response.status, 'GET');
     return checkedBody(bytes);
   }
   return {
@@ -423,7 +428,7 @@ export function createWebdavProvider(input, secrets, options = {}) {
           const competing = await readBytes(request, name, true);
           if (competing) { if (!same(competing)) throw conflict(); return; }
         }
-        throw statusError(response.status);
+        throw statusError(response.status, 'PUT');
       });
     },
   };

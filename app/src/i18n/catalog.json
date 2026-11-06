@@ -513,7 +513,13 @@
     "en": "Custom cloud sync is not configured."
   },
   "尚未授权访问这个云服务，请先在设置中授权。": {
-    "en": "Cloud service access is not authorized. Allow it in settings first."
+    "en": "Allow access to this storage service in settings.",
+    "zh-TW": "尚未授權存取這項儲存服務。請到設定中允許存取。",
+    "ja": "設定でこのストレージサービスへのアクセスを許可してください。",
+    "ko": "설정에서 이 저장소 서비스에 접근할 수 있도록 허용하세요.",
+    "de": "Erlauben Sie in den Einstellungen den Zugriff auf diesen Speicherdienst.",
+    "fr": "Autorisez l’accès à ce service de stockage dans les réglages.",
+    "ru": "Разрешите доступ к этому хранилищу в настройках."
   },
   "稍后读格式无效。": {
     "en": "Invalid reading list format."
@@ -2903,14 +2909,149 @@
     "fr": "Mode minimaliste",
     "ru": "Минимальный режим"
   },
-  "隐藏时间和日期。": {
-    "en": "Hide the time and date.",
-    "zh-TW": "隱藏時間和日期。",
-    "ja": "時刻と日付を非表示にします。",
-    "ko": "시간과 날짜를 숨깁니다.",
-    "de": "Uhrzeit und Datum ausblenden.",
-    "fr": "Masquer l’heure et la date.",
-    "ru": "Скрывать время и дату."
+  "同步冲突": {
+    "en": "Sync conflicts",
+    "zh-TW": "同步衝突",
+    "ja": "同期の競合",
+    "ko": "동기화 충돌",
+    "de": "Synchronisierungskonflikte",
+    "fr": "Conflits de synchronisation",
+    "ru": "Конфликты синхронизации"
+  },
+  "以本地为准": {
+    "en": "Use local data",
+    "zh-TW": "以本機為準",
+    "ja": "ローカルを優先",
+    "ko": "이 기기 기준",
+    "de": "Lokale Daten verwenden",
+    "fr": "Utiliser les données locales",
+    "ru": "Использовать локальные данные"
+  },
+  "以云端为准": {
+    "en": "Use cloud data",
+    "zh-TW": "以雲端為準",
+    "ja": "クラウドを優先",
+    "ko": "클라우드 기준",
+    "de": "Clouddaten verwenden",
+    "fr": "Utiliser les données du cloud",
+    "ru": "Использовать данные из облака"
+  },
+  "所选一侧将用于整组内容，并在下次同步时上传。": {
+    "en": "Your choice applies to this whole group and is sent on the next sync.",
+    "zh-TW": "所選的一方會套用至整組內容，並於下次同步時上傳。",
+    "ja": "選んだ側の内容をグループ全体に適用し、次回の同期で送信します。",
+    "ko": "선택한 쪽의 내용을 그룹 전체에 적용하고 다음 동기화 때 전송합니다.",
+    "de": "Die Auswahl gilt für die gesamte Gruppe und wird bei der nächsten Synchronisierung übertragen.",
+    "fr": "Votre choix s’applique à tout le groupe et sera envoyé lors de la prochaine synchronisation.",
+    "ru": "Выбор применяется ко всей группе и передаётся при следующей синхронизации."
+  },
+  "以云端为准会删除本地的这组内容。": {
+    "en": "Using cloud data will delete this group from this device.",
+    "zh-TW": "以雲端為準會刪除本機的這組內容。",
+    "ja": "クラウドを優先すると、この端末からこのグループが削除されます。",
+    "ko": "클라우드 기준으로 적용하면 이 기기에서 이 그룹이 삭제됩니다.",
+    "de": "Wenn Sie die Clouddaten verwenden, wird diese Gruppe von diesem Gerät gelöscht.",
+    "fr": "Utiliser les données du cloud supprimera ce groupe de cet appareil.",
+    "ru": "Если использовать данные из облака, эта группа будет удалена с устройства."
+  },
+  "冲突已变化，请同步后重试。": {
+    "en": "The conflict has changed. Sync again and retry.",
+    "zh-TW": "衝突已變更，請同步後重試。",
+    "ja": "競合内容が変わりました。同期してからもう一度お試しください。",
+    "ko": "충돌 내용이 바뀌었습니다. 동기화한 뒤 다시 시도하세요.",
+    "de": "Der Konflikt hat sich geändert. Synchronisieren Sie erneut und versuchen Sie es noch einmal.",
+    "fr": "Le conflit a changé. Synchronisez à nouveau, puis réessayez.",
+    "ru": "Конфликт изменился. Выполните синхронизацию и повторите попытку."
+  },
+  "同步连接已锁定，请先解锁。": {
+    "en": "Sync is locked. Unlock it first.",
+    "zh-TW": "同步連線已鎖定，請先解鎖。",
+    "ja": "同期接続はロックされています。ロックを解除してください。",
+    "ko": "동기화 연결이 잠겨 있습니다. 먼저 잠금을 해제하세요.",
+    "de": "Die Synchronisierung ist gesperrt. Entsperren Sie sie zuerst.",
+    "fr": "La synchronisation est verrouillée. Déverrouillez-la d’abord.",
+    "ru": "Синхронизация заблокирована. Сначала разблокируйте её."
+  },
+  "无法解锁本机保存的访问凭据，请检查同步密码。": {
+    "en": "Could not unlock the saved credentials. Check your sync password.",
+    "zh-TW": "無法解鎖本機儲存的存取憑證，請檢查同步密碼。",
+    "ja": "保存済みの認証情報を解除できません。同期パスワードを確認してください。",
+    "ko": "저장된 접근 자격 증명을 잠금 해제할 수 없습니다. 동기화 암호를 확인하세요.",
+    "de": "Die gespeicherten Zugangsdaten konnten nicht entsperrt werden. Prüfen Sie das Synchronisierungspasswort.",
+    "fr": "Impossible de déverrouiller les identifiants enregistrés. Vérifiez le mot de passe de synchronisation.",
+    "ru": "Не удалось разблокировать сохранённые учётные данные. Проверьте пароль синхронизации."
+  },
+  "请填写访问凭据和同步密码。": {
+    "en": "Enter the access credentials and sync password.",
+    "zh-TW": "請填寫存取憑證和同步密碼。",
+    "ja": "認証情報と同期パスワードを入力してください。",
+    "ko": "접근 자격 증명과 동기화 암호를 입력하세요.",
+    "de": "Geben Sie die Zugangsdaten und das Synchronisierungspasswort ein.",
+    "fr": "Saisissez les identifiants et le mot de passe de synchronisation.",
+    "ru": "Введите учётные данные и пароль синхронизации."
+  },
+  "同步连接已解锁。": {
+    "en": "Sync unlocked.",
+    "zh-TW": "同步連線已解鎖。",
+    "ja": "同期接続のロックを解除しました。",
+    "ko": "동기화 연결 잠금이 해제되었습니다.",
+    "de": "Synchronisierung entsperrt.",
+    "fr": "Synchronisation déverrouillée.",
+    "ru": "Синхронизация разблокирована."
+  },
+  "访问凭据加密保存在本机。锁定或重启后，只需输入同步密码。": {
+    "en": "Access credentials are encrypted on this device. After locking or restarting, enter only the sync password.",
+    "zh-TW": "存取憑證已加密儲存在本機。鎖定或重新啟動後，只需輸入同步密碼。",
+    "ja": "認証情報はこの端末に暗号化して保存します。ロック後や再起動後は同期パスワードだけを入力します。",
+    "ko": "접근 자격 증명은 이 기기에 암호화해 저장됩니다. 잠그거나 재시작한 뒤에는 동기화 암호만 입력하세요.",
+    "de": "Zugangsdaten werden auf diesem Gerät verschlüsselt gespeichert. Nach dem Sperren oder Neustart genügt das Synchronisierungspasswort.",
+    "fr": "Les identifiants sont chiffrés sur cet appareil. Après un verrouillage ou un redémarrage, saisissez uniquement le mot de passe de synchronisation.",
+    "ru": "Учётные данные зашифрованы на этом устройстве. После блокировки или перезапуска нужен только пароль синхронизации."
+  },
+  "旧连接首次解锁仍需填写访问凭据。同步成功后，下次只需输入同步密码。": {
+    "en": "Enter the credentials once for this older connection. After a successful sync, only the sync password is needed.",
+    "zh-TW": "舊連線首次解鎖仍需填寫存取憑證。同步成功後，下次只需輸入同步密碼。",
+    "ja": "以前の接続では認証情報を一度入力します。同期が成功すると、次回は同期パスワードだけで解除できます。",
+    "ko": "이전 연결은 접근 자격 증명을 한 번 입력해야 합니다. 동기화가 성공하면 다음부터는 동기화 암호만 필요합니다.",
+    "de": "Geben Sie für diese ältere Verbindung einmal die Zugangsdaten ein. Nach erfolgreicher Synchronisierung genügt das Synchronisierungspasswort.",
+    "fr": "Saisissez une fois les identifiants de cette ancienne connexion. Après une synchronisation réussie, seul le mot de passe sera nécessaire.",
+    "ru": "Введите учётные данные для старого подключения один раз. После успешной синхронизации потребуется только пароль."
+  },
+  "数据加密后上传，隐藏密码和隐藏状态不会同步。": {
+    "en": "Data is encrypted before upload. The hiding password and state stay on this device.",
+    "zh-TW": "資料加密後上傳，隱藏密碼和隱藏狀態不會同步。",
+    "ja": "データは暗号化してアップロードします。非表示のパスワードと状態は同期されません。",
+    "ko": "데이터는 암호화한 뒤 업로드됩니다. 숨김 암호와 상태는 동기화되지 않습니다.",
+    "de": "Daten werden verschlüsselt hochgeladen. Passwort und Status zum Ausblenden werden nicht synchronisiert.",
+    "fr": "Les données sont chiffrées avant l’envoi. Le mot de passe et l’état de masquage restent sur cet appareil.",
+    "ru": "Данные шифруются перед отправкой. Пароль и состояние скрытия остаются на этом устройстве."
+  },
+  "同步凭据": {
+    "en": "Sync credentials",
+    "zh-TW": "同步憑證",
+    "ja": "同期の認証情報",
+    "ko": "동기화 자격 증명",
+    "de": "Synchronisierungszugangsdaten",
+    "fr": "Identifiants de synchronisation",
+    "ru": "Учётные данные синхронизации"
+  },
+  "访问凭据由同步密码加密后保存在本机，不进入备份或同步。锁定或退出浏览器会清除会话中的密码和已解密凭据。": {
+    "en": "The sync password encrypts credentials on this device. They are excluded from backups and sync. Locking or quitting clears the password and decrypted credentials from the session.",
+    "zh-TW": "存取憑證由同步密碼加密後儲存在本機，不會加入備份或同步。鎖定或退出瀏覽器會清除工作階段中的密碼和已解密憑證。",
+    "ja": "認証情報は同期パスワードで暗号化してこの端末に保存し、バックアップや同期には含めません。ロックまたはブラウザー終了時にセッションのパスワードと復号済み認証情報を消去します。",
+    "ko": "접근 자격 증명은 동기화 암호로 암호화해 이 기기에 저장하며 백업이나 동기화에 포함하지 않습니다. 잠그거나 브라우저를 종료하면 세션에서 암호와 복호화된 자격 증명이 지워집니다.",
+    "de": "Das Synchronisierungspasswort verschlüsselt Zugangsdaten auf diesem Gerät. Sie werden weder gesichert noch synchronisiert. Beim Sperren oder Beenden werden das Passwort und die entschlüsselten Zugangsdaten aus der Sitzung gelöscht.",
+    "fr": "Le mot de passe de synchronisation chiffre les identifiants sur cet appareil. Ils sont exclus des sauvegardes et de la synchronisation. Verrouiller ou quitter efface le mot de passe et les identifiants déchiffrés de la session.",
+    "ru": "Пароль синхронизации шифрует учётные данные на устройстве. Они не входят в резервные копии и синхронизацию. Блокировка или закрытие браузера очищает пароль и расшифрованные данные из сеанса."
+  },
+  "解锁期间使用 chrome.storage.session。浏览器原生同步已停用。": {
+    "en": "Unlocked sync uses chrome.storage.session. Browser-native sync is disabled.",
+    "zh-TW": "解鎖期間使用 chrome.storage.session。瀏覽器原生同步已停用。",
+    "ja": "ロック解除中は chrome.storage.session を使用します。ブラウザー標準の同期は無効です。",
+    "ko": "잠금 해제 중에는 chrome.storage.session을 사용합니다. 브라우저 기본 동기화는 꺼져 있습니다.",
+    "de": "Entsperrte Synchronisierung verwendet chrome.storage.session. Die Browsersynchronisierung ist deaktiviert.",
+    "fr": "La synchronisation déverrouillée utilise chrome.storage.session. La synchronisation du navigateur est désactivée.",
+    "ru": "После разблокировки используется chrome.storage.session. Синхронизация браузера отключена."
   },
   "此 OSS Bucket 已开启或暂停版本控制，无法防止覆盖同名文件。请使用从未开启版本控制的专用 Bucket。": {
     "en": "This OSS bucket has versioning enabled or suspended. Use a dedicated bucket that has never had versioning enabled to prevent overwriting files.",
@@ -4099,15 +4240,6 @@
     "de": "Ordner auflösen",
     "fr": "Dissocier le dossier",
     "ru": "Расформировать папку"
-  },
-  "拖到这里移回桌面": {
-    "en": "Drop here to move to the desktop",
-    "zh-TW": "拖至此處移回桌面",
-    "ja": "ここにドロップしてホーム画面へ移動",
-    "ko": "여기로 끌어 홈 화면으로 이동",
-    "de": "Hier ablegen, um zum Desktop zu verschieben",
-    "fr": "Déposer ici pour déplacer vers l’accueil",
-    "ru": "Перетащите сюда для перемещения на главный экран"
   },
   "松开取消": {
     "en": "Release to cancel",
@@ -11012,6 +11144,15 @@
     "fr": "Modèles de bureau",
     "ru": "Шаблоны рабочего стола"
   },
+  "旧版桌面方案": {
+    "en": "Legacy desktop templates",
+    "zh-TW": "舊版桌面方案",
+    "ja": "旧バージョンのデスクトップテンプレート",
+    "ko": "이전 데스크톱 템플릿",
+    "de": "Ältere Desktopvorlagen",
+    "fr": "Anciens modèles de bureau",
+    "ru": "Прежние шаблоны рабочего стола"
+  },
   "备份包含私人内容，请勿公开分享。登录凭据、同步连接和密码不会备份。": {
     "en": "Backups contain private content. Do not share them publicly. Login credentials, sync connections and passwords are excluded.",
     "zh-TW": "備份包含私人內容，請勿公開分享。登入憑證、同步連線和密碼不會備份。",
@@ -11975,15 +12116,6 @@
     "fr": "Les nouvelles installations s’ouvrent sur un bureau vide. L’heure et la date apparaissent au-dessus de la recherche et peuvent être masquées en mode minimaliste.",
     "ru": "Новая установка начинается с пустого рабочего стола. Время и дата отображаются над поиском; их можно скрыть в минимальном режиме."
   },
-  "自备存储同步（Beta）：冲突时整组选择本机或云端版本，改进图片同步和中断重试。": {
-    "en": "Sync with your own storage (Beta): choose the entire local or cloud version of a conflicting group. Improved image sync and retries after interruptions.",
-    "zh-TW": "自備儲存同步（Beta）：衝突時整組選擇本機或雲端版本，改善圖片同步和中斷後重試。",
-    "ja": "自分のストレージとの同期（Beta）：競合時はグループ全体で端末内かクラウドのバージョンを選択します。画像の同期と中断後の再試行を改善しました。",
-    "ko": "내 저장소 동기화(Beta): 충돌 시 그룹 전체에 대해 로컬 또는 클라우드 버전을 선택합니다. 이미지 동기화와 중단 후 재시도를 개선했습니다.",
-    "de": "Synchronisierung mit eigenem Speicher (Beta): Bei Konflikten die lokale oder die Cloud-Version einer ganzen Gruppe wählen. Bildsynchronisierung und Wiederholungen nach Unterbrechungen wurden verbessert.",
-    "fr": "Synchronisation avec votre stockage (Beta) : en cas de conflit, choisissez la version locale ou cloud du groupe entier. La synchronisation des images et les nouvelles tentatives après interruption ont été améliorées.",
-    "ru": "Синхронизация со своим хранилищем (Beta): при конфликте выбирайте локальную или облачную версию всей группы. Улучшены синхронизация изображений и повторные попытки после сбоев."
-  },
   "完整备份可恢复导航、便笺和图片；恢复前保留一份副本。": {
     "en": "Complete backups restore shortcuts, notes and images. A copy of your current data is kept before restoration.",
     "zh-TW": "完整備份可還原導航、便箋和圖片；還原前保留一份副本。",
@@ -12001,15 +12133,6 @@
     "de": "Beim Abbrechen einer Ordnerumbenennung bleibt der Ordner geöffnet. Auch der Dialogfokus wurde korrigiert.",
     "fr": "L’annulation du renommage d’un dossier ne ferme plus le dossier. Le focus des boîtes de dialogue a aussi été corrigé.",
     "ru": "Отмена переименования папки больше не закрывает её. Также исправлен фокус в диалоговых окнах."
-  },
-  "阿里云 OSS 仍为 Beta。": {
-    "en": "Alibaba Cloud OSS remains in Beta.",
-    "zh-TW": "阿里雲 OSS 仍為 Beta。",
-    "ja": "Alibaba Cloud OSS は引き続き Beta です。",
-    "ko": "Alibaba Cloud OSS는 계속 Beta로 제공됩니다.",
-    "de": "Alibaba Cloud OSS bleibt in der Beta-Phase.",
-    "fr": "Alibaba Cloud OSS reste en version Beta.",
-    "ru": "Alibaba Cloud OSS остаётся в Beta."
   },
   "0.2.2 更新内容": {
     "en": "What's new in 0.2.2",
@@ -12163,15 +12286,6 @@
     "de": "Exportierte JSON/ZIP-Backups sind nicht verschlüsselt. Sicher aufbewahren.",
     "fr": "Les sauvegardes JSON/ZIP exportées ne sont pas chiffrées. Conservez-les en lieu sûr.",
     "ru": "Экспортированные резервные копии JSON/ZIP не зашифрованы. Храните их в безопасном месте."
-  },
-  "自备存储同步（Beta）": {
-    "en": "Sync with your storage (Beta)",
-    "zh-TW": "自備儲存同步（Beta）",
-    "ja": "自分のストレージと同期（Beta）",
-    "ko": "개인 저장소 동기화 (Beta)",
-    "de": "Mit eigenem Speicher synchronisieren (Beta)",
-    "fr": "Synchronisation avec votre stockage (Beta)",
-    "ru": "Синхронизация со своим хранилищем (Beta)"
   },
   "正在获取…": {
     "en": "Fetching…",
@@ -13621,5 +13735,1220 @@
     "de": "Der Browser erlaubt keinen Zugriff auf die lokalen Daten. Bitte die Speichereinstellungen des Browsers prüfen.",
     "fr": "Le navigateur n’autorise pas l’accès aux données locales. Vérifiez ses réglages de stockage.",
     "ru": "Браузер не разрешает доступ к локальным данным. Проверьте настройки хранилища в браузере."
+  },
+  "连接": {
+    "en": "Connection",
+    "zh-TW": "連線",
+    "ja": "接続",
+    "ko": "연결",
+    "de": "Verbindung",
+    "fr": "Connexion",
+    "ru": "Подключение"
+  },
+  "解锁状态": {
+    "en": "Lock status",
+    "zh-TW": "解鎖狀態",
+    "ja": "ロック状態",
+    "ko": "잠금 상태",
+    "de": "Sperrstatus",
+    "fr": "État du verrouillage",
+    "ru": "Состояние блокировки"
+  },
+  "连接验证": {
+    "en": "Connection check",
+    "zh-TW": "連線驗證",
+    "ja": "接続確認",
+    "ko": "연결 확인",
+    "de": "Verbindungsprüfung",
+    "fr": "Vérification de la connexion",
+    "ru": "Проверка подключения"
+  },
+  "已验证": {
+    "en": "Verified",
+    "zh-TW": "已驗證",
+    "ja": "確認済み",
+    "ko": "확인됨",
+    "de": "Geprüft",
+    "fr": "Vérifiée",
+    "ru": "Проверено"
+  },
+  "未验证": {
+    "en": "Unverified",
+    "zh-TW": "未驗證",
+    "ja": "未確認",
+    "ko": "확인 안 됨",
+    "de": "Nicht geprüft",
+    "fr": "Non vérifiée",
+    "ru": "Не проверено"
+  },
+  "连接通过，目录可读": {
+    "en": "Connected. The folder is readable.",
+    "zh-TW": "連線成功，可讀取資料夾",
+    "ja": "接続できました。フォルダを読み取れます。",
+    "ko": "연결되었습니다. 폴더를 읽을 수 있습니다.",
+    "de": "Verbindung hergestellt. Der Ordner ist lesbar.",
+    "fr": "Connexion établie. Le dossier est lisible.",
+    "ru": "Подключение установлено. Папка доступна для чтения."
+  },
+  "测试检查登录和目录读取。": {
+    "en": "The test checks sign-in and read access to the folder.",
+    "zh-TW": "測試會檢查登入和資料夾讀取權限。",
+    "ja": "ログインとフォルダの読み取りを確認します。",
+    "ko": "로그인과 폴더 읽기 권한을 확인합니다.",
+    "de": "Der Test prüft die Anmeldung und den Lesezugriff auf den Ordner.",
+    "fr": "Le test vérifie la connexion et l’accès en lecture au dossier.",
+    "ru": "Проверяются вход и доступ к папке для чтения."
+  },
+  "配置已保存，尚未同步": {
+    "en": "Settings saved. Sync has not run yet.",
+    "zh-TW": "設定已儲存，尚未同步",
+    "ja": "設定を保存しました。同期はまだ実行していません。",
+    "ko": "설정을 저장했습니다. 아직 동기화하지 않았습니다.",
+    "de": "Einstellungen gespeichert. Noch nicht synchronisiert.",
+    "fr": "Réglages enregistrés. Synchronisation en attente.",
+    "ru": "Настройки сохранены. Синхронизация ещё не выполнялась."
+  },
+  "同步": {
+    "en": "Sync",
+    "zh-TW": "同步",
+    "ja": "同期",
+    "ko": "동기화",
+    "de": "Synchronisierung",
+    "fr": "Synchronisation",
+    "ru": "Синхронизация"
+  },
+  "同步完成 · {0}": {
+    "en": "Sync complete · {0}",
+    "zh-TW": "同步完成 · {0}",
+    "ja": "同期完了 · {0}",
+    "ko": "동기화 완료 · {0}",
+    "de": "Synchronisiert · {0}",
+    "fr": "Synchronisation terminée · {0}",
+    "ru": "Синхронизация завершена · {0}"
+  },
+  "上次同步成功 · {0}": {
+    "en": "Last successful sync · {0}",
+    "zh-TW": "上次同步成功 · {0}",
+    "ja": "最後に同期した日時 · {0}",
+    "ko": "마지막 동기화 성공 · {0}",
+    "de": "Zuletzt erfolgreich synchronisiert · {0}",
+    "fr": "Dernière synchronisation réussie · {0}",
+    "ru": "Последняя успешная синхронизация · {0}"
+  },
+  "有冲突待处理": {
+    "en": "Conflicts to resolve",
+    "zh-TW": "有衝突待處理",
+    "ja": "未解決の競合",
+    "ko": "해결할 충돌",
+    "de": "Offene Konflikte",
+    "fr": "Conflits à résoudre",
+    "ru": "Конфликты для разрешения"
+  },
+  "上次成功 · {0}": {
+    "en": "Last successful sync · {0}",
+    "zh-TW": "上次成功 · {0}",
+    "ja": "前回の同期成功 · {0}",
+    "ko": "마지막 동기화 성공 · {0}",
+    "de": "Letzte erfolgreiche Synchronisierung · {0}",
+    "fr": "Dernière synchronisation réussie · {0}",
+    "ru": "Последняя успешная синхронизация · {0}"
+  },
+  "仅保存": {
+    "en": "Save only",
+    "zh-TW": "僅儲存",
+    "ja": "保存のみ",
+    "ko": "저장만",
+    "de": "Nur speichern",
+    "fr": "Enregistrer seulement",
+    "ru": "Только сохранить"
+  },
+  "使用 HTTPS 地址和应用密码。": {
+    "en": "Use an HTTPS address and an app password.",
+    "zh-TW": "使用 HTTPS 位址和應用程式密碼。",
+    "ja": "HTTPS アドレスとアプリパスワードを使用します。",
+    "ko": "HTTPS 주소와 앱 비밀번호를 사용하세요.",
+    "de": "Verwenden Sie eine HTTPS-Adresse und ein App-Passwort.",
+    "fr": "Utilisez une adresse HTTPS et un mot de passe d’application.",
+    "ru": "Используйте HTTPS-адрес и пароль приложения."
+  },
+  "保存并同步": {
+    "en": "Save and sync",
+    "zh-TW": "儲存並同步",
+    "ja": "保存して同期",
+    "ko": "저장 및 동기화",
+    "de": "Speichern und synchronisieren",
+    "fr": "Enregistrer et synchroniser",
+    "ru": "Сохранить и синхронизировать"
+  },
+  "同步已锁定": {
+    "en": "Sync locked",
+    "zh-TW": "同步已鎖定",
+    "ja": "同期はロック中",
+    "ko": "동기화 잠김",
+    "de": "Synchronisierung gesperrt",
+    "fr": "Synchronisation verrouillée",
+    "ru": "Синхронизация заблокирована"
+  },
+  "导航、设置、便笺和图片等数据用同步密码加密后，上传到所选存储。": {
+    "en": "Your shortcuts, settings, notes, and images are encrypted with your sync password and uploaded to the storage you choose.",
+    "zh-TW": "捷徑、設定、便箋和圖片等資料會用同步密碼加密，再上傳至所選儲存空間。",
+    "ja": "ショートカット、設定、メモ、画像などは同期パスワードで暗号化され、選択したストレージにアップロードされます。",
+    "ko": "바로가기, 설정, 메모, 이미지 등은 동기화 비밀번호로 암호화한 뒤 선택한 저장소에 업로드합니다.",
+    "de": "Verknüpfungen, Einstellungen, Notizen und Bilder werden mit Ihrem Sync-Passwort verschlüsselt und in den gewählten Speicher hochgeladen.",
+    "fr": "Vos raccourcis, réglages, notes et images sont chiffrés avec votre mot de passe de synchronisation, puis envoyés vers le stockage choisi.",
+    "ru": "Ярлыки, настройки, заметки и изображения шифруются паролем синхронизации и загружаются в выбранное хранилище."
+  },
+  "已通过": {
+    "en": "Passed",
+    "zh-TW": "已通過",
+    "ja": "成功",
+    "ko": "통과",
+    "de": "Bestanden",
+    "fr": "Réussi",
+    "ru": "Пройдена"
+  },
+  "应用密码": {
+    "en": "App password",
+    "zh-TW": "應用程式密碼",
+    "ja": "アプリパスワード",
+    "ko": "앱 비밀번호",
+    "de": "App-Passwort",
+    "fr": "Mot de passe d’application",
+    "ru": "Пароль приложения"
+  },
+  "待测试": {
+    "en": "Not tested",
+    "zh-TW": "待測試",
+    "ja": "未テスト",
+    "ko": "테스트 전",
+    "de": "Nicht getestet",
+    "fr": "À tester",
+    "ru": "Не проверена"
+  },
+  "服务器地址": {
+    "en": "Server address",
+    "zh-TW": "伺服器位址",
+    "ja": "サーバーアドレス",
+    "ko": "서버 주소",
+    "de": "Serveradresse",
+    "fr": "Adresse du serveur",
+    "ru": "Адрес сервера"
+  },
+  "未通过": {
+    "en": "Failed",
+    "zh-TW": "未通過",
+    "ja": "失敗",
+    "ko": "실패",
+    "de": "Fehlgeschlagen",
+    "fr": "Échec",
+    "ru": "Не пройдена"
+  },
+  "用户名": {
+    "en": "Username",
+    "zh-TW": "使用者名稱",
+    "ja": "ユーザー名",
+    "ko": "사용자 이름",
+    "de": "Benutzername",
+    "fr": "Nom d’utilisateur",
+    "ru": "Имя пользователя"
+  },
+  "目录读取": {
+    "en": "Folder access",
+    "zh-TW": "資料夾讀取",
+    "ja": "フォルダの読み取り",
+    "ko": "폴더 읽기",
+    "de": "Ordnerzugriff",
+    "fr": "Accès au dossier",
+    "ru": "Доступ к папке"
+  },
+  "至少 12 个字符。其他设备使用同一密码。密码无法找回。": {
+    "en": "Use at least 12 characters and the same password on your other devices. This password cannot be recovered.",
+    "zh-TW": "至少 12 個字元。其他裝置請用同一組密碼。密碼無法找回。",
+    "ja": "12 文字以上にしてください。他の端末でも同じパスワードを使います。パスワードは復元できません。",
+    "ko": "12자 이상 입력하세요. 다른 기기에서도 같은 비밀번호를 사용하세요. 이 비밀번호는 복구할 수 없습니다.",
+    "de": "Verwenden Sie mindestens 12 Zeichen und dasselbe Passwort auf Ihren anderen Geräten. Das Passwort lässt sich nicht wiederherstellen.",
+    "fr": "Utilisez au moins 12 caractères et le même mot de passe sur vos autres appareils. Ce mot de passe ne peut pas être récupéré.",
+    "ru": "Не менее 12 символов. Используйте этот пароль на других устройствах. Восстановить его нельзя."
+  },
+  "设置同步密码": {
+    "en": "Set a sync password",
+    "zh-TW": "設定同步密碼",
+    "ja": "同期パスワードを設定",
+    "ko": "동기화 비밀번호 설정",
+    "de": "Sync-Passwort festlegen",
+    "fr": "Définir le mot de passe de synchronisation",
+    "ru": "Задать пароль синхронизации"
+  },
+  "访问凭据加密保存在本机。隐藏密码和隐藏状态也留在本机。": {
+    "en": "Storage credentials are encrypted on this device. Your hiding password and hidden state also stay on this device.",
+    "zh-TW": "存取憑據會加密保存在這部裝置。隱藏密碼和隱藏狀態也會留在這部裝置。",
+    "ja": "接続の認証情報は端末内に暗号化して保存されます。非表示用のパスワードと非表示の状態も端末内に残ります。",
+    "ko": "저장소 인증 정보는 이 기기에 암호화해 저장합니다. 숨김 비밀번호와 숨김 상태도 이 기기에 남습니다.",
+    "de": "Die Zugangsdaten werden verschlüsselt auf diesem Gerät gespeichert. Auch Ausblendpasswort und Ausblendstatus bleiben auf dem Gerät.",
+    "fr": "Les identifiants de stockage sont chiffrés sur cet appareil. Le mot de passe et l’état de masquage y restent aussi.",
+    "ru": "Данные доступа хранятся на этом устройстве в зашифрованном виде. Пароль и состояние скрытия также остаются на устройстве."
+  },
+  "请先在服务器上创建此目录。": {
+    "en": "Create this folder on the server first.",
+    "zh-TW": "請先在伺服器上建立此資料夾。",
+    "ja": "先にサーバー上にこのフォルダを作成してください。",
+    "ko": "먼저 서버에 이 폴더를 만드세요.",
+    "de": "Erstellen Sie zuerst diesen Ordner auf dem Server.",
+    "fr": "Créez d’abord ce dossier sur le serveur.",
+    "ru": "Сначала создайте эту папку на сервере."
+  },
+  "请补填一次访问凭据。同步成功后，只需用同步密码解锁。": {
+    "en": "Enter your storage credentials once. After a successful sync, only your sync password is needed to unlock.",
+    "zh-TW": "請補填一次存取憑據。同步成功後，只需輸入同步密碼即可解鎖。",
+    "ja": "認証情報を一度入力してください。同期に成功すると、次回から同期パスワードだけでロックを解除できます。",
+    "ko": "저장소 인증 정보를 한 번 입력하세요. 동기화에 성공하면 이후에는 동기화 비밀번호만으로 잠금을 해제할 수 있습니다.",
+    "de": "Geben Sie Ihre Zugangsdaten einmal ein. Nach erfolgreicher Synchronisierung genügt zum Entsperren das Sync-Passwort.",
+    "fr": "Saisissez une fois vos identifiants de stockage. Une fois la synchronisation réussie, le mot de passe de synchronisation suffit pour déverrouiller.",
+    "ru": "Введите данные доступа один раз. После успешной синхронизации для разблокировки достаточно её пароля."
+  },
+  "连接通过，可读取目录": {
+    "en": "Connected. Folder is readable.",
+    "zh-TW": "連線成功，可讀取資料夾",
+    "ja": "接続できました。フォルダを読み取れます。",
+    "ko": "연결되었습니다. 폴더를 읽을 수 있습니다.",
+    "de": "Verbunden. Lesezugriff auf den Ordner besteht.",
+    "fr": "Connexion établie. Le dossier est accessible en lecture.",
+    "ru": "Подключено. Папка доступна для чтения."
+  },
+  "连接通过，可访问仓库": {
+    "en": "Connected. Repository is accessible.",
+    "zh-TW": "連線成功，可存取儲存庫",
+    "ja": "接続できました。リポジトリにアクセスできます。",
+    "ko": "연결되었습니다. 저장소에 접근할 수 있습니다.",
+    "de": "Verbunden. Das Repository ist zugänglich.",
+    "fr": "Connexion établie. Le dépôt est accessible.",
+    "ru": "Подключено. Репозиторий доступен."
+  },
+  "连接通过，可访问存储桶": {
+    "en": "Connected. Bucket is accessible.",
+    "zh-TW": "連線成功，可存取儲存貯體",
+    "ja": "接続できました。バケットにアクセスできます。",
+    "ko": "연결되었습니다. 버킷에 접근할 수 있습니다.",
+    "de": "Verbunden. Der Bucket ist zugänglich.",
+    "fr": "Connexion établie. Le bucket est accessible.",
+    "ru": "Подключено. Бакет доступен."
+  },
+  "仓库访问": {
+    "en": "Repository access",
+    "zh-TW": "儲存庫存取",
+    "ja": "リポジトリへのアクセス",
+    "ko": "저장소 접근",
+    "de": "Repository-Zugriff",
+    "fr": "Accès au dépôt",
+    "ru": "Доступ к репозиторию"
+  },
+  "存储桶访问": {
+    "en": "Bucket access",
+    "zh-TW": "儲存貯體存取",
+    "ja": "バケットへのアクセス",
+    "ko": "버킷 접근",
+    "de": "Bucket-Zugriff",
+    "fr": "Accès au bucket",
+    "ru": "Доступ к бакету"
+  },
+  "测试检查所选存储的读取权限。": {
+    "en": "The test checks read access to the selected storage.",
+    "zh-TW": "測試會檢查所選儲存空間的讀取權限。",
+    "ja": "選択したストレージの読み取り権限を確認します。",
+    "ko": "선택한 저장소의 읽기 권한을 확인합니다.",
+    "de": "Der Test prüft den Lesezugriff auf den gewählten Speicher.",
+    "fr": "Le test vérifie l’accès en lecture au stockage choisi.",
+    "ru": "Проверяются права на чтение в выбранном хранилище."
+  },
+  "选择存储": {
+    "en": "Choose storage",
+    "zh-TW": "選擇儲存空間",
+    "ja": "ストレージを選択",
+    "ko": "저장소 선택",
+    "de": "Speicher wählen",
+    "fr": "Choisir un stockage",
+    "ru": "Выбрать хранилище"
+  },
+  "选择应用于整组内容，下次同步时上传。": {
+    "en": "Your choice applies to the whole group and is uploaded on the next sync.",
+    "zh-TW": "選擇會套用至整組內容，下次同步時上傳。",
+    "ja": "選択はグループ全体に適用され、次回の同期でアップロードされます。",
+    "ko": "선택은 그룹 전체에 적용되며 다음 동기화 때 업로드됩니다.",
+    "de": "Die Auswahl gilt für die gesamte Gruppe und wird bei der nächsten Synchronisierung hochgeladen.",
+    "fr": "Votre choix s’applique à tout le groupe et sera envoyé à la prochaine synchronisation.",
+    "ru": "Выбор применяется ко всей группе и будет отправлен при следующей синхронизации."
+  },
+  "配置已更新": {
+    "en": "Settings updated",
+    "zh-TW": "設定已更新",
+    "ja": "設定を更新しました",
+    "ko": "설정이 업데이트되었습니다",
+    "de": "Einstellungen aktualisiert",
+    "fr": "Réglages mis à jour",
+    "ru": "Настройки обновлены"
+  },
+  "采用云端会删除本机这组内容。": {
+    "en": "Using the cloud copy deletes this group on this device.",
+    "zh-TW": "採用雲端會刪除本機這組內容。",
+    "ja": "クラウド側を採用すると、この端末からグループが削除されます。",
+    "ko": "클라우드 사본을 사용하면 이 기기에서 이 그룹이 삭제됩니다.",
+    "de": "Mit der Cloud-Kopie wird diese Gruppe auf dem Gerät gelöscht.",
+    "fr": "Utiliser la copie distante supprime ce groupe sur cet appareil.",
+    "ru": "Облачная копия удалит эту группу с устройства."
+  },
+  "登录失败。请检查用户名和应用密码。": {
+    "en": "Couldn’t sign in. Check the username and app password.",
+    "zh-TW": "登入失敗。請檢查使用者名稱和應用程式密碼。",
+    "ja": "ログインできませんでした。ユーザー名とアプリパスワードを確認してください。",
+    "ko": "로그인에 실패했습니다. 사용자 이름과 앱 비밀번호를 확인하세요.",
+    "de": "Anmeldung fehlgeschlagen. Prüfen Sie Benutzername und App-Passwort.",
+    "fr": "Échec de la connexion. Vérifiez le nom d’utilisateur et le mot de passe d’application.",
+    "ru": "Не удалось войти. Проверьте имя пользователя и пароль приложения."
+  },
+  "无法访问此目录。请检查目录权限。": {
+    "en": "Can’t access this folder. Check its permissions.",
+    "zh-TW": "無法存取此資料夾。請檢查資料夾權限。",
+    "ja": "フォルダにアクセスできません。フォルダの権限を確認してください。",
+    "ko": "이 폴더에 접근할 수 없습니다. 폴더 권한을 확인하세요.",
+    "de": "Zugriff auf den Ordner fehlgeschlagen. Prüfen Sie die Ordnerberechtigungen.",
+    "fr": "Impossible d’accéder au dossier. Vérifiez ses autorisations.",
+    "ru": "Не удалось открыть папку. Проверьте права доступа к ней."
+  },
+  "无法写入此目录。请检查目录的写入权限。": {
+    "en": "Can’t write to this folder. Check its write permissions.",
+    "zh-TW": "無法寫入此資料夾。請檢查資料夾的寫入權限。",
+    "ja": "フォルダに書き込めません。書き込み権限を確認してください。",
+    "ko": "이 폴더에 쓸 수 없습니다. 쓰기 권한을 확인하세요.",
+    "de": "Schreiben in den Ordner fehlgeschlagen. Prüfen Sie die Schreibrechte.",
+    "fr": "Impossible d’écrire dans ce dossier. Vérifiez les droits d’écriture.",
+    "ru": "Не удалось записать в папку. Проверьте права на запись."
+  },
+  "找不到保存目录。请检查服务器地址和目录。": {
+    "en": "Storage folder not found. Check the server address and folder.",
+    "zh-TW": "找不到儲存資料夾。請檢查伺服器位址和資料夾。",
+    "ja": "保存先のフォルダが見つかりません。サーバーアドレスとフォルダを確認してください。",
+    "ko": "저장 폴더를 찾을 수 없습니다. 서버 주소와 폴더를 확인하세요.",
+    "de": "Speicherordner nicht gefunden. Prüfen Sie Serveradresse und Ordner.",
+    "fr": "Dossier de stockage introuvable. Vérifiez l’adresse du serveur et le dossier.",
+    "ru": "Папка хранения не найдена. Проверьте адрес сервера и папку."
+  },
+  "无法读取同步文件。请检查保存目录和权限。": {
+    "en": "Can’t read sync files. Check the storage folder and its permissions.",
+    "zh-TW": "無法讀取同步檔案。請檢查儲存資料夾和權限。",
+    "ja": "同期ファイルを読み取れません。保存先と権限を確認してください。",
+    "ko": "동기화 파일을 읽을 수 없습니다. 저장 폴더와 권한을 확인하세요.",
+    "de": "Synchronisierungsdateien können nicht gelesen werden. Prüfen Sie Speicherordner und Berechtigungen.",
+    "fr": "Impossible de lire les fichiers de synchronisation. Vérifiez le dossier et les autorisations.",
+    "ru": "Не удалось прочитать файлы синхронизации. Проверьте папку хранения и права доступа."
+  },
+  "登录失败。请检查访问令牌。": {
+    "en": "Couldn’t sign in. Check the access token.",
+    "zh-TW": "登入失敗。請檢查存取權杖。",
+    "ja": "ログインできませんでした。アクセストークンを確認してください。",
+    "ko": "로그인에 실패했습니다. 액세스 토큰을 확인하세요.",
+    "de": "Anmeldung fehlgeschlagen. Prüfen Sie das Zugriffstoken.",
+    "fr": "Échec de la connexion. Vérifiez le jeton d’accès.",
+    "ru": "Не удалось войти. Проверьте токен доступа."
+  },
+  "登录失败。请检查访问密钥。": {
+    "en": "Couldn’t sign in. Check the access keys.",
+    "zh-TW": "登入失敗。請檢查存取金鑰。",
+    "ja": "ログインできませんでした。アクセスキーを確認してください。",
+    "ko": "로그인에 실패했습니다. 액세스 키를 확인하세요.",
+    "de": "Anmeldung fehlgeschlagen. Prüfen Sie die Zugriffsschlüssel.",
+    "fr": "Échec de la connexion. Vérifiez les clés d’accès.",
+    "ru": "Не удалось войти. Проверьте ключи доступа."
+  },
+  "访问被拒绝。请检查令牌权限。": {
+    "en": "Access denied. Check the token’s permissions.",
+    "zh-TW": "存取遭拒。請檢查權杖權限。",
+    "ja": "アクセスが拒否されました。トークンの権限を確認してください。",
+    "ko": "접근이 거부되었습니다. 토큰 권한을 확인하세요.",
+    "de": "Zugriff verweigert. Prüfen Sie die Berechtigungen des Tokens.",
+    "fr": "Accès refusé. Vérifiez les autorisations du jeton.",
+    "ru": "Доступ запрещён. Проверьте разрешения токена."
+  },
+  "访问被拒绝。请检查访问密钥的权限。": {
+    "en": "Access denied. Check the access keys’ permissions.",
+    "zh-TW": "存取遭拒。請檢查存取金鑰的權限。",
+    "ja": "アクセスが拒否されました。アクセスキーの権限を確認してください。",
+    "ko": "접근이 거부되었습니다. 액세스 키 권한을 확인하세요.",
+    "de": "Zugriff verweigert. Prüfen Sie die Berechtigungen der Zugriffsschlüssel.",
+    "fr": "Accès refusé. Vérifiez les autorisations des clés d’accès.",
+    "ru": "Доступ запрещён. Проверьте разрешения ключей доступа."
+  },
+  "无法访问仓库或分支。请检查名称和令牌权限。": {
+    "en": "Can’t access the repository or branch. Check the names and token permissions.",
+    "zh-TW": "無法存取儲存庫或分支。請檢查名稱和權杖權限。",
+    "ja": "リポジトリまたはブランチにアクセスできません。名前とトークンの権限を確認してください。",
+    "ko": "저장소 또는 브랜치에 접근할 수 없습니다. 이름과 토큰 권한을 확인하세요.",
+    "de": "Zugriff auf Repository oder Branch fehlgeschlagen. Prüfen Sie die Namen und Token-Berechtigungen.",
+    "fr": "Impossible d’accéder au dépôt ou à la branche. Vérifiez les noms et les autorisations du jeton.",
+    "ru": "Не удалось открыть репозиторий или ветку. Проверьте имена и разрешения токена."
+  },
+  "无法访问存储桶。请检查名称和权限。": {
+    "en": "Can’t access the bucket. Check its name and permissions.",
+    "zh-TW": "無法存取儲存貯體。請檢查名稱和權限。",
+    "ja": "バケットにアクセスできません。名前と権限を確認してください。",
+    "ko": "버킷에 접근할 수 없습니다. 이름과 권한을 확인하세요.",
+    "de": "Zugriff auf den Bucket fehlgeschlagen. Prüfen Sie den Namen und die Berechtigungen.",
+    "fr": "Impossible d’accéder au bucket. Vérifiez le nom et les autorisations.",
+    "ru": "Не удалось открыть бакет. Проверьте имя и права доступа."
+  },
+  "无法访问同步文件。请检查存储配置和权限。": {
+    "en": "Can’t access sync files. Check your storage settings and permissions.",
+    "zh-TW": "無法存取同步檔案。請檢查儲存設定和權限。",
+    "ja": "同期ファイルにアクセスできません。ストレージの設定と権限を確認してください。",
+    "ko": "동기화 파일에 접근할 수 없습니다. 저장소 설정과 권한을 확인하세요.",
+    "de": "Zugriff auf die Synchronisierungsdateien fehlgeschlagen. Prüfen Sie Speichereinstellungen und Berechtigungen.",
+    "fr": "Impossible d’accéder aux fichiers de synchronisation. Vérifiez les réglages du stockage et les autorisations.",
+    "ru": "Не удалось открыть файлы синхронизации. Проверьте настройки хранилища и права доступа."
+  },
+  "存储服务暂时无法完成请求。请稍后重试。": {
+    "en": "The storage service couldn’t complete the request. Try again later.",
+    "zh-TW": "儲存服務暫時無法完成請求。請稍後再試。",
+    "ja": "ストレージサービスがリクエストを処理できませんでした。しばらくしてからお試しください。",
+    "ko": "저장소 서비스가 요청을 처리하지 못했습니다. 잠시 후 다시 시도하세요.",
+    "de": "Der Speicherdienst konnte die Anfrage nicht abschließen. Versuchen Sie es später erneut.",
+    "fr": "Le service de stockage n’a pas pu traiter la demande. Réessayez plus tard.",
+    "ru": "Хранилище не смогло выполнить запрос. Повторите попытку позже."
+  },
+  "连接超时。请稍后重试。": {
+    "en": "The connection timed out. Try again later.",
+    "zh-TW": "連線逾時。請稍後再試。",
+    "ja": "接続がタイムアウトしました。しばらくしてからお試しください。",
+    "ko": "연결 시간이 초과되었습니다. 잠시 후 다시 시도하세요.",
+    "de": "Zeitlimit für die Verbindung überschritten. Versuchen Sie es später erneut.",
+    "fr": "Le délai de connexion est dépassé. Réessayez plus tard.",
+    "ru": "Истекло время ожидания подключения. Повторите попытку позже."
+  },
+  "无法连接 WebDAV。请检查网络和服务器地址。": {
+    "en": "Can’t connect to WebDAV. Check your network and server address.",
+    "zh-TW": "無法連線至 WebDAV。請檢查網路和伺服器位址。",
+    "ja": "WebDAV に接続できません。ネットワークとサーバーアドレスを確認してください。",
+    "ko": "WebDAV에 연결할 수 없습니다. 네트워크와 서버 주소를 확인하세요.",
+    "de": "Keine Verbindung zu WebDAV. Prüfen Sie Netzwerk und Serveradresse.",
+    "fr": "Impossible de se connecter à WebDAV. Vérifiez le réseau et l’adresse du serveur.",
+    "ru": "Не удалось подключиться к WebDAV. Проверьте сеть и адрес сервера."
+  },
+  "网络已断开。请联网后重试。": {
+    "en": "You’re offline. Reconnect and try again.",
+    "zh-TW": "網路已中斷。請重新連線後再試。",
+    "ja": "ネットワークに接続されていません。再接続してからお試しください。",
+    "ko": "네트워크 연결이 끊겼습니다. 다시 연결한 뒤 시도하세요.",
+    "de": "Sie sind offline. Stellen Sie die Verbindung wieder her und versuchen Sie es erneut.",
+    "fr": "Vous êtes hors ligne. Reconnectez-vous, puis réessayez.",
+    "ru": "Нет подключения к сети. Подключитесь и повторите попытку."
+  },
+  "无法解密云端数据。请确认使用了原来的同步密码。": {
+    "en": "Can’t decrypt the cloud data. Check that you’re using the original sync password.",
+    "zh-TW": "無法解密雲端資料。請確認使用原本的同步密碼。",
+    "ja": "クラウドのデータを復号できません。元の同期パスワードを使用しているか確認してください。",
+    "ko": "클라우드 데이터를 복호화할 수 없습니다. 기존 동기화 비밀번호를 사용했는지 확인하세요.",
+    "de": "Die Cloud-Daten konnten nicht entschlüsselt werden. Prüfen Sie, ob Sie das ursprüngliche Sync-Passwort verwenden.",
+    "fr": "Impossible de déchiffrer les données distantes. Vérifiez que vous utilisez le mot de passe de synchronisation d’origine.",
+    "ru": "Не удалось расшифровать данные в облаке. Убедитесь, что используете исходный пароль синхронизации."
+  },
+  "测试通过": {
+    "en": "Test passed",
+    "zh-TW": "測試通過",
+    "ja": "テストに成功",
+    "ko": "테스트 통과",
+    "de": "Test bestanden",
+    "fr": "Test réussi",
+    "ru": "Проверка пройдена"
+  },
+  "测试失败": {
+    "en": "Test failed",
+    "zh-TW": "測試失敗",
+    "ja": "テストに失敗",
+    "ko": "테스트 실패",
+    "de": "Test fehlgeschlagen",
+    "fr": "Échec du test",
+    "ru": "Проверка не пройдена"
+  },
+  "同步成功": {
+    "en": "Sync succeeded",
+    "zh-TW": "同步成功",
+    "ja": "同期に成功",
+    "ko": "동기화 성공",
+    "de": "Synchronisierung erfolgreich",
+    "fr": "Synchronisation réussie",
+    "ru": "Синхронизация выполнена"
+  },
+  "同步记录": {
+    "en": "Sync history",
+    "zh-TW": "同步記錄",
+    "ja": "同期履歴",
+    "ko": "동기화 기록",
+    "de": "Synchronisierungsverlauf",
+    "fr": "Historique de synchronisation",
+    "ru": "История синхронизации"
+  },
+  "发现 {0} 项冲突": {
+    "en": "Conflicts found: {0}",
+    "zh-TW": "發現 {0} 項衝突",
+    "ja": "競合を {0} 件検出",
+    "ko": "충돌 {0}건 발견",
+    "de": "Konflikte gefunden: {0}",
+    "fr": "Conflits détectés : {0}",
+    "ru": "Обнаружено конфликтов: {0}"
+  },
+  "以前发现 · {0} 项冲突": {
+    "en": "Found earlier · {0} conflicts",
+    "zh-TW": "先前發現 · {0} 項衝突",
+    "ja": "以前に検出 · 競合 {0} 件",
+    "ko": "이전에 발견 · 충돌 {0}건",
+    "de": "Früher gefunden · {0} Konflikte",
+    "fr": "Détectés auparavant · {0} conflits",
+    "ru": "Обнаружены ранее · конфликтов: {0}"
+  },
+  "发现于 {0} · {1} 项冲突": {
+    "en": "Found on {0} · {1} conflicts",
+    "zh-TW": "發現於 {0} · {1} 項衝突",
+    "ja": "{0} に検出 · 競合 {1} 件",
+    "ko": "{0}에 발견 · 충돌 {1}건",
+    "de": "Gefunden am {0} · {1} Konflikte",
+    "fr": "Détectés le {0} · {1} conflits",
+    "ru": "Обнаружены {0} · конфликтов: {1}"
+  },
+  "查看对比": {
+    "en": "Compare",
+    "zh-TW": "查看比較",
+    "ja": "比較を見る",
+    "ko": "비교 보기",
+    "de": "Vergleichen",
+    "fr": "Comparer",
+    "ru": "Сравнить"
+  },
+  "收起对比": {
+    "en": "Hide comparison",
+    "zh-TW": "收起比較",
+    "ja": "比較を閉じる",
+    "ko": "비교 닫기",
+    "de": "Vergleich schließen",
+    "fr": "Masquer la comparaison",
+    "ru": "Скрыть сравнение"
+  },
+  "无法读取冲突内容，请重试。": {
+    "en": "Could not load the conflict. Try again.",
+    "zh-TW": "無法讀取衝突內容，請重試。",
+    "ja": "競合の内容を読み込めませんでした。もう一度お試しください。",
+    "ko": "충돌 내용을 읽을 수 없습니다. 다시 시도하세요.",
+    "de": "Der Konflikt konnte nicht geladen werden. Versuchen Sie es erneut.",
+    "fr": "Impossible de charger le conflit. Réessayez.",
+    "ru": "Не удалось загрузить конфликт. Повторите попытку."
+  },
+  "输入同步密码后，可查看并处理冲突。": {
+    "en": "Enter the sync password to review and resolve conflicts.",
+    "zh-TW": "輸入同步密碼後，即可查看並處理衝突。",
+    "ja": "同期パスワードを入力すると、競合の確認と解決ができます。",
+    "ko": "동기화 비밀번호를 입력해 충돌을 확인하고 해결하세요.",
+    "de": "Geben Sie das Synchronisierungspasswort ein, um Konflikte zu prüfen und zu lösen.",
+    "fr": "Saisissez le mot de passe de synchronisation pour consulter et résoudre les conflits.",
+    "ru": "Введите пароль синхронизации, чтобы просмотреть и разрешить конфликты."
+  },
+  "两边的图片文件相同，记录信息不同。": {
+    "en": "The image files match. The saved details differ.",
+    "zh-TW": "兩邊的圖片檔案相同，記錄資訊不同。",
+    "ja": "画像ファイルは同じですが、保存された情報が異なります。",
+    "ko": "이미지 파일은 같지만 저장된 정보가 다릅니다.",
+    "de": "Die Bilddateien sind gleich. Die gespeicherten Angaben unterscheiden sich.",
+    "fr": "Les fichiers image sont identiques. Les informations enregistrées diffèrent.",
+    "ru": "Файлы изображений совпадают. Сохранённые сведения различаются."
+  },
+  "本机和云端的图片文件不同。": {
+    "en": "The image files on this device and in storage differ.",
+    "zh-TW": "本機和雲端的圖片檔案不同。",
+    "ja": "この端末とクラウドの画像ファイルが異なります。",
+    "ko": "이 기기와 클라우드의 이미지 파일이 다릅니다.",
+    "de": "Die Bilddateien auf diesem Gerät und im Speicher unterscheiden sich.",
+    "fr": "Les fichiers image sur cet appareil et dans le stockage diffèrent.",
+    "ru": "Файлы изображений на устройстве и в хранилище различаются."
+  },
+  "云端": {
+    "en": "Cloud storage",
+    "zh-TW": "雲端",
+    "ja": "クラウド",
+    "ko": "클라우드",
+    "de": "Cloudspeicher",
+    "fr": "Stockage distant",
+    "ru": "Облачное хранилище"
+  },
+  "更新于 {0}": {
+    "en": "Updated {0}",
+    "zh-TW": "更新於 {0}",
+    "ja": "更新日時 {0}",
+    "ko": "업데이트 {0}",
+    "de": "Aktualisiert am {0}",
+    "fr": "Mis à jour le {0}",
+    "ru": "Обновлено {0}"
+  },
+  "此处没有这项内容。": {
+    "en": "This item is missing here.",
+    "zh-TW": "此處沒有這項內容。",
+    "ja": "こちらにはこの項目がありません。",
+    "ko": "이쪽에는 이 항목이 없습니다.",
+    "de": "Dieses Element fehlt hier.",
+    "fr": "Cet élément est absent ici.",
+    "ru": "Здесь этого элемента нет."
+  },
+  "查看内容详情": {
+    "en": "View content details",
+    "zh-TW": "查看內容詳情",
+    "ja": "内容の詳細を見る",
+    "ko": "내용 세부 정보 보기",
+    "de": "Inhaltsdetails anzeigen",
+    "fr": "Afficher les détails du contenu",
+    "ru": "Показать сведения о содержимом"
+  },
+  "两边的图片文件相同。": {
+    "en": "The image files match.",
+    "zh-TW": "兩邊的圖片檔案相同。",
+    "ja": "画像ファイルは同じです。",
+    "ko": "이미지 파일이 같습니다.",
+    "de": "Die Bilddateien sind gleich.",
+    "fr": "Les fichiers image sont identiques.",
+    "ru": "Файлы изображений совпадают."
+  },
+  "无法预览这张图片。": {
+    "en": "Could not preview this image.",
+    "zh-TW": "無法預覽這張圖片。",
+    "ja": "この画像をプレビューできません。",
+    "ko": "이 이미지를 미리 볼 수 없습니다.",
+    "de": "Für dieses Bild ist keine Vorschau verfügbar.",
+    "fr": "Impossible d’afficher un aperçu de cette image.",
+    "ru": "Не удалось показать предпросмотр изображения."
+  },
+  "有冲突": {
+    "en": "Conflict",
+    "zh-TW": "有衝突",
+    "ja": "競合あり",
+    "ko": "충돌 있음",
+    "de": "Konflikt",
+    "fr": "Conflit",
+    "ru": "Конфликт"
+  },
+  "选择同步版本": {
+    "en": "Choose sync version",
+    "zh-TW": "選擇同步版本",
+    "ja": "同期する内容を選択",
+    "ko": "동기화 버전 선택",
+    "de": "Synchronisierungsversion wählen",
+    "fr": "Choisir la version à synchroniser",
+    "ru": "Выбрать версию для синхронизации"
+  },
+  "输入同步密码后，可选择要保留的版本。": {
+    "en": "Enter the sync password to choose which version to keep.",
+    "zh-TW": "輸入同步密碼後，即可選擇要保留的版本。",
+    "ja": "同期パスワードを入力して、残す内容を選択してください。",
+    "ko": "동기화 비밀번호를 입력해 보관할 버전을 선택하세요.",
+    "de": "Geben Sie das Synchronisierungspasswort ein, um die zu behaltende Version auszuwählen.",
+    "fr": "Saisissez le mot de passe de synchronisation pour choisir la version à conserver.",
+    "ru": "Введите пароль синхронизации, чтобы выбрать сохраняемую версию."
+  },
+  "选择保留整份本机或云端数据。另一端的同步内容会被替换。": {
+    "en": "Choose the complete data from this device or cloud storage. It will replace the synced content on the other side.",
+    "zh-TW": "選擇保留整份本機或雲端資料。另一端的同步內容會被取代。",
+    "ja": "この端末かクラウドの全データを選択してください。もう一方の同期データは置き換わります。",
+    "ko": "이 기기 또는 클라우드의 전체 데이터를 선택하세요. 반대쪽의 동기화된 내용이 대체됩니다.",
+    "de": "Wählen Sie alle Daten dieses Geräts oder des Cloudspeichers. Die synchronisierten Inhalte der anderen Seite werden ersetzt.",
+    "fr": "Choisissez toutes les données de cet appareil ou du stockage distant. Le contenu synchronisé de l’autre côté sera remplacé.",
+    "ru": "Выберите все данные на устройстве или в хранилище. Синхронизированное содержимое другой стороны будет заменено."
+  },
+  "自动同步已开启。": {
+    "en": "Automatic sync is on.",
+    "zh-TW": "自動同步已開啟。",
+    "ja": "自動同期はオンです。",
+    "ko": "자동 동기화가 켜져 있습니다.",
+    "de": "Die automatische Synchronisierung ist aktiviert.",
+    "fr": "La synchronisation automatique est activée.",
+    "ru": "Автоматическая синхронизация включена."
+  },
+  "同步在浏览器后台运行。重启浏览器后，解锁即可继续。": {
+    "en": "Sync runs in the browser background. Unlock after restarting the browser to resume.",
+    "zh-TW": "同步會在瀏覽器背景執行。重新啟動瀏覽器後，解鎖即可繼續。",
+    "ja": "同期はブラウザーのバックグラウンドで実行します。再起動後はロックを解除すると再開します。",
+    "ko": "동기화는 브라우저 백그라운드에서 실행됩니다. 브라우저를 다시 시작한 뒤 잠금을 해제하면 계속됩니다.",
+    "de": "Die Synchronisierung läuft im Hintergrund des Browsers. Entsperren Sie sie nach einem Browserneustart, um fortzufahren.",
+    "fr": "La synchronisation se fait en arrière-plan. Après avoir relancé le navigateur, déverrouillez-la pour reprendre.",
+    "ru": "Синхронизация выполняется в фоне. Чтобы продолжить после перезапуска браузера, разблокируйте её."
+  },
+  "随机壁纸": {
+    "en": "Random Wallpaper",
+    "zh-TW": "隨機桌布",
+    "ja": "ランダム壁紙",
+    "ko": "무작위 배경화면",
+    "de": "Zufälliges Hintergrundbild",
+    "fr": "Fond d’écran aléatoire",
+    "ru": "Случайные обои"
+  },
+  "从 Bing 或 Wikimedia Commons 更换桌面背景。": {
+    "en": "Change your background with images from Bing or Wikimedia Commons.",
+    "zh-TW": "從 Bing 或 Wikimedia Commons 更換桌面背景。",
+    "ja": "Bing または Wikimedia Commons の画像を壁紙にします。",
+    "ko": "Bing 또는 Wikimedia Commons의 이미지로 배경을 바꾸세요.",
+    "de": "Hintergrundbilder von Bing oder Wikimedia Commons verwenden.",
+    "fr": "Changez de fond d’écran avec Bing ou Wikimedia Commons.",
+    "ru": "Выбирайте обои из Bing или Wikimedia Commons."
+  },
+  "壁纸源": {
+    "en": "Wallpaper source",
+    "zh-TW": "桌布來源",
+    "ja": "壁紙の提供元",
+    "ko": "배경화면 출처",
+    "de": "Bildquelle",
+    "fr": "Source du fond d’écran",
+    "ru": "Источник обоев"
+  },
+  "设为背景": {
+    "en": "Set background",
+    "zh-TW": "設為背景",
+    "ja": "壁紙に設定",
+    "ko": "배경으로 설정",
+    "de": "Als Hintergrund festlegen",
+    "fr": "Définir comme fond d’écran",
+    "ru": "Установить как обои"
+  },
+  "换一张": {
+    "en": "Shuffle",
+    "zh-TW": "換一張",
+    "ja": "別の画像",
+    "ko": "다른 이미지",
+    "de": "Neues Bild",
+    "fr": "Changer d’image",
+    "ru": "Сменить изображение"
+  },
+  "关闭随机壁纸": {
+    "en": "Turn off Random Wallpaper",
+    "zh-TW": "關閉隨機桌布",
+    "ja": "ランダム壁紙をオフ",
+    "ko": "무작위 배경화면 끄기",
+    "de": "Zufällige Hintergrundbilder deaktivieren",
+    "fr": "Désactiver le fond d’écran aléatoire",
+    "ru": "Отключить случайные обои"
+  },
+  "已关闭随机壁纸。": {
+    "en": "Random Wallpaper is off.",
+    "zh-TW": "已關閉隨機桌布。",
+    "ja": "ランダム壁紙をオフにしました。",
+    "ko": "무작위 배경화면이 꺼졌습니다.",
+    "de": "Zufällige Hintergrundbilder sind deaktiviert.",
+    "fr": "Le fond d’écran aléatoire est désactivé.",
+    "ru": "Случайные обои отключены."
+  },
+  "正在更新壁纸…": {
+    "en": "Updating wallpaper…",
+    "zh-TW": "正在更新桌布…",
+    "ja": "壁紙を更新中…",
+    "ko": "배경화면 업데이트 중…",
+    "de": "Hintergrundbild wird aktualisiert…",
+    "fr": "Mise à jour du fond d’écran…",
+    "ru": "Обновление обоев…"
+  },
+  "已更换壁纸。": {
+    "en": "Wallpaper updated.",
+    "zh-TW": "已更換桌布。",
+    "ja": "壁紙を変更しました。",
+    "ko": "배경화면이 변경되었습니다.",
+    "de": "Hintergrundbild aktualisiert.",
+    "fr": "Fond d’écran mis à jour.",
+    "ru": "Обои обновлены."
+  },
+  "未获得壁纸源的访问权限。": {
+    "en": "Access to the wallpaper source was denied.",
+    "zh-TW": "未取得桌布來源的存取權限。",
+    "ja": "壁紙の提供元へのアクセスが許可されていません。",
+    "ko": "배경화면 출처에 대한 접근 권한이 없습니다.",
+    "de": "Der Zugriff auf die Bildquelle wurde verweigert.",
+    "fr": "L’accès à la source du fond d’écran a été refusé.",
+    "ru": "Нет доступа к источнику обоев."
+  },
+  "暂时无法更新壁纸，请重试。": {
+    "en": "Could not update the wallpaper. Try again.",
+    "zh-TW": "暫時無法更新桌布，請重試。",
+    "ja": "壁紙を更新できませんでした。もう一度お試しください。",
+    "ko": "배경화면을 업데이트할 수 없습니다. 다시 시도하세요.",
+    "de": "Das Hintergrundbild konnte nicht aktualisiert werden. Versuchen Sie es erneut.",
+    "fr": "Impossible de mettre à jour le fond d’écran. Réessayez.",
+    "ru": "Не удалось обновить обои. Повторите попытку."
+  },
+  "此备份的壁纸无法恢复，将使用随机壁纸。": {
+    "en": "The wallpaper in this backup could not be restored. Random Wallpaper will be used.",
+    "zh-TW": "此備份的桌布無法還原，將使用隨機桌布。",
+    "ja": "バックアップの壁紙を復元できないため、ランダム壁紙を使用します。",
+    "ko": "이 백업의 배경화면을 복원할 수 없어 무작위 배경화면을 사용합니다.",
+    "de": "Das Hintergrundbild der Sicherung konnte nicht wiederhergestellt werden. Ein zufälliges Bild wird verwendet.",
+    "fr": "Le fond d’écran de cette sauvegarde n’a pas pu être restauré. Un fond aléatoire sera utilisé.",
+    "ru": "Не удалось восстановить обои из резервной копии. Будут использованы случайные обои."
+  },
+  "启用随机壁纸后，会连接所选壁纸源。关闭随机壁纸或改用颜色背景可停止这些请求。": {
+    "en": "Random Wallpaper connects to the source you select. Turn it off or choose a solid color to stop requests.",
+    "zh-TW": "啟用隨機桌布後，會連線至所選來源。關閉隨機桌布或改用純色背景可停止請求。",
+    "ja": "ランダム壁紙をオンにすると、選択した提供元に接続します。オフにするか単色を選ぶと通信を停止します。",
+    "ko": "무작위 배경화면은 선택한 출처에 연결합니다. 기능을 끄거나 단색으로 바꾸면 요청이 중지됩니다.",
+    "de": "Zufällige Hintergrundbilder verbinden sich mit der gewählten Quelle. Deaktivieren Sie sie oder wählen Sie eine Farbe, um Anfragen zu stoppen.",
+    "fr": "Le fond d’écran aléatoire se connecte à la source choisie. Désactivez-le ou choisissez une couleur unie pour arrêter les requêtes.",
+    "ru": "Случайные обои подключаются к выбранному источнику. Отключите их или выберите сплошной цвет, чтобы остановить запросы."
+  },
+  "用于随机壁纸。": {
+    "en": "Used for Random Wallpaper.",
+    "zh-TW": "用於隨機桌布。",
+    "ja": "ランダム壁紙に使用します。",
+    "ko": "무작위 배경화면에 사용합니다.",
+    "de": "Wird für zufällige Hintergrundbilder verwendet.",
+    "fr": "Utilisé pour le fond d’écran aléatoire.",
+    "ru": "Используется для случайных обоев."
+  },
+  "后台任务": {
+    "en": "Background tasks",
+    "zh-TW": "背景工作",
+    "ja": "バックグラウンド処理",
+    "ko": "백그라운드 작업",
+    "de": "Hintergrundaufgaben",
+    "fr": "Tâches en arrière-plan",
+    "ru": "Фоновые задачи"
+  },
+  "接续后台同步并清理旧版时钟提醒。": {
+    "en": "Resumes background sync and clears legacy clock reminders.",
+    "zh-TW": "接續背景同步並清除舊版時鐘提醒。",
+    "ja": "バックグラウンド同期を再開し、旧バージョンの時計の通知を削除します。",
+    "ko": "백그라운드 동기화를 재개하고 이전 시계 알림을 지웁니다.",
+    "de": "Setzt die Synchronisierung im Hintergrund fort und entfernt alte Uhrenerinnerungen.",
+    "fr": "Reprend la synchronisation en arrière-plan et efface les anciens rappels d’horloge.",
+    "ru": "Возобновляет фоновую синхронизацию и удаляет старые напоминания часов."
+  },
+  "旧同步索引已清理。历史数据块仍保留。": {
+    "en": "Old sync indexes were removed. Historical data blocks are retained.",
+    "zh-TW": "舊同步索引已清除。歷史資料區塊仍保留。",
+    "ja": "古い同期インデックスを削除しました。過去のデータブロックは保持されます。",
+    "ko": "이전 동기화 인덱스를 삭제했습니다. 이전 데이터 블록은 유지됩니다.",
+    "de": "Alte Synchronisierungsindizes wurden entfernt. Frühere Datenblöcke bleiben erhalten.",
+    "fr": "Les anciens index de synchronisation ont été supprimés. Les blocs de données historiques sont conservés.",
+    "ru": "Старые индексы синхронизации удалены. Исторические блоки данных сохранены."
+  },
+  "当前存储服务暂不支持安全清理旧版本。": {
+    "en": "Safe cleanup of old versions is unavailable for this storage service.",
+    "zh-TW": "目前的儲存服務暫不支援安全清除舊版本。",
+    "ja": "このストレージサービスでは古いバージョンを安全に削除できません。",
+    "ko": "현재 저장소 서비스에서는 이전 버전을 안전하게 정리할 수 없습니다.",
+    "de": "Dieser Speicherdienst unterstützt das sichere Entfernen alter Versionen noch nicht.",
+    "fr": "Ce service de stockage ne permet pas de supprimer les anciennes versions en toute sécurité.",
+    "ru": "Этот сервис пока не поддерживает безопасное удаление старых версий."
+  },
+  "未能确认旧索引已清理。": {
+    "en": "Could not confirm that old indexes were removed.",
+    "zh-TW": "未能確認舊索引已清除。",
+    "ja": "古いインデックスが削除されたことを確認できませんでした。",
+    "ko": "이전 인덱스가 삭제되었는지 확인하지 못했습니다.",
+    "de": "Das Entfernen der alten Indizes konnte nicht bestätigt werden.",
+    "fr": "La suppression des anciens index n’a pas pu être confirmée.",
+    "ru": "Не удалось подтвердить удаление старых индексов."
+  },
+  "旧版本等待验证后清理。": {
+    "en": "Old versions will be cleaned up after verification.",
+    "zh-TW": "舊版本等待驗證後清除。",
+    "ja": "検証後に古いバージョンを削除します。",
+    "ko": "확인 후 이전 버전을 정리합니다.",
+    "de": "Alte Versionen werden nach der Überprüfung bereinigt.",
+    "fr": "Les anciennes versions seront nettoyées après vérification.",
+    "ru": "Старые версии будут очищены после проверки."
+  },
+  "自动更换间隔": {
+    "en": "Change wallpaper every",
+    "zh-TW": "自動更換間隔",
+    "ja": "壁紙の変更間隔",
+    "ko": "자동 변경 간격",
+    "de": "Hintergrund wechseln alle",
+    "fr": "Changer le fond d’écran tous les",
+    "ru": "Интервал смены обоев"
+  },
+  "已清理云端旧同步文件。": {
+    "en": "Old sync files removed from cloud storage.",
+    "zh-TW": "已清除雲端舊同步檔案。",
+    "ja": "クラウドの古い同期ファイルを削除しました。",
+    "ko": "클라우드의 이전 동기화 파일을 정리했습니다.",
+    "de": "Alte Synchronisierungsdateien wurden aus dem Cloudspeicher entfernt.",
+    "fr": "Les anciens fichiers de synchronisation ont été supprimés du stockage distant.",
+    "ru": "Старые файлы синхронизации удалены из облака."
+  },
+  "以本地为准会替换 GitHub 上的同步数据。其他设备需更新 Covelet 后才能继续同步。": {
+    "en": "Keeping this device’s version replaces the synced data on GitHub. Update Covelet on your other devices to continue syncing.",
+    "zh-TW": "以本機為準會取代 GitHub 上的同步資料。其他裝置需更新 Covelet 才能繼續同步。",
+    "ja": "この端末の内容を選ぶと、GitHub の同期データが置き換わります。他の端末で同期を続けるには Covelet を更新してください。",
+    "ko": "이 기기의 버전을 선택하면 GitHub의 동기화 데이터가 교체됩니다. 다른 기기에서 동기화를 계속하려면 Covelet을 업데이트하세요.",
+    "de": "Die Version dieses Geräts ersetzt die synchronisierten Daten auf GitHub. Aktualisieren Sie Covelet auf Ihren anderen Geräten, um die Synchronisierung fortzusetzen.",
+    "fr": "Conserver la version de cet appareil remplace les données synchronisées sur GitHub. Mettez Covelet à jour sur vos autres appareils pour poursuivre la synchronisation.",
+    "ru": "Версия этого устройства заменит синхронизированные данные на GitHub. Обновите Covelet на других устройствах, чтобы продолжить синхронизацию."
+  },
+  "自备存储同步": {
+    "en": "Sync with your storage",
+    "zh-TW": "自備儲存同步",
+    "ja": "自分のストレージと同期",
+    "ko": "개인 저장소 동기화",
+    "de": "Mit eigenem Speicher synchronisieren",
+    "fr": "Synchronisation avec votre stockage",
+    "ru": "Синхронизация со своим хранилищем"
+  },
+  "同步遇到冲突时，可选择整份本机或云端版本。图片同步支持中断后重试。": {
+    "en": "Choose the complete device or cloud version when sync conflicts. Image sync can retry after an interruption.",
+    "zh-TW": "同步發生衝突時，可選擇整份本機或雲端版本。圖片同步可在中斷後重試。",
+    "ja": "同期で競合が起きたときは、端末かクラウドのデータ全体を選べます。画像の同期は中断後に再試行できます。",
+    "ko": "동기화 충돌 시 기기 또는 클라우드 버전 전체를 선택할 수 있습니다. 이미지 동기화는 중단 후 다시 시도할 수 있습니다.",
+    "de": "Bei einem Konflikt können Sie den gesamten Stand des Geräts oder des Cloudspeichers wählen. Die Bildsynchronisierung kann nach einer Unterbrechung erneut versucht werden.",
+    "fr": "En cas de conflit, choisissez la version complète de cet appareil ou du stockage distant. La synchronisation des images peut être relancée après une interruption.",
+    "ru": "При конфликте можно выбрать полную версию с устройства или из облака. Синхронизацию изображений можно повторить после сбоя."
+  },
+  "关于": {
+    "en": "About",
+    "zh-TW": "關於",
+    "ja": "このアプリについて",
+    "ko": "정보",
+    "de": "Über",
+    "fr": "À propos",
+    "ru": "О приложении"
+  },
+  "备份与恢复": {
+    "en": "Backup and restore",
+    "zh-TW": "備份與還原",
+    "ja": "バックアップと復元",
+    "ko": "백업 및 복원",
+    "de": "Sichern und wiederherstellen",
+    "fr": "Sauvegarde et restauration",
+    "ru": "Резервное копирование и восстановление"
+  },
+  "导出备份": {
+    "en": "Export backup",
+    "zh-TW": "匯出備份",
+    "ja": "バックアップを書き出す",
+    "ko": "백업 내보내기",
+    "de": "Sicherung exportieren",
+    "fr": "Exporter la sauvegarde",
+    "ru": "Экспортировать копию"
+  },
+  "恢复备份": {
+    "en": "Restore backup",
+    "zh-TW": "還原備份",
+    "ja": "バックアップを復元",
+    "ko": "백업 복원",
+    "de": "Sicherung wiederherstellen",
+    "fr": "Restaurer une sauvegarde",
+    "ru": "Восстановить из копии"
+  },
+  "恢复会替换此备份包含的内容。": {
+    "en": "Restoring replaces the content included in this backup.",
+    "zh-TW": "還原會取代這份備份包含的內容。",
+    "ja": "このバックアップに含まれる内容が置き換わります。",
+    "ko": "이 백업에 포함된 콘텐츠를 덮어씁니다.",
+    "de": "Bei der Wiederherstellung werden die in dieser Sicherung enthaltenen Inhalte ersetzt.",
+    "fr": "La restauration remplace les contenus inclus dans cette sauvegarde.",
+    "ru": "Восстановление заменит содержимое, включённое в эту копию."
+  },
+  "数据已更新，请重新选择备份文件。": {
+    "en": "The data has changed. Select the backup file again.",
+    "zh-TW": "資料已更新，請重新選取備份檔案。",
+    "ja": "データが更新されました。バックアップファイルを選び直してください。",
+    "ko": "데이터가 변경되었습니다. 백업 파일을 다시 선택하세요.",
+    "de": "Die Daten wurden geändert. Wählen Sie die Sicherungsdatei erneut aus.",
+    "fr": "Les données ont changé. Sélectionnez à nouveau le fichier de sauvegarde.",
+    "ru": "Данные изменились. Выберите файл резервной копии заново."
+  },
+  "上次恢复未完成。请先恢复本机保留的副本。": {
+    "en": "The previous restore stopped before completion. Restore the copy saved on this device first.",
+    "zh-TW": "上次還原尚未完成。請先還原本機保留的副本。",
+    "ja": "前回の復元が完了していません。まず、この端末に保存されたコピーを復元してください。",
+    "ko": "이전 복원이 완료되지 않았습니다. 먼저 이 기기에 저장된 사본을 복원하세요.",
+    "de": "Die letzte Wiederherstellung wurde unterbrochen. Stellen Sie zuerst die auf diesem Gerät gespeicherte Kopie wieder her.",
+    "fr": "La restauration précédente a été interrompue. Restaurez d’abord la copie enregistrée sur cet appareil.",
+    "ru": "Предыдущее восстановление прервалось. Сначала восстановите копию, сохранённую на этом устройстве."
+  },
+  "时间与日期": {
+    "en": "Time and date",
+    "zh-TW": "時間與日期",
+    "ja": "時刻と日付",
+    "ko": "시간 및 날짜",
+    "de": "Uhrzeit und Datum",
+    "fr": "Heure et date",
+    "ru": "Время и дата"
+  },
+  "时区": {
+    "en": "Time zone",
+    "zh-TW": "時區",
+    "ja": "タイムゾーン",
+    "ko": "시간대",
+    "de": "Zeitzone",
+    "fr": "Fuseau horaire",
+    "ru": "Часовой пояс"
+  },
+  "显示农历": {
+    "en": "Show lunar date",
+    "zh-TW": "顯示農曆",
+    "ja": "旧暦を表示",
+    "ko": "음력 날짜 표시",
+    "de": "Monddatum anzeigen",
+    "fr": "Afficher la date lunaire",
+    "ru": "Показывать лунную дату"
+  },
+  "显示星座": {
+    "en": "Show zodiac sign",
+    "zh-TW": "顯示星座",
+    "ja": "星座を表示",
+    "ko": "별자리 표시",
+    "de": "Sternzeichen anzeigen",
+    "fr": "Afficher le signe du zodiaque",
+    "ru": "Показывать знак зодиака"
+  },
+  "农历 {0}": {
+    "en": "Lunar {0}",
+    "zh-TW": "農曆 {0}",
+    "ja": "旧暦 {0}",
+    "ko": "음력 {0}",
+    "de": "Mondkalender {0}",
+    "fr": "Lunaire {0}",
+    "ru": "Лунный календарь {0}"
+  },
+  "摩羯座": {
+    "en": "Capricorn",
+    "zh-TW": "摩羯座",
+    "ja": "山羊座",
+    "ko": "염소자리",
+    "de": "Steinbock",
+    "fr": "Capricorne",
+    "ru": "Козерог"
+  },
+  "水瓶座": {
+    "en": "Aquarius",
+    "zh-TW": "水瓶座",
+    "ja": "水瓶座",
+    "ko": "물병자리",
+    "de": "Wassermann",
+    "fr": "Verseau",
+    "ru": "Водолей"
+  },
+  "双鱼座": {
+    "en": "Pisces",
+    "zh-TW": "雙魚座",
+    "ja": "魚座",
+    "ko": "물고기자리",
+    "de": "Fische",
+    "fr": "Poissons",
+    "ru": "Рыбы"
+  },
+  "白羊座": {
+    "en": "Aries",
+    "zh-TW": "牡羊座",
+    "ja": "牡羊座",
+    "ko": "양자리",
+    "de": "Widder",
+    "fr": "Bélier",
+    "ru": "Овен"
+  },
+  "金牛座": {
+    "en": "Taurus",
+    "zh-TW": "金牛座",
+    "ja": "牡牛座",
+    "ko": "황소자리",
+    "de": "Stier",
+    "fr": "Taureau",
+    "ru": "Телец"
+  },
+  "双子座": {
+    "en": "Gemini",
+    "zh-TW": "雙子座",
+    "ja": "双子座",
+    "ko": "쌍둥이자리",
+    "de": "Zwillinge",
+    "fr": "Gémeaux",
+    "ru": "Близнецы"
+  },
+  "巨蟹座": {
+    "en": "Cancer",
+    "zh-TW": "巨蟹座",
+    "ja": "蟹座",
+    "ko": "게자리",
+    "de": "Krebs",
+    "fr": "Cancer",
+    "ru": "Рак"
+  },
+  "狮子座": {
+    "en": "Leo",
+    "zh-TW": "獅子座",
+    "ja": "獅子座",
+    "ko": "사자자리",
+    "de": "Löwe",
+    "fr": "Lion",
+    "ru": "Лев"
+  },
+  "处女座": {
+    "en": "Virgo",
+    "zh-TW": "處女座",
+    "ja": "乙女座",
+    "ko": "처녀자리",
+    "de": "Jungfrau",
+    "fr": "Vierge",
+    "ru": "Дева"
+  },
+  "天秤座": {
+    "en": "Libra",
+    "zh-TW": "天秤座",
+    "ja": "天秤座",
+    "ko": "천칭자리",
+    "de": "Waage",
+    "fr": "Balance",
+    "ru": "Весы"
+  },
+  "天蝎座": {
+    "en": "Scorpio",
+    "zh-TW": "天蠍座",
+    "ja": "蠍座",
+    "ko": "전갈자리",
+    "de": "Skorpion",
+    "fr": "Scorpion",
+    "ru": "Скорпион"
+  },
+  "射手座": {
+    "en": "Sagittarius",
+    "zh-TW": "射手座",
+    "ja": "射手座",
+    "ko": "궁수자리",
+    "de": "Schütze",
+    "fr": "Sagittaire",
+    "ru": "Стрелец"
+  },
+  "首页保持一屏。可设置时区，并分别显示或隐藏农历与星座。": {
+    "en": "The home screen fits in one view. Set the time zone and choose whether to show the lunar date or zodiac sign.",
+    "zh-TW": "首頁保持一個畫面。可設定時區，並分別顯示或隱藏農曆與星座。",
+    "ja": "ホーム画面が一画面に収まります。タイムゾーンを設定でき、旧暦と星座の表示は個別に切り替えられます。",
+    "ko": "홈 화면이 한 화면에 맞춰집니다. 시간대를 설정하고 음력 날짜와 별자리를 각각 표시하거나 숨길 수 있습니다.",
+    "de": "Die Startseite passt in eine Bildschirmansicht. Zeitzone, Monddatum und Sternzeichen lassen sich einstellen.",
+    "fr": "L’accueil tient sur un seul écran. Choisissez le fuseau horaire et affichez ou masquez séparément la date lunaire et le signe du zodiaque.",
+    "ru": "Главная страница помещается на одном экране. Можно задать часовой пояс и отдельно включить или скрыть лунную дату и знак зодиака."
+  },
+  "自备存储同步移到扩展中心。解锁只需同步密码，中断后可接着同步。": {
+    "en": "Sync with your storage is now in Extensions. Unlock with the sync password to resume after an interruption.",
+    "zh-TW": "自備儲存同步已移到擴充功能中心。解鎖只需同步密碼，中斷後可繼續同步。",
+    "ja": "自分のストレージとの同期は拡張機能センターに移動しました。中断後は同期パスワードでロックを解除して再開できます。",
+    "ko": "개인 저장소 동기화가 확장 센터로 이동했습니다. 중단 후에는 동기화 비밀번호로 잠금을 해제해 이어서 진행할 수 있습니다.",
+    "de": "Die Synchronisierung mit eigenem Speicher finden Sie jetzt unter Erweiterungen. Nach einer Unterbrechung lässt sie sich mit dem Synchronisierungspasswort fortsetzen.",
+    "fr": "La synchronisation avec votre stockage se trouve dans Extensions. Déverrouillez-la avec le mot de passe de synchronisation pour reprendre après une interruption.",
+    "ru": "Синхронизация со своим хранилищем теперь находится в разделе расширений. После прерывания её можно продолжить, разблокировав паролем синхронизации."
+  },
+  "备份与恢复可在设置中直接完成。回收站和关于各有独立入口。": {
+    "en": "Back up and restore directly in Settings. Trash and About have their own sections.",
+    "zh-TW": "可直接在設定中備份與還原。回收筒和關於各有獨立入口。",
+    "ja": "設定でバックアップと復元ができます。ごみ箱とアプリ情報はそれぞれ独立した項目にあります。",
+    "ko": "설정에서 바로 백업하고 복원할 수 있습니다. 휴지통과 정보는 별도 메뉴에 있습니다.",
+    "de": "Sicherung und Wiederherstellung erfolgen direkt in den Einstellungen. Papierkorb und Über haben eigene Bereiche.",
+    "fr": "Sauvegardez et restaurez directement dans les réglages. La corbeille et la rubrique À propos ont leur propre section.",
+    "ru": "Создавайте и восстанавливайте резервные копии прямо в настройках. Для корзины и сведений о приложении есть отдельные разделы."
+  },
+  "随机壁纸支持 Bing 和 Wikimedia Commons，可设置自动更换间隔。": {
+    "en": "Random wallpaper supports Bing and Wikimedia Commons with a configurable rotation interval.",
+    "zh-TW": "隨機桌布支援 Bing 和 Wikimedia Commons，可設定自動更換間隔。",
+    "ja": "ランダム壁紙は Bing と Wikimedia Commons に対応し、自動切り替えの間隔を設定できます。",
+    "ko": "무작위 배경화면은 Bing과 Wikimedia Commons를 지원하며 자동 변경 간격을 설정할 수 있습니다.",
+    "de": "Zufällige Hintergrundbilder sind von Bing und Wikimedia Commons verfügbar. Das Wechselintervall ist einstellbar.",
+    "fr": "Le fond d’écran aléatoire prend en charge Bing et Wikimedia Commons. L’intervalle de changement automatique est réglable.",
+    "ru": "Случайные обои доступны из Bing и Wikimedia Commons. Интервал автоматической смены можно настроить."
   }
 }

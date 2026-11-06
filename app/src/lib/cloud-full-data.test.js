@@ -81,7 +81,8 @@ function device(cloud, actor, options = {}) {
   };
   const configStore = recordStore('covelet.cloud.local.v1'), toolSyncStore = recordStore('covelet.tools.cloud.v1');
   const api = createCloudSync({ stateStore, configStore, sessionStore, toolSyncStore, toolsStore,
-    snapshotStore: storage.syncDataStore, fullSyncStore: recordStore('covelet.data-sync.v1'), fullPendingStore: storage.createEncryptedStore('full-data-pending'),
+    snapshotStore: storage.syncDataStore, fullHistoryStore: recordStore('covelet.data-sync.runs.v1'),
+    fullPendingStore: storage.createEncryptedStore('full-data-pending'),
     providerFactory: cloud.factory, signer, crypto: webcrypto, hasPermission: async () => true, uuid: () => actor.repeat(32), locks: null,
     eventWindow: null, eventDocument: null, ...options });
   return { api, ...storage, disk, sessionStore, configStore, toolSyncStore, toolsStore, stateStore };
@@ -89,6 +90,38 @@ function device(cloud, actor, options = {}) {
 const configure = (subject) => subject.api.saveCloudSyncSettings(profile, secrets, password);
 const saved = async (subject) => { const result = await subject.api.syncCloudNow(); assert.equal(result.phase, 'saved', `${result.code}: ${result.message}`); return result; };
 const valueOf = async (subject, key) => (await subject.localData.get(key))[key];
+
+test('a legacy connection remembers its credentials after a successful full-data sync only', async () => {
+  const cloud = remote(), source = device(cloud, 'a'), legacy = device(cloud, 'b');
+  const oldConfig = { version: 1, profile, autoSync: false, metadata: null };
+  await legacy.configStore.write(oldConfig);
+  await configure(source);
+  await source.localData.set({ 'covelet.legacy-vault-test.v1': { value: 'remote record' } });
+  await saved(source);
+
+  await assert.rejects(legacy.api.unlockCloudSync(undefined, password), { code: 'CLOUD_CREDENTIALS_REQUIRED' });
+  await legacy.api.unlockCloudSync(secrets, 'incorrect legacy password');
+  assert.equal((await legacy.api.syncCloudNow()).code, 'CLOUD_DECRYPT');
+  assert.deepEqual(await legacy.configStore.read(), oldConfig);
+  assert.equal((await legacy.api.loadCloudSyncSettings()).credentialsStored, false);
+
+  await legacy.api.lockCloudSync();
+  await legacy.api.unlockCloudSync(secrets, password);
+  await saved(legacy);
+  assert.equal((await legacy.api.loadCloudSyncSettings()).credentialsStored, true);
+  assert.deepEqual((await legacy.api.getCloudSyncRuns()).map(run => run.outcome), ['success', 'failure']);
+  const config = await legacy.configStore.read();
+  assert.equal(typeof config.credentialEnvelope, 'string');
+  assert.ok(!JSON.stringify(config).includes(secrets.token));
+  assert.ok(!JSON.stringify(config).includes(password));
+  assert.ok(!(await legacy.syncDataStore.snapshot()).records.some(record => ['covelet.cloud.local.v1', 'covelet.data-sync.runs.v1'].includes(record.key)));
+  await legacy.api.lockCloudSync();
+  const requestCount = cloud.calls.length;
+  assert.equal((await legacy.api.unlockCloudSync(undefined, password)).unlocked, true);
+  assert.equal(cloud.calls.length, requestCount);
+  assert.deepEqual(await valueOf(legacy, 'covelet.legacy-vault-test.v1'), { value: 'remote record' });
+  await source.close(); await legacy.close();
+});
 
 test('default cloud facade synchronizes every extension namespace and cached image through encrypted all-data directories', async (t) => {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'createImageBitmap');
@@ -159,13 +192,13 @@ test('unified facade exposes and deliberately restores all-data concurrent confl
   await a.localData.set({ [key]: { body: 'initial' } }); await configure(a); await configure(b);
   await saved(a); await saved(b); await saved(a);
   await a.localData.remove(key); await b.localData.set({ [key]: { body: 'offline recoverable body' } });
-  await saved(a); await saved(b); await saved(a);
+  await saved(a); assert.equal((await b.api.syncCloudNow()).phase, 'conflict'); await saved(a);
   assert.equal(await valueOf(a, key), undefined); assert.equal((await valueOf(b, key)).body, 'offline recoverable body', 'unresolved conflict keeps the local record');
   const conflicts = await b.api.getCloudSyncConflicts();
   assert.equal(conflicts.length, 2); assert.ok(conflicts.every((item) => item.namespace === 'preferences' && item.key === key && !Object.hasOwn(item, 'value')));
   const preview = await b.api.previewCloudSyncConflict(conflicts.find(item => item.deleted).id);
   assert.equal(preview.remote.deleted, true); assert.equal(preview.local.value.body, 'offline recoverable body');
-  await b.api.restoreCloudSyncConflict(preview.id, { choice: 'local', token: preview.token }); await saved(b); await saved(a);
+  assert.equal((await b.api.resolveCloudSyncConflicts('local')).phase, 'saved'); await saved(a);
   assert.equal((await valueOf(a, key)).body, 'offline recoverable body'); assert.equal((await a.api.getCloudSyncConflicts()).length, 0);
   assert.equal((await a.toolSyncStore.read())?.enabled || false, false, 'All-data sync does not need the retired independent tools checkbox.');
   await a.close(); await b.close();
@@ -196,7 +229,7 @@ test('first unified facade sync imports existing v1 navigation and tools while r
 
 test('unified WebDAV errors preserve actionable Chinese codes and copy through full-data status', async () => {
   const dav = { provider: 'webdav', endpoint: 'https://cloud.example.test/dav/', prefix: 'covelet' };
-  for (const [status, code, text] of [[401, 'CLOUD_AUTH', /用户名和应用密码/], [403, 'CLOUD_FORBIDDEN', /读写权限/]]) {
+  for (const [status, code, text] of [[401, 'CLOUD_AUTH', /用户名和应用密码/], [403, 'CLOUD_FORBIDDEN', /无法访问此目录/]]) {
     const subject = device(remote(), 'a', { legacySeed: false, providerFactory: (profile, secrets, options) => createWebdavProvider(profile, secrets, {
       ...options, fetcher: async () => new Response('PRIVATE-RESPONSE', { status }),
     }) });
@@ -213,16 +246,14 @@ test('a blocked active-privacy deletion leaves conflict clocks unresolved, then 
   await configure(a); await configure(b); await saved(a); await saved(b); await saved(a);
   await a.localData.remove(key);
   await b.localData.set({ [key]: { version: 1, revision: 2, presentation: true, aliases: { 'site:one': 'private alias' }, privateKeys: ['site:one'] } });
-  await saved(a); await saved(b);
-  const conflict = (await b.api.getCloudSyncConflicts()).find(item => item.deleted), before = await valueOf(b, 'covelet.data-sync.v1');
-  let preview = await b.api.previewCloudSyncConflict(conflict.id);
-  await assert.rejects(b.api.restoreCloudSyncConflict(conflict.id, { choice: 'remote', token: preview.token }), error => error.code === 'LOCAL_DATA_PRIVACY_CONFLICT');
+  await saved(a); assert.equal((await b.api.syncCloudNow()).phase, 'conflict');
+  const before = await valueOf(b, 'covelet.data-sync.v1');
+  assert.equal((await b.api.resolveCloudSyncConflicts('remote')).code, 'LOCAL_DATA_PRIVACY_CONFLICT');
   assert.deepEqual(await valueOf(b, 'covelet.data-sync.v1'), before);
   assert.equal((await b.api.getCloudSyncConflicts()).length, 2); assert.equal((await valueOf(b, key)).presentation, true);
   await b.localData.set({ [key]: { ...await valueOf(b, key), presentation: false } });
-  preview = await b.api.previewCloudSyncConflict(conflict.id);
-  await b.api.restoreCloudSyncConflict(conflict.id, { choice: 'remote', token: preview.token });
-  assert.equal(await valueOf(b, key), undefined); await saved(b); await saved(a);
+  assert.equal((await b.api.resolveCloudSyncConflicts('remote')).phase, 'saved');
+  assert.equal(await valueOf(b, key), undefined); await saved(a);
   assert.equal((await a.api.getCloudSyncConflicts()).length, 0);
   await a.close(); await b.close();
 });
@@ -279,12 +310,9 @@ test('two encrypted WebDAV devices exchange edits, offline deletion, explicit co
     assert.equal((await valueOf(a, NAV)).state.entries[0].name, 'Edited on B');
     await a.localData.set({ 'covelet.offline.v1': { body: 'initial' } }); await saved(a); await saved(b);
     await a.localData.remove('covelet.offline.v1'); await b.localData.set({ 'covelet.offline.v1': { body: 'offline B' } });
-    await saved(a); await saved(b);
+    await saved(a); assert.equal((await b.api.syncCloudNow()).phase, 'conflict');
     assert.equal((await valueOf(b, 'covelet.offline.v1')).body, 'offline B');
-    const conflict = (await b.api.getCloudSyncConflicts()).find(item => item.deleted);
-    const preview = await b.api.previewCloudSyncConflict(conflict.id);
-    await b.api.restoreCloudSyncConflict(conflict.id, { choice: 'remote', token: preview.token });
-    await saved(b); await saved(a);
+    assert.equal((await b.api.resolveCloudSyncConflicts('remote')).phase, 'saved'); await saved(a);
     assert.equal(await valueOf(a, 'covelet.offline.v1'), undefined); assert.equal(await valueOf(b, 'covelet.offline.v1'), undefined);
     await b.localData.set({ 'covelet.retry.v1': { body: 'retry after lost response' } }); cloud.unknownPut = true;
     assert.equal((await b.api.syncCloudNow()).phase, 'error');

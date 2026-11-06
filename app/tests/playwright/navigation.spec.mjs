@@ -90,7 +90,9 @@ test('real pointer gestures group sites, rename a folder, move a child out, and 
   folder = page.getByRole('dialog', { name: '工作资料', exact: true });
   await expect(folder.locator('.folder-sites .site-name')).toHaveText(['Beta', 'Alpha', 'Gamma']);
   await saveNavigationScreenshot(page, testInfo, 'folder-contents');
-  await pointerDrag(page, tileNamed(page, 'Alpha').locator('.site-icon'), folder.locator('[data-drop-root]'), '移到桌面');
+  await expect(folder.getByText('拖到这里移回桌面', { exact: true })).toHaveCount(0);
+  await folder.locator('a[href="https://example.com/navigation-alpha"]').click({ button: 'right' });
+  await page.getByRole('menuitem', { name: '移到桌面', exact: true }).click();
   await expect(folder).toBeHidden();
   await expect.poll(async () => (await desktopNames(page).allTextContents()).sort()).toEqual(['Alpha', '工作资料']);
   const organized = await desktopNames(page).allTextContents();

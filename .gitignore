@@ -7,6 +7,7 @@ app/output/
 app/.playwright-cli/
 /output/
 /.playwright-cli/
+.wrangler/
 **/target/
 
 # Local secrets and machine-specific files
