@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://covelet.future-element.com/sitemap.xml
