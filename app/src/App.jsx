@@ -1811,7 +1811,7 @@ function Settings({
         {tab === 'about' && <>
           <WhatsNew />
           <Disclosure title={tr('隐私自查')}><PrivacyCheckup demo={demo} /></Disclosure>
-          <a className="settings-privacy-link" href="https://sites.google.com/view/covelet-privacy" target="_blank" rel="noopener noreferrer">{tr("隐私政策")}</a>
+          <a className="settings-privacy-link" href="https://covelet.future-element.com/privacy/" target="_blank" rel="noopener noreferrer">{tr("隐私政策")}</a>
         </>}
         {error && (
           <p className="form-error" role="alert">

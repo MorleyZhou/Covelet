@@ -56,7 +56,7 @@ test('settings separate backup, trash, and about, and sync opens from Extensions
   await expect(settings).toContainText('新安装默认空桌面。');
   await expect(settings).not.toContainText('阿里云 OSS 仍为 Beta。');
   await expect(settings).not.toContainText('真实云账号验收仍待完成');
-  await expect(settings.getByRole('link', { name: '隐私政策', exact: true })).toHaveAttribute('href', 'https://sites.google.com/view/covelet-privacy');
+  await expect(settings.getByRole('link', { name: '隐私政策', exact: true })).toHaveAttribute('href', 'https://covelet.future-element.com/privacy/');
   await settings.getByRole('button', { name: '隐私自查', exact: true }).click();
   await expect(settings).toContainText('当前权限与用途');
   await expect(settings.getByRole('tab', { name: '数据', exact: true })).toHaveCount(0);
