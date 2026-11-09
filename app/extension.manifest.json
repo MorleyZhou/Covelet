@@ -18,6 +18,11 @@
     "default_title": "__MSG_actionTitle__",
     "default_popup": "popup.html"
   },
+  "commands": {
+    "open-search": {
+      "description": "__MSG_searchShortcutTitle__"
+    }
+  },
   "background": {
     "service_worker": "background.js",
     "type": "module"

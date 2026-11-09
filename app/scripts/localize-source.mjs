@@ -30,6 +30,7 @@ if (mode === '--catalog') {
       extensionName: { message: 'Covelet' },
       extensionDescription: { message: locale === 'zh-CN' ? '私密新标签页，提供网站导航、搜索、外观、小组件、加密同步与 Bing 每日壁纸。' : read('扩展简介') },
       actionTitle: { message: read('添加到 Covelet') },
+      searchShortcutTitle: { message: read('打开 Covelet 搜索') },
     }, null, 2)}\n`);
   }
   console.log('Generated packaged message catalogs and Chrome locale resources. No app was built or executed.');
