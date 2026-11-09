@@ -21,6 +21,12 @@ export default defineBackground({ type: 'module', main() {
   const updateActionTitle = () => chrome.action.setTitle({ title: tr('添加到 Covelet') }).catch(() => {});
   subscribeLanguage(updateActionTitle);
   languageReady.then(updateActionTitle);
+  chrome.commands.onCommand.addListener((command, activeTab) => {
+    if (command !== 'open-search') return;
+    const url = new URL(chrome.runtime.getURL('newtab.html'));
+    url.searchParams.set('focus', 'search');
+    chrome.tabs.create({ url: url.href, windowId: activeTab?.windowId }).catch(() => {});
+  });
   let restoration = Promise.resolve();
   const retire = () => {
     restoration = restoration.catch(() => {}).then(() => languageReady).then(async () => {

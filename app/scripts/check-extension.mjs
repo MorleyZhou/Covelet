@@ -22,7 +22,7 @@ assert.equal(manifest.default_locale, "en");
 assert.equal(manifest.description, "__MSG_extensionDescription__");
 for (const locale of ['en', 'zh_CN', 'zh_TW', 'ja', 'ko', 'de', 'fr', 'ru']) {
   const messages = JSON.parse(readFileSync(path.join(extensionRoot, '_locales', locale, 'messages.json'), 'utf8'));
-  for (const key of ['extensionName', 'extensionDescription', 'actionTitle']) {
+  for (const key of ['extensionName', 'extensionDescription', 'actionTitle', 'searchShortcutTitle']) {
     assert.equal(typeof messages[key]?.message, 'string', `Missing ${locale} manifest message ${key}.`);
     assert(messages[key].message.trim(), `Empty ${locale} manifest message ${key}.`);
   }
@@ -31,6 +31,7 @@ assert.deepEqual(manifest.chrome_url_overrides, { newtab: "newtab.html" });
 assert.deepEqual([...manifest.permissions].sort(), ["activeTab", "alarms", "favicon", "scripting", "search", "storage"]);
 assert.deepEqual(manifest.optional_permissions, []);
 assert.deepEqual(manifest.action, { default_title: '__MSG_actionTitle__', default_popup: 'popup.html' });
+assert.deepEqual(manifest.commands, { 'open-search': { description: '__MSG_searchShortcutTitle__' } });
 assert.deepEqual(manifest.background, { service_worker: 'background.js', type: 'module' });
 assert.deepEqual(manifest.host_permissions, ["https://www.bing.com/*"], "Only the fixed Bing wallpaper host may be accessed.");
 assert.deepEqual(manifest.optional_host_permissions, ["http://*/*", "https://*/*"], "Site recognition must use optional HTTP(S) host permissions, requested per selected origin.");
@@ -52,7 +53,7 @@ function hasToolDependencies(metadata) {
 
 assert.deepEqual(Object.keys(manifest).sort(), [
   "chrome_url_overrides", "content_security_policy", "default_locale", "description", "icons", "manifest_version",
-  "minimum_chrome_version", "name", "permissions", "host_permissions", "optional_host_permissions", "optional_permissions", "action", "background", "version",
+  "minimum_chrome_version", "name", "permissions", "host_permissions", "optional_host_permissions", "optional_permissions", "action", "commands", "background", "version",
 ].sort(), "Unexpected manifest capability: review host access, settings overrides, background or peripheral integrations.");
 
 const csp = new Map();

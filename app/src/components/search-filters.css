@@ -1,0 +1,12 @@
+.search-box .search-filter {
+  flex-shrink: 0;
+}
+
+.search-box .search-filter svg {
+  width: 19px;
+  height: 19px;
+}
+
+.search-box .search-filter[data-active] {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
