@@ -69,6 +69,17 @@ export function renameDesktopPage(input, page, title) {
   return migrateNavigationState(state);
 }
 
+export function moveDesktopPage(input, page, offset, activeKey, columns) {
+  const pages = input.settings.pages, index = pages.indexOf(page);
+  if (index < 0 || ![-1, 1].includes(offset) || pages[index + offset] === undefined) return null;
+  const neighbor = pages[index + offset], state = copy(input);
+  const mapping = new Map(pages.map((value) => [value, value === page ? neighbor : value === neighbor ? page : value]));
+  for (const entry of state.entries) if (visibleRoot(entry)) entry.page = mapping.get(entry.page ?? 0) ?? entry.page ?? 0;
+  remapDesktopPages(state.settings, mapping);
+  const [activePage, part] = activeKey.split(':');
+  return { state: normalizeDraft(state, columns), key: `${mapping.get(Number(activePage)) ?? activePage}:${part}` };
+}
+
 export function addDesktopScreen(input, columns) {
   const state = copy(input), page = nextDesktopPage(state.entries, state.settings.pages);
   if (page === null) throw Error(tr("主屏幕数量已达上限。"));
