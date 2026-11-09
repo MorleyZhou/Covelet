@@ -23,6 +23,7 @@ import {
   ArrowUp,
   SquaresFour,
   UploadSimple,
+  DownloadSimple,
   Check,
   CheckCircle,
   WarningCircle,
@@ -109,6 +110,7 @@ import { PresentationContext, privateContentKeys } from './lib/presentation.js';
 import ContentPreferences from './components/ContentPreferences.jsx';
 import PrivacyPasswordDialog, { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
 import BookmarkImport from './components/BookmarkImport.jsx';
+import BookmarkExport from './components/BookmarkExport.jsx';
 import EmptyDesktop from './components/EmptyDesktop.jsx';
 import FolderLaunchDialog from './components/FolderLaunchDialog.jsx';
 import SearchFilters from './components/SearchFilters.jsx';
@@ -1133,6 +1135,7 @@ export function App() {
     ] : [
       { label: tr("编辑布局"), icon: <PencilSimple size={18} />, action: layoutEditor.begin },
       { label: tr('导入网址与书签 HTML'), icon: <UploadSimple size={18} />, action: () => setModal({ kind: 'bookmarks' }) },
+      { label: tr('导出书签 HTML'), icon: <DownloadSimple size={18} />, action: () => setModal({ kind: 'bookmark-export' }), disabled: demo },
     ]} />;
     const item = context.item;
     return <ContextMenu context={context} label={item.type === 'widget' ? tr("组件操作") : tr("网站操作")} onClose={() => setContext(null)} items={[
@@ -1565,6 +1568,7 @@ export function App() {
         )}
         {modal?.kind === 'bookmarks' && <Modal title={tr('导入网址与书签 HTML')} className="bookmark-import-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide>
           <BookmarkImport state={state} initialPage={desktopScreen.current.page} columns={desktopScreen.current.columns}
+            pageLabel={(page) => desktopPageName(state.settings, page)}
             onBusyChange={setBusy} onClose={() => setModal(null)} onApply={async (prepared) => {
               const before = state;
               const added = new Set(prepared.rows.filter((row) => row.willAdd).map((row) => row.entryId));
@@ -1575,6 +1579,10 @@ export function App() {
               if (prepared.revealId) revealDesktopEntry(saved, prepared.revealId);
               setModal(null); return true;
             }} />
+        </Modal>}
+        {modal?.kind === 'bookmark-export' && <Modal title={tr('导出书签 HTML')} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
+          <BookmarkExport state={state} hiddenKeys={hiddenKeys} initialPage={desktopScreen.current.page}
+            pageLabel={(page) => desktopPageName(state.settings, page)} onBusyChange={setBusy} onClose={() => setModal(null)} />
         </Modal>}
         {privacyDialog && <PrivacyPasswordDialog purpose={privacyDialog} onClose={() => setPrivacyDialog(null)} />}
         {settings.background.kind === 'bing' && wallpaper?.copyright && wallpaper.copyrightUrl && (
