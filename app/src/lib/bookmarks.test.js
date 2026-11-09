@@ -135,6 +135,13 @@ test('Markdown files with no links, unsafe-only links or too many entries remain
   await assert.rejects(readBookmarkFile(new File(['https://example.com/\n'.repeat(2001)], 'large.md')), /导入条目不能超过 2000/);
 });
 
+test('Markdown file parsing accepts escaped title brackets and bounds malformed link attempts', async () => {
+  const escaped = await readBookmarkFile(new File(['[Setup \\[safe\\]](https://safe.example/)'], 'safe.md'));
+  assert.equal(escaped.sites[0].name, 'Setup [safe]');
+  const malformed = '[broken]('.repeat(2001);
+  await assert.rejects(readBookmarkFile(new File([malformed], 'malformed.md')), /导入条目不能超过 2000/);
+});
+
 test('entry counts, invalid counts and deep nesting fail cleanly', () => {
   assert.throws(() => parseBookmarks(html(link('https://safe.test/').repeat(2001))), /导入条目不能超过 2000/);
   assert.throws(() => parseBookmarks(html(link('javascript:alert(1)').repeat(2001))), /无效书签不能超过 2000/);
