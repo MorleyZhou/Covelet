@@ -111,6 +111,18 @@ async function withPreferencesLock(run) {
   if (globalThis.navigator?.locks?.request) return navigator.locks.request(KEY, run);
   throw Error(tr('浏览器无法锁定本机内容偏好，请重试。'));
 }
+// Called after the navigation lock. Both encrypted records are written by the
+// navigation store in one transaction, so a new private site is never public.
+export function withNavigationPrivacy(run) {
+  return withPreferencesLock(async () => {
+    const current = await loadContentPreferences();
+    return run(current, (addedKeys) => {
+      const privateKeys = [...new Set([...current.privateKeys, ...addedKeys])];
+      if (privateKeys.length === current.privateKeys.length) return {};
+      return { [KEY]: validate({ ...current, privateKeys, revision: current.revision + 1 }) };
+    });
+  });
+}
 export function useContentPreferences() {
   const [data, setData] = useState(empty), [error, setError] = useState(''), [ready, setReady] = useState(false);
   useEffect(() => {

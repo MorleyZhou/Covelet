@@ -7,6 +7,7 @@ import { normalizeIconAddress, siteIconAddress } from './site-icons.js';
 import { readNavigationIconResource, restoreNavigationIconResource, retainNavigationIconResources } from './navigation-icon-cache.js';
 import { prepareImportedNavigationIcons } from './navigation-icon-intake.js';
 import { ICON_IMAGE_LIMIT } from './icon-image-format.js';
+import { withNavigationPrivacy } from './content-preferences.js';
 
 const STORE_KEY = 'owntab.local.v1';
 const LOCK_NAME = 'owntab.local.write.v1';
@@ -172,8 +173,8 @@ function browserConfig() {
     async read() {
       return (await localData.get(STORE_KEY))[STORE_KEY] ?? null;
     },
-    async write(envelope) {
-      await localData.set({ [STORE_KEY]: envelope });
+    async write(envelope, preferences) {
+      await localData.set({ [STORE_KEY]: envelope, ...preferences });
     },
     subscribe(callback) {
       listeners.add(callback);
@@ -329,13 +330,13 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
     serial = next.catch(() => {});
     return next;
   };
-  const writeState = async (next, expectedRevision) => {
+  const writeState = async (next, expectedRevision, preferences) => {
     if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0) fail(tr("保存时缺少有效的数据版本。"), 'REVISION_CONFLICT');
     const envelope = await readEnvelope();
     if (envelope.state.revision !== expectedRevision) fail(tr("数据已在另一个标签页更新，请重新加载后再试。"), 'REVISION_CONFLICT');
     const saved = migrateNavigationState({ ...clone(next), revision: expectedRevision + 1 });
     if (strToU8(JSON.stringify(saved)).length > LIMITS.json) fail(tr("配置数据超过 2 MiB。"), 'STORAGE_LIMIT');
-    await getConfig().write({ ...envelope, state: saved, snapshots: [envelope.state, ...envelope.snapshots].slice(0, 3) });
+    await getConfig().write({ ...envelope, state: saved, snapshots: [envelope.state, ...envelope.snapshots].slice(0, 3) }, preferences);
     return clone(saved);
   };
   const prepareIcons = async (state, options) => {
@@ -348,6 +349,10 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
   const api = {
     async loadState() { return (await readEnvelope()).state; },
     saveState(next, expectedRevision) { return exclusive(() => writeState(next, expectedRevision)); },
+    saveStateWithPrivacy(next, expectedRevision, action) {
+      return exclusive(() => withNavigationPrivacy((current, changes) =>
+        action(current, (addedKeys = []) => writeState(next, expectedRevision, changes(addedKeys)))));
+    },
     subscribeState(callback) {
       return getConfig().subscribe((state) => {
         try { callback(state ? migrateNavigationState(state) : checkedState(createEmptyState())); }
@@ -538,5 +543,5 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
 }
 
 const storage = createStorage({ initialState: createInitialState });
-export const { loadState, saveState, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, validateBackupPlan, restoreBackup, restoreSnapshot,
+export const { loadState, saveState, saveStateWithPrivacy, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, validateBackupPlan, restoreBackup, restoreSnapshot,
   getSyncStatus, subscribeSyncStatus, setSyncEnabled, syncNow, getSyncConflicts, restoreSyncConflict } = storage;
