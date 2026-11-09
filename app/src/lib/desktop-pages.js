@@ -10,6 +10,11 @@ export function desktopPageName(settings, page) {
   return settings.desktopPages?.[page]?.name || tr('第 {0} 屏', [formatNumber(page + 1)]);
 }
 
+export function defaultDesktopPage(state, id) {
+  const selected = Object.entries(state.settings.desktopPages ?? {}).find(([, metadata]) => metadata.id === id);
+  return selected ? Number(selected[0]) : logicalDesktopPages(state)[0];
+}
+
 export function namedDesktopRecords(settings) {
   return Object.entries(settings.desktopPages ?? {}).filter(([, value]) => value.name)
     .map(([page, value]) => ({ id: value.id, page: Number(page), title: value.name }));
