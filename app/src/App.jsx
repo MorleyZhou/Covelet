@@ -109,6 +109,10 @@ import { PresentationContext, privateContentKeys } from './lib/presentation.js';
 import ContentPreferences from './components/ContentPreferences.jsx';
 import PrivacyPasswordDialog, { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
 import BookmarkImport from './components/BookmarkImport.jsx';
+import EmptyDesktop from './components/EmptyDesktop.jsx';
+import FolderLaunchDialog from './components/FolderLaunchDialog.jsx';
+import SearchFilters from './components/SearchFilters.jsx';
+import { navigationResultPath, scopeSearchContent } from './lib/search-scope.js';
 import RecoveryCenter from './components/RecoveryCenter.jsx';
 import { focusDesktopNeighbor } from "./lib/desktop-focus.js";
 import { GITHUB_WIDGET_ID } from "./lib/widget-model.js";
@@ -414,6 +418,7 @@ export function App() {
     [engineMenu, setEngineMenu] = useState(false),
     [candidate, setCandidate] = useState(-1),
     [focused, setFocused] = useState(false);
+  const [searchFilter, setSearchFilter] = useState('all');
   const [modal, setModal] = useState(null),
     [entry, setEntry] = useState(null),
     [context, setContext] = useState(null);
@@ -585,6 +590,14 @@ export function App() {
     }
   }, [state, provider, folderId]);
   const settings = state?.settings;
+  useEffect(() => {
+    if (!settings) return;
+    const target = new URL(location.href);
+    if (target.searchParams.get('focus') !== 'search') return;
+    target.searchParams.delete('focus');
+    history.replaceState(null, '', target);
+    inputRef.current?.focus();
+  }, [Boolean(settings)]);
   const [wallpaperSource, setWallpaperSource] = useState(null), [wallpaperRefresh, setWallpaperRefresh] = useState(0);
   const [wallpaperInterval, setWallpaperInterval] = useState(null);
   useEffect(() => {
@@ -621,10 +634,15 @@ export function App() {
   const wallpaperAppearance = useWallpaperAppearance(imageUrl, visualEnabled);
   const adaptive = visualEnabled && wallpaperAppearance.phase === "ready"
     ? createAdaptiveAppearance(wallpaperAppearance.palette, settings.shade) : null;
-  const desktops = useMemo(() => settings ? namedDesktopRecords(settings) : [], [settings]);
-  const candidates = useMemo(() => state && query.trim()
-    ? searchCoveletContent(state, personalData, query, { aliases: contentPreferences.aliases, hiddenKeys: presentation ? hiddenKeys : [], desktops, limit: 24 }) : [],
-  [state, personalData, query, contentPreferences, presentation, hiddenKeys, desktops]);
+  const desktops = useMemo(() => settings && ['all', 'desktop'].includes(searchFilter) ? namedDesktopRecords(settings) : [], [settings, searchFilter]);
+  const searchPage = Number(activeScreen.split(':')[0]);
+  const candidates = useMemo(() => {
+    if (!state || !query.trim()) return [];
+    const { entries, tools } = scopeSearchContent(state, personalData, searchFilter, searchPage);
+    const visible = presentation ? hiddenKeys : undefined;
+    return searchCoveletContent(entries, tools, query, { aliases: contentPreferences.aliases, hiddenKeys: visible, desktops })
+      .map((item) => ({ ...item, path: navigationResultPath(item, state, visible, (page) => desktopPageName(state.settings, page)) }));
+  }, [state, personalData, query, contentPreferences, presentation, hiddenKeys, desktops, searchFilter, searchPage]);
   useEffect(() => { setCandidate((value) => Math.min(value, candidates.length - 1)); }, [candidates.length]);
   useLayoutEffect(() => {
     const list = suggestionsRef.current, option = list?.children[candidate];
@@ -1274,7 +1292,7 @@ export function App() {
                 candidate >= 0 ? `candidate-${candidate}` : undefined
               }
               onFocus={() => setFocused(true)}
-              onBlur={() => setTimeout(() => setFocused(false), 120)}
+              onBlur={() => setTimeout(() => { if (document.activeElement !== inputRef.current) setFocused(false); }, 120)}
               onChange={(e) => {
                 setQuery(e.target.value);
                 setCandidate(-1);
@@ -1297,6 +1315,7 @@ export function App() {
                 }
               }}
             />
+            <SearchFilters value={searchFilter} onChange={(value) => { setSearchFilter(value); setCandidate(-1); }} onReturnFocus={() => inputRef.current?.focus()} />
             <Button variant="unstyled" size="unstyled" className="search-submit" type="submit" aria-label={tr("搜索")}>
               <MagnifyingGlass size={33} weight="light" />
             </Button>
@@ -1317,7 +1336,7 @@ export function App() {
                   {['site', 'folder'].includes(item.type) ? <SiteIcon entry={item.entry} small children={state.entries.filter((entry) => entry.parentId === item.id && (!presentation || !hiddenKeys.has(`site:${entry.id}`)))} /> : <span className="content-result-icon">{item.type === 'desktop' ? <SquaresFour size={22} /> : item.type === 'note' ? <NotePencil size={22} /> : <BookOpen size={22} />}</span>}
                   <span>
                     <strong>{item.title}</strong>
-                    <small>{item.type === 'desktop' ? tr('桌面') : item.type === 'site' ? tr('网站') : item.type === 'folder' ? tr('文件夹') : item.type === 'note' ? tr('便笺') : tr('稍后读')}{item.subtitle ? ` · ${item.subtitle}` : ''}</small>
+                    <small>{[item.type === 'desktop' ? tr('桌面') : item.type === 'site' ? tr('网站') : item.type === 'folder' ? tr('文件夹') : item.type === 'note' ? tr('便笺') : tr('稍后读'), item.path, item.subtitle].filter(Boolean).join(' · ')}</small>
                   </span>
                   <ArrowSquareOut size={18} />
                 </Button>
@@ -1362,6 +1381,8 @@ export function App() {
             onClick={(event) => {
               if (layoutEditor.editing && !event.defaultPrevented && !event.target.closest('[data-entry-id],button,a')) layoutEditor.setSelectedIds([]);
             }}>
+            {!state.entries.length && !layoutEditor.editing && !modal && <EmptyDesktop onAdd={newEntry}
+              onImport={() => setModal({ kind: 'bookmarks' })} onDismiss={focusDesktop} />}
             <DesktopPages settings={desktopState.settings} entries={items} activeKey={activeScreen} draftPage={draftPage} drag={drag} editing={layoutEditor.editing}
               onActiveChange={setActiveScreen} onScreenChange={(screen) => { desktopScreen.current = screen; }}
               onNewPage={(page) => layoutEditor.addPage(page)} renderTiles={renderTiles} />
@@ -1382,6 +1403,10 @@ export function App() {
         {!folderId && renderDragGhost()}
         {currentFolder && !modal && (
           <Modal title={currentFolder.name} privacyKeys={[`folder:${currentFolder.id}`]} titleContent={<FolderName name={currentFolder.name} onSave={saveFolderName} />} onClose={() => { cancelDrag(); setFolder(null); }} wide>
+            <div className="folder-launch-actions">
+              <Button variant="secondary" type="button" disabled={layoutEditor.editing}
+                onClick={() => setModal({ kind: 'folder-launch', id: currentFolder.id })}>{tr('批量打开网站')}</Button>
+            </div>
             <div className="folder-content" data-folder-panel={currentFolder.id}>
               <div className="sites-grid folder-sites" data-drop-parent={currentFolder.id}>
                 {renderTiles(state.entries.filter((item) => item.parentId === currentFolder.id).sort((a,b) => a.order-b.order))}
@@ -1391,6 +1416,8 @@ export function App() {
             </div>
           </Modal>
         )}
+        {modal?.kind === 'folder-launch' && <FolderLaunchDialog Dialog={Modal} folderId={modal.id} entries={state.entries}
+          hiddenKeys={presentation ? hiddenKeys : undefined} onClose={() => setModal(null)} />}
         {/* Keep the live region mounted so dialogs leave it accessible. */}
         <div data-slot="toast-viewport" aria-live="off">{toast}</div>
         {busy && (
