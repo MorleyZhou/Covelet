@@ -1408,3 +1408,38 @@ WebDAV 支持分步设置和连接测试，重启浏览器后需重新解锁。|
 自备存储同步移到扩展中心。解锁只需同步密码，中断后可接着同步。|Sync with your storage is now in Extensions. Unlock with the sync password to resume after an interruption.|自備儲存同步已移到擴充功能中心。解鎖只需同步密碼，中斷後可繼續同步。|自分のストレージとの同期は拡張機能センターに移動しました。中断後は同期パスワードでロックを解除して再開できます。|개인 저장소 동기화가 확장 센터로 이동했습니다. 중단 후에는 동기화 비밀번호로 잠금을 해제해 이어서 진행할 수 있습니다.|Die Synchronisierung mit eigenem Speicher finden Sie jetzt unter Erweiterungen. Nach einer Unterbrechung lässt sie sich mit dem Synchronisierungspasswort fortsetzen.|La synchronisation avec votre stockage se trouve dans Extensions. Déverrouillez-la avec le mot de passe de synchronisation pour reprendre après une interruption.|Синхронизация со своим хранилищем теперь находится в разделе расширений. После прерывания её можно продолжить, разблокировав паролем синхронизации.
 备份与恢复可在设置中直接完成。回收站和关于各有独立入口。|Back up and restore directly in Settings. Trash and About have their own sections.|可直接在設定中備份與還原。回收筒和關於各有獨立入口。|設定でバックアップと復元ができます。ごみ箱とアプリ情報はそれぞれ独立した項目にあります。|설정에서 바로 백업하고 복원할 수 있습니다. 휴지통과 정보는 별도 메뉴에 있습니다.|Sicherung und Wiederherstellung erfolgen direkt in den Einstellungen. Papierkorb und Über haben eigene Bereiche.|Sauvegardez et restaurez directement dans les réglages. La corbeille et la rubrique À propos ont leur propre section.|Создавайте и восстанавливайте резервные копии прямо в настройках. Для корзины и сведений о приложении есть отдельные разделы.
 随机壁纸支持 Bing 和 Wikimedia Commons，可设置自动更换间隔。|Random wallpaper supports Bing and Wikimedia Commons with a configurable rotation interval.|隨機桌布支援 Bing 和 Wikimedia Commons，可設定自動更換間隔。|ランダム壁紙は Bing と Wikimedia Commons に対応し、自動切り替えの間隔を設定できます。|무작위 배경화면은 Bing과 Wikimedia Commons를 지원하며 자동 변경 간격을 설정할 수 있습니다.|Zufällige Hintergrundbilder sind von Bing und Wikimedia Commons verfügbar. Das Wechselintervall ist einstellbar.|Le fond d’écran aléatoire prend en charge Bing et Wikimedia Commons. L’intervalle de changement automatique est réglable.|Случайные обои доступны из Bing и Wikimedia Commons. Интервал автоматической смены можно настроить.
+默认桌面|Default desktop|預設桌面|既定のデスクトップ|기본 바탕 화면|Standard-Desktop|Bureau par défaut|Рабочий стол по умолчанию
+前往 {0}|Go to {0}|前往 {0}|{0} へ移動|{0}(으)로 이동|Zu {0} wechseln|Aller à {0}|Перейти к {0}
+第 {0} 屏名称|Name of desktop {0}|第 {0} 個桌面的名稱|デスクトップ {0} の名前|바탕 화면 {0} 이름|Name von Desktop {0}|Nom du bureau {0}|Название рабочего стола {0}
+前移 {0}|Move {0} earlier|前移 {0}|{0} を前へ移動|{0} 앞으로 이동|{0} nach vorne verschieben|Avancer {0}|Переместить {0} вперёд
+后移 {0}|Move {0} later|後移 {0}|{0} を後ろへ移動|{0} 뒤로 이동|{0} nach hinten verschieben|Reculer {0}|Переместить {0} назад
+名称无效|Invalid name|名稱無效|名前が無効です|잘못된 이름입니다|Ungültiger Name|Nom non valide|Недопустимое название
+批量打开网站|Open sites together|批次開啟網站|サイトをまとめて開く|사이트 일괄 열기|Websites gemeinsam öffnen|Ouvrir plusieurs sites|Открыть несколько сайтов
+没有可打开的网站。|No sites to open.|沒有可開啟的網站。|開けるサイトがありません。|열 수 있는 사이트가 없습니다.|Keine Websites zum Öffnen vorhanden.|Aucun site à ouvrir.|Нет сайтов для открытия.
+最多打开 {0} 个网站。|Open up to {0} sites.|最多開啟 {0} 個網站。|最大 {0} 件のサイトを開けます。|최대 {0}개의 사이트를 열 수 있습니다.|Bis zu {0} Websites öffnen.|Ouvrez jusqu’à {0} sites.|Можно открыть до {0} сайтов.
+打开 {0} 个网站|Open {0} sites|開啟 {0} 個網站|{0} 件のサイトを開く|사이트 {0}개 열기|{0} Websites öffnen|Ouvrir {0} sites|Открыть сайты ({0})
+已打开 {0} 个网站，{1} 个未打开。|Opened {0} sites. {1} could not be opened.|已開啟 {0} 個網站，{1} 個未開啟。|{0} 件を開きました。{1} 件は開けませんでした。|사이트 {0}개를 열었습니다. {1}개는 열지 못했습니다.|{0} Websites geöffnet. {1} konnten nicht geöffnet werden.|{0} sites ouverts. Échec pour {1} sites.|Открыто сайтов: {0}. Не удалось открыть: {1}.
+筛选搜索结果|Filter search results|篩選搜尋結果|検索結果を絞り込む|검색 결과 필터링|Suchergebnisse filtern|Filtrer les résultats|Фильтровать результаты поиска
+全部内容|All content|所有內容|すべてのコンテンツ|모든 콘텐츠|Alle Inhalte|Tout le contenu|Всё содержимое
+当前桌面|Current desktop|目前的桌面|現在のデスクトップ|현재 바탕 화면|Aktueller Desktop|Bureau actuel|Текущий рабочий стол
+打开 Covelet 搜索|Open Covelet search|開啟 Covelet 搜尋|Covelet 検索を開く|Covelet 검색 열기|Covelet-Suche öffnen|Ouvrir la recherche Covelet|Открыть поиск Covelet
+添加常用网站|Add favorite sites|新增常用網站|よく使うサイトを追加|자주 쓰는 사이트 추가|Häufig genutzte Websites hinzufügen|Ajouter des sites favoris|Добавить часто используемые сайты
+空白开始|Start blank|從空白開始|空白のまま始める|빈 화면으로 시작|Leer starten|Commencer avec une page vide|Начать с пустого экрана
+导入 Markdown 链接文件|Import Markdown links|匯入 Markdown 連結檔案|Markdown のリンクをインポート|Markdown 링크 가져오기|Markdown-Links importieren|Importer des liens Markdown|Импортировать ссылки из Markdown
+全部导航|All shortcuts|所有捷徑|すべてのショートカット|모든 바로가기|Alle Verknüpfungen|Tous les raccourcis|Все ярлыки
+没有可导出的网站。|No sites to export.|沒有可匯出的網站。|エクスポートできるサイトがありません。|내보낼 사이트가 없습니다.|Keine Websites zum Exportieren vorhanden.|Aucun site à exporter.|Нет сайтов для экспорта.
+导出范围|Export scope|匯出範圍|エクスポート範囲|내보내기 범위|Exportbereich|Éléments à exporter|Область экспорта
+仅导出未标记隐藏的网站。|Sites marked as hidden are excluded.|僅匯出未標記隱藏的網站。|非表示マークの付いたサイトは対象外です。|숨김으로 표시된 사이트는 제외됩니다.|Als verborgen markierte Websites werden ausgelassen.|Les sites marqués comme masqués sont exclus.|Сайты с пометкой «Скрыто» исключены.
+导出书签 HTML|Export bookmarks as HTML|匯出書籤 HTML|ブックマークを HTML でエクスポート|북마크를 HTML로 내보내기|Lesezeichen als HTML exportieren|Exporter les favoris en HTML|Экспортировать закладки в HTML
+目标位置已变化，请重新选择。|The destination changed. Choose it again.|目標位置已變更，請重新選擇。|保存先が変わりました。選び直してください。|저장 위치가 변경되었습니다. 다시 선택해 주세요.|Das Ziel hat sich geändert. Wähle es erneut aus.|La destination a changé. Sélectionnez-la à nouveau.|Место назначения изменилось. Выберите его снова.
+添加到桌面|Add to desktop|加到桌面|デスクトップに追加|바탕 화면에 추가|Zum Desktop hinzufügen|Ajouter au bureau|Добавить на рабочий стол
+已添加到桌面。|Added to desktop.|已加到桌面。|デスクトップに追加しました。|바탕 화면에 추가했습니다.|Zum Desktop hinzugefügt.|Ajouté au bureau.|Добавлено на рабочий стол.
+整理所选网站|Organize selected sites|整理所選網站|選択したサイトを整理|선택한 사이트 정리|Ausgewählte Websites organisieren|Organiser les sites sélectionnés|Упорядочить выбранные сайты
+操作|Action|操作|操作|작업|Aktion|Action|Действие
+移动|Move|移動|移動|이동|Verschieben|Déplacer|Переместить
+复制|Copy|複製|コピー|복사|Kopieren|Copier|Копировать
+将移动 {0} 个网站。|Sites to move ({0})|將移動 {0} 個網站。|{0} 件のサイトを移動します。|사이트 {0}개를 이동합니다.|{0} Websites verschieben.|Déplacer {0} sites.|Переместить сайты ({0})
+将复制 {0} 个网站。|Sites to copy ({0})|將複製 {0} 個網站。|{0} 件のサイトをコピーします。|사이트 {0}개를 복사합니다.|{0} Websites kopieren.|Copier {0} sites.|Копировать сайты ({0})
+命名桌面、设置默认桌面并搜索跳转。|Name your desktops, choose a default, and jump between them from search.|命名桌面、設定預設桌面並搜尋切換。|デスクトップに名前を付け、既定を選び、検索から切り替えられます。|바탕 화면에 이름을 지정하고 기본 화면을 선택한 뒤 검색으로 이동할 수 있습니다.|Desktops benennen, einen Standard wählen und per Suche wechseln.|Nommez vos bureaux, choisissez le bureau par défaut et changez de bureau avec la recherche.|Назовите рабочие столы, выберите основной и переключайтесь через поиск.
+批量打开文件夹中的网站，或将链接保存到指定桌面。|Open sites from a folder together or save links to a chosen desktop.|批次開啟資料夾內的網站，或將連結儲存到指定桌面。|フォルダー内のサイトをまとめて開いたり、指定したデスクトップにリンクを保存したりできます。|폴더의 사이트를 한 번에 열거나 원하는 바탕 화면에 링크를 저장하세요.|Websites aus einem Ordner zusammen öffnen oder Links auf einem gewählten Desktop speichern.|Ouvrez plusieurs sites d’un dossier ou enregistrez des liens sur le bureau de votre choix.|Открывайте сайты из папки вместе или сохраняйте ссылки на выбранном рабочем столе.
+导入 Markdown 链接，按桌面或文件夹导出书签 HTML。|Import Markdown links and export bookmarks as HTML by desktop or folder.|匯入 Markdown 連結，按桌面或資料夾匯出書籤 HTML。|Markdown リンクをインポートし、デスクトップやフォルダー単位でブックマークを HTML に書き出せます。|Markdown 링크를 가져오고 바탕 화면이나 폴더별로 북마크를 HTML로 내보내세요.|Markdown-Links importieren und Lesezeichen je Desktop oder Ordner als HTML exportieren.|Importez des liens Markdown et exportez des favoris HTML par bureau ou par dossier.|Импортируйте ссылки из Markdown и экспортируйте закладки в HTML по рабочим столам или папкам.

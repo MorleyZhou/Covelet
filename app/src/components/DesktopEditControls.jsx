@@ -1,16 +1,19 @@
 import { tr, builtinName, formatNumber } from "../i18n/index.js";
-import { Plus, Trash, Check, SquaresFour, ArrowCounterClockwise, ArrowClockwise, LockSimple, CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { Plus, Trash, Check, SquaresFour, ArrowCounterClockwise, ArrowClockwise, LockSimple, CaretLeft, CaretRight, FolderSimple } from '@phosphor-icons/react';
 import { DESKTOP_ROWS, layoutDesktop } from '../lib/desktop-layout.js';
 import { desktopPageName } from '../lib/desktop-pages.js';
 import FolderName from './FolderName.jsx';
 import './desktop-edit.css';
 import { Button } from './ui/button.jsx';
 
-export function DesktopEditBar({ editor, onManage, drag, onDelete }) {
+export function DesktopEditBar({ editor, onManage, drag, onDelete, canTransfer, onTransfer }) {
   return <div className="desktop-edit-bar" data-layout-control>
     {editor.error && <p className="desktop-edit-error" role="alert">{tr(editor.error)}</p>}
     <div className="desktop-edit-actions" role="toolbar" aria-label={tr("编辑布局")}>
       <Button variant="unstyled" size="unstyled" type="button" disabled={editor.saving} onClick={onManage}><SquaresFour size={17} />{tr("屏幕管理")}</Button>
+      {canTransfer && <Button variant="unstyled" size="unstyled" type="button" disabled={editor.saving || editor.conflict} onClick={onTransfer}>
+        <FolderSimple size={17} />{tr('整理所选网站')}
+      </Button>}
       <span className="desktop-edit-divider" />
       <Button variant="unstyled" size="unstyled" type="button" className="desktop-edit-history" disabled={!editor.canUndo} onClick={editor.undo}
         aria-label={tr("撤销布局操作")} title={`${tr("撤销布局操作")} (Ctrl/⌘+Z)`}><ArrowCounterClockwise size={18} /><span>{tr("撤销")}</span></Button>

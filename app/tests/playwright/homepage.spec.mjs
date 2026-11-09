@@ -51,6 +51,8 @@ test('settings separate backup, trash, and about, and sync opens from Extensions
   const settings = await openSettings(page, '关于');
   const version = await page.evaluate(() => chrome.runtime.getManifest().version);
   await settings.getByRole('button', { name: `${version} 更新内容`, exact: true }).click();
+  await expect(settings).toContainText('命名桌面、设置默认桌面并搜索跳转。');
+  await settings.getByRole('button', { name: '0.3.1 更新内容', exact: true }).click();
   await expect(settings).toContainText('首页保持一屏。');
   await settings.getByRole('button', { name: '0.3.0 更新内容', exact: true }).click();
   await expect(settings).toContainText('新安装默认空桌面。');

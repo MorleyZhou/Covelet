@@ -14950,5 +14950,320 @@
     "de": "Zufällige Hintergrundbilder sind von Bing und Wikimedia Commons verfügbar. Das Wechselintervall ist einstellbar.",
     "fr": "Le fond d’écran aléatoire prend en charge Bing et Wikimedia Commons. L’intervalle de changement automatique est réglable.",
     "ru": "Случайные обои доступны из Bing и Wikimedia Commons. Интервал автоматической смены можно настроить."
+  },
+  "默认桌面": {
+    "en": "Default desktop",
+    "zh-TW": "預設桌面",
+    "ja": "既定のデスクトップ",
+    "ko": "기본 바탕 화면",
+    "de": "Standard-Desktop",
+    "fr": "Bureau par défaut",
+    "ru": "Рабочий стол по умолчанию"
+  },
+  "前往 {0}": {
+    "en": "Go to {0}",
+    "zh-TW": "前往 {0}",
+    "ja": "{0} へ移動",
+    "ko": "{0}(으)로 이동",
+    "de": "Zu {0} wechseln",
+    "fr": "Aller à {0}",
+    "ru": "Перейти к {0}"
+  },
+  "第 {0} 屏名称": {
+    "en": "Name of desktop {0}",
+    "zh-TW": "第 {0} 個桌面的名稱",
+    "ja": "デスクトップ {0} の名前",
+    "ko": "바탕 화면 {0} 이름",
+    "de": "Name von Desktop {0}",
+    "fr": "Nom du bureau {0}",
+    "ru": "Название рабочего стола {0}"
+  },
+  "前移 {0}": {
+    "en": "Move {0} earlier",
+    "zh-TW": "前移 {0}",
+    "ja": "{0} を前へ移動",
+    "ko": "{0} 앞으로 이동",
+    "de": "{0} nach vorne verschieben",
+    "fr": "Avancer {0}",
+    "ru": "Переместить {0} вперёд"
+  },
+  "后移 {0}": {
+    "en": "Move {0} later",
+    "zh-TW": "後移 {0}",
+    "ja": "{0} を後ろへ移動",
+    "ko": "{0} 뒤로 이동",
+    "de": "{0} nach hinten verschieben",
+    "fr": "Reculer {0}",
+    "ru": "Переместить {0} назад"
+  },
+  "名称无效": {
+    "en": "Invalid name",
+    "zh-TW": "名稱無效",
+    "ja": "名前が無効です",
+    "ko": "잘못된 이름입니다",
+    "de": "Ungültiger Name",
+    "fr": "Nom non valide",
+    "ru": "Недопустимое название"
+  },
+  "批量打开网站": {
+    "en": "Open sites together",
+    "zh-TW": "批次開啟網站",
+    "ja": "サイトをまとめて開く",
+    "ko": "사이트 일괄 열기",
+    "de": "Websites gemeinsam öffnen",
+    "fr": "Ouvrir plusieurs sites",
+    "ru": "Открыть несколько сайтов"
+  },
+  "没有可打开的网站。": {
+    "en": "No sites to open.",
+    "zh-TW": "沒有可開啟的網站。",
+    "ja": "開けるサイトがありません。",
+    "ko": "열 수 있는 사이트가 없습니다.",
+    "de": "Keine Websites zum Öffnen vorhanden.",
+    "fr": "Aucun site à ouvrir.",
+    "ru": "Нет сайтов для открытия."
+  },
+  "最多打开 {0} 个网站。": {
+    "en": "Open up to {0} sites.",
+    "zh-TW": "最多開啟 {0} 個網站。",
+    "ja": "最大 {0} 件のサイトを開けます。",
+    "ko": "최대 {0}개의 사이트를 열 수 있습니다.",
+    "de": "Bis zu {0} Websites öffnen.",
+    "fr": "Ouvrez jusqu’à {0} sites.",
+    "ru": "Можно открыть до {0} сайтов."
+  },
+  "打开 {0} 个网站": {
+    "en": "Open {0} sites",
+    "zh-TW": "開啟 {0} 個網站",
+    "ja": "{0} 件のサイトを開く",
+    "ko": "사이트 {0}개 열기",
+    "de": "{0} Websites öffnen",
+    "fr": "Ouvrir {0} sites",
+    "ru": "Открыть сайты ({0})"
+  },
+  "已打开 {0} 个网站，{1} 个未打开。": {
+    "en": "Opened {0} sites. {1} could not be opened.",
+    "zh-TW": "已開啟 {0} 個網站，{1} 個未開啟。",
+    "ja": "{0} 件を開きました。{1} 件は開けませんでした。",
+    "ko": "사이트 {0}개를 열었습니다. {1}개는 열지 못했습니다.",
+    "de": "{0} Websites geöffnet. {1} konnten nicht geöffnet werden.",
+    "fr": "{0} sites ouverts. Échec pour {1} sites.",
+    "ru": "Открыто сайтов: {0}. Не удалось открыть: {1}."
+  },
+  "筛选搜索结果": {
+    "en": "Filter search results",
+    "zh-TW": "篩選搜尋結果",
+    "ja": "検索結果を絞り込む",
+    "ko": "검색 결과 필터링",
+    "de": "Suchergebnisse filtern",
+    "fr": "Filtrer les résultats",
+    "ru": "Фильтровать результаты поиска"
+  },
+  "全部内容": {
+    "en": "All content",
+    "zh-TW": "所有內容",
+    "ja": "すべてのコンテンツ",
+    "ko": "모든 콘텐츠",
+    "de": "Alle Inhalte",
+    "fr": "Tout le contenu",
+    "ru": "Всё содержимое"
+  },
+  "当前桌面": {
+    "en": "Current desktop",
+    "zh-TW": "目前的桌面",
+    "ja": "現在のデスクトップ",
+    "ko": "현재 바탕 화면",
+    "de": "Aktueller Desktop",
+    "fr": "Bureau actuel",
+    "ru": "Текущий рабочий стол"
+  },
+  "打开 Covelet 搜索": {
+    "en": "Open Covelet search",
+    "zh-TW": "開啟 Covelet 搜尋",
+    "ja": "Covelet 検索を開く",
+    "ko": "Covelet 검색 열기",
+    "de": "Covelet-Suche öffnen",
+    "fr": "Ouvrir la recherche Covelet",
+    "ru": "Открыть поиск Covelet"
+  },
+  "添加常用网站": {
+    "en": "Add favorite sites",
+    "zh-TW": "新增常用網站",
+    "ja": "よく使うサイトを追加",
+    "ko": "자주 쓰는 사이트 추가",
+    "de": "Häufig genutzte Websites hinzufügen",
+    "fr": "Ajouter des sites favoris",
+    "ru": "Добавить часто используемые сайты"
+  },
+  "空白开始": {
+    "en": "Start blank",
+    "zh-TW": "從空白開始",
+    "ja": "空白のまま始める",
+    "ko": "빈 화면으로 시작",
+    "de": "Leer starten",
+    "fr": "Commencer avec une page vide",
+    "ru": "Начать с пустого экрана"
+  },
+  "导入 Markdown 链接文件": {
+    "en": "Import Markdown links",
+    "zh-TW": "匯入 Markdown 連結檔案",
+    "ja": "Markdown のリンクをインポート",
+    "ko": "Markdown 링크 가져오기",
+    "de": "Markdown-Links importieren",
+    "fr": "Importer des liens Markdown",
+    "ru": "Импортировать ссылки из Markdown"
+  },
+  "全部导航": {
+    "en": "All shortcuts",
+    "zh-TW": "所有捷徑",
+    "ja": "すべてのショートカット",
+    "ko": "모든 바로가기",
+    "de": "Alle Verknüpfungen",
+    "fr": "Tous les raccourcis",
+    "ru": "Все ярлыки"
+  },
+  "没有可导出的网站。": {
+    "en": "No sites to export.",
+    "zh-TW": "沒有可匯出的網站。",
+    "ja": "エクスポートできるサイトがありません。",
+    "ko": "내보낼 사이트가 없습니다.",
+    "de": "Keine Websites zum Exportieren vorhanden.",
+    "fr": "Aucun site à exporter.",
+    "ru": "Нет сайтов для экспорта."
+  },
+  "导出范围": {
+    "en": "Export scope",
+    "zh-TW": "匯出範圍",
+    "ja": "エクスポート範囲",
+    "ko": "내보내기 범위",
+    "de": "Exportbereich",
+    "fr": "Éléments à exporter",
+    "ru": "Область экспорта"
+  },
+  "仅导出未标记隐藏的网站。": {
+    "en": "Sites marked as hidden are excluded.",
+    "zh-TW": "僅匯出未標記隱藏的網站。",
+    "ja": "非表示マークの付いたサイトは対象外です。",
+    "ko": "숨김으로 표시된 사이트는 제외됩니다.",
+    "de": "Als verborgen markierte Websites werden ausgelassen.",
+    "fr": "Les sites marqués comme masqués sont exclus.",
+    "ru": "Сайты с пометкой «Скрыто» исключены."
+  },
+  "导出书签 HTML": {
+    "en": "Export bookmarks as HTML",
+    "zh-TW": "匯出書籤 HTML",
+    "ja": "ブックマークを HTML でエクスポート",
+    "ko": "북마크를 HTML로 내보내기",
+    "de": "Lesezeichen als HTML exportieren",
+    "fr": "Exporter les favoris en HTML",
+    "ru": "Экспортировать закладки в HTML"
+  },
+  "目标位置已变化，请重新选择。": {
+    "en": "The destination changed. Choose it again.",
+    "zh-TW": "目標位置已變更，請重新選擇。",
+    "ja": "保存先が変わりました。選び直してください。",
+    "ko": "저장 위치가 변경되었습니다. 다시 선택해 주세요.",
+    "de": "Das Ziel hat sich geändert. Wähle es erneut aus.",
+    "fr": "La destination a changé. Sélectionnez-la à nouveau.",
+    "ru": "Место назначения изменилось. Выберите его снова."
+  },
+  "添加到桌面": {
+    "en": "Add to desktop",
+    "zh-TW": "加到桌面",
+    "ja": "デスクトップに追加",
+    "ko": "바탕 화면에 추가",
+    "de": "Zum Desktop hinzufügen",
+    "fr": "Ajouter au bureau",
+    "ru": "Добавить на рабочий стол"
+  },
+  "已添加到桌面。": {
+    "en": "Added to desktop.",
+    "zh-TW": "已加到桌面。",
+    "ja": "デスクトップに追加しました。",
+    "ko": "바탕 화면에 추가했습니다.",
+    "de": "Zum Desktop hinzugefügt.",
+    "fr": "Ajouté au bureau.",
+    "ru": "Добавлено на рабочий стол."
+  },
+  "整理所选网站": {
+    "en": "Organize selected sites",
+    "zh-TW": "整理所選網站",
+    "ja": "選択したサイトを整理",
+    "ko": "선택한 사이트 정리",
+    "de": "Ausgewählte Websites organisieren",
+    "fr": "Organiser les sites sélectionnés",
+    "ru": "Упорядочить выбранные сайты"
+  },
+  "操作": {
+    "en": "Action",
+    "zh-TW": "操作",
+    "ja": "操作",
+    "ko": "작업",
+    "de": "Aktion",
+    "fr": "Action",
+    "ru": "Действие"
+  },
+  "移动": {
+    "en": "Move",
+    "zh-TW": "移動",
+    "ja": "移動",
+    "ko": "이동",
+    "de": "Verschieben",
+    "fr": "Déplacer",
+    "ru": "Переместить"
+  },
+  "复制": {
+    "en": "Copy",
+    "zh-TW": "複製",
+    "ja": "コピー",
+    "ko": "복사",
+    "de": "Kopieren",
+    "fr": "Copier",
+    "ru": "Копировать"
+  },
+  "将移动 {0} 个网站。": {
+    "en": "Sites to move ({0})",
+    "zh-TW": "將移動 {0} 個網站。",
+    "ja": "{0} 件のサイトを移動します。",
+    "ko": "사이트 {0}개를 이동합니다.",
+    "de": "{0} Websites verschieben.",
+    "fr": "Déplacer {0} sites.",
+    "ru": "Переместить сайты ({0})"
+  },
+  "将复制 {0} 个网站。": {
+    "en": "Sites to copy ({0})",
+    "zh-TW": "將複製 {0} 個網站。",
+    "ja": "{0} 件のサイトをコピーします。",
+    "ko": "사이트 {0}개를 복사합니다.",
+    "de": "{0} Websites kopieren.",
+    "fr": "Copier {0} sites.",
+    "ru": "Копировать сайты ({0})"
+  },
+  "命名桌面、设置默认桌面并搜索跳转。": {
+    "en": "Name your desktops, choose a default, and jump between them from search.",
+    "zh-TW": "命名桌面、設定預設桌面並搜尋切換。",
+    "ja": "デスクトップに名前を付け、既定を選び、検索から切り替えられます。",
+    "ko": "바탕 화면에 이름을 지정하고 기본 화면을 선택한 뒤 검색으로 이동할 수 있습니다.",
+    "de": "Desktops benennen, einen Standard wählen und per Suche wechseln.",
+    "fr": "Nommez vos bureaux, choisissez le bureau par défaut et changez de bureau avec la recherche.",
+    "ru": "Назовите рабочие столы, выберите основной и переключайтесь через поиск."
+  },
+  "批量打开文件夹中的网站，或将链接保存到指定桌面。": {
+    "en": "Open sites from a folder together or save links to a chosen desktop.",
+    "zh-TW": "批次開啟資料夾內的網站，或將連結儲存到指定桌面。",
+    "ja": "フォルダー内のサイトをまとめて開いたり、指定したデスクトップにリンクを保存したりできます。",
+    "ko": "폴더의 사이트를 한 번에 열거나 원하는 바탕 화면에 링크를 저장하세요.",
+    "de": "Websites aus einem Ordner zusammen öffnen oder Links auf einem gewählten Desktop speichern.",
+    "fr": "Ouvrez plusieurs sites d’un dossier ou enregistrez des liens sur le bureau de votre choix.",
+    "ru": "Открывайте сайты из папки вместе или сохраняйте ссылки на выбранном рабочем столе."
+  },
+  "导入 Markdown 链接，按桌面或文件夹导出书签 HTML。": {
+    "en": "Import Markdown links and export bookmarks as HTML by desktop or folder.",
+    "zh-TW": "匯入 Markdown 連結，按桌面或資料夾匯出書籤 HTML。",
+    "ja": "Markdown リンクをインポートし、デスクトップやフォルダー単位でブックマークを HTML に書き出せます。",
+    "ko": "Markdown 링크를 가져오고 바탕 화면이나 폴더별로 북마크를 HTML로 내보내세요.",
+    "de": "Markdown-Links importieren und Lesezeichen je Desktop oder Ordner als HTML exportieren.",
+    "fr": "Importez des liens Markdown et exportez des favoris HTML par bureau ou par dossier.",
+    "ru": "Импортируйте ссылки из Markdown и экспортируйте закладки в HTML по рабочим столам или папкам."
   }
 }

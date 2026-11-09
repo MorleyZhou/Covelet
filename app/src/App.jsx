@@ -111,6 +111,8 @@ import ContentPreferences from './components/ContentPreferences.jsx';
 import PrivacyPasswordDialog, { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
 import BookmarkImport from './components/BookmarkImport.jsx';
 import BookmarkExport from './components/BookmarkExport.jsx';
+import LayoutTransfer from './components/LayoutTransfer.jsx';
+import { layoutTransferPreferences, saveLayoutTransfer } from './lib/navigation-destinations.js';
 import EmptyDesktop from './components/EmptyDesktop.jsx';
 import FolderLaunchDialog from './components/FolderLaunchDialog.jsx';
 import SearchFilters from './components/SearchFilters.jsx';
@@ -439,6 +441,7 @@ export function App() {
   const [activeScreen, setActiveScreen] = useState('0:0'), [draftPage, setDraftPage] = useState(null);
   const desktopScreen = useRef({ key: '0:0', page: 0, columns: 8, items: [] });
   const [screenManager, setScreenManager] = useState(false);
+  const transferCopies = useRef(new Map());
   const layoutPress = useRef(null), layoutLongClick = useRef(false);
   const mainRef = useRef(null), wallpaperRef = useRef(null);
   const [providerIconEpoch, setProviderIconEpoch] = useState(0);
@@ -499,21 +502,21 @@ export function App() {
   const layoutEditor = useLayoutEdit({ state, columns: desktopScreen.current.columns, activeKey: activeScreen,
     blocked: Boolean(modal || folderId || context || screenManager), onActiveChange: setActiveScreen,
     onError: (message) => notify(message, 'error'), onCancelDrag: () => cancelDrag(),
-    onBegin: () => { cancelDrag(); stopLayoutPress(); setFolder(null); setContext(null); setEngineMenu(false); setQuery(''); setFocused(false); setUndo(null); setNotice(null); setDraftPage(null); focusDesktop(); },
-    onEnd: () => { stopLayoutPress(); setContext(null); setScreenManager(false); setDraftPage(null); focusDesktop(); },
+    onBegin: () => { transferCopies.current.clear(); cancelDrag(); stopLayoutPress(); setFolder(null); setContext(null); setEngineMenu(false); setQuery(''); setFocused(false); setUndo(null); setNotice(null); setDraftPage(null); focusDesktop(); },
+    onEnd: () => { transferCopies.current.clear(); stopLayoutPress(); setContext(null); setScreenManager(false); setDraftPage(null); focusDesktop(); },
     onSave: async (next, revision) => {
-      const saved = demo ? { ...migrateNavigationState(next), revision: preferenceState.current.revision + 1 } : await saveState(next, revision);
+      const saved = demo ? { ...migrateNavigationState(next), revision: preferenceState.current.revision + 1 } : await saveLayoutTransfer(next, revision, transferCopies.current);
       setState(saved); preferenceState.current = saved; setError('');
       return saved;
     },
   });
   const desktopState = layoutEditor.draft || state;
   const presentation = contentPreferences.presentation;
-  const hiddenKeys = useMemo(() => privateContentKeys(state, contentPreferences), [state, contentPreferences]);
+  const hiddenKeys = useMemo(() => privateContentKeys(desktopState, layoutTransferPreferences(contentPreferences, transferCopies.current)), [desktopState, contentPreferences]);
   const privacyKey = presentation ? `hidden:${[...hiddenKeys].sort().join('\n')}` : 'public';
   const requestPrivacyUnlock = useCallback(() => setPrivacyDialog('unlock'), []);
   const presentationContext = useMemo(() => ({ active: presentation, hiddenKeys, requestUnlock: requestPrivacyUnlock }), [presentation, hiddenKeys, requestPrivacyUnlock]);
-  const privateEntryIds = useMemo(() => (state?.entries || []).filter((item) => hiddenKeys.has(`${item.type}:${item.id}`)).map((item) => item.id), [state, hiddenKeys]);
+  const privateEntryIds = useMemo(() => (desktopState?.entries || []).filter((item) => hiddenKeys.has(`${item.type}:${item.id}`)).map((item) => item.id), [desktopState, hiddenKeys]);
   useEffect(() => {
     setPresentationHint('');
     stopLayoutPress(); cancelDrag();
@@ -1390,7 +1393,18 @@ export function App() {
               onActiveChange={setActiveScreen} onScreenChange={(screen) => { desktopScreen.current = screen; }}
               onNewPage={(page) => layoutEditor.addPage(page)} renderTiles={renderTiles} />
           </section>
-        {layoutEditor.editing && <DesktopEditBar editor={layoutEditor} drag={drag} onManage={manageScreens} onDelete={requestLayoutDelete} />}
+        {layoutEditor.editing && <DesktopEditBar editor={layoutEditor} drag={drag} onManage={manageScreens} onDelete={requestLayoutDelete}
+          canTransfer={desktopState.entries.some((item) => item.type === 'site' && layoutEditor.selectedIds.includes(item.id))}
+          onTransfer={() => setModal({ kind: 'layout-transfer' })} />}
+        {modal?.kind === 'layout-transfer' && layoutEditor.editing && <Modal title={tr('整理所选网站')} onClose={() => setModal(null)}>
+          <LayoutTransfer state={desktopState} selectedIds={layoutEditor.selectedIds}
+            preferences={layoutTransferPreferences(contentPreferences, transferCopies.current)} columns={desktopScreen.current.columns}
+            onClose={() => setModal(null)} onApply={(result) => {
+              for (const [id, source] of result.copies) transferCopies.current.set(id, source);
+              layoutEditor.replaceDraft(result.state, result.ids, result.key);
+              setModal(null);
+            }} />
+        </Modal>}
         {modal?.kind === 'layout-delete' && layoutEditor.editing && <Modal title={modal.title} privacyKeys={modal.ids.flatMap((id) => desktopState.entries.filter((item) => item.id === id || item.parentId === id).map((item) => `${item.type}:${item.id}`))} onClose={() => setModal(null)}>
           <div className="form-stack">
             {modal.children > 0 && <p>{tr("文件夹内的 {0} 个网站也会删除。", [formatNumber(modal.children)])}</p>}
