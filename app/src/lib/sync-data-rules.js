@@ -2,7 +2,8 @@
 // synchronizer. All content namespaces, including future extensions, are open
 // by default; this is deliberately not a business-data whitelist.
 export const SYNC_JOB_KEY = 'covelet.data-sync.job.v1';
-const DEVICE_KEYS = new Set(['covelet.cloud.local.v1', 'covelet.tools.cloud.v1', 'covelet.data-sync.v1', 'covelet.data-sync.runs.v1', 'covelet.cloud.session.v1', 'covelet.privacy.lock.v1', 'covelet.ai.connection.v1', 'covelet.language.v1', 'covelet.home-migration.v1', 'covelet.wallpaper.source.v1', 'covelet.wallpaper.interval.v1', 'covelet.home-time.v1', SYNC_JOB_KEY]);
+export const DEFAULT_DESKTOP_KEY = 'covelet.default-desktop.v1';
+const DEVICE_KEYS = new Set(['covelet.cloud.local.v1', 'covelet.tools.cloud.v1', 'covelet.data-sync.v1', 'covelet.data-sync.runs.v1', 'covelet.cloud.session.v1', 'covelet.privacy.lock.v1', 'covelet.ai.connection.v1', 'covelet.language.v1', 'covelet.home-migration.v1', 'covelet.wallpaper.source.v1', 'covelet.wallpaper.interval.v1', 'covelet.home-time.v1', 'covelet.empty-desktop-dismissed.v1', DEFAULT_DESKTOP_KEY, SYNC_JOB_KEY]);
 const PREFERENCES = 'covelet.content.preferences.v1';
 const NAVIGATION = 'owntab.local.v1';
 const TOOLS = 'covelet.tools.v1';

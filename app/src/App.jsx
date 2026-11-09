@@ -101,7 +101,9 @@ import TimeAndDateSettings from './components/TimeAndDateSettings.jsx';
 import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashPanel } from "./components/PersonalTools.jsx";
 import usePersonalTools from './lib/use-personal-tools.js';
 import { exactDesktopMatches, searchCoveletContent } from './lib/content-search.js';
-import { namedDesktopRecords } from './lib/desktop-pages.js';
+import { defaultDesktopPage, desktopPageName, logicalDesktopPages, namedDesktopRecords, withDesktopPageIdentity } from './lib/desktop-pages.js';
+import { localData } from './lib/local-data.js';
+import { DEFAULT_DESKTOP_KEY } from './lib/sync-data-rules.js';
 import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode } from './lib/content-preferences.js';
 import { PresentationContext, privateContentKeys } from './lib/presentation.js';
 import ContentPreferences from './components/ContentPreferences.jsx';
@@ -527,12 +529,17 @@ export function App() {
   }, [state, modal?.kind, modal?.id]);
   useEffect(() => {
     let mounted = true, initial = true;
-    (demo ? Promise.resolve(createInitialState()) : loadState())
-      .then(async (value) => {
+    const defaultId = demo ? Promise.resolve(null) : localData.get(DEFAULT_DESKTOP_KEY).then((data) => data[DEFAULT_DESKTOP_KEY]).catch(() => null);
+    const show = (value, id) => {
+      if (initial) { initial = false; setActiveScreen(`${defaultDesktopPage(value, id)}:0`); }
+      setState(value);
+    };
+    Promise.all([demo ? Promise.resolve(createInitialState()) : loadState(), defaultId])
+      .then(async ([value, id]) => {
         if (!mounted || !initial) return;
         await prepareNavigationIconCache(value);
         if (mounted && initial) {
-          setState(value);
+          show(value, id);
         }
       })
       .catch((e) => {
@@ -540,10 +547,10 @@ export function App() {
       });
     const off = demo
       ? () => {}
-      : subscribeState((value) => {
+      : subscribeState(async (value) => {
+          const id = await defaultId;
           if (!mounted) return;
-          initial = false;
-          setState(value);
+          show(value, id);
           setFolder((id) =>
             value.entries.some((e) => e.id === id) ? id : null,
           );
@@ -1575,6 +1582,14 @@ function Settings({
     [newTemplate, setNewTemplate] = useState(""),
     [error, setError] = useState("");
   const [saving, setSaving] = useState({ phase: "idle" });
+  const [defaultId, setDefaultId] = useState(null), [choosingDefault, setChoosingDefault] = useState(false);
+  useEffect(() => {
+    let active = true;
+    if (!demo) localData.get(DEFAULT_DESKTOP_KEY).then((data) => {
+      if (active) setDefaultId(data[DEFAULT_DESKTOP_KEY] ?? null);
+    }).catch((reason) => { if (active) setError(userErrorMessage(reason)); });
+    return () => { active = false; };
+  }, []);
   const panelRef = useRef(null);
   useLayoutEffect(() => { if (panelRef.current) panelRef.current.scrollTop = 0; }, [tab]);
   const settingsMounted = useRef(false), saveCallbacks = useRef(null);
@@ -1596,6 +1611,25 @@ function Settings({
   async function afterSave(action) {
     if (busy) return;
     try { const latest = await saver.flush(); await action(latest); } catch { /* The save error stays visible. */ }
+  }
+  async function chooseDefaultPage(page) {
+    if (choosingDefault || busy) return;
+    setChoosingDefault(true); setError('');
+    try {
+      await saver.flush();
+      const latest = await readPreferences(), previousId = state.settings.desktopPages?.[page]?.id;
+      if (previousId) {
+        if (!Object.values(latest.settings.desktopPages ?? {}).some((value) => value.id === previousId)) throw Error(tr('这一屏已发生变化，请重新打开屏幕管理。'));
+      } else if (latest.revision !== state.revision || !logicalDesktopPages(latest).includes(page)) {
+        throw Error(tr('这一屏已发生变化，请重新打开屏幕管理。'));
+      }
+      const settings = previousId ? latest.settings : withDesktopPageIdentity(latest.settings, page);
+      if (settings !== latest.settings) await writePreferences({ ...latest, settings }, latest.revision);
+      const id = previousId || settings.desktopPages[page].id;
+      if (!demo) await localData.set({ [DEFAULT_DESKTOP_KEY]: id });
+      setDefaultId(id);
+    } catch (reason) { setError(userErrorMessage(reason)); }
+    finally { setChoosingDefault(false); }
   }
   function closeSettings() { afterSave(onClose); }
   async function refreshPreferences() {
@@ -1678,6 +1712,9 @@ function Settings({
         )}
         {tab === "layout" && (
           <>
+            <Select label={tr('默认桌面')} value={defaultDesktopPage(state, defaultId)}
+              options={logicalDesktopPages(state).map((page) => ({ value: page, label: desktopPageName(state.settings, page) }))}
+              disabled={busy || choosingDefault} onChange={chooseDefaultPage} />
             <Range
               label={tr("每行图标数量")}
               value={draft.columns}
