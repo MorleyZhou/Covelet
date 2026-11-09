@@ -645,8 +645,10 @@ export function App() {
     if (!state || !query.trim()) return [];
     const { entries, tools } = scopeSearchContent(state, personalData, searchFilter, searchPage);
     const visible = presentation ? hiddenKeys : undefined;
+    const pages = logicalDesktopPages(state);
     return searchCoveletContent(entries, tools, query, { aliases: contentPreferences.aliases, hiddenKeys: visible, desktops })
-      .map((item) => ({ ...item, path: navigationResultPath(item, state, visible, (page) => desktopPageName(state.settings, page)) }));
+      .map((item) => ({ ...item, path: item.type === 'desktop' ? tr('第 {0} 屏', [formatNumber(pages.indexOf(item.record.page) + 1)])
+        : navigationResultPath(item, state, visible, (page) => desktopPageName(state.settings, page)) }));
   }, [state, personalData, query, contentPreferences, presentation, hiddenKeys, desktops, searchFilter, searchPage]);
   useEffect(() => { setCandidate((value) => Math.min(value, candidates.length - 1)); }, [candidates.length]);
   useLayoutEffect(() => {
