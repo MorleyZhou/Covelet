@@ -1,6 +1,6 @@
 import { tr } from "../i18n/index.js";
 import { useEffect, useRef, useState } from 'react';
-import { beginDesktopEdit, addDesktopScreen, removeDesktopScreen, renameDesktopPage } from './desktop-edit.js';
+import { beginDesktopEdit, addDesktopScreen, removeDesktopScreen, renameDesktopPage, moveDesktopPage } from './desktop-edit.js';
 import { createLayoutHistory, updateLayoutHistoryView, recordLayoutHistory, undoLayoutHistory, redoLayoutHistory,
   layoutHistoryScreen, layoutHistoryShortcut } from './layout-history.js';
 
@@ -74,6 +74,15 @@ export function useLayoutEdit(options) {
       return true;
     } catch (reason) { return failed(reason); }
   }
+  function movePage(page, offset) {
+    const original = mutableSession();
+    if (!original) return;
+    try {
+      const { activeKey, columns } = latest.current;
+      const next = moveDesktopPage(original.draft, page, offset, activeKey, columns);
+      if (next) replaceDraft(next.state, selection.current, next.key);
+    } catch (reason) { failed(reason); }
+  }
   function moveHistory(direction) {
     const original = mutableSession();
     if (!original) return;
@@ -121,5 +130,5 @@ export function useLayoutEdit(options) {
     error: conflict ? tr("导航已在其他页面更新，请退出编辑后重试。") : error,
     conflict, canUndo: Boolean(session?.history.past.length) && !saving && !conflict,
     canRedo: Boolean(session?.history.future.length) && !saving && !conflict,
-    begin, replaceDraft, addPage, removePage, renamePage, undo, redo, cancel, save };
+    begin, replaceDraft, addPage, removePage, renamePage, movePage, undo, redo, cancel, save };
 }

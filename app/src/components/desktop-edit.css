@@ -43,7 +43,9 @@
 .desktop-screen-card-footer .folder-name-editor { min-width: 0; }
 .desktop-screen-card-footer .folder-name-input { font-size: inherit; text-align: start; width: 100%; }
 .desktop-screen-card-footer svg { color: var(--accent); }
-.desktop-screen-card-footer .desktop-screen-delete { padding: 6px; border-radius: 8px; }
+.desktop-screen-actions { display: flex; align-items: center; flex-shrink: 0; }
+.desktop-screen-actions button { padding: 6px; border-radius: 8px; }
+.desktop-screen-actions button:disabled { opacity: .3; }
 .desktop-screen-delete svg { color: #c65b54; }
 .desktop-screen-delete:disabled { opacity: .3; }
 .desktop-screen-new { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; min-height: 110px; border-radius: 17px; color: var(--muted); background: color-mix(in srgb, var(--ink) 4%, transparent); font-size: 12px; }
