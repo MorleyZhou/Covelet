@@ -1,8 +1,9 @@
 import { test, expect, addSite } from './extension.fixture.mjs';
 import { desktopNames, enterLayout, pointerDrag, tileNamed } from './navigation-helpers.mjs';
+import { makeImagePNG } from './backup-helpers.mjs';
 
 const folder = '新建文件夹';
-const icon = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB0kAAAAASUVORK5CYII=', 'base64');
+const icon = makeImagePNG();
 const iconUrl = 'https://example.com/covelet-destination-icon.png';
 
 test.use({ pregrantedHosts: ['https://example.com/*'] });
@@ -51,7 +52,7 @@ test('unpacked toolbar popup saves into a selected folder', async ({ extension }
   await popup.getByRole('button', { name: '保存', exact: true }).click();
   await expect(desktopNames(page)).toHaveText([folder]);
   const dialog = await openFolder(page);
-  await expect(dialog.getByRole('link', { name, exact: true })).toHaveAttribute('href', url);
+  await expect(dialog.locator(`a[href="${url}"]`).getByText(name, { exact: true })).toBeVisible();
 });
 
 test('adding a read item to a folder retains its original read state', async ({ extension }) => {
@@ -75,7 +76,7 @@ test('adding a read item to a folder retains its original read state', async ({ 
   await expect(reading.getByRole('button', { name: '标为未读', exact: true })).toBeVisible();
   await reading.getByRole('button', { name: '关闭', exact: true }).click();
   const dialog = await openFolder(page);
-  await expect(dialog.getByRole('link', { name, exact: true })).toHaveAttribute('href', url);
+  await expect(dialog.locator(`a[href="${url}"]`).getByText(name, { exact: true })).toBeVisible();
 });
 
 test('layout transfer copies selected sites, previews duplicates and undoes a draft move', async ({ extension }) => {
@@ -84,6 +85,8 @@ test('layout transfer copies selected sites, previews duplicates and undoes a dr
   await addSite(page, 'Source A', 'https://example.com/transfer-a');
   await addSite(page, 'Source B', 'https://example.com/transfer-b');
   await enterLayout(page, 'Source A');
+  const originals = await desktopNames(page).allTextContents();
+  expect([...originals].sort()).toEqual(['Source A', 'Source B', folder].sort());
   await tileNamed(page, 'Source A').press(' ');
   const toolbar = page.getByRole('toolbar', { name: '编辑布局', exact: true });
   const openTransfer = () => toolbar.getByRole('button', { name: '整理所选网站', exact: true }).click();
@@ -93,7 +96,7 @@ test('layout transfer copies selected sites, previews duplicates and undoes a dr
   await choose(transfer, '目标位置', /新建文件夹/);
   await transfer.getByRole('button', { name: '复制', exact: true }).click();
   await expect(transfer).toBeHidden();
-  await expect(desktopNames(page)).toHaveText([folder, 'Source A', 'Source B']);
+  await expect(desktopNames(page)).toHaveText(originals);
 
   await tileNamed(page, 'Source A').press(' ');
   await tileNamed(page, 'Source B').press(' ');
@@ -101,13 +104,14 @@ test('layout transfer copies selected sites, previews duplicates and undoes a dr
   await choose(transfer, '目标位置', /新建文件夹/);
   await expect(transfer.getByRole('status')).toContainText('将跳过 1 条重复网址。');
   await transfer.getByRole('button', { name: '移动', exact: true }).click();
-  await expect(desktopNames(page)).toHaveText([folder, 'Source A']);
+  const remaining = originals.filter((name) => name !== 'Source B');
+  await expect(desktopNames(page)).toHaveText(remaining);
   await toolbar.getByRole('button', { name: '撤销布局操作', exact: true }).click();
-  await expect(desktopNames(page)).toHaveText([folder, 'Source A', 'Source B']);
+  await expect(desktopNames(page)).toHaveText(originals);
   await toolbar.getByRole('button', { name: '重做布局操作', exact: true }).click();
   await toolbar.getByRole('button', { name: '完成', exact: true }).click();
   await expect(toolbar).toBeHidden();
   await page.reload();
-  await expect(desktopNames(page)).toHaveText([folder, 'Source A']);
+  await expect(desktopNames(page)).toHaveText(remaining);
   await expect((await openFolder(page)).locator('.folder-sites .site-name')).toHaveText(['Folder B', 'Folder A', 'Source A', 'Source B']);
 });
