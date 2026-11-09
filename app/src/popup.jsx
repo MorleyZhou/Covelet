@@ -29,7 +29,7 @@ import { Input } from './components/ui/input.jsx';
 import { Button } from './components/ui/button.jsx';
 import { Disclosure } from './components/ui/disclosure.jsx';
 import NavigationDestination from './components/NavigationDestination.jsx';
-import { appendSiteAt, desktopDestinationValue, destinationChanged, navigationDestination, siteAtDestination, siteDestinationValue } from './lib/navigation-destinations.js';
+import { appendSiteAt, desktopDestinationValue, destinationChanged, inheritedSitePrivacy, navigationDestination, siteAtDestination, siteDestinationValue } from './lib/navigation-destinations.js';
 
 const hiddenEntry = (entry, preferences) => Boolean(preferences.presentation && entry
   && privateContentKeys({ entries: [entry] }, preferences).has(`site:${entry.id}`));
@@ -195,8 +195,8 @@ function AddCurrentPage() {
       }
       await saveStateWithPrivacy(next, latest.revision, (current, commit) => {
         if (hiddenEntry(existing, current)) throw Error(tr('请先输入密码解除隐藏。'));
-        navigationDestination(latest, targetValue, current);
-        return commit();
+        const currentTarget = navigationDestination(latest, targetValue, current);
+        return commit(inheritedSitePrivacy(existing, currentTarget, current));
       });
       window.close();
     } catch (reason) {

@@ -30,6 +30,11 @@ export function siteAtDestination(site, target) {
   return site.type === 'site' && site.parentId === target.parentId && (target.parentId !== null || (site.page ?? 0) === target.page);
 }
 
+export function inheritedSitePrivacy(site, target, preferences) {
+  const hiddenFolder = (id) => id && preferences.privateKeys.includes(`folder:${id}`);
+  return hiddenFolder(site?.parentId) && !hiddenFolder(target.parentId) ? [`site:${site.id}`] : [];
+}
+
 export function appendSiteAt(state, site, target) {
   const order = state.entries.filter((item) => item.parentId === target.parentId).length;
   const entry = { ...site, ...target, order };

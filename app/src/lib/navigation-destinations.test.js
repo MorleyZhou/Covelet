@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createEmptyState, letterIcon } from './model.js';
-import { desktopDestinationValue, navigationDestination, prepareLayoutTransfer, previewLayoutTransfer, layoutTransferPreferences } from './navigation-destinations.js';
+import { desktopDestinationValue, inheritedSitePrivacy, navigationDestination, prepareLayoutTransfer, previewLayoutTransfer, layoutTransferPreferences } from './navigation-destinations.js';
 
 const preferences = { privateKeys: [], presentation: false };
 const folder = { id: 'destination', type: 'folder', groupId: 'group-home', parentId: null, name: 'Folder', page: 1, order: 2, icon: letterIcon('F') };
@@ -36,6 +36,16 @@ test('old folders without a page remain on the first screen and occupied undecla
   state.settings.desktopPages = { 1: { id: '4', name: 'Numeric identifier' } };
   assert.deepEqual(navigationDestination(state, 'page-id:4', preferences), { page: 1, parentId: null });
   assert.deepEqual(navigationDestination(state, 'page:4', preferences), { page: 4, parentId: null });
+});
+
+test('moving a bookmark out of a private folder preserves its effective privacy', () => {
+  const current = { ...preferences, privateKeys: ['folder:destination', 'folder:another-private'] };
+  const child = site('child', 0, 1, 'destination');
+  assert.deepEqual(inheritedSitePrivacy(child, { page: 0, parentId: null }, current), ['site:child']);
+  assert.deepEqual(inheritedSitePrivacy(child, { page: 1, parentId: 'public-folder' }, current), ['site:child']);
+  assert.deepEqual(inheritedSitePrivacy(child, { page: 1, parentId: 'another-private' }, current), []);
+  assert.deepEqual(inheritedSitePrivacy(child, { page: 1, parentId: 'destination' }, current), []);
+  assert.deepEqual(inheritedSitePrivacy(undefined, { page: 0, parentId: null }, current), []);
 });
 
 test('bulk move is a draft-only operation preserving source order, IDs and unrelated positions', () => {
