@@ -369,7 +369,13 @@
     "en": "Today’s wallpaper is updated."
   },
   "仅支持 HTTP 和 HTTPS 网址": {
-    "en": "Only HTTP and HTTPS URLs are supported."
+    "en": "Only HTTP and HTTPS URLs are supported",
+    "zh-TW": "僅支援 HTTP 和 HTTPS 網址",
+    "ja": "HTTP と HTTPS の URL に対応しています",
+    "ko": "HTTP 및 HTTPS 주소만 지원합니다",
+    "de": "Nur HTTP- und HTTPS-Adressen werden unterstützt",
+    "fr": "Seules les URL HTTP et HTTPS sont prises en charge",
+    "ru": "Поддерживаются только адреса HTTP и HTTPS"
   },
   "局部视觉分析失败。": {
     "en": "Local contrast analysis failed."
@@ -429,7 +435,13 @@
     "en": "Invalid daily background source."
   },
   "目标位置": {
-    "en": "Target position"
+    "en": "Destination",
+    "zh-TW": "目標位置",
+    "ja": "保存先",
+    "ko": "대상 위치",
+    "de": "Ziel",
+    "fr": "Destination",
+    "ru": "Место назначения"
   },
   "目标文件夹无效": {
     "en": "Invalid destination folder."
@@ -1035,10 +1047,22 @@
     "en": "This link is already in Read later."
   },
   "这条记录已在其他页面修改，请重新打开后再保存。": {
-    "en": "This record changed in another page. Reopen it before saving."
+    "en": "This item changed in another tab. Reopen it before saving.",
+    "zh-TW": "這筆記錄已在其他分頁修改，請重新開啟後再儲存。",
+    "ja": "別のタブで項目が変更されました。開き直してから保存してください。",
+    "ko": "다른 탭에서 이 항목이 변경되었습니다. 다시 열어서 저장해 주세요.",
+    "de": "Dieser Eintrag wurde in einem anderen Tab geändert. Öffne ihn vor dem Speichern erneut.",
+    "fr": "Cet élément a été modifié dans un autre onglet. Rouvrez-le avant de l’enregistrer.",
+    "ru": "Эта запись изменена в другой вкладке. Откройте её снова перед сохранением."
   },
   "这一屏已发生变化，请重新打开屏幕管理。": {
-    "en": "This screen changed. Reopen screen management."
+    "en": "This desktop changed. Reopen Screen Management.",
+    "zh-TW": "這一屏已變更，請重新開啟螢幕管理。",
+    "ja": "デスクトップが変更されました。画面管理を開き直してください。",
+    "ko": "이 화면이 변경되었습니다. 화면 관리를 다시 열어 주세요.",
+    "de": "Dieser Desktop hat sich geändert. Öffne die Bildschirmverwaltung erneut.",
+    "fr": "Ce bureau a changé. Rouvrez la gestion des écrans.",
+    "ru": "Рабочий стол изменился. Снова откройте управление экранами."
   },
   "正在读取并合并加密配置。": {
     "en": "Reading and merging encrypted settings."
@@ -1068,7 +1092,13 @@
     "en": "Keep at least one screen."
   },
   "主屏幕列表无效": {
-    "en": "Invalid home screen list."
+    "en": "Invalid desktop list",
+    "zh-TW": "主螢幕清單無效",
+    "ja": "デスクトップ一覧が無効です",
+    "ko": "바탕 화면 목록이 잘못되었습니다",
+    "de": "Ungültige Desktop-Liste",
+    "fr": "Liste de bureaux non valide",
+    "ru": "Недопустимый список рабочих столов"
   },
   "主屏幕数量已达上限。": {
     "en": "The maximum number of screens has been reached."
