@@ -127,6 +127,11 @@ const recordFor = (collection, id, revision) => {
   if (!record || record.revision !== revision) fail(tr("这条记录已在其他页面修改，请重新打开后再保存。"));
   return record;
 };
+// The caller already holds the navigation and preference locks, in sync order.
+export function withReadingRecord(id, revision, action) {
+  if (!globalThis.navigator?.locks?.request) throw Error(tr('内容未能保存，请重试。'));
+  return navigator.locks.request(KEY, async () => action(recordFor((await readPersonalTools()).reading, id, revision)));
+}
 const newRecord = (label) => ({ id: crypto.randomUUID(), revision: 1, createdAt: Date.now(), updatedAt: Date.now(), title: label });
 function moveToTrash(data, kind, record) {
   if (data.trash.length >= PERSONAL_TRASH_LIMITS.maxRecords) fail(tr('回收站已满，请先备份或清理回收站。'));
