@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Input } from './ui/input.jsx';
 
 /** An inline folder title. The caller owns persistence and conflict checks. */
-export default function FolderName({ name, onSave }) {
+export default function FolderName({ name, onSave, label = tr('文件夹名称'), placeholder, allowEmpty = false }) {
   const inputRef = useRef(null);
   const latestName = useRef(name);
   const originalName = useRef(name);
@@ -39,7 +39,7 @@ export default function FolderName({ name, onSave }) {
   async function save() {
     if (saving.current || composing.current) return;
     const value = draftRef.current.trim();
-    if (!value || /[\u0000-\u001f\u007f]/u.test(draftRef.current)) {
+    if ((!value && !allowEmpty) || /[\u0000-\u001f\u007f]/u.test(draftRef.current)) {
       setError(!value ? tr("名称不能为空。") : tr("名称不能包含控制字符。"));
       return;
     }
@@ -80,7 +80,8 @@ export default function FolderName({ name, onSave }) {
       <Input unstyled
         ref={inputRef}
         className="folder-name-input"
-        aria-label={tr("文件夹名称")}
+        aria-label={label}
+        placeholder={placeholder}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         aria-busy={pending || undefined}

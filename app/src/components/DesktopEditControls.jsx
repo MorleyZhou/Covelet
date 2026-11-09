@@ -1,6 +1,8 @@
 import { tr, builtinName, formatNumber } from "../i18n/index.js";
 import { Plus, Trash, Check, SquaresFour, ArrowCounterClockwise, ArrowClockwise, LockSimple } from '@phosphor-icons/react';
 import { DESKTOP_ROWS, layoutDesktop } from '../lib/desktop-layout.js';
+import { desktopPageName } from '../lib/desktop-pages.js';
+import FolderName from './FolderName.jsx';
 import './desktop-edit.css';
 import { Button } from './ui/button.jsx';
 
@@ -31,7 +33,7 @@ export function DesktopScreenManager({ Dialog, state, columns, activeKey, editor
   return <Dialog title={tr("屏幕管理")} onClose={onClose} wide className="desktop-screen-manager">
     <div className="desktop-screen-list">
       {screens.map((screen, index) => <div className={`desktop-screen-card ${screen.key === activeKey ? 'is-current' : ''}`} key={screen.key}>
-        <Button variant="unstyled" size="unstyled" type="button" className="desktop-screen-preview" aria-label={tr("前往第 {0} 屏", [index + 1])} aria-current={screen.key === activeKey ? 'page' : undefined}
+        <Button variant="unstyled" size="unstyled" type="button" className="desktop-screen-preview" aria-label={state.settings.desktopPages?.[screen.page]?.name ? tr('前往 {0}', [desktopPageName(state.settings, screen.page)]) : tr("前往第 {0} 屏", [index + 1])} aria-current={screen.key === activeKey ? 'page' : undefined}
           onClick={() => { onSelect(screen.key); onClose(); }}>
           <span className="desktop-screen-mini-grid" style={{ '--preview-columns': columns, '--preview-rows': DESKTOP_ROWS }} aria-hidden="true">
             {screen.items.map((entry) => {
@@ -44,7 +46,11 @@ export function DesktopScreenManager({ Dialog, state, columns, activeKey, editor
             })}
           </span>
         </Button>
-        <div className="desktop-screen-card-footer"><span>{tr("第 {0} 屏", [formatNumber(index + 1)])}{screen.key === activeKey && <Check size={14} aria-hidden="true" />}</span>
+        <div className="desktop-screen-card-footer"><span>{screen.key === `${screen.page}:0`
+          ? <FolderName name={state.settings.desktopPages?.[screen.page]?.name || ''} allowEmpty
+            placeholder={tr("第 {0} 屏", [formatNumber(index + 1)])} label={tr('第 {0} 屏名称', [formatNumber(index + 1)])}
+            onSave={(name) => editor.renamePage(screen.page, name)} />
+          : tr("第 {0} 屏", [formatNumber(index + 1)])}{screen.key === activeKey && <Check size={14} aria-hidden="true" />}</span>
           <Button variant="unstyled" size="unstyled" type="button" className="desktop-screen-delete" aria-label={tr("删除第 {0} 屏", [index + 1])} title={screens.length === 1 ? tr("至少保留一屏") : tr("删除屏幕")}
             disabled={screens.length === 1 || editor.saving} onClick={() => editor.removePage(screen.key)}><Trash size={17} /></Button>
         </div>

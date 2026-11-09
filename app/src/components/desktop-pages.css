@@ -11,6 +11,7 @@
 .desktop-placement-target { min-width: 0; height: 100%; align-self: stretch; border-radius: 18px; background: #ffffff16; outline: 1px dashed #ffffff70; outline-offset: -4px; pointer-events: none; }
 .desktop-page .desktop-grid { grid-template-rows: repeat(var(--desktop-rows, 6), var(--grid-row, 120px)); height: auto; min-height: 0; align-content: start; }
 .desktop-page-controls { flex: none; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fff; }
+.desktop-page-name { min-width: 0; max-width: min(18ch, 25vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 .desktop-page-controls button { width: 30px; height: 30px; display: grid; place-items: center; flex-shrink: 0; color: inherit; border-radius: 50%; }
 .desktop-page-controls button:hover { background: #ffffff24; }
 .desktop-page-controls button:disabled { opacity: 0; pointer-events: none; }

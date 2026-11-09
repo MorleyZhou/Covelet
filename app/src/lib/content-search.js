@@ -122,7 +122,7 @@ function noteExcerpt(body, tokens) {
  * Title/alias matching also supports approximate Chinese pinyin initials.
  * Results retain original entry/record references and original URLs.
  */
-export function searchCoveletContent(navigation, tools, query, { aliases = {}, hiddenKeys = [], limit = 24 } = {}) {
+export function searchCoveletContent(navigation, tools, query, { aliases = {}, hiddenKeys = [], desktops = [], limit = 24 } = {}) {
   const normalized = normalize(query);
   const boundedLimit = Number.isFinite(limit) ? Math.min(MAX_RESULTS, Math.max(0, Math.floor(limit))) : 24;
   if (!normalized || normalized.length > 2000 || !boundedLimit) return [];
@@ -147,6 +147,7 @@ export function searchCoveletContent(navigation, tools, query, { aliases = {}, h
       ...(['site', 'folder'].includes(type) ? { entry: record } : { record }), score });
   };
 
+  for (const record of desktops) add('desktop', record);
   for (const entry of Array.isArray(navigation) ? navigation : navigation?.entries ?? []) {
     if (['site', 'folder'].includes(entry?.type)) add(entry.type, entry);
   }
@@ -154,4 +155,9 @@ export function searchCoveletContent(navigation, tools, query, { aliases = {}, h
   for (const record of tools?.reading ?? []) add('reading', record);
   // Modern JS sort is stable: identical scores retain saved navigation/tool order.
   return results.sort((left, right) => right.score - left.score).slice(0, boundedLimit);
+}
+
+export function exactDesktopMatches(desktops, query) {
+  const title = normalize(query);
+  return title ? desktops.filter((desktop) => normalize(desktop.title) === title) : [];
 }

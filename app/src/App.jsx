@@ -100,7 +100,8 @@ import HomeTime from "./components/HomeTime.jsx";
 import TimeAndDateSettings from './components/TimeAndDateSettings.jsx';
 import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashPanel } from "./components/PersonalTools.jsx";
 import usePersonalTools from './lib/use-personal-tools.js';
-import { searchCoveletContent } from './lib/content-search.js';
+import { exactDesktopMatches, searchCoveletContent } from './lib/content-search.js';
+import { namedDesktopRecords } from './lib/desktop-pages.js';
 import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode } from './lib/content-preferences.js';
 import { PresentationContext, privateContentKeys } from './lib/presentation.js';
 import ContentPreferences from './components/ContentPreferences.jsx';
@@ -613,9 +614,10 @@ export function App() {
   const wallpaperAppearance = useWallpaperAppearance(imageUrl, visualEnabled);
   const adaptive = visualEnabled && wallpaperAppearance.phase === "ready"
     ? createAdaptiveAppearance(wallpaperAppearance.palette, settings.shade) : null;
+  const desktops = useMemo(() => settings ? namedDesktopRecords(settings) : [], [settings]);
   const candidates = useMemo(() => state && query.trim()
-    ? searchCoveletContent(state, personalData, query, { aliases: contentPreferences.aliases, hiddenKeys: presentation ? hiddenKeys : [], limit: 24 }) : [],
-  [state, personalData, query, contentPreferences, presentation, hiddenKeys]);
+    ? searchCoveletContent(state, personalData, query, { aliases: contentPreferences.aliases, hiddenKeys: presentation ? hiddenKeys : [], desktops, limit: 24 }) : [],
+  [state, personalData, query, contentPreferences, presentation, hiddenKeys, desktops]);
   useEffect(() => { setCandidate((value) => Math.min(value, candidates.length - 1)); }, [candidates.length]);
   useLayoutEffect(() => {
     const list = suggestionsRef.current, option = list?.children[candidate];
@@ -748,6 +750,11 @@ export function App() {
     if (['site', 'folder'].includes(item.type)) { openEntry(item.entry); return; }
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
     setQuery(''); setFocused(false); setCandidate(-1); setFolder(null); setContext(null);
+    if (item.type === 'desktop') {
+      setActiveScreen(`${item.record.page}:0`);
+      focusDesktop();
+      return;
+    }
     setModal({ kind: 'personal-content', type: item.type, recordId: item.id });
   }
   async function saveFolderName(name, originalName) {
@@ -779,10 +786,14 @@ export function App() {
         if (settings.openNewTab)
           window.open(url, "_blank", "noopener,noreferrer");
         else location.assign(url);
-      } else
+      } else {
+        const matches = exactDesktopMatches(desktops, query);
+        if (matches.length === 1) { openContent({ type: 'desktop', record: matches[0] }); return; }
+        if (matches.length > 1) { setFocused(true); return; }
         await submitWebSearch(query, provider, state.providers, {
           newTab: settings.openNewTab,
         });
+      }
     } catch (e) {
       notify(userErrorMessage(e), "error");
     }
@@ -1294,12 +1305,12 @@ export function App() {
                   className={candidate === i ? "selected" : ""}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => openContent(item)}
-                  onContextMenu={(event) => { event.preventDefault(); setModal({ kind: 'content-preferences', key: item.key }); setFocused(false); }}
+                  onContextMenu={(event) => { event.preventDefault(); if (item.type === 'desktop') return; setModal({ kind: 'content-preferences', key: item.key }); setFocused(false); }}
                 >
-                  {['site', 'folder'].includes(item.type) ? <SiteIcon entry={item.entry} small children={state.entries.filter((entry) => entry.parentId === item.id && (!presentation || !hiddenKeys.has(`site:${entry.id}`)))} /> : <span className="content-result-icon">{item.type === 'note' ? <NotePencil size={22} /> : <BookOpen size={22} />}</span>}
+                  {['site', 'folder'].includes(item.type) ? <SiteIcon entry={item.entry} small children={state.entries.filter((entry) => entry.parentId === item.id && (!presentation || !hiddenKeys.has(`site:${entry.id}`)))} /> : <span className="content-result-icon">{item.type === 'desktop' ? <SquaresFour size={22} /> : item.type === 'note' ? <NotePencil size={22} /> : <BookOpen size={22} />}</span>}
                   <span>
                     <strong>{item.title}</strong>
-                    <small>{item.type === 'site' ? tr('网站') : item.type === 'folder' ? tr('文件夹') : item.type === 'note' ? tr('便笺') : tr('稍后读')}{item.subtitle ? ` · ${item.subtitle}` : ''}</small>
+                    <small>{item.type === 'desktop' ? tr('桌面') : item.type === 'site' ? tr('网站') : item.type === 'folder' ? tr('文件夹') : item.type === 'note' ? tr('便笺') : tr('稍后读')}{item.subtitle ? ` · ${item.subtitle}` : ''}</small>
                   </span>
                   <ArrowSquareOut size={18} />
                 </Button>

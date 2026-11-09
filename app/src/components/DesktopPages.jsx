@@ -13,6 +13,7 @@ export default function DesktopPages({ settings, entries, activeKey, draftPage, 
   const requested = screens.findIndex((screen) => screen.key === activeKey);
   const active = requested >= 0 ? requested : Math.max(0, screens.findIndex((screen) => screen.page === Number(activeKey.split(':')[0])));
   const current = screens[active];
+  const currentName = settings.desktopPages?.[current.page]?.name;
   const dropSize = drag ? desktopFootprint(drag.item, metrics.columns) : null;
   const nextPage = editing ? draftPage ?? nextDesktopPage(entries, settings.pages) : null;
   const newKey = nextPage === null ? null : `${nextPage}:0`;
@@ -153,6 +154,7 @@ export default function DesktopPages({ settings, entries, activeKey, draftPage, 
       </>}
     </div>
     <nav className="desktop-page-controls" aria-label={tr("主屏幕分页")} data-layout-control={editing ? '' : undefined}>
+      {currentName && <span className="desktop-page-name" dir="auto" title={currentName}>{currentName}</span>}
       <Button variant="unstyled" size="unstyled" type="button" className="desktop-page-arrow" aria-label={tr("上一屏")} disabled={active === 0} onClick={() => change(active - 1)} {...dropAttributes(screens[active - 1], 'previous')}><CaretLeft size={17} /></Button>
       <div className="desktop-page-dots">
         {nearby.map(({ screen, index }) => <Button variant="unstyled" size="unstyled" key={screen.key} type="button" className="desktop-page-dot" aria-label={tr("第 {0} 屏", [index + 1])}
