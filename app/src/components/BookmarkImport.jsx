@@ -13,7 +13,7 @@ import Select from './Select.jsx';
 import { Disclosure } from './ui/disclosure.jsx';
 import './import-plan.css';
 
-export default function BookmarkImport({ state, initialPlan = null, initialPage = 0, columns = 8, onApply, onClose, onBusyChange }) {
+export default function BookmarkImport({ state, initialPlan = null, initialPage = 0, columns = 8, pageLabel, onApply, onClose, onBusyChange }) {
   const presentation = useContext(PresentationContext);
   const [plan, setPlan] = useState(initialPlan), [text, setText] = useState(''), [query, setQuery] = useState('');
   const [selected, setSelected] = useState(() => new Set(initialPlan?.sites.map((_, index) => index) ?? []));
@@ -82,6 +82,10 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
     setPlan(null); setSelected(new Set());
     run(async () => usePlan(await readBookmarkFile(file)));
   };
+  function pickFile(accept) {
+    fileInput.current.accept = accept;
+    fileInput.current.click();
+  }
   return <div className="bookmark-import form-stack">
     <div className="bookmark-import-scroll form-stack">
       <label className="bookmark-import-paste"><span>{tr('粘贴网址')}</span>
@@ -89,8 +93,9 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
       </label>
       <div className="bookmark-import-source-actions">
         <Button type="button" variant="secondary" disabled={busy || !text.trim()} onClick={() => run(() => usePlan(parseBulkLinks(text)))}><Link size={16} />{tr('预览网址')}</Button>
-        <Button type="button" variant="outline" disabled={busy} onClick={() => fileInput.current?.click()}><FileArrowUp size={16} />{tr('导入书签 HTML 文件')}</Button>
-        <Input ref={fileInput} type="file" hidden accept="text/html,.html,.htm" onChange={loadFile} />
+        <Button type="button" variant="outline" disabled={busy} onClick={() => pickFile('text/html,.html,.htm')}><FileArrowUp size={16} />{tr('导入书签 HTML 文件')}</Button>
+        <Button type="button" variant="outline" disabled={busy} onClick={() => pickFile('text/markdown,.md')}><FileArrowUp size={16} />{tr('导入 Markdown 链接文件')}</Button>
+        <Input ref={fileInput} type="file" hidden onChange={loadFile} />
       </div>
       <p className="hint">{tr('支持 Chrome、Firefox 和 Edge 导出的书签 HTML 文件，仅在本机处理。')}</p>
       <Disclosure title={tr('导入提示')}>
@@ -99,7 +104,7 @@ export default function BookmarkImport({ state, initialPlan = null, initialPage 
       </Disclosure>
       {plan && <>
         <div className="bookmark-import-target">
-          <Select label={tr('目标主屏幕')} value={String(page)} onChange={(value) => setPage(Number(value))} disabled={busy || targetFolderId !== 'original'} options={pages.map((value, index) => ({ value: String(value), label: tr('第 {0} 屏', [formatNumber(index + 1)]) }))} />
+          <Select label={tr('目标主屏幕')} value={String(page)} onChange={(value) => setPage(Number(value))} disabled={busy || targetFolderId !== 'original'} options={pages.map((value, index) => ({ value: String(value), label: pageLabel?.(value) || tr('第 {0} 屏', [formatNumber(index + 1)]) }))} />
           <Select label={tr('目标位置')} value={targetFolderId} onChange={setTargetFolderId} disabled={busy} options={[
             { value: 'original', label: tr('保留原文件夹结构') },
             ...(targetHidden ? [{ value: targetFolderId, label: tr('已隐藏'), disabled: true }] : []),
