@@ -3,8 +3,8 @@ import { tr, getLocale, initializeLanguage } from "./i18n/index.js";
 import { useLanguage } from './i18n/react.js';
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { loadState, saveState, getAssetUrl } from './lib/storage.js';
-import { letterIcon, normalizeUrl, DEFAULT_ICON_BACKGROUND } from './lib/model.js';
+import { loadState, saveStateWithPrivacy, getAssetUrl } from './lib/storage.js';
+import { letterIcon, moveEntry, normalizeUrl, DEFAULT_ICON_BACKGROUND } from './lib/model.js';
 import { preferredIconAddress, normalizeIconAddress, siteIconAddress, guessIconFit, withDiscoveredIcon, navigationIconDisplaySources } from './lib/site-icons.js';
 import { useNavigationIcon } from './lib/use-navigation-icon.js';
 import { cacheNavigationIconBlob, prepareSavedNavigationIcon, navigationIcon, getNavigationIconFailure } from './lib/navigation-icon-cache.js';
@@ -28,6 +28,8 @@ import './popup.css';
 import { Input } from './components/ui/input.jsx';
 import { Button } from './components/ui/button.jsx';
 import { Disclosure } from './components/ui/disclosure.jsx';
+import NavigationDestination from './components/NavigationDestination.jsx';
+import { appendSiteAt, desktopDestinationValue, destinationChanged, navigationDestination, siteAtDestination, siteDestinationValue } from './lib/navigation-destinations.js';
 
 const hiddenEntry = (entry, preferences) => Boolean(preferences.presentation && entry
   && privateContentKeys({ entries: [entry] }, preferences).has(`site:${entry.id}`));
@@ -47,6 +49,7 @@ function AddCurrentPage() {
   const assetLease = useRef(null), assetTimers = useRef(new Map());
   const original = useRef(null), iconEdited = useRef(false), previewBlob = useRef(null);
   const [destination, setDestination] = useState('navigation');
+  const [navigation, setNavigation] = useState(null), [targetValue, setTargetValue] = useState('');
   const privateBlocked = hiddenEntry(original.current, contentPreferences.data);
   useEffect(() => {
     if (!contentPreferences.ready) return;
@@ -62,6 +65,8 @@ function AddCurrentPage() {
         const existing = state.entries.find((entry) => entry.type === 'site' && entry.url === url);
         if (!active) return;
         original.current = existing ? structuredClone(existing) : null;
+        setNavigation(state);
+        setTargetValue(existing ? siteDestinationValue(state, existing) : desktopDestinationValue(state, state.settings.pages[0]));
         let iconUrl = existing ? siteIconAddress(existing) : preferredIconAddress(url);
         try { if (!existing && tab?.favIconUrl) iconUrl = normalizeIconAddress(tab.favIconUrl); } catch { /* Nonportable browser icons use the origin fallback. */ }
         const name = existing?.name || String(tab?.title || (url ? new URL(url).hostname : '')).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200);
@@ -166,11 +171,13 @@ function AddCurrentPage() {
       if (destination === 'reading') { await saveReadingItem({ title: name, url }); window.close(); return; }
       const iconUrl = normalizeIconAddress(form.iconUrl || preferredIconAddress(url));
       if (original.current && (!existing || JSON.stringify(existing) !== JSON.stringify(original.current))) throw Error(tr("此导航已在其他页面修改，请重新打开扩展。"));
-      const duplicate = !existing && latest.entries.find((entry) => entry.type === 'site' && entry.url === url);
+      // A legacy desktop without an identity can be renumbered by another tab.
+      if (/^page:\d+$/.test(targetValue) && navigation?.revision !== latest.revision) throw destinationChanged();
+      const target = navigationDestination(latest, targetValue, preferences);
+      const duplicate = latest.entries.find((entry) => entry.id !== existing?.id && siteAtDestination(entry, target) && entry.url === url);
       if (duplicate) throw Error(tr("这个网址已在导航中。"));
       const keepLocal = existing?.icon.kind === 'image' && !iconEdited.current && new URL(existing.url).origin === new URL(url).origin;
-      const entry = { ...(existing || { id: crypto.randomUUID(), type: 'site', groupId: 'group-home', parentId: null, page: 0,
-        order: latest.entries.filter((item) => item.parentId === null).length }), name, url, iconUrl,
+      const entry = { ...(existing || { id: crypto.randomUUID(), type: 'site', groupId: 'group-home' }), name, url, iconUrl,
         icon: keepLocal ? { ...existing.icon } : { kind: 'url', value: iconUrl }, iconFit: form.iconFit };
       if (form.iconBackground) entry.iconBackground = form.iconBackground;
       else delete entry.iconBackground;
@@ -181,10 +188,25 @@ function AddCurrentPage() {
       }
       const iconReady = await prepareSavedNavigationIcon(entry, existing, { iconEdited: iconEdited.current });
       if (!iconReady && (existing || iconEdited.current)) throw Error(iconFailureMessage(getNavigationIconFailure(iconUrl)));
-      if (hiddenEntry(existing, await loadContentPreferences())) throw Error(tr('请先输入密码解除隐藏。'));
-      await saveState({ ...latest, entries: existing ? latest.entries.map((item) => item.id === entry.id ? entry : item) : [...latest.entries, entry] }, latest.revision);
+      let next = appendSiteAt(latest, entry, target);
+      if (existing) {
+        next = { ...latest, entries: latest.entries.map((item) => item.id === entry.id ? entry : item) };
+        if (!siteAtDestination(existing, target)) next = moveEntry(next, entry.id, target);
+      }
+      await saveStateWithPrivacy(next, latest.revision, (current, commit) => {
+        if (hiddenEntry(existing, current)) throw Error(tr('请先输入密码解除隐藏。'));
+        navigationDestination(latest, targetValue, current);
+        return commit();
+      });
       window.close();
-    } catch (reason) { setError(userErrorMessage(reason, tr("添加失败，请重试。"))); setBusy(false); }
+    } catch (reason) {
+      if (reason.code === 'TARGET_CHANGED' || reason.code === 'REVISION_CONFLICT') {
+        setTargetValue('');
+        const latest = await loadState().catch(() => null);
+        if (latest) setNavigation(latest);
+      }
+      setError(userErrorMessage(reason, tr("添加失败，请重试。"))); setBusy(false);
+    }
   }
   const preferLocal = displayForm.icon?.kind === 'image';
   const variants = displayForm.iconVariants;
@@ -217,7 +239,8 @@ function AddCurrentPage() {
         if (previous !== next) { iconEdited.current = true; setIconInfo({ phase: 'idle' }); setError(''); patch({ url, iconUrl: preferredIconAddress(url), iconFit: guessIconFit(preferredIconAddress(url)) }); }
         else patch({ url });
       }} /></label>
-      {destination === 'navigation' && <><IconBackground value={iconBackground} onChange={(iconBackground) => patch({ iconBackground })}
+      {destination === 'navigation' && <>{navigation && <NavigationDestination state={navigation} preferences={contentPreferences.data} value={targetValue} onChange={setTargetValue} disabled={locked || initializing} />}
+      <IconBackground value={iconBackground} onChange={(iconBackground) => patch({ iconBackground })}
         onReset={() => setForm((current) => { const next = { ...current }; delete next.iconBackground; return next; })}
         preview={<span className="site-icon" style={{ colorScheme: scheme, backgroundColor: iconBackground, color: iconTextColor(iconBackground) }}>
           <IconArtwork src={visualPending ? '' : renderedImage} identity={image} pending={imagePending} scheme={scheme} className={fullBleed ? 'full-bleed-icon' : undefined} onError={(url) => setFailed((sources) => [...sources, url])} />
@@ -233,7 +256,7 @@ function AddCurrentPage() {
       </>}
       {error && <p className="form-error" role="alert">{tr(error)}</p>}
       <div className="quick-add-actions"><Button variant="secondary" className="button" type="button" disabled={locked} onClick={() => window.close()}>{tr("取消")}</Button>
-        <Button variant="default" className="button primary" type="submit" disabled={locked || initializing}>{busy ? tr("保存中…") : tr("保存")}</Button></div>
+        <Button variant="default" className="button primary" type="submit" disabled={locked || initializing || destination === 'navigation' && !targetValue}>{busy ? tr("保存中…") : tr("保存")}</Button></div>
     </form>}</TabsContent>
   </main></Tabs>;
 }
