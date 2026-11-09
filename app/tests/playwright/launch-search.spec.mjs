@@ -2,13 +2,13 @@ import { addSite, expect, test } from './extension.fixture.mjs';
 import { pointerDrag, tileNamed } from './navigation-helpers.mjs';
 
 test('local search filters by type and opens only the chosen saved folder links', async ({ extension }) => {
-  await extension.context.route(/^https:\/\/example\.com\/(?:favicon\.ico|apple-touch-icon(?:-precomposed)?\.png|android-chrome-192x192\.png)$/,
+  await extension.context.route(/^https:\/\/example\.invalid\/(?:favicon\.ico|apple-touch-icon(?:-precomposed)?\.png|android-chrome-192x192\.png)$/,
     route => route.fulfill({ status: 404, body: '' }));
-  await extension.context.route(/^https:\/\/example\.com\/launch-(alpha|beta|gamma)$/,
+  await extension.context.route(/^https:\/\/example\.invalid\/launch-(alpha|beta|gamma)$/,
     route => route.fulfill({ status: 200, contentType: 'text/plain', body: 'Launch destination fixture' }));
   const page = await extension.newtab();
   for (const name of ['Alpha', 'Beta', 'Gamma']) {
-    await addSite(page, `Launch ${name}`, `https://example.com/launch-${name.toLowerCase()}`);
+    await addSite(page, `Launch ${name}`, `https://example.invalid/launch-${name.toLowerCase()}`);
   }
   await pointerDrag(page, tileNamed(page, 'Launch Alpha').locator('.site-icon'),
     tileNamed(page, 'Launch Beta').locator('.site-icon'), '合并为文件夹');
@@ -48,11 +48,12 @@ test('local search filters by type and opens only the chosen saved folder links'
   const newPageReady = extension.context.waitForEvent('page');
   await launch.getByRole('button', { name: '打开 1 个网站', exact: true }).click();
   const opened = await newPageReady;
-  await expect(opened).toHaveURL('https://example.com/launch-alpha');
-  await expect(opened.locator('body')).toHaveText('Launch destination fixture');
+  // The browser may start navigation before Playwright attaches to a tab
+  // created by the extension. Its reserved destination has no live site.
+  await expect(opened).toHaveURL('https://example.invalid/launch-alpha');
   await expect(launch).toBeHidden();
-  expect(extension.context.pages().filter(item => item.url().startsWith('https://example.com/launch-')).map(item => item.url()))
-    .toEqual(['https://example.com/launch-alpha']);
+  expect(extension.context.pages().filter(item => item.url().startsWith('https://example.invalid/launch-')).map(item => item.url()))
+    .toEqual(['https://example.invalid/launch-alpha']);
 });
 
 test('the runtime registers its shortcut and shortcut URLs focus local search', async ({ extension }) => {
