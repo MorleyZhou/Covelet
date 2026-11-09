@@ -66,7 +66,7 @@ function AddCurrentPage() {
         if (!active) return;
         original.current = existing ? structuredClone(existing) : null;
         setNavigation(state);
-        setTargetValue(existing ? siteDestinationValue(state, existing) : desktopDestinationValue(state, state.settings.pages[0]));
+        setTargetValue(existing ? siteDestinationValue(state, existing) : desktopDestinationValue(state));
         let iconUrl = existing ? siteIconAddress(existing) : preferredIconAddress(url);
         try { if (!existing && tab?.favIconUrl) iconUrl = normalizeIconAddress(tab.favIconUrl); } catch { /* Nonportable browser icons use the origin fallback. */ }
         const name = existing?.name || String(tab?.title || (url ? new URL(url).hostname : '')).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200);

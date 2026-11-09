@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createEmptyState, letterIcon } from './model.js';
-import { navigationDestination, prepareLayoutTransfer, previewLayoutTransfer, layoutTransferPreferences } from './navigation-destinations.js';
+import { desktopDestinationValue, navigationDestination, prepareLayoutTransfer, previewLayoutTransfer, layoutTransferPreferences } from './navigation-destinations.js';
 
 const preferences = { privateKeys: [], presentation: false };
 const folder = { id: 'destination', type: 'folder', groupId: 'group-home', parentId: null, name: 'Folder', page: 1, order: 2, icon: letterIcon('F') };
@@ -12,17 +12,30 @@ const site = (id, order, page = 0, parentId = null) => ({
 function navigation() {
   const state = createEmptyState();
   state.settings.pages = [0, 1];
-  state.entries = [site('a', 0), site('b', 1), folder, site('child', 0, 1, folder.id)];
+  state.entries = [site('a', 0), site('b', 1), structuredClone(folder), site('child', 0, 1, folder.id)];
   return state;
 }
 
 test('named destination identity follows a renumbered desktop and hidden folders cannot be chosen', () => {
   const state = navigation();
   state.settings.desktopPages = { 1: { id: 'persistent-page', name: 'Project' } };
-  assert.deepEqual(navigationDestination(state, 'page:persistent-page', preferences), { page: 1, parentId: null });
+  assert.deepEqual(navigationDestination(state, 'page-id:persistent-page', preferences), { page: 1, parentId: null });
   state.settings.desktopPages = { 0: state.settings.desktopPages[1] };
-  assert.deepEqual(navigationDestination(state, 'page:persistent-page', preferences), { page: 0, parentId: null });
+  assert.deepEqual(navigationDestination(state, 'page-id:persistent-page', preferences), { page: 0, parentId: null });
   assert.throws(() => navigationDestination(state, 'folder:destination', { privateKeys: ['folder:destination'], presentation: true }), { code: 'TARGET_CHANGED' });
+});
+
+test('old folders without a page remain on the first screen and occupied undeclared pages are valid targets', () => {
+  const state = navigation();
+  state.settings.pages = [1];
+  delete state.entries[2].page;
+  state.entries[0].page = 4;
+  assert.equal(desktopDestinationValue(state), 'page:0');
+  assert.deepEqual(navigationDestination(state, 'folder:destination', preferences), { page: 0, parentId: folder.id });
+  assert.deepEqual(navigationDestination(state, 'page:4', preferences), { page: 4, parentId: null });
+  state.settings.desktopPages = { 1: { id: '4', name: 'Numeric identifier' } };
+  assert.deepEqual(navigationDestination(state, 'page-id:4', preferences), { page: 1, parentId: null });
+  assert.deepEqual(navigationDestination(state, 'page:4', preferences), { page: 4, parentId: null });
 });
 
 test('bulk move is a draft-only operation preserving source order, IDs and unrelated positions', () => {

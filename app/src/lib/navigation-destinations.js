@@ -1,9 +1,11 @@
 import { tr } from '../i18n/index.js';
 import { migrateNavigationState } from './model.js';
 import { saveState, saveStateWithPrivacy } from './storage.js';
+import { logicalDesktopPages } from './desktop-pages.js';
 
-export function desktopDestinationValue(state, page) {
-  return `page:${state.settings.desktopPages?.[page]?.id ?? page}`;
+export function desktopDestinationValue(state, page = logicalDesktopPages(state)[0]) {
+  const id = state.settings.desktopPages?.[page]?.id;
+  return id ? `page-id:${id}` : `page:${page}`;
 }
 
 export function siteDestinationValue(state, site) {
@@ -11,7 +13,7 @@ export function siteDestinationValue(state, site) {
 }
 
 export function navigationDestination(state, value, preferences) {
-  const page = state.settings.pages.find((page) => desktopDestinationValue(state, page) === value);
+  const page = logicalDesktopPages(state).find((page) => desktopDestinationValue(state, page) === value);
   if (page !== undefined) return { page, parentId: null };
   const folder = state.entries.find((item) => item.type === 'folder' && !item.detached && value === `folder:${item.id}`);
   if (!folder || (preferences.presentation && preferences.privateKeys.includes(`folder:${folder.id}`))) {

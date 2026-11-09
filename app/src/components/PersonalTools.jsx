@@ -231,7 +231,7 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
     action.run(async () => {
       const state = await loadState();
       setCopyStatus('');
-      setCopy({ record, state, value: desktopDestinationValue(state, state.settings.pages[0]) });
+      setCopy({ record, state, value: desktopDestinationValue(state) });
     });
   }
   function closeDestination() { setCopy(null); action.setError(''); }
