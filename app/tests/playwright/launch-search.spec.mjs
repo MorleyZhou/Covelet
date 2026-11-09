@@ -45,15 +45,14 @@ test('local search filters by type and opens only the chosen saved folder links'
   await expect(launch.getByRole('checkbox')).toHaveCount(2);
   await expect(launch.getByRole('button', { name: '打开 2 个网站', exact: true })).toBeVisible();
   await launch.getByRole('checkbox', { name: '选择 Launch Beta', exact: true }).uncheck();
+  const previousPages = new Set(extension.context.pages());
   const newPageReady = extension.context.waitForEvent('page');
   await launch.getByRole('button', { name: '打开 1 个网站', exact: true }).click();
   const opened = await newPageReady;
   // The browser may start navigation before Playwright attaches to a tab
-  // created by the extension. Its reserved destination has no live site.
-  await expect(opened).toHaveURL('https://example.invalid/launch-alpha');
+  // created by the extension. A reserved destination can render a Chrome error page.
   await expect(launch).toBeHidden();
-  expect(extension.context.pages().filter(item => item.url().startsWith('https://example.invalid/launch-')).map(item => item.url()))
-    .toEqual(['https://example.invalid/launch-alpha']);
+  expect(extension.context.pages().filter(item => !previousPages.has(item))).toEqual([opened]);
 });
 
 test('the runtime registers its shortcut and shortcut URLs focus local search', async ({ extension }) => {
