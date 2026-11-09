@@ -14960,6 +14960,15 @@
     "fr": "Bureau par défaut",
     "ru": "Рабочий стол по умолчанию"
   },
+  "跟随第一屏": {
+    "en": "Use the first desktop",
+    "zh-TW": "使用第一個桌面",
+    "ja": "最初のデスクトップを使う",
+    "ko": "첫 번째 바탕 화면 사용",
+    "de": "Ersten Desktop verwenden",
+    "fr": "Utiliser le premier bureau",
+    "ru": "Использовать первый рабочий стол"
+  },
   "前往 {0}": {
     "en": "Go to {0}",
     "zh-TW": "前往 {0}",

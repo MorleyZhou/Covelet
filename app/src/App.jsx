@@ -1665,6 +1665,11 @@ function Settings({
     if (choosingDefault || busy) return;
     setChoosingDefault(true); setError('');
     try {
+      if (page === 'first') {
+        if (!demo) await localData.remove(DEFAULT_DESKTOP_KEY);
+        setDefaultId(null);
+        return;
+      }
       await saver.flush();
       const latest = await readPreferences(), previousId = state.settings.desktopPages?.[page]?.id;
       if (previousId) {
@@ -1761,8 +1766,9 @@ function Settings({
         )}
         {tab === "layout" && (
           <>
-            <Select label={tr('默认桌面')} value={defaultDesktopPage(state, defaultId)}
-              options={logicalDesktopPages(state).map((page) => ({ value: page, label: desktopPageName(state.settings, page) }))}
+            <Select label={tr('默认桌面')} value={Object.values(state.settings.desktopPages ?? {}).some((page) => page.id === defaultId)
+              ? defaultDesktopPage(state, defaultId) : 'first'}
+              options={[{ value: 'first', label: tr('跟随第一屏') }, ...logicalDesktopPages(state).map((page) => ({ value: page, label: desktopPageName(state.settings, page) }))]}
               disabled={busy || choosingDefault} onChange={chooseDefaultPage} />
             <Range
               label={tr("每行图标数量")}
