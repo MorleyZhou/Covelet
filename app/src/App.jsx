@@ -23,6 +23,7 @@ import {
   ArrowUp,
   SquaresFour,
   UploadSimple,
+  DownloadSimple,
   Check,
   CheckCircle,
   WarningCircle,
@@ -100,12 +101,22 @@ import HomeTime from "./components/HomeTime.jsx";
 import TimeAndDateSettings from './components/TimeAndDateSettings.jsx';
 import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashPanel } from "./components/PersonalTools.jsx";
 import usePersonalTools from './lib/use-personal-tools.js';
-import { searchCoveletContent } from './lib/content-search.js';
+import { exactDesktopMatches, searchCoveletContent } from './lib/content-search.js';
+import { defaultDesktopPage, desktopPageName, logicalDesktopPages, namedDesktopRecords, withDesktopPageIdentity } from './lib/desktop-pages.js';
+import { localData } from './lib/local-data.js';
+import { DEFAULT_DESKTOP_KEY } from './lib/sync-data-rules.js';
 import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode } from './lib/content-preferences.js';
 import { PresentationContext, privateContentKeys } from './lib/presentation.js';
 import ContentPreferences from './components/ContentPreferences.jsx';
 import PrivacyPasswordDialog, { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
 import BookmarkImport from './components/BookmarkImport.jsx';
+import BookmarkExport from './components/BookmarkExport.jsx';
+import LayoutTransfer from './components/LayoutTransfer.jsx';
+import { layoutTransferPreferences, saveLayoutTransfer } from './lib/navigation-destinations.js';
+import EmptyDesktop from './components/EmptyDesktop.jsx';
+import FolderLaunchDialog from './components/FolderLaunchDialog.jsx';
+import SearchFilters from './components/SearchFilters.jsx';
+import { navigationResultPath, scopeSearchContent } from './lib/search-scope.js';
 import RecoveryCenter from './components/RecoveryCenter.jsx';
 import { focusDesktopNeighbor } from "./lib/desktop-focus.js";
 import { GITHUB_WIDGET_ID } from "./lib/widget-model.js";
@@ -411,6 +422,7 @@ export function App() {
     [engineMenu, setEngineMenu] = useState(false),
     [candidate, setCandidate] = useState(-1),
     [focused, setFocused] = useState(false);
+  const [searchFilter, setSearchFilter] = useState('all');
   const [modal, setModal] = useState(null),
     [entry, setEntry] = useState(null),
     [context, setContext] = useState(null);
@@ -429,6 +441,7 @@ export function App() {
   const [activeScreen, setActiveScreen] = useState('0:0'), [draftPage, setDraftPage] = useState(null);
   const desktopScreen = useRef({ key: '0:0', page: 0, columns: 8, items: [] });
   const [screenManager, setScreenManager] = useState(false);
+  const transferCopies = useRef(new Map());
   const layoutPress = useRef(null), layoutLongClick = useRef(false);
   const mainRef = useRef(null), wallpaperRef = useRef(null);
   const [providerIconEpoch, setProviderIconEpoch] = useState(0);
@@ -489,21 +502,21 @@ export function App() {
   const layoutEditor = useLayoutEdit({ state, columns: desktopScreen.current.columns, activeKey: activeScreen,
     blocked: Boolean(modal || folderId || context || screenManager), onActiveChange: setActiveScreen,
     onError: (message) => notify(message, 'error'), onCancelDrag: () => cancelDrag(),
-    onBegin: () => { cancelDrag(); stopLayoutPress(); setFolder(null); setContext(null); setEngineMenu(false); setQuery(''); setFocused(false); setUndo(null); setNotice(null); setDraftPage(null); focusDesktop(); },
-    onEnd: () => { stopLayoutPress(); setContext(null); setScreenManager(false); setDraftPage(null); focusDesktop(); },
+    onBegin: () => { transferCopies.current.clear(); cancelDrag(); stopLayoutPress(); setFolder(null); setContext(null); setEngineMenu(false); setQuery(''); setFocused(false); setUndo(null); setNotice(null); setDraftPage(null); focusDesktop(); },
+    onEnd: () => { transferCopies.current.clear(); stopLayoutPress(); setContext(null); setScreenManager(false); setDraftPage(null); focusDesktop(); },
     onSave: async (next, revision) => {
-      const saved = demo ? { ...migrateNavigationState(next), revision: preferenceState.current.revision + 1 } : await saveState(next, revision);
+      const saved = demo ? { ...migrateNavigationState(next), revision: preferenceState.current.revision + 1 } : await saveLayoutTransfer(next, revision, transferCopies.current);
       setState(saved); preferenceState.current = saved; setError('');
       return saved;
     },
   });
   const desktopState = layoutEditor.draft || state;
   const presentation = contentPreferences.presentation;
-  const hiddenKeys = useMemo(() => privateContentKeys(state, contentPreferences), [state, contentPreferences]);
+  const hiddenKeys = useMemo(() => privateContentKeys(desktopState, layoutTransferPreferences(contentPreferences, transferCopies.current)), [desktopState, contentPreferences]);
   const privacyKey = presentation ? `hidden:${[...hiddenKeys].sort().join('\n')}` : 'public';
   const requestPrivacyUnlock = useCallback(() => setPrivacyDialog('unlock'), []);
   const presentationContext = useMemo(() => ({ active: presentation, hiddenKeys, requestUnlock: requestPrivacyUnlock }), [presentation, hiddenKeys, requestPrivacyUnlock]);
-  const privateEntryIds = useMemo(() => (state?.entries || []).filter((item) => hiddenKeys.has(`${item.type}:${item.id}`)).map((item) => item.id), [state, hiddenKeys]);
+  const privateEntryIds = useMemo(() => (desktopState?.entries || []).filter((item) => hiddenKeys.has(`${item.type}:${item.id}`)).map((item) => item.id), [desktopState, hiddenKeys]);
   useEffect(() => {
     setPresentationHint('');
     stopLayoutPress(); cancelDrag();
@@ -526,12 +539,17 @@ export function App() {
   }, [state, modal?.kind, modal?.id]);
   useEffect(() => {
     let mounted = true, initial = true;
-    (demo ? Promise.resolve(createInitialState()) : loadState())
-      .then(async (value) => {
+    const defaultId = demo ? Promise.resolve(null) : localData.get(DEFAULT_DESKTOP_KEY).then((data) => data[DEFAULT_DESKTOP_KEY]).catch(() => null);
+    const show = (value, id) => {
+      if (initial) { initial = false; setActiveScreen(`${defaultDesktopPage(value, id)}:0`); }
+      setState(value);
+    };
+    Promise.all([demo ? Promise.resolve(createInitialState()) : loadState(), defaultId])
+      .then(async ([value, id]) => {
         if (!mounted || !initial) return;
         await prepareNavigationIconCache(value);
         if (mounted && initial) {
-          setState(value);
+          show(value, id);
         }
       })
       .catch((e) => {
@@ -539,10 +557,10 @@ export function App() {
       });
     const off = demo
       ? () => {}
-      : subscribeState((value) => {
+      : subscribeState(async (value) => {
+          const id = await defaultId;
           if (!mounted) return;
-          initial = false;
-          setState(value);
+          show(value, id);
           setFolder((id) =>
             value.entries.some((e) => e.id === id) ? id : null,
           );
@@ -577,6 +595,14 @@ export function App() {
     }
   }, [state, provider, folderId]);
   const settings = state?.settings;
+  useEffect(() => {
+    if (!settings) return;
+    const target = new URL(location.href);
+    if (target.searchParams.get('focus') !== 'search') return;
+    target.searchParams.delete('focus');
+    history.replaceState(null, '', target);
+    inputRef.current?.focus();
+  }, [Boolean(settings)]);
   const [wallpaperSource, setWallpaperSource] = useState(null), [wallpaperRefresh, setWallpaperRefresh] = useState(0);
   const [wallpaperInterval, setWallpaperInterval] = useState(null);
   useEffect(() => {
@@ -613,9 +639,17 @@ export function App() {
   const wallpaperAppearance = useWallpaperAppearance(imageUrl, visualEnabled);
   const adaptive = visualEnabled && wallpaperAppearance.phase === "ready"
     ? createAdaptiveAppearance(wallpaperAppearance.palette, settings.shade) : null;
-  const candidates = useMemo(() => state && query.trim()
-    ? searchCoveletContent(state, personalData, query, { aliases: contentPreferences.aliases, hiddenKeys: presentation ? hiddenKeys : [], limit: 24 }) : [],
-  [state, personalData, query, contentPreferences, presentation, hiddenKeys]);
+  const desktops = useMemo(() => settings && ['all', 'desktop'].includes(searchFilter) ? namedDesktopRecords(settings) : [], [settings, searchFilter]);
+  const searchPage = Number(activeScreen.split(':')[0]);
+  const candidates = useMemo(() => {
+    if (!state || !query.trim()) return [];
+    const { entries, tools } = scopeSearchContent(state, personalData, searchFilter, searchPage);
+    const visible = presentation ? hiddenKeys : undefined;
+    const pages = logicalDesktopPages(state);
+    return searchCoveletContent(entries, tools, query, { aliases: contentPreferences.aliases, hiddenKeys: visible, desktops })
+      .map((item) => ({ ...item, path: item.type === 'desktop' ? tr('第 {0} 屏', [formatNumber(pages.indexOf(item.record.page) + 1)])
+        : navigationResultPath(item, state, visible, (page) => desktopPageName(state.settings, page)) }));
+  }, [state, personalData, query, contentPreferences, presentation, hiddenKeys, desktops, searchFilter, searchPage]);
   useEffect(() => { setCandidate((value) => Math.min(value, candidates.length - 1)); }, [candidates.length]);
   useLayoutEffect(() => {
     const list = suggestionsRef.current, option = list?.children[candidate];
@@ -748,6 +782,11 @@ export function App() {
     if (['site', 'folder'].includes(item.type)) { openEntry(item.entry); return; }
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
     setQuery(''); setFocused(false); setCandidate(-1); setFolder(null); setContext(null);
+    if (item.type === 'desktop') {
+      setActiveScreen(`${item.record.page}:0`);
+      focusDesktop();
+      return;
+    }
     setModal({ kind: 'personal-content', type: item.type, recordId: item.id });
   }
   async function saveFolderName(name, originalName) {
@@ -779,10 +818,14 @@ export function App() {
         if (settings.openNewTab)
           window.open(url, "_blank", "noopener,noreferrer");
         else location.assign(url);
-      } else
+      } else {
+        const matches = exactDesktopMatches(desktops, query);
+        if (matches.length === 1) { openContent({ type: 'desktop', record: matches[0] }); return; }
+        if (matches.length > 1) { setFocused(true); return; }
         await submitWebSearch(query, provider, state.providers, {
           newTab: settings.openNewTab,
         });
+      }
     } catch (e) {
       notify(userErrorMessage(e), "error");
     }
@@ -1097,6 +1140,7 @@ export function App() {
     ] : [
       { label: tr("编辑布局"), icon: <PencilSimple size={18} />, action: layoutEditor.begin },
       { label: tr('导入网址与书签 HTML'), icon: <UploadSimple size={18} />, action: () => setModal({ kind: 'bookmarks' }) },
+      { label: tr('导出书签 HTML'), icon: <DownloadSimple size={18} />, action: () => setModal({ kind: 'bookmark-export' }), disabled: demo },
     ]} />;
     const item = context.item;
     return <ContextMenu context={context} label={item.type === 'widget' ? tr("组件操作") : tr("网站操作")} onClose={() => setContext(null)} items={[
@@ -1256,7 +1300,7 @@ export function App() {
                 candidate >= 0 ? `candidate-${candidate}` : undefined
               }
               onFocus={() => setFocused(true)}
-              onBlur={() => setTimeout(() => setFocused(false), 120)}
+              onBlur={() => setTimeout(() => { if (document.activeElement !== inputRef.current) setFocused(false); }, 120)}
               onChange={(e) => {
                 setQuery(e.target.value);
                 setCandidate(-1);
@@ -1279,6 +1323,7 @@ export function App() {
                 }
               }}
             />
+            <SearchFilters value={searchFilter} onChange={(value) => { setSearchFilter(value); setCandidate(-1); }} onReturnFocus={() => inputRef.current?.focus()} />
             <Button variant="unstyled" size="unstyled" className="search-submit" type="submit" aria-label={tr("搜索")}>
               <MagnifyingGlass size={33} weight="light" />
             </Button>
@@ -1294,12 +1339,12 @@ export function App() {
                   className={candidate === i ? "selected" : ""}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => openContent(item)}
-                  onContextMenu={(event) => { event.preventDefault(); setModal({ kind: 'content-preferences', key: item.key }); setFocused(false); }}
+                  onContextMenu={(event) => { event.preventDefault(); if (item.type === 'desktop') return; setModal({ kind: 'content-preferences', key: item.key }); setFocused(false); }}
                 >
-                  {['site', 'folder'].includes(item.type) ? <SiteIcon entry={item.entry} small children={state.entries.filter((entry) => entry.parentId === item.id && (!presentation || !hiddenKeys.has(`site:${entry.id}`)))} /> : <span className="content-result-icon">{item.type === 'note' ? <NotePencil size={22} /> : <BookOpen size={22} />}</span>}
+                  {['site', 'folder'].includes(item.type) ? <SiteIcon entry={item.entry} small children={state.entries.filter((entry) => entry.parentId === item.id && (!presentation || !hiddenKeys.has(`site:${entry.id}`)))} /> : <span className="content-result-icon">{item.type === 'desktop' ? <SquaresFour size={22} /> : item.type === 'note' ? <NotePencil size={22} /> : <BookOpen size={22} />}</span>}
                   <span>
                     <strong>{item.title}</strong>
-                    <small>{item.type === 'site' ? tr('网站') : item.type === 'folder' ? tr('文件夹') : item.type === 'note' ? tr('便笺') : tr('稍后读')}{item.subtitle ? ` · ${item.subtitle}` : ''}</small>
+                    <small>{[item.type === 'desktop' ? tr('桌面') : item.type === 'site' ? tr('网站') : item.type === 'folder' ? tr('文件夹') : item.type === 'note' ? tr('便笺') : tr('稍后读'), item.path, item.subtitle].filter(Boolean).join(' · ')}</small>
                   </span>
                   <ArrowSquareOut size={18} />
                 </Button>
@@ -1344,11 +1389,24 @@ export function App() {
             onClick={(event) => {
               if (layoutEditor.editing && !event.defaultPrevented && !event.target.closest('[data-entry-id],button,a')) layoutEditor.setSelectedIds([]);
             }}>
+            {!state.entries.length && !layoutEditor.editing && !modal && <EmptyDesktop onAdd={newEntry}
+              onImport={() => setModal({ kind: 'bookmarks' })} onDismiss={focusDesktop} />}
             <DesktopPages settings={desktopState.settings} entries={items} activeKey={activeScreen} draftPage={draftPage} drag={drag} editing={layoutEditor.editing}
               onActiveChange={setActiveScreen} onScreenChange={(screen) => { desktopScreen.current = screen; }}
               onNewPage={(page) => layoutEditor.addPage(page)} renderTiles={renderTiles} />
           </section>
-        {layoutEditor.editing && <DesktopEditBar editor={layoutEditor} drag={drag} onManage={manageScreens} onDelete={requestLayoutDelete} />}
+        {layoutEditor.editing && <DesktopEditBar editor={layoutEditor} drag={drag} onManage={manageScreens} onDelete={requestLayoutDelete}
+          canTransfer={desktopState.entries.some((item) => item.type === 'site' && layoutEditor.selectedIds.includes(item.id))}
+          onTransfer={() => setModal({ kind: 'layout-transfer' })} />}
+        {modal?.kind === 'layout-transfer' && layoutEditor.editing && <Modal title={tr('整理所选网站')} onClose={() => setModal(null)}>
+          <LayoutTransfer state={desktopState} selectedIds={layoutEditor.selectedIds}
+            preferences={layoutTransferPreferences(contentPreferences, transferCopies.current)} columns={desktopScreen.current.columns}
+            onClose={() => setModal(null)} onApply={(result) => {
+              for (const [id, source] of result.copies) transferCopies.current.set(id, source);
+              layoutEditor.replaceDraft(result.state, result.ids, result.key);
+              setModal(null);
+            }} />
+        </Modal>}
         {modal?.kind === 'layout-delete' && layoutEditor.editing && <Modal title={modal.title} privacyKeys={modal.ids.flatMap((id) => desktopState.entries.filter((item) => item.id === id || item.parentId === id).map((item) => `${item.type}:${item.id}`))} onClose={() => setModal(null)}>
           <div className="form-stack">
             {modal.children > 0 && <p>{tr("文件夹内的 {0} 个网站也会删除。", [formatNumber(modal.children)])}</p>}
@@ -1364,6 +1422,10 @@ export function App() {
         {!folderId && renderDragGhost()}
         {currentFolder && !modal && (
           <Modal title={currentFolder.name} privacyKeys={[`folder:${currentFolder.id}`]} titleContent={<FolderName name={currentFolder.name} onSave={saveFolderName} />} onClose={() => { cancelDrag(); setFolder(null); }} wide>
+            <div className="folder-launch-actions">
+              <Button variant="secondary" type="button" disabled={layoutEditor.editing}
+                onClick={() => setModal({ kind: 'folder-launch', id: currentFolder.id })}>{tr('批量打开网站')}</Button>
+            </div>
             <div className="folder-content" data-folder-panel={currentFolder.id}>
               <div className="sites-grid folder-sites" data-drop-parent={currentFolder.id}>
                 {renderTiles(state.entries.filter((item) => item.parentId === currentFolder.id).sort((a,b) => a.order-b.order))}
@@ -1373,6 +1435,8 @@ export function App() {
             </div>
           </Modal>
         )}
+        {modal?.kind === 'folder-launch' && <FolderLaunchDialog Dialog={Modal} folderId={modal.id} entries={state.entries}
+          hiddenKeys={presentation ? hiddenKeys : undefined} onClose={() => setModal(null)} />}
         {/* Keep the live region mounted so dialogs leave it accessible. */}
         <div data-slot="toast-viewport" aria-live="off">{toast}</div>
         {busy && (
@@ -1520,6 +1584,7 @@ export function App() {
         )}
         {modal?.kind === 'bookmarks' && <Modal title={tr('导入网址与书签 HTML')} className="bookmark-import-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide>
           <BookmarkImport state={state} initialPage={desktopScreen.current.page} columns={desktopScreen.current.columns}
+            pageLabel={(page) => desktopPageName(state.settings, page)}
             onBusyChange={setBusy} onClose={() => setModal(null)} onApply={async (prepared) => {
               const before = state;
               const added = new Set(prepared.rows.filter((row) => row.willAdd).map((row) => row.entryId));
@@ -1530,6 +1595,10 @@ export function App() {
               if (prepared.revealId) revealDesktopEntry(saved, prepared.revealId);
               setModal(null); return true;
             }} />
+        </Modal>}
+        {modal?.kind === 'bookmark-export' && <Modal title={tr('导出书签 HTML')} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
+          <BookmarkExport state={state} hiddenKeys={hiddenKeys} initialPage={desktopScreen.current.page}
+            pageLabel={(page) => desktopPageName(state.settings, page)} onBusyChange={setBusy} onClose={() => setModal(null)} />
         </Modal>}
         {privacyDialog && <PrivacyPasswordDialog purpose={privacyDialog} onClose={() => setPrivacyDialog(null)} />}
         {settings.background.kind === 'bing' && wallpaper?.copyright && wallpaper.copyrightUrl && (
@@ -1564,6 +1633,14 @@ function Settings({
     [newTemplate, setNewTemplate] = useState(""),
     [error, setError] = useState("");
   const [saving, setSaving] = useState({ phase: "idle" });
+  const [defaultId, setDefaultId] = useState(null), [choosingDefault, setChoosingDefault] = useState(false);
+  useEffect(() => {
+    let active = true;
+    if (!demo) localData.get(DEFAULT_DESKTOP_KEY).then((data) => {
+      if (active) setDefaultId(data[DEFAULT_DESKTOP_KEY] ?? null);
+    }).catch((reason) => { if (active) setError(userErrorMessage(reason)); });
+    return () => { active = false; };
+  }, []);
   const panelRef = useRef(null);
   useLayoutEffect(() => { if (panelRef.current) panelRef.current.scrollTop = 0; }, [tab]);
   const settingsMounted = useRef(false), saveCallbacks = useRef(null);
@@ -1585,6 +1662,30 @@ function Settings({
   async function afterSave(action) {
     if (busy) return;
     try { const latest = await saver.flush(); await action(latest); } catch { /* The save error stays visible. */ }
+  }
+  async function chooseDefaultPage(page) {
+    if (choosingDefault || busy) return;
+    setChoosingDefault(true); setError('');
+    try {
+      if (page === 'first') {
+        if (!demo) await localData.remove(DEFAULT_DESKTOP_KEY);
+        setDefaultId(null);
+        return;
+      }
+      await saver.flush();
+      const latest = await readPreferences(), previousId = state.settings.desktopPages?.[page]?.id;
+      if (previousId) {
+        if (!Object.values(latest.settings.desktopPages ?? {}).some((value) => value.id === previousId)) throw Error(tr('这一屏已发生变化，请重新打开屏幕管理。'));
+      } else if (latest.revision !== state.revision || !logicalDesktopPages(latest).includes(page)) {
+        throw Error(tr('这一屏已发生变化，请重新打开屏幕管理。'));
+      }
+      const settings = previousId ? latest.settings : withDesktopPageIdentity(latest.settings, page);
+      if (settings !== latest.settings) await writePreferences({ ...latest, settings }, latest.revision);
+      const id = previousId || settings.desktopPages[page].id;
+      if (!demo) await localData.set({ [DEFAULT_DESKTOP_KEY]: id });
+      setDefaultId(id);
+    } catch (reason) { setError(userErrorMessage(reason)); }
+    finally { setChoosingDefault(false); }
   }
   function closeSettings() { afterSave(onClose); }
   async function refreshPreferences() {
@@ -1667,6 +1768,10 @@ function Settings({
         )}
         {tab === "layout" && (
           <>
+            <Select label={tr('默认桌面')} value={Object.values(state.settings.desktopPages ?? {}).some((page) => page.id === defaultId)
+              ? defaultDesktopPage(state, defaultId) : 'first'}
+              options={[{ value: 'first', label: tr('跟随第一屏') }, ...logicalDesktopPages(state).map((page) => ({ value: page, label: desktopPageName(state.settings, page) }))]}
+              disabled={busy || choosingDefault} onChange={chooseDefaultPage} />
             <Range
               label={tr("每行图标数量")}
               value={draft.columns}

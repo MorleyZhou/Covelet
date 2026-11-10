@@ -178,7 +178,7 @@ export function createDemoState() {
 }
 
 function validateSettings(settings) {
-  keys(settings, ['theme', 'background', 'shade', 'blur', 'width', 'iconSize', 'gap', 'columns', 'showLabels', 'showClock', 'openNewTab', 'minimal', 'visualEnhancement', 'adaptiveWallpaper', 'adaptIcons', 'pages'], tr("设置"));
+  keys(settings, ['theme', 'background', 'shade', 'blur', 'width', 'iconSize', 'gap', 'columns', 'showLabels', 'showClock', 'openNewTab', 'minimal', 'visualEnhancement', 'adaptiveWallpaper', 'adaptIcons', 'pages', 'desktopPages'], tr("设置"));
   // Fill newly introduced preferences in old local configurations and backups.
   if (!Object.hasOwn(settings, 'showClock')) settings.showClock = true;
   if (!Object.hasOwn(settings, 'columns')) settings.columns = 8;
@@ -187,6 +187,18 @@ function validateSettings(settings) {
     || new Set(settings.pages).size !== settings.pages.length) fail(tr("主屏幕列表无效"));
   for (const page of settings.pages) integer(page, 0, MAX_DESKTOP_PAGE, tr("主屏幕"));
   settings.pages.sort((a, b) => a - b);
+  if (Object.hasOwn(settings, 'desktopPages')) {
+    const label = tr('屏幕管理'), ids = new Set();
+    keys(settings.desktopPages, settings.pages.map(String), label);
+    for (const page of Object.values(settings.desktopPages)) {
+      keys(page, ['id', 'name'], label);
+      identifier(page.id);
+      if (ids.has(page.id)) fail(tr('主屏幕列表无效'));
+      ids.add(page.id);
+      if (Object.hasOwn(page, 'name')) page.name = name(page.name);
+    }
+    if (!ids.size) delete settings.desktopPages;
+  }
   // Read old independent toggles, but keep one canonical preference thereafter.
   for (const key of ['adaptiveWallpaper', 'adaptIcons']) {
     if (Object.hasOwn(settings, key) && typeof settings[key] !== 'boolean') fail(tr("{0}须为开关值", [key]));

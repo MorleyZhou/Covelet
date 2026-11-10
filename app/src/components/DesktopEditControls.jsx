@@ -1,14 +1,19 @@
 import { tr, builtinName, formatNumber } from "../i18n/index.js";
-import { Plus, Trash, Check, SquaresFour, ArrowCounterClockwise, ArrowClockwise, LockSimple } from '@phosphor-icons/react';
+import { Plus, Trash, Check, SquaresFour, ArrowCounterClockwise, ArrowClockwise, LockSimple, CaretLeft, CaretRight, FolderSimple } from '@phosphor-icons/react';
 import { DESKTOP_ROWS, layoutDesktop } from '../lib/desktop-layout.js';
+import { desktopPageName } from '../lib/desktop-pages.js';
+import FolderName from './FolderName.jsx';
 import './desktop-edit.css';
 import { Button } from './ui/button.jsx';
 
-export function DesktopEditBar({ editor, onManage, drag, onDelete }) {
+export function DesktopEditBar({ editor, onManage, drag, onDelete, canTransfer, onTransfer }) {
   return <div className="desktop-edit-bar" data-layout-control>
     {editor.error && <p className="desktop-edit-error" role="alert">{tr(editor.error)}</p>}
     <div className="desktop-edit-actions" role="toolbar" aria-label={tr("编辑布局")}>
       <Button variant="unstyled" size="unstyled" type="button" disabled={editor.saving} onClick={onManage}><SquaresFour size={17} />{tr("屏幕管理")}</Button>
+      {canTransfer && <Button variant="unstyled" size="unstyled" type="button" disabled={editor.saving || editor.conflict} onClick={onTransfer}>
+        <FolderSimple size={17} />{tr('整理所选网站')}
+      </Button>}
       <span className="desktop-edit-divider" />
       <Button variant="unstyled" size="unstyled" type="button" className="desktop-edit-history" disabled={!editor.canUndo} onClick={editor.undo}
         aria-label={tr("撤销布局操作")} title={`${tr("撤销布局操作")} (Ctrl/⌘+Z)`}><ArrowCounterClockwise size={18} /><span>{tr("撤销")}</span></Button>
@@ -31,7 +36,7 @@ export function DesktopScreenManager({ Dialog, state, columns, activeKey, editor
   return <Dialog title={tr("屏幕管理")} onClose={onClose} wide className="desktop-screen-manager">
     <div className="desktop-screen-list">
       {screens.map((screen, index) => <div className={`desktop-screen-card ${screen.key === activeKey ? 'is-current' : ''}`} key={screen.key}>
-        <Button variant="unstyled" size="unstyled" type="button" className="desktop-screen-preview" aria-label={tr("前往第 {0} 屏", [index + 1])} aria-current={screen.key === activeKey ? 'page' : undefined}
+        <Button variant="unstyled" size="unstyled" type="button" className="desktop-screen-preview" aria-label={state.settings.desktopPages?.[screen.page]?.name ? tr('前往 {0}', [desktopPageName(state.settings, screen.page)]) : tr("前往第 {0} 屏", [index + 1])} aria-current={screen.key === activeKey ? 'page' : undefined}
           onClick={() => { onSelect(screen.key); onClose(); }}>
           <span className="desktop-screen-mini-grid" style={{ '--preview-columns': columns, '--preview-rows': DESKTOP_ROWS }} aria-hidden="true">
             {screen.items.map((entry) => {
@@ -44,9 +49,21 @@ export function DesktopScreenManager({ Dialog, state, columns, activeKey, editor
             })}
           </span>
         </Button>
-        <div className="desktop-screen-card-footer"><span>{tr("第 {0} 屏", [formatNumber(index + 1)])}{screen.key === activeKey && <Check size={14} aria-hidden="true" />}</span>
-          <Button variant="unstyled" size="unstyled" type="button" className="desktop-screen-delete" aria-label={tr("删除第 {0} 屏", [index + 1])} title={screens.length === 1 ? tr("至少保留一屏") : tr("删除屏幕")}
-            disabled={screens.length === 1 || editor.saving} onClick={() => editor.removePage(screen.key)}><Trash size={17} /></Button>
+        <div className="desktop-screen-card-footer"><span>{screen.key === `${screen.page}:0`
+          ? <FolderName name={state.settings.desktopPages?.[screen.page]?.name || ''} allowEmpty
+            placeholder={tr("第 {0} 屏", [formatNumber(index + 1)])} label={tr('第 {0} 屏名称', [formatNumber(index + 1)])}
+            onSave={(name) => editor.renamePage(screen.page, name)} />
+          : tr("第 {0} 屏", [formatNumber(index + 1)])}{screen.key === activeKey && <Check size={14} aria-hidden="true" />}</span>
+          <div className="desktop-screen-actions">
+            {screen.key === `${screen.page}:0` && <>
+              <Button variant="unstyled" size="unstyled" type="button" aria-label={tr('前移 {0}', [desktopPageName(state.settings, screen.page)])}
+                disabled={editor.saving || editor.conflict || screen.page === state.settings.pages[0]} onClick={() => editor.movePage(screen.page, -1)}><CaretLeft size={17} /></Button>
+              <Button variant="unstyled" size="unstyled" type="button" aria-label={tr('后移 {0}', [desktopPageName(state.settings, screen.page)])}
+                disabled={editor.saving || editor.conflict || screen.page === state.settings.pages.at(-1)} onClick={() => editor.movePage(screen.page, 1)}><CaretRight size={17} /></Button>
+            </>}
+            <Button variant="unstyled" size="unstyled" type="button" className="desktop-screen-delete" aria-label={tr("删除第 {0} 屏", [index + 1])} title={screens.length === 1 ? tr("至少保留一屏") : tr("删除屏幕")}
+              disabled={screens.length === 1 || editor.saving} onClick={() => editor.removePage(screen.key)}><Trash size={17} /></Button>
+          </div>
         </div>
       </div>)}
       {screens.length < 2000 && <Button variant="unstyled" size="unstyled" type="button" className="desktop-screen-new" disabled={editor.saving} onClick={() => editor.addPage()}><Plus size={28} /><span>{tr("添加一屏")}</span></Button>}

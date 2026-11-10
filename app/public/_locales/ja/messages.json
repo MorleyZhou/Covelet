@@ -7,5 +7,8 @@
   },
   "actionTitle": {
     "message": "Covelet に追加"
+  },
+  "searchShortcutTitle": {
+    "message": "Covelet 検索を開く"
   }
 }

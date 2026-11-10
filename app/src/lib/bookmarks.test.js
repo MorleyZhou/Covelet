@@ -88,6 +88,60 @@ test('file size is checked before reading; read failures are localized', async (
   assert.equal((await readBookmarkFile(new Blob([html(link('https://safe.test/'))]))).sites.length, 1);
 });
 
+test('Markdown files group local links by headings and use the normal import preview', async () => {
+  const source = [
+    'https://root.example/',
+    '# 工作',
+    '- [设计](https://design.example/path_(x)?one=1&two=2 "Design")',
+    '## 参考',
+    '- <https://docs.example/page>',
+    '- [重复](https://design.example/path_(x)?one=1&two=2)',
+    '~~~md',
+    '[代码示例](https://ignored.example/)',
+    '~~~',
+    '<!-- [注释](https://ignored.example/) -->',
+    '示例 `[代码](https://ignored.example/)`',
+    '![图片](https://ignored.example/p.png)',
+    '- [危险](javascript:alert(1))',
+    '- [凭据](https://user:password@private.example/)',
+    '# 工作',
+    'https://last.example/',
+    '空标题',
+    '======',
+  ].join('\r\n');
+  const plan = await readBookmarkFile(new File([`\uFEFF${source}`], 'Links.MD'));
+  assert.deepEqual(plan.folders.map(({ name, originalPath }) => [name, originalPath]), [
+    ['工作', '工作'], ['工作 / 参考', '工作 / 参考'], ['工作 (2)', '工作'],
+  ]);
+  assert.deepEqual(plan.sites.map(({ url, folder, line }) => [url, folder, line]), [
+    ['https://root.example/', null, 1], ['https://design.example/path_(x)?one=1&two=2', '工作', 3],
+    ['https://docs.example/page', '工作 / 参考', 5], ['https://design.example/path_(x)?one=1&two=2', '工作 / 参考', 6],
+    ['https://last.example/', '工作 (2)', 16],
+  ]);
+  assert.deepEqual(plan.invalid.map(({ line }) => line), [13, 14]);
+  assert.equal(plan.duplicateCount, 1);
+  const prepared = prepareImport(createEmptyState(), plan);
+  assert.equal(prepared.addedSites, 4);
+  assert.equal(prepared.addedFolders, 3);
+  assert.equal(prepared.skippedDuplicates, 1);
+  assert.ok(prepared.state.entries.every((entry) => entry.icon.kind === 'letter'));
+});
+
+test('Markdown files with no links, unsafe-only links or too many entries remain bounded', async () => {
+  await assert.rejects(readBookmarkFile(new File(['# Empty\nText only.'], 'empty.md')), /没有可导入的网址/);
+  const rejected = await readBookmarkFile(new File(['[Local](file:///example)'], 'blocked.md'));
+  assert.equal(rejected.sites.length, 0);
+  assert.equal(rejected.invalid.length, 1);
+  await assert.rejects(readBookmarkFile(new File(['https://example.com/\n'.repeat(2001)], 'large.md')), /导入条目不能超过 2000/);
+});
+
+test('Markdown file parsing accepts escaped title brackets and bounds malformed link attempts', async () => {
+  const escaped = await readBookmarkFile(new File(['[Setup \\[safe\\]](https://safe.example/)'], 'safe.md'));
+  assert.equal(escaped.sites[0].name, 'Setup [safe]');
+  const malformed = '[broken]('.repeat(2001);
+  await assert.rejects(readBookmarkFile(new File([malformed], 'malformed.md')), /导入条目不能超过 2000/);
+});
+
 test('entry counts, invalid counts and deep nesting fail cleanly', () => {
   assert.throws(() => parseBookmarks(html(link('https://safe.test/').repeat(2001))), /导入条目不能超过 2000/);
   assert.throws(() => parseBookmarks(html(link('javascript:alert(1)').repeat(2001))), /无效书签不能超过 2000/);

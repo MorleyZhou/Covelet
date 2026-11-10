@@ -1,6 +1,6 @@
 # GitHub 发布与可选商店提交 CI
 
-推送 `v*` tag 会构建 ZIP、生成校验文件并创建或更新 GitHub Release，**不会提交商店**。手动运行 `workflow_dispatch` 时，只有显式设置 **`submit_stores=true`** 才会向 Chrome Web Store 和 Microsoft Edge Add-ons 两个商店上传并提交审核；默认值为 `false`。本轮 0.3.0 不提交商店。
+推送 `v*` tag 会构建 ZIP、生成校验文件并创建或更新 GitHub Release。商店送审由手动运行 `workflow_dispatch` 并显式设置 **`submit_stores=true`** 触发，默认值为 `false`。
 
 工作流：[release-stores.yml](../../.github/workflows/release-stores.yml)，Actions 名称为 **GitHub release and optional store submission**。审核通过后的上线时间由商店决定；CI 成功不代表商店已上线。
 
@@ -9,6 +9,18 @@
 | 推送 `vX.Y.Z` tag | 构建并创建或更新 | 跳过 |
 | 手动运行，`submit_stores=false`（默认） | 构建并创建或更新 | 跳过 |
 | 手动运行，`submit_stores=true` | 构建并创建或更新 | 上传并提交审核 |
+
+## 开发批次与正式版本
+
+`main` 是稳定线。双数补丁号用作内部功能批次编号。每项功能从对应的集成分支开分支，经 PR 和 CI 合回该批次。双数批次使用本地解压包或 CI 验证，禁止推送对应的发布 tag。
+
+| 用途 | 分支或版本 | 流程 |
+| --- | --- | --- |
+| 0.4 功能批次 | `feature/0.3.2-for-0.4` | [12 项功能及验收标准](../0.4.0%20功能范围.md)。整批验收后合入稳定线并发布 `0.4.0` |
+| 0.5 功能批次 | `feature/0.3.4-for-0.5` | 在开始 0.5 功能时建分支。并行开发时，在整批验收前合入 `0.4.0` 的正式基线。累计 10–15 项通过验收的新功能后发布 `0.5.0` |
+| 线上修复 | `0.3.3`、`0.3.5` 等奇数补丁 | 从当前稳定线起修复分支，按需发版。修复合入 `main` 后，同步到进行中的功能批次 |
+
+双数编号写在分支名中。制作正式发布包时，统一将 package、lockfile 和 manifest 改为正式版本号。商店提交的版本必须递增。`0.4.0` 提交后，后续商店修复使用 `0.4.1`、`0.4.3` 等版本。参见 [Chrome 更新规则](https://developer.chrome.com/docs/webstore/update)和 [Edge 更新规则](https://learn.microsoft.com/en-us/microsoft-edge/extensions/update/update-extension)。
 
 ## 首次配置
 

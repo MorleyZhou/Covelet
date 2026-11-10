@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Covelet",
   "default_locale": "en",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "minimum_chrome_version": "120",
   "description": "__MSG_extensionDescription__",
   "icons": {
@@ -17,6 +17,11 @@
   "action": {
     "default_title": "__MSG_actionTitle__",
     "default_popup": "popup.html"
+  },
+  "commands": {
+    "open-search": {
+      "description": "__MSG_searchShortcutTitle__"
+    }
   },
   "background": {
     "service_worker": "background.js",

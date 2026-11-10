@@ -7,5 +7,8 @@
   },
   "actionTitle": {
     "message": "添加到 Covelet"
+  },
+  "searchShortcutTitle": {
+    "message": "打开 Covelet 搜索"
   }
 }

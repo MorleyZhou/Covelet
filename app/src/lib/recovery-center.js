@@ -139,6 +139,14 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       if (next.parentId === null && !state.settings.pages.includes(next.page)) state.settings.pages.push(next.page);
     }
     state.settings.pages.sort((a, b) => a - b);
+    const desktopIds = new Set(Object.values(state.settings.desktopPages ?? {}).map((page) => page.id));
+    for (const [page, metadata] of Object.entries(source.settings.desktopPages ?? {})) {
+      const target = pageMap.get(Number(page));
+      if (!state.settings.pages.includes(target)) continue;
+      const id = desktopIds.has(metadata.id) ? crypto.randomUUID() : metadata.id;
+      (state.settings.desktopPages ??= {})[target] = { ...metadata, id };
+      desktopIds.add(id);
+    }
     const icons = new Map(existing.icons), appendedSources = new Set(navigationIconSources({ entries: appended }).map((item) => item.source));
     for (const [source, record] of incoming.icons || []) if (appendedSources.has(source) && !icons.has(source)) icons.set(source, record);
     return { state: migrateNavigationState(state), assets, icons };

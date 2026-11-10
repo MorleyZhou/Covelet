@@ -1,6 +1,7 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { migrateNavigationState, combineSelectedEntries, moveEntry } from './model.js';
 import { DESKTOP_ROWS, MAX_DESKTOP_PAGE, desktopFootprint, layoutDesktop, freezeDesktopPositions, placeDesktopEntries, nextDesktopPage } from './desktop-layout.js';
+import { remapDesktopPages, withDesktopPageIdentity } from './desktop-pages.js';
 
 const visibleRoot = (entry) => entry.parentId === null && !entry.detached;
 const copy = (value) => structuredClone(value);
@@ -40,17 +41,43 @@ function normalizeDraft(input, columns) {
 export function beginDesktopEdit(input, columns) {
   const state = copy(input), byId = new Map(state.entries.map((entry) => [entry.id, entry]));
   const screens = layoutDesktop(state.entries, columns, null, state.settings.pages), keys = new Map();
+  const mapping = new Map();
   if (screens.length > MAX_DESKTOP_PAGE + 1) throw Error(tr("主屏幕数量已达上限。"));
   screens.forEach((screen, page) => {
     keys.set(screen.key, `${page}:0`);
+    if (screen.key === `${screen.page}:0`) mapping.set(screen.page, page);
     for (const item of screen.items) {
       const entry = byId.get(item.id), placement = screen.placements.get(item.id);
       entry.page = page; entry.position = { row: placement.row - 1, column: placement.column - 1 };
     }
   });
   state.settings.pages = screens.map((_, index) => index);
+  remapDesktopPages(state.settings, mapping);
   folderPages(state.entries);
   return { state: normalizeDraft(state, columns), keys };
+}
+
+export function renameDesktopPage(input, page, title) {
+  if (!input.settings.pages.includes(page)) throw Error(tr('这一屏已发生变化，请重新打开屏幕管理。'));
+  if (typeof title !== 'string' || title.length > 200 || /[\u0000-\u001f\u007f]/u.test(title)) throw Error(tr('名称无效'));
+  const name = title.trim();
+  if ((input.settings.desktopPages?.[page]?.name || '') === name) return input;
+  const state = copy(input);
+  state.settings = withDesktopPageIdentity(state.settings, page);
+  if (name) state.settings.desktopPages[page].name = name;
+  else delete state.settings.desktopPages[page].name;
+  return migrateNavigationState(state);
+}
+
+export function moveDesktopPage(input, page, offset, activeKey, columns) {
+  const pages = input.settings.pages, index = pages.indexOf(page);
+  if (index < 0 || ![-1, 1].includes(offset) || pages[index + offset] === undefined) return null;
+  const neighbor = pages[index + offset], state = copy(input);
+  const mapping = new Map(pages.map((value) => [value, value === page ? neighbor : value === neighbor ? page : value]));
+  for (const entry of state.entries) if (visibleRoot(entry)) entry.page = mapping.get(entry.page ?? 0) ?? entry.page ?? 0;
+  remapDesktopPages(state.settings, mapping);
+  const [activePage, part] = activeKey.split(':');
+  return { state: normalizeDraft(state, columns), key: `${mapping.get(Number(activePage)) ?? activePage}:${part}` };
 }
 
 export function addDesktopScreen(input, columns) {
@@ -86,6 +113,7 @@ export function removeDesktopScreen(input, key, columns) {
   const remaining = pages.filter((value) => value !== page), mapping = new Map(remaining.map((value, index) => [value, index]));
   for (const entry of state.entries) if (visibleRoot(entry) && !movingIds.has(entry.id)) entry.page = mapping.get(entry.page ?? 0) ?? 0;
   state.settings.pages = remaining.map((_, index) => index);
+  remapDesktopPages(state.settings, mapping);
   let destination = state.settings.pages.at(-1);
   const tail = state.entries.filter((entry) => visibleRoot(entry) && !movingIds.has(entry.id) && entry.page === destination);
   let taken = new Set(tail.flatMap((entry) => cellsFor(entry.position, desktopFootprint(entry, columns), columns)));

@@ -2,7 +2,7 @@ import { tr, getLocale, builtinName, formatNumber } from "../i18n/index.js";
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { PresentationContext, usePresentedTools } from '../lib/presentation.js';
 import { createPortal } from 'react-dom';
-import { NotePencil, BookOpen, Plus, Trash, PencilSimple, Check, Archive, ArrowSquareOut, Copy, PushPin, DownloadSimple, UploadSimple, MagnifyingGlass } from '@phosphor-icons/react';
+import { NotePencil, BookOpen, Plus, Trash, PencilSimple, Check, Archive, ArrowSquareOut, Copy, PushPin, DownloadSimple, UploadSimple, MagnifyingGlass, SquaresFour } from '@phosphor-icons/react';
 import Select from './Select.jsx';
 import { WIDGET_NAMES, WIDGET_SIZE_OPTIONS, validateWidgetConfig } from '../lib/widget-model.js';
 import usePersonalTools from '../lib/use-personal-tools.js';
@@ -18,6 +18,10 @@ import { Input } from './ui/input.jsx';
 import { Disclosure } from './ui/disclosure.jsx';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs.jsx';
 import { userErrorMessage } from '../lib/user-error.js';
+import { loadState } from '../lib/storage.js';
+import { desktopDestinationValue } from '../lib/navigation-destinations.js';
+import { copyReadingToNavigation } from '../lib/reading-to-navigation.js';
+import NavigationDestination from './NavigationDestination.jsx';
 
 const newest = (items) => [...items].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
 const stop = (event) => event.stopPropagation();
@@ -122,7 +126,7 @@ export default function PersonalWidget({ entry, open, onOpen, onClose, Dialog, p
     {open && Dialog && portalTarget && createPortal(<div className="personal-dialog-layer" onContextMenu={stop} onKeyDown={stop} onPointerDown={stop} onPointerMove={stop} onPointerUp={stop}>
       <Dialog title={builtinName(entry.extensionId, entry.name)} privacyKeys={[`widget:${entry.id}`]} onClose={close} closeDisabled={busy} className="personal-tools-modal" wide maximizable>
         {discard && <Confirm privacySafe busy={busy} action={tr("放弃修改")} onCancel={() => setDiscard(false)} onConfirm={onClose}>{tr("放弃未保存的便笺修改？")}</Confirm>}
-        {notes ? <NotesTools onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools onBusyChange={setBusy} onDirtyChange={setDirty} />}
+        {notes ? <NotesTools onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} onBusyChange={setBusy} onDirtyChange={setDirty} />}
       </Dialog></div>, portalTarget)}
   </>;
 }
@@ -132,7 +136,7 @@ export function PersonalToolsDialog({ kind, initialRecordId, Dialog, onClose }) 
   return <Dialog title={kind === 'note' ? tr('便笺') : tr('稍后读')} closeDisabled={busy} wide maximizable className="personal-tools-modal"
     onClose={() => { if (!busy) { if (dirty) setDiscard(true); else onClose(); } }}>
     {discard && <Confirm privacySafe busy={busy} action={tr('放弃修改')} onCancel={() => setDiscard(false)} onConfirm={onClose}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
-    {kind === 'note' ? <NotesTools initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} />}
+    {kind === 'note' ? <NotesTools initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} />}
   </Dialog>;
 }
 
@@ -198,14 +202,16 @@ function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
   </div>;
 }
 
-function ReadingTools({ onBusyChange, onDirtyChange, initialRecordId }) {
+function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) {
   const { data: rawData, core, error: loadError } = usePersonalTools(), action = useAction(), data = usePresentedTools(rawData), presentation = useContext(PresentationContext);
   const [unlocking, setUnlocking] = useState(false);
   const [filter, setFilter] = useState('unread'), [query, setQuery] = useState(''), [draft, setDraft] = useState({ title: '', url: '' }), [deleting, setDeleting] = useState(null);
   const [discarding, setDiscarding] = useState(false);
+  const [copy, setCopy] = useState(null), [copyStatus, setCopyStatus] = useState('');
   const [queryRecordId, setQueryRecordId] = useState(null);
   const draftHidden = presentation.active && Boolean(draft.id) && presentation.hiddenKeys.has(`reading:${draft.id}`);
   const deletionHidden = presentation.active && Boolean(deleting) && presentation.hiddenKeys.has(`reading:${deleting.id}`);
+  const copyHidden = presentation.active && copy && presentation.hiddenKeys.has(`reading:${copy.record.id}`);
   const queryHidden = presentation.active && Boolean(queryRecordId) && presentation.hiddenKeys.has(`reading:${queryRecordId}`);
   const visibleQuery = queryHidden ? '' : query;
   const selectedInitial = useRef(null);
@@ -221,6 +227,30 @@ function ReadingTools({ onBusyChange, onDirtyChange, initialRecordId }) {
     if (queryRecordId && presentation.active && presentation.hiddenKeys.has(`reading:${queryRecordId}`)) { setQuery(''); setQueryRecordId(null); }
   }, [queryRecordId, presentation.active, presentation.hiddenKeys]);
   const records = newest(data?.reading || []).filter((item) => item.status === filter && (!visibleQuery || core?.contains(`${item.title}\n${item.url}`, visibleQuery)));
+  function chooseDestination(record) {
+    action.run(async () => {
+      const state = await loadState();
+      setCopyStatus('');
+      setCopy({ record, state, value: desktopDestinationValue(state) });
+    });
+  }
+  function closeDestination() { setCopy(null); action.setError(''); }
+  function addToDesktop(event) {
+    event.preventDefault();
+    if (!copy?.value || copyHidden || event.nativeEvent?.isComposing) return;
+    action.run(async () => {
+      try {
+        await copyReadingToNavigation(copy.record, copy.value, copy.state.revision);
+        closeDestination(); setCopyStatus(tr('已添加到桌面。'));
+      } catch (error) {
+        if (error.code === 'TARGET_CHANGED' || error.code === 'REVISION_CONFLICT') {
+          const state = await loadState().catch(() => null);
+          if (state) setCopy({ ...copy, state, value: '' });
+        }
+        throw error;
+      }
+    });
+  }
   return <Tabs value={filter} onValueChange={setFilter} asChild><div className="personal-tools-body reading-tools">
     <PrivateEditor hidden={draftHidden} busy={action.busy || unlocking} onBusyChange={setUnlocking} onDiscard={() => setDiscarding(true)} className="reading-draft-surface"><form className="reading-add-form" onSubmit={(event) => { event.preventDefault(); if (draftHidden) return; action.run(async () => { await saveReadingItem({ ...draft, status: draft.status || 'unread' }); setDraft({ title: '', url: '' }); }); }}>
       <label>{tr("网址")}<Input type="text" inputMode="url" required value={draft.url} maxLength={4096} placeholder="https://…" disabled={action.busy} onChange={(event) => setDraft((value) => ({ ...value, url: event.target.value }))} /></label>
@@ -229,11 +259,24 @@ function ReadingTools({ onBusyChange, onDirtyChange, initialRecordId }) {
     </form></PrivateEditor>
     {discarding && <Confirm privacySafe action={tr('放弃修改')} busy={action.busy || unlocking} onCancel={() => setDiscarding(false)} onConfirm={() => { setDraft({ title: '', url: '' }); setDiscarding(false); }}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
     <div className="personal-tools-toolbar"><TabsList className="tool-segments" aria-label={tr("阅读状态")}>{[['unread', tr("未读")], ['read', tr("已读")], ['archived', tr("归档")]].map(([value, label]) => <TabsTrigger key={value} value={value}>{label}</TabsTrigger>)}</TabsList><div className="tool-search"><MagnifyingGlass size={16} /><Input unstyled aria-label={tr("搜索稍后读")} placeholder={tr("搜索")} maxLength={100} value={visibleQuery} onChange={(event) => { setQuery(event.target.value); setQueryRecordId(null); }} /></div></div>
-    <MessageDialog message={loadError || action.error} onClose={() => action.setError('')} />
+    <MessageDialog message={loadError || (!copy && action.error)} onClose={() => action.setError('')} />
+    {copyStatus && <p className="hint" role="status">{copyStatus}</p>}
+    {copy && <Dialog title={tr('添加到桌面')} privacyKeys={[`reading:${copy.record.id}`]} onClose={closeDestination} closeDisabled={action.busy}>
+      <form className="form-stack" onSubmit={addToDesktop}>
+        <NavigationDestination state={copy.state} preferences={{ presentation: presentation.active, privateKeys: [...presentation.hiddenKeys] }}
+          value={copy.value} onChange={(value) => setCopy((current) => ({ ...current, value }))} disabled={action.busy || copyHidden} />
+        {action.error && !copyHidden && <p className="form-error" role="alert">{action.error}</p>}
+        <div className="dialog-actions">
+          <Button variant="secondary" type="button" disabled={action.busy} onClick={closeDestination}>{tr('取消')}</Button>
+          <Button type="submit" disabled={action.busy || copyHidden || !copy.value}>{tr('添加')}</Button>
+        </div>
+      </form>
+    </Dialog>}
     {deleting && !deletionHidden && <Confirm busy={action.busy} onCancel={() => setDeleting(null)} onConfirm={() => action.run(async () => { await deletePersonalRecord('reading', deleting.id, deleting.revision); if (draft.id === deleting.id) setDraft({ title: '', url: '' }); setDeleting(null); })}>{tr("删除“{0}”？", [deleting.title])}</Confirm>}
     <TabsContent value={filter} className="reading-records">{records.map((item) => <div className="reading-record" key={item.id}><a href={item.url} target="_blank" rel="noreferrer noopener"><strong>{item.title}</strong><small>{new URL(item.url).hostname}</small><ArrowSquareOut size={15} /></a><div>
       <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={item.status === 'unread' ? tr("标为已读") : tr("标为未读")} title={item.status === 'unread' ? tr("标为已读") : tr("标为未读")} onClick={() => action.run(() => saveReadingItem({ ...item, status: item.status === 'unread' ? 'read' : 'unread' }))}><Check size={17} weight={item.status === 'read' ? 'bold' : 'regular'} /></Button>
       {item.status !== 'archived' && <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={tr("归档")} title={tr("归档")} onClick={() => action.run(() => saveReadingItem({ ...item, status: 'archived' }))}><Archive size={17} /></Button>}
+      <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={tr('添加到桌面')} title={tr('添加到桌面')} aria-haspopup="dialog" onClick={() => chooseDestination(item)}><SquaresFour size={17} /></Button>
       <Button variant="ghost" type="button" className="button quiet" disabled={action.busy || Boolean(draft.url || draft.title)} aria-label={tr("编辑链接")} title={tr("编辑")} onClick={() => setDraft(item)}><PencilSimple size={17} /></Button>
       <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={tr("删除链接")} title={tr("删除")} onClick={() => setDeleting(item)}><Trash size={17} /></Button></div></div>)}{!records.length && <p className="tool-empty">{visibleQuery ? tr("没有找到链接") : tr("暂无链接")}</p>}</TabsContent>
     <div className="reading-bottom-actions"><ToolDataActions data={rawData} run={action.run} busy={action.busy} /></div>

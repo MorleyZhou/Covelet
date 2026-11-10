@@ -4,6 +4,7 @@ import { DESKTOP_ROWS, MAX_DESKTOP_PAGE, layoutDesktop } from './desktop-layout.
 
 const MAX_ENTRIES = 2000;
 const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_MARKDOWN_LINK_SPAN = 8192;
 const fail = (message) => { throw Error(message); };
 const newId = (kind) => `${kind}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`}`;
 const label = (value, fallback) => String(value ?? '').replace(/[\u0000-\u001f\u007f]/gu, ' ').trim().slice(0, 200) || fallback;
@@ -11,17 +12,19 @@ const overlaps = (ranges, start, end) => ranges.some(([from, to]) => start < to 
 
 // Read Markdown destinations without losing balanced parentheses in a URL.
 // No imported markup is rendered and no network request is involved.
-function markdownDestination(text, start) {
+function markdownDestination(text, start, limit = text.length) {
   let cursor = start;
-  while (text[cursor] === ' ' || text[cursor] === '\t') cursor++;
+  while (cursor < limit && (text[cursor] === ' ' || text[cursor] === '\t')) cursor++;
   let destination = '';
   if (text[cursor] === '<') {
-    const end = text.indexOf('>', cursor + 1);
-    if (end < 0 || text.slice(cursor, end).includes('\n')) return null;
+    const close = text.slice(cursor + 1, limit).indexOf('>');
+    if (close < 0) return null;
+    const end = cursor + 1 + close;
+    if (text.slice(cursor, end).includes('\n')) return null;
     destination = text.slice(cursor + 1, end); cursor = end + 1;
   } else {
     let depth = 0;
-    for (; cursor < text.length; cursor++) {
+    for (; cursor < limit; cursor++) {
       const character = text[cursor];
       if (character === '\n' || character === '\r') return null;
       if (character === '\\' && /[\\()[\]]/u.test(text[cursor + 1] ?? '')) { destination += text[++cursor]; continue; }
@@ -34,19 +37,20 @@ function markdownDestination(text, start) {
       destination += character;
     }
   }
-  while (text[cursor] === ' ' || text[cursor] === '\t') cursor++;
+  while (cursor < limit && (text[cursor] === ' ' || text[cursor] === '\t')) cursor++;
   if (text[cursor] === '"' || text[cursor] === "'") {
     const quote = text[cursor++];
-    while (cursor < text.length && text[cursor] !== '\n') {
+    while (cursor < limit && text[cursor] !== '\n') {
       if (text[cursor] === '\\') { cursor += 2; continue; }
       if (text[cursor++] === quote) break;
     }
-    while (text[cursor] === ' ' || text[cursor] === '\t') cursor++;
+    while (cursor < limit && (text[cursor] === ' ' || text[cursor] === '\t')) cursor++;
   }
-  return text[cursor] === ')' ? { url: destination, end: cursor + 1 } : null;
+  return cursor < limit && text[cursor] === ')' ? { url: destination, end: cursor + 1 } : null;
 }
 
-export function parseBulkLinks(text) {
+function parseLinks(text, countMarkdownToken) {
+  const markdownDocument = Boolean(countMarkdownToken);
   if (typeof text !== 'string' || new TextEncoder().encode(text).byteLength > MAX_BYTES) fail(tr('粘贴内容无效或超过 5 MB'));
   const plan = { folders: [], sites: [], invalid: [], duplicateCount: 0 };
   const ranges = [], candidates = [], lines = [];
@@ -54,16 +58,22 @@ export function parseBulkLinks(text) {
     candidates.push({ url, name, start }); ranges.push([start, end]);
     if (candidates.length > MAX_ENTRIES) fail(tr('导入条目不能超过 {0}', [MAX_ENTRIES]));
   };
-  const markdown = /!?\[([^\]\n]{0,500})\]\(/gu;
+  const markdown = markdownDocument ? /!?\[((?:\\[^\r\n]|[^\[\]\\\r\n]){0,500})\]\(/gu : /!?\[([^\]\n]{0,500})\]\(/gu;
   for (const match of text.matchAll(markdown)) {
-    if (overlaps(ranges, match.index, match.index + match[0].length)) continue;
-    const target = markdownDestination(text, match.index + match[0].length);
+    if (match.index < (ranges.at(-1)?.[1] ?? 0)) continue;
+    const start = match.index + match[0].length;
+    countMarkdownToken?.();
+    const target = markdownDestination(text, start, markdownDocument ? Math.min(start + MAX_MARKDOWN_LINK_SPAN, text.length) : text.length);
     if (!target) continue;
     if (match[0].startsWith('!')) ranges.push([match.index, target.end]);
     else add(target.url, match[1].replace(/\\([\\()[\]])/gu, '$1'), match.index, target.end);
   }
+  const markdownCount = ranges.length;
+  let markdownIndex = 0;
   for (const match of text.matchAll(/<((?:https?:\/\/)[^<>\s]+)>/giu)) {
-    if (!overlaps(ranges, match.index, match.index + match[0].length)) add(match[1], '', match.index, match.index + match[0].length);
+    const end = match.index + match[0].length;
+    while (markdownIndex < markdownCount && ranges[markdownIndex][1] <= match.index) markdownIndex++;
+    if (markdownIndex === markdownCount || ranges[markdownIndex][0] >= end) add(match[1], '', match.index, end);
   }
   let offset = 0;
   for (const line of text.split('\n')) {
@@ -72,16 +82,22 @@ export function parseBulkLinks(text) {
     if (value && !overlaps(ranges, offset, end)) {
       // A standalone URL is kept whole, including query values ending in
       // punctuation and quotes. It must not be truncated by prose extraction.
-      try { normalizeUrl(value); add(value, '', offset, end); }
-      catch (reason) { if (candidates.length > MAX_ENTRIES) throw reason; }
+      if (markdownDocument) {
+        if (/^[a-z][a-z\d+.-]*:\/\/\S+$/iu.test(value)) add(value, '', offset, end);
+      } else {
+        try { normalizeUrl(value); add(value, '', offset, end); }
+        catch (reason) { if (candidates.length > MAX_ENTRIES) throw reason; }
+      }
     }
     offset = end + 1;
   }
-  for (const match of text.matchAll(/https?:\/\/[^\s<>"'`]+/giu)) {
-    if (!overlaps(ranges, match.index, match.index + match[0].length)) add(match[0], '', match.index, match.index + match[0].length);
-  }
-  for (const { value, start, end } of lines) {
-    if (value && !overlaps(ranges, start, end) && !/^#{1,6}\s/u.test(value)) add(value, '', start, end);
+  if (!markdownDocument) {
+    for (const match of text.matchAll(/https?:\/\/[^\s<>"'`]+/giu)) {
+      if (!overlaps(ranges, match.index, match.index + match[0].length)) add(match[0], '', match.index, match.index + match[0].length);
+    }
+    for (const { value, start, end } of lines) {
+      if (value && !overlaps(ranges, start, end) && !/^#{1,6}\s/u.test(value)) add(value, '', start, end);
+    }
   }
   candidates.sort((a, b) => a.start - b.start);
   const seen = new Set(); let lineIndex = 0;
@@ -89,6 +105,7 @@ export function parseBulkLinks(text) {
     while (lineIndex + 1 < lines.length && lines[lineIndex + 1].start <= candidate.start) lineIndex++;
     const line = lineIndex + 1;
     try {
+      if (markdownDocument && !/^https?:\/\//iu.test(candidate.url)) fail(tr('仅支持 HTTP 和 HTTPS 网址'));
       const url = normalizeUrl(candidate.url);
       plan.sites.push({ name: label(candidate.name, new URL(url).hostname), url, folder: null, line });
       if (seen.has(url)) plan.duplicateCount++;
@@ -98,6 +115,70 @@ export function parseBulkLinks(text) {
     }
     if (plan.sites.length > MAX_ENTRIES || plan.invalid.length > MAX_ENTRIES) fail(tr('导入条目不能超过 {0}', [MAX_ENTRIES]));
   }
+  return plan;
+}
+
+export function parseBulkLinks(text) {
+  return parseLinks(text);
+}
+
+export function parseMarkdownLinks(text) {
+  if (typeof text !== 'string' || new TextEncoder().encode(text).byteLength > MAX_BYTES) fail(tr('书签文件不能超过 5 MB'));
+  const plan = { folders: [], sites: [], invalid: [], duplicateCount: 0 };
+  const headings = [], folderNames = new Set(), seen = new Set();
+  const lines = text.replace(/^\uFEFF/u, '').replace(/<!--[\s\S]*?(?:-->|$)/gu, (comment) => comment.replace(/[^\r\n]/gu, ' ')).split(/\r\n?|\n/u);
+  let fence = '', folder = null, markdownTokens = 0;
+  const countMarkdownToken = () => {
+    if (++markdownTokens > MAX_ENTRIES) fail(tr('导入条目不能超过 {0}', [MAX_ENTRIES]));
+  };
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index], marker = /^ {0,3}(`{3,}|~{3,})(.*)$/u.exec(line);
+    if (fence) {
+      if (marker && marker[1].startsWith(fence) && !marker[2].trim()) fence = '';
+      continue;
+    }
+    if (marker) { fence = marker[1]; continue; }
+
+    const atx = /^ {0,3}(#{1,6})(?:[\t ]+|$)(.*)$/u.exec(line);
+    const setext = !atx && /^ {0,3}\S/u.test(line) && !/^(?:\s*[-*+]\s|\s*\d+\.\s|\s*https?:\/\/)/iu.test(line)
+      ? /^ {0,3}(=+|-+)[\t ]*$/u.exec(lines[index + 1] ?? '') : null;
+    if (atx || setext) {
+      const level = atx ? atx[1].length : setext[1].startsWith('=') ? 1 : 2;
+      const heading = atx ? atx[2].replace(/[\t ]+#+[\t ]*$/u, '') : line;
+      headings.length = level - 1;
+      headings.push(label(heading, ''));
+      folder = null;
+      if (setext) index++;
+      continue;
+    }
+
+    // Markdown examples are not bookmarks. The shared scanner then reads
+    // real inline links, angle-bracket autolinks and standalone URL items.
+    const content = line.replace(/(?<!`)(`{1,16})(?!`).*?\1(?!`)/gu, (span) => ' '.repeat(span.length));
+    if (!/[\[:<]/u.test(content)) continue;
+    const { sites, invalid } = parseLinks(content, countMarkdownToken);
+    if (sites.length && !folder && headings.some(Boolean)) {
+      const originalPath = headings.filter(Boolean).join(' / ');
+      const base = label(originalPath, tr('未命名文件夹'));
+      folder = base;
+      let count = 2;
+      while (folderNames.has(folder)) {
+        const suffix = ` (${count++})`;
+        folder = `${base.slice(0, 200 - suffix.length)}${suffix}`;
+      }
+      folderNames.add(folder);
+      plan.folders.push({ name: folder, originalPath });
+    }
+    for (const site of sites) {
+      plan.sites.push({ ...site, folder, line: index + 1 });
+      if (seen.has(site.url)) plan.duplicateCount++;
+      seen.add(site.url);
+    }
+    for (const item of invalid) plan.invalid.push({ ...item, line: index + 1 });
+    if (plan.folders.length + plan.sites.length + plan.invalid.length > MAX_ENTRIES) fail(tr('导入条目不能超过 {0}', [MAX_ENTRIES]));
+  }
+  if (!plan.sites.length && !plan.invalid.length) fail(tr('没有可导入的网址'));
   return plan;
 }
 

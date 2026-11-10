@@ -1,0 +1,6 @@
+# These source files have byte-level digests in the packaged WASM manifests.
+app/wasm/**/Cargo.toml text eol=lf
+app/wasm/**/Cargo.lock text eol=lf
+app/wasm/**/*.rs text eol=lf
+app/scripts/build*-wasm.mjs text eol=lf
+app/scripts/clock-wasm.mjs text eol=lf
