@@ -1,6 +1,6 @@
 {
-  "meta.title": "Covelet · いつものサイトを、新しいタブに",
-  "meta.description": "Chrome と Edge の新しいタブで、サイトの整理、ウェブ検索、メモを。Covelet アカウントは不要です。データは標準でこのブラウザ内に暗号化して保存。自分のストレージでの同期（Beta）も選べます。",
+  "meta.title": "Covelet · Chrome と Edge 向けの新規タブ拡張機能",
+  "meta.description": "よく使うサイトを整理し、新しいタブでウェブ検索やメモができます。アカウント登録は不要です。データは標準でブラウザ内に暗号化して保存されます。",
   "hero.h1": "いつものサイトを、新しいタブに。",
   "hero.tagline": "サイトを整理する。ウェブを検索する。思いついたことをメモする。",
   "hero.lead": "Covelet は Chrome と Edge の新しいタブを置き換える拡張機能です。Covelet アカウントは不要です。",

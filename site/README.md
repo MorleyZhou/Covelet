@@ -6,12 +6,19 @@ Publish `site/` directly with no build command. Keep the existing hosting,
 domains and website analytics configuration. The source contains no analytics SDK;
 the existing Pages configuration supplies website-only Cloudflare Web Analytics.
 
-One Chinese HTML shell + `i18n/{locale}.json` + a working language selector.
-Default: `zh-CN`; share another language with `?lang=en`. Locale codes match the
-extension exactly: `zh-CN`, `en`, `zh-TW`, `ja`, `ko`, `de`, `fr`, `ru`.
-UI labels, metadata, privacy boundaries and install links are localized too.
-The page sets no cookies or browser storage. Chinese HTML works without JavaScript.
-`index.html` is the complete Chinese fallback; keep it aligned with `zh-CN.json`.
+`index.html` is the Simplified Chinese homepage and the template for the other
+seven languages. Edit the template and `i18n/{locale}.json`, then run
+`node scripts/render-site-locales.mjs` from the repository root to update the
+checked-in locale pages and sitemap. `node scripts/render-site-locales.mjs --check`
+verifies that the generated files are current. Keep the template copy aligned with
+`zh-CN.json` and use `data-i18n` on text-only elements. The site and extension use
+the same locale codes (`zh-CN`, `en`, `zh-TW`, `ja`, `ko`, `de`, `fr`, `ru`).
+
+Every locale has a static URL, such as `/en/` or `/zh-tw/`, with its own translated
+HTML and metadata. The language selector navigates to these pages. Old links such
+as `/?lang=en` still work in browsers with JavaScript, retaining other query
+parameters and fragments when they open `/en/`. The site sets no cookies or browser
+storage.
 
 The [privacy policy](https://covelet.future-element.com/privacy/) is available in
 Chinese and English without JavaScript. Keep `privacy/index.html` aligned with

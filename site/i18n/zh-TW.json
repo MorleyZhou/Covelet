@@ -1,6 +1,6 @@
 {
-  "meta.title": "Covelet · 常用網站，就在新分頁",
-  "meta.description": "Covelet 是 Chrome 和 Edge 的新分頁擴充功能。整理網站、搜尋網頁、記下便箋。不需要 Covelet 帳號，資料預設在目前瀏覽器中加密儲存，也可選用自備儲存同步（Beta）。",
+  "meta.title": "Covelet · Chrome 和 Edge 的新分頁擴充功能",
+  "meta.description": "整理常用網站、搜尋網頁、記下便箋。Covelet 不需註冊，資料預設加密儲存在目前的瀏覽器中。",
   "hero.h1": "常用網站，就在新分頁。",
   "hero.tagline": "整理網站，搜尋網頁，隨手記下想法。",
   "hero.lead": "Covelet 是 Chrome 和 Edge 的新分頁擴充功能，無需註冊 Covelet 帳號。",

@@ -1,6 +1,6 @@
 {
-  "meta.title": "Covelet · 자주 쓰는 사이트를 새 탭에",
-  "meta.description": "Chrome과 Edge의 새 탭에서 사이트를 정리하고 웹을 검색하고 메모하세요. Covelet 계정은 필요 없습니다. 데이터는 기본적으로 이 브라우저에 암호화해 저장하며, 내 저장소로 동기화(Beta)할 수도 있습니다.",
+  "meta.title": "Covelet · Chrome과 Edge용 새 탭 확장 프로그램",
+  "meta.description": "자주 쓰는 사이트를 정리하고 웹을 검색하거나 메모를 남기세요. 계정 없이 사용할 수 있으며, 데이터는 기본적으로 브라우저에 암호화되어 저장됩니다.",
   "hero.h1": "자주 쓰는 사이트를 새 탭에.",
   "hero.tagline": "사이트를 정리하고, 웹을 검색하고, 떠오른 생각을 메모하세요.",
   "hero.lead": "Covelet은 Chrome과 Edge의 새 탭을 바꾸는 확장 프로그램입니다. Covelet 계정은 필요 없습니다.",

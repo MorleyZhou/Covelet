@@ -1,6 +1,6 @@
 {
-  "meta.title": "Covelet · 常用网站，就在新标签页",
-  "meta.description": "Covelet 是 Chrome 和 Edge 的新标签页扩展。整理网站、搜索网页、记录便笺。无需 Covelet 账号，数据默认在当前浏览器加密保存，可选自备存储同步（Beta）。",
+  "meta.title": "Covelet · Chrome 和 Edge 的新标签页扩展",
+  "meta.description": "整理常用网站、搜索网页、记录便笺。Covelet 无需注册，数据默认加密保存在当前浏览器中。",
   "hero.h1": "常用网站，就在新标签页。",
   "hero.tagline": "整理网站，搜索网页，随手记下想法。",
   "hero.lead": "Covelet 是 Chrome 和 Edge 的新标签页扩展，无需注册 Covelet 账号。",

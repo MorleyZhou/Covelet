@@ -3,21 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" data-i18n-content="meta.description" content="Covelet 是 Chrome 和 Edge 的新标签页扩展。整理网站、搜索网页、记录便笺。无需 Covelet 账号，数据默认在当前浏览器加密保存，可选自备存储同步（Beta）。">
-  <meta property="og:title" data-i18n-content="meta.title" content="Covelet · 常用网站，就在新标签页">
-  <meta property="og:description" data-i18n-content="meta.description" content="Covelet 是 Chrome 和 Edge 的新标签页扩展。整理网站、搜索网页、记录便笺。无需 Covelet 账号，数据默认在当前浏览器加密保存，可选自备存储同步（Beta）。">
+  <title data-i18n="meta.title">Covelet · Chrome 和 Edge 的新标签页扩展</title>
+  <meta name="description" data-i18n-content="meta.description" content="整理常用网站、搜索网页、记录便笺。Covelet 无需注册，数据默认加密保存在当前浏览器中。">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Covelet">
+  <meta property="og:url" content="https://covelet.future-element.com/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" data-i18n-content="meta.title" content="Covelet · Chrome 和 Edge 的新标签页扩展">
+  <meta property="og:description" data-i18n-content="meta.description" content="整理常用网站、搜索网页、记录便笺。Covelet 无需注册，数据默认加密保存在当前浏览器中。">
+  <meta property="og:image" content="https://covelet.future-element.com/assets/covelet-social-v1.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="600">
+  <meta property="og:image:alt" content="Covelet. New tab for Chrome and Edge.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" data-i18n-content="meta.title" content="Covelet · Chrome 和 Edge 的新标签页扩展">
+  <meta name="twitter:description" data-i18n-content="meta.description" content="整理常用网站、搜索网页、记录便笺。Covelet 无需注册，数据默认加密保存在当前浏览器中。">
+  <meta name="twitter:image" content="https://covelet.future-element.com/assets/covelet-social-v1.png">
+  <meta name="twitter:image:alt" content="Covelet. New tab for Chrome and Edge.">
   <meta name="theme-color" content="#B9FF66">
-  <title data-i18n="meta.title">Covelet · 常用网站，就在新标签页</title>
   <link rel="canonical" href="https://covelet.future-element.com/">
-  <link rel="icon" href="assets/covelet-mark-brutal.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css">
-  <script src="site.js" defer></script>
+  <link rel="alternate" hreflang="zh-CN" href="https://covelet.future-element.com/">
+  <link rel="alternate" hreflang="en" href="https://covelet.future-element.com/en/">
+  <link rel="alternate" hreflang="zh-TW" href="https://covelet.future-element.com/zh-tw/">
+  <link rel="alternate" hreflang="ja" href="https://covelet.future-element.com/ja/">
+  <link rel="alternate" hreflang="ko" href="https://covelet.future-element.com/ko/">
+  <link rel="alternate" hreflang="de" href="https://covelet.future-element.com/de/">
+  <link rel="alternate" hreflang="fr" href="https://covelet.future-element.com/fr/">
+  <link rel="alternate" hreflang="ru" href="https://covelet.future-element.com/ru/">
+  <link rel="alternate" hreflang="x-default" href="https://covelet.future-element.com/">
+  <script type="application/ld+json" id="website-structured-data">
+    {"@context":"https://schema.org","@type":"WebSite","name":"Covelet","url":"https://covelet.future-element.com/"}
+  </script>
+  <link rel="icon" href="/assets/covelet-mark-brutal.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/site.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#top" data-i18n="ui.skip">跳至正文</a>
   <header class="nav">
     <div class="nav-inner">
-      <a class="brand" href="#top"><img src="assets/covelet-mark-brutal.svg" width="34" height="34" alt=""><span>Covelet</span></a>
+      <a class="brand" href="#top"><img src="/assets/covelet-mark-brutal.svg" width="34" height="34" alt=""><span>Covelet</span></a>
       <nav class="nav-links" data-i18n-aria-label="ui.navigation" aria-label="页面导航">
         <a class="hide" href="#features" data-i18n="ui.features">功能</a>
         <a class="hide" href="#privacy" data-i18n="ui.privacy">隐私</a>
@@ -41,7 +67,6 @@
     </div>
   </header>
   <main class="wrap" id="top" tabindex="-1">
-    <p class="notice" id="language-status" role="status" hidden></p>
     <section class="hero" aria-labelledby="hero-title">
       <div>
         <h1 id="hero-title" data-i18n="hero.h1">常用网站，就在新标签页。</h1>
@@ -50,7 +75,7 @@
         <div class="cta-row" id="install"><a class="btn" href="https://chromewebstore.google.com/detail/covelet/clkholbmabommppnlpcnhdgmibibblgb" data-i18n="install.chrome_label" data-i18n-href="install.chrome_url" rel="noopener">安装到 Chrome</a>
           <a class="btn btn-outline" href="https://microsoftedge.microsoft.com/addons/detail/bonhgpeghngokebfkoacolleijacccff" data-i18n="install.edge_label" data-i18n-href="install.edge_url" rel="noopener">安装到 Edge</a></div>
       </div>
-      <div class="hero-art" aria-hidden="true"><img src="assets/hero-illustration.svg" alt="" width="520" height="420" fetchpriority="high"></div>
+      <div class="hero-art" aria-hidden="true"><img src="/assets/hero-illustration.svg" alt="" width="520" height="420" fetchpriority="high"></div>
     </section>
     <section class="trust" id="features" data-i18n-aria-label="ui.highlights" aria-label="日常功能">
       <article><h2 data-i18n="features.organize_title">整理常用网站</h2><p data-i18n="features.organize_body">添加网站，用文件夹和拖拽安排位置。</p></article>
@@ -93,7 +118,7 @@
     </section>
   </main>
   <footer><div class="wrap foot">
-    <div class="brand"><img src="assets/covelet-mark-brutal.svg" width="28" height="28" alt=""><span>Covelet</span></div>
+    <div class="brand"><img src="/assets/covelet-mark-brutal.svg" width="28" height="28" alt=""><span>Covelet</span></div>
     <div class="foot-links"><a href="/privacy/" data-i18n="ui.privacy_policy">隐私政策</a><a href="https://github.com/MorleyZhou/Covelet" rel="noopener" data-i18n="ui.source">源代码</a><a href="mailto:support@morley.work">support@morley.work</a><span>© Covelet · Future Element</span></div>
   </div></footer>
 </body>
