@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { createEmptyFolioDocument, defaultFolioTranslations } from '@futelab/folio/core';
 import { FolioEditor, FolioReader, SearchPanel, resolveEditorLabels, resolveBlockMenuLabels } from '@futelab/folio/react';
 import { fromMarkdown } from '@futelab/folio/serialization';
@@ -8,6 +9,7 @@ import sources from '../i18n/folio-source.json' with { type: 'json' };
 import { NOTE_LIMITS } from '../lib/note-document.js';
 import { isFolioInitializationChange } from '../lib/folio-initialization.js';
 import { useDialogSurface } from './DialogSurface.jsx';
+import useFolioControlViewport from './use-folio-control-viewport.js';
 import './folio-note.css';
 
 // Translate only Folio's trusted interface labels, never document nodes.
@@ -35,21 +37,23 @@ function legacyDocument(body) {
 
 export default function FolioNoteEditor({ document, body, documentId, preview, disabled, onInitialize, onChange, onError }) {
   const surface = useDialogSurface(), locale = getLocale();
+  const area = useRef(null), [portalHost, setPortalHost] = useState(null);
+  useFolioControlViewport(area, portalHost);
   const value = useMemo(() => document || legacyDocument(body), [document, body]);
   const translations = useMemo(() => ({ [locale]: translateLabels(defaultFolioTranslations['zh-CN']) }), [locale]);
   const labels = useMemo(() => translateLabels(resolveEditorLabels('zh-CN')), [locale]);
   const blockMenuLabels = useMemo(() => translateLabels(resolveBlockMenuLabels('zh-CN')), [locale]);
   useEffect(() => { if (!document) onInitialize(value); }, [document, value, onInitialize]);
-  return <div className="folio-note-area" role="region" aria-label={tr('便笺内容')}>
+  return <><div ref={area} className="folio-note-area" role="region" aria-label={tr('便笺内容')}>
     <div className="folio-note-edit-panel" hidden={preview}>
       <FolioEditor className="folio-note-editor" documentId={documentId} value={value} onChange={(next) => { if (!isFolioInitializationChange(value, next)) onChange(next); }}
         editable={!disabled && !preview} placeholder={tr('开始记录…')} locale={locale} translations={translations}
         labels={labels} blockMenuLabels={blockMenuLabels} components={components} ui={ui}
-        portalContainer={surface} onError={onError} />
+        portalContainer={portalHost || surface} onError={onError} />
     </div>
     {preview && <div className="folio-note-reader">
       <FolioReader value={value} limits={NOTE_LIMITS} headingIdPrefix={`note-${documentId}`}
         renderError={() => <p className="form-error" role="alert">{tr('便笺文档无效或超出大小限制。')}</p>} />
     </div>}
-  </div>;
+  </div>{surface && createPortal(<div className="folio-note-portals" ref={setPortalHost} />, surface)}</>;
 }
