@@ -102,6 +102,8 @@ import IconArtwork from './components/IconArtwork.jsx';
 import HomeTime from "./components/HomeTime.jsx";
 import TimeAndDateSettings from './components/TimeAndDateSettings.jsx';
 import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashPanel } from "./components/PersonalTools.jsx";
+import NavigationTrash from './components/NavigationTrash.jsx';
+import DuplicateReview from './components/DuplicateReview.jsx';
 import usePersonalTools from './lib/use-personal-tools.js';
 import { exactDesktopMatches, visibleContentTagIds } from './lib/content-search.js';
 import { defaultDesktopPage, desktopPageName, logicalDesktopPages, withDesktopPageIdentity } from './lib/desktop-pages.js';
@@ -114,7 +116,7 @@ import { commitNavigationTransfer, commitNavigationTags } from './lib/navigation
 import SavedViews from './components/SavedViews.jsx';
 import ResourceLibrary from './components/ResourceLibrary.jsx';
 import ContentMetadataEditor, { ContentTagFilter } from './components/ContentMetadataEditor.jsx';
-import { saveStateWithPrivacy } from './lib/storage.js';
+import { saveStateWithPrivacy, saveStateWithTrash } from './lib/storage.js';
 import { PresentationContext, privateContentKeys } from './lib/presentation.js';
 import ContentPreferences from './components/ContentPreferences.jsx';
 import PrivacyPasswordDialog, { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
@@ -777,13 +779,14 @@ export function App() {
       setModal(null); focusDesktop();
     } catch (reason) { notify(userErrorMessage(reason), "error"); }
   }
-  async function commit(next, message, expected = state.revision) {
+  async function commit(next, message, expected = state.revision, { captureDeletion = false } = {}) {
     setError("");
     try {
       const checked = migrateNavigationState(next),
         saved = demo
           ? { ...checked, revision: state.revision + 1 }
-          : await saveState(checked, expected);
+          : captureDeletion ? await saveStateWithTrash(checked, expected, { cause: 'context-delete', expectedPreferencesRevision: contentPreferences.revision })
+            : await saveState(checked, expected);
       setState(saved);
       if (message) notify(message);
       return saved;
@@ -1007,7 +1010,7 @@ export function App() {
   async function removeEntry(item) {
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
     const before = state,
-      saved = await commit(deleteEntry(state, item.id), tr("已删除"));
+      saved = await commit(deleteEntry(state, item.id), tr("已删除"), state.revision, { captureDeletion: true });
     if (saved) {
       setUndo({ before, revision: saved.revision });
       if (folderId === item.id) setFolder(null);
@@ -1683,8 +1686,14 @@ export function App() {
         {modal?.kind === 'resource-library' && <Modal title={tr('整理链接')} wide maximizable className="resource-library-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
           <ResourceLibrary navigation={state} tools={personalData} preferences={contentPreferences} initialFilters={modal.initialFilters} Dialog={Modal}
             onSaveView={(filters) => setModal({ kind: 'saved-views', initialFilters: filters })} onReveal={revealLibraryItem}
+            onReviewDuplicates={() => setModal({ kind: 'duplicate-review' })}
             onTransfer={transferLibraryItems} onBatchTags={tagLibraryItems} onBusyChange={setBusy} />
         </Modal>}
+        {modal?.kind === 'duplicate-review' && <DuplicateReview navigation={state} preferences={contentPreferences} Dialog={Modal}
+          onStateChange={(next) => {
+            if (next.revision >= preferenceState.current.revision) preferenceState.current = next;
+            setState((current) => current.revision > next.revision ? current : next); setFolder(null); setUndo(null);
+          }} onBusyChange={setBusy} onClose={() => { if (!busy) setModal(null); }} />}
         {modal?.kind === 'content-preferences' && <Modal title={tr('内容与隐私')} privacyKeys={modal.key ? [modal.key] : []} closeDisabled={busy} onClose={() => {
           if (!busy) { if (contentSettingsDirty.current) setDiscardContentSettings(true); else setModal(null); }
         }}>
@@ -1698,6 +1707,7 @@ export function App() {
         {modal?.kind === "settings" && (
           <Settings
             state={state}
+            contentPreferences={contentPreferences}
             busy={busy}
             onBusyChange={setBusy}
             onClose={() => setModal(null)}
@@ -1751,6 +1761,7 @@ export function App() {
 
 function Settings({
   state,
+  contentPreferences,
   busy = false,
   onBusyChange,
   onClose,
@@ -2048,7 +2059,11 @@ function Settings({
           onRestored(next);
           try { await refreshPreferences(); } catch (reason) { setError(userErrorMessage(reason)); }
         }} />}
-        {tab === 'trash' && <PersonalToolsTrashPanel onBusyChange={onBusyChange} disabled={demo} />}
+        {tab === 'trash' && <><NavigationTrash navigation={state} preferences={contentPreferences} Dialog={Modal}
+          onBusyChange={onBusyChange} disabled={demo} beforeOperation={() => saver.flush()} onStateChange={async (next) => {
+            onRestored(next);
+            try { await refreshPreferences(); } catch (reason) { setError(userErrorMessage(reason)); }
+          }} /><PersonalToolsTrashPanel onBusyChange={onBusyChange} disabled={demo} /></>}
         {tab === 'about' && <>
           <WhatsNew />
           <Disclosure title={tr('隐私自查')}><PrivacyCheckup demo={demo} /></Disclosure>

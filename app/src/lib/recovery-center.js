@@ -6,6 +6,10 @@ import { loadPersonalTools, validatePersonalTools, replacePersonalTools, inspect
 import { loadContentPreferences, validateContentPreferences, replaceContentPreferences, mergeContentPreferences, contentPreferencesForKeys } from './content-preferences.js';
 import { loadDesktopTemplateEnvelope, validateSavedDesktopTemplates, replaceDesktopTemplates } from './desktop-templates.js';
 import { navigationIconSources } from './navigation-icon-intake.js';
+import { cloneTrashForAppend } from './navigation-trash-core.js';
+import { navigationResourceEntries } from './navigation-resources.js';
+import { remapNavigationPreferences, preserveInvalidViewReferences } from './navigation-recovery.js';
+import { privateContentKeys } from './presentation.js';
 
 const FORMAT = 'covelet-complete-backup';
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -115,19 +119,33 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     // edit, not a rollback of deletion knowledge learned from other devices.
     return tools.validate(next);
   }
-  async function mergeNavigation(current, incoming) {
+  async function mergeNavigation(current, incoming, currentPreferences) {
     const existing = await nav.inspectBackup(await nav.exportBackup(current));
     const state = migrateNavigationState(copy(existing.state)), source = migrateNavigationState(copy(incoming.state));
     const ids = new Set(state.entries.map((entry) => entry.id)), urls = new Set(state.entries.filter((entry) => entry.type === 'site').map((entry) => entry.url));
     const offset = Math.max(...state.settings.pages) + 1;
     const pageMap = new Map(source.settings.pages.map((page, index) => [page, offset + index]));
     const added = source.entries.filter((entry) => !ids.has(entry.id) && (entry.type !== 'site' || !urls.has(entry.url)));
-    const roots = new Set([...state.entries.filter((entry) => entry.type === 'folder').map((entry) => entry.id), ...added.filter((entry) => entry.type === 'folder').map((entry) => entry.id)]);
-    const assets = new Map(existing.assets), appended = [];
+    const roots = new Set(added.filter((entry) => entry.type === 'folder').map((entry) => entry.id));
+    const reservedPreferenceKeys = [...Object.keys(currentPreferences.aliases), ...currentPreferences.privateKeys, ...Object.keys(currentPreferences.library?.items || {})];
+    const reservedIds = new Set([...navigationResourceEntries(state).map((entry) => entry.id), ...(state.trash?.items || []).flatMap((item) => item.memberRefs.map((member) => member.id)),
+      ...reservedPreferenceKeys.map((key) => key.slice(key.indexOf(':') + 1))]);
+    const occupiedIds = new Set([...reservedIds, ...navigationResourceEntries(source).map((entry) => entry.id)]), plannedIds = new Map();
+    for (const entry of added) {
+      let id = entry.id;
+      if (reservedIds.has(id)) {
+        id = null;
+        for (let attempt = 0; attempt < 100; attempt++) { const candidate = crypto.randomUUID(); if (!occupiedIds.has(candidate)) { id = candidate; break; } }
+        if (!id) conflict();
+      }
+      occupiedIds.add(id); plannedIds.set(entry.id, id);
+    }
+    const assets = new Map(existing.assets), appended = [], activeIdMap = new Map();
     for (const entry of added) {
       if (entry.parentId && !roots.has(entry.parentId)) continue;
       if (entry.type === 'site' && urls.has(entry.url)) continue;
-      const next = { ...entry, groupId: state.groups[0].id, page: pageMap.get(entry.page ?? 0) ?? offset };
+      const next = { ...entry, id: plannedIds.get(entry.id), parentId: entry.parentId ? plannedIds.get(entry.parentId) : null,
+        groupId: state.groups[0].id, page: pageMap.get(entry.page ?? 0) ?? offset };
       if (next.parentId) { delete next.page; delete next.position; }
       if (next.icon?.kind === 'image') {
         // ZIP resource IDs are untrusted and can collide with local assets.
@@ -137,7 +155,7 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       }
       next.order = state.entries.filter((item) => item.parentId === next.parentId && item.groupId === next.groupId).length;
       state.entries.push(next); ids.add(next.id); if (next.type === 'site') urls.add(next.url);
-      appended.push(next);
+      appended.push(next); activeIdMap.set(entry.id, next.id);
       if (next.parentId === null && !state.settings.pages.includes(next.page)) state.settings.pages.push(next.page);
     }
     state.settings.pages.sort((a, b) => a - b);
@@ -152,9 +170,22 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       (state.settings.desktopPages ??= {})[target] = { ...metadata, id };
       desktopIds.add(id);
     }
-    const icons = new Map(existing.icons), appendedSources = new Set(navigationIconSources({ entries: appended }).map((item) => item.source));
+    const cloned = cloneTrashForAppend(state, source, { activeIdMap, desktopIdMap, pageMap, reservedPreferenceKeys });
+    const importedOwnedIds = new Set(cloned.ownedIdMap.values()), assetIds = new Map();
+    const importedOwned = navigationResourceEntries(cloned.state).filter((entry) => importedOwnedIds.has(entry.id));
+    for (const entry of importedOwned) if (entry.icon?.kind === 'image') {
+      const originalId = entry.icon.value;
+      if (!assetIds.has(originalId)) {
+        const asset = incoming.assets.get(originalId);
+        if (!asset) fail(tr('备份中的图片不完整，请重新选择备份文件。'));
+        const id = crypto.randomUUID(); assetIds.set(originalId, id); assets.set(id, asset);
+      }
+      entry.icon.value = assetIds.get(originalId);
+    }
+    const icons = new Map(existing.icons), appendedSources = new Set(navigationIconSources({ entries: [...appended, ...importedOwned] }).map((item) => item.source));
     for (const [source, record] of incoming.icons || []) if (appendedSources.has(source) && !icons.has(source)) icons.set(source, record);
-    return { plan: { state: migrateNavigationState(state), assets, icons }, desktopIdMap };
+    return { plan: { state: migrateNavigationState(cloned.state), assets, icons }, desktopIdMap,
+      preferenceKeyMap: cloned.preferenceKeyMap, referenceIdMap: cloned.referenceIdMap };
   }
   async function restore(plan, { selected = plan.categories, mode = 'replace', onIconProgress, onIconResult } = {}) {
     if (!plan?.expected || !['replace', 'append'].includes(mode) || !Array.isArray(selected) || !selected.length || selected.some((key) => !RECOVERY_CATEGORIES.includes(key) || !plan.categories.includes(key))) fail(tr('请选择有效的恢复类别。'));
@@ -165,11 +196,12 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       if (plan.recoveryPointId && !sourcePoint) fail(tr('恢复前副本已更新，请重新预览。'));
       if (existingPoint && ['applying', 'needs-recovery'].includes(existingPoint.status) && !sourcePoint) fail(tr('上次恢复未完成，请先从「恢复前副本」找回需要的内容，再导入其他备份。'));
       // Re-validate mutable preview values before any persistence.
-      const next = {}; let desktopIdMap = new Map();
+      const next = {}; let desktopIdMap = new Map(), navigationMapping = null;
       if (selected.includes('navigation')) {
         if (mode === 'append') {
-          const merged = await mergeNavigation(before.state, plan.navigation);
+          const merged = await mergeNavigation(before.state, plan.navigation, before.preferences);
           next.navigation = merged.plan; desktopIdMap = merged.desktopIdMap;
+          navigationMapping = merged;
         } else next.navigation = plan.navigation;
       }
       if (selected.some((key) => ['notes', 'reading', 'trash'].includes(key))) next.tools = selectedTools(before.tools, plan.tools, selected, mode);
@@ -184,7 +216,30 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
             : personalContentKeys(next.tools || before.tools, selected).filter((key) => !existingKeys.has(key));
           next.preferences = preferences.validate(mergeContentPreferences(before.preferences, contentPreferencesForKeys(plan.preferences, importedKeys),
             { replaceKeys: mode === 'replace' ? personalContentKeys(before.tools, selected) : [] }));
-        } else next.preferences = preferences.validate(mode === 'append' ? mergeContentPreferences(before.preferences, plan.preferences, { desktopIdMap }) : plan.preferences);
+        } else {
+          const protectedPreferences = mode === 'append' ? preserveInvalidViewReferences(plan.preferences, { sourceNavigation: plan.navigation?.state,
+            targetNavigation: next.navigation?.state || before.state, targetPreferences: before.preferences, includeRecycledFolders: Boolean(navigationMapping) }) : plan.preferences;
+          const incomingPreferences = navigationMapping ? remapNavigationPreferences(protectedPreferences, {
+            preferenceKeyMap: navigationMapping.preferenceKeyMap, referenceIdMap: navigationMapping.referenceIdMap,
+            reservedEntryIds: navigationResourceEntries(next.navigation.state).map((entry) => entry.id),
+          }) : protectedPreferences;
+          next.preferences = preferences.validate(mode === 'append' ? mergeContentPreferences(before.preferences, incomingPreferences, { desktopIdMap }) : incomingPreferences);
+        }
+      }
+      if (next.navigation) {
+        const base = next.preferences || before.preferences;
+        const retained = new Set(base.privateKeys), present = new Set(navigationResourceEntries(next.navigation.state).map((entry) => `${entry.type}:${entry.id}`));
+        if (plan.preferences) for (const key of privateContentKeys(plan.navigation.state, plan.preferences)) {
+          const mapped = navigationMapping ? navigationMapping.preferenceKeyMap.get(key) : key;
+          if (present.has(mapped)) retained.add(mapped);
+        }
+        // Omitting the metadata category, or restoring while locked, must not
+        // expose a formerly inherited private site after its folder changes.
+        if (!selected.includes('preferences') || before.preferences.presentation) {
+          const effective = privateContentKeys(next.navigation.state, { ...base, privateKeys: [...retained] });
+          for (const key of privateContentKeys(before.state, before.preferences)) if (present.has(key) && !effective.has(key)) retained.add(key);
+        }
+        next.preferences = preferences.validate({ ...base, privateKeys: [...retained] });
       }
       // Validation includes archive resources before the checkpoint and writes.
       if (next.navigation) next.navigation = await nav.validateBackupPlan(next.navigation);
@@ -192,24 +247,49 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
         ...(sourcePoint || existingPoint ? { previous: pointRecord(sourcePoint || existingPoint) } : {}) };
       await points.write(point); // Failure here means nothing has changed.
       const saved = {}, completed = [];
-      let iconReport = null;
+      let iconReport = null, applyingDomain = null;
       const existingIds = new Set(before.state.entries.map((entry) => entry.id));
       const iconOptions = { onIconProgress, onIconResult: (report) => { iconReport = report; onIconResult?.(report); },
         ...(mode === 'append' && next.navigation ? { iconEntryIds: next.navigation.state.entries.filter((entry) => !existingIds.has(entry.id)).map((entry) => entry.id) } : {}) };
       try {
+        const paired = next.navigation && next.preferences && typeof nav.restoreBackupWithPreferences === 'function';
         for (const domain of ['navigation', 'tools', 'templates', 'preferences']) {
           if (!next[domain]) continue;
+          if (paired && domain === 'preferences') continue;
+          applyingDomain = paired && domain === 'navigation' ? 'navigation-preferences' : domain;
+          if (paired && domain === 'navigation') {
+            const result = await nav.restoreBackupWithPreferences(next.navigation, { ...iconOptions,
+              expectedNavigationRevision: expected.navigation, expectedPreferencesRevision: expected.preferences, preferences: next.preferences });
+            saved.navigation = result.state; saved.preferences = result.preferences; completed.push('navigation-preferences'); applyingDomain = null; continue;
+          }
           saved[domain] = domain === 'navigation' ? await nav.restoreBackup(next.navigation, expected.navigation, iconOptions)
             : await ({ tools, templates, preferences })[domain].write(next[domain], { expectedRevision: expected[domain] });
           completed.push(domain);
+          applyingDomain = null;
         }
         await points.write({ ...point, status: 'complete' });
         return { state: await nav.loadState(), summary: summary(plan), recoveryPoint: point.id, iconReport };
       } catch (cause) {
         const rollbackFailed = [];
+        if (applyingDomain && (completed.length || cause.code !== 'REVISION_CONFLICT')) {
+          try {
+            const changed = applyingDomain === 'navigation-preferences'
+              ? (await nav.loadState()).revision !== expected.navigation || (await preferences.read()).revision !== expected.preferences
+              : applyingDomain === 'navigation' ? (await nav.loadState()).revision !== expected.navigation
+                : (await ({ tools, templates, preferences })[applyingDomain].read()).revision !== expected[applyingDomain];
+            if (changed) rollbackFailed.push(applyingDomain);
+          } catch { rollbackFailed.push(applyingDomain); }
+        }
         for (const domain of completed.reverse()) {
           try {
-            if (domain === 'navigation') {
+            if (domain === 'navigation-preferences') {
+              // A newer tool/template may still depend on the imported
+              // metadata. Keep the pair when an earlier rollback was refused.
+              if (rollbackFailed.length) conflict();
+              const original = await nav.inspectBackup(new Blob([fromBase64(snapshot.data.navigation)]));
+              await nav.restoreBackupWithPreferences(original, { expectedNavigationRevision: saved.navigation.revision,
+                expectedPreferencesRevision: saved.preferences.revision, preferences: before.preferences, hydrateIcons: false });
+            } else if (domain === 'navigation') {
               const original = await nav.inspectBackup(new Blob([fromBase64(snapshot.data.navigation)]));
               await nav.restoreBackup(original, saved.navigation.revision, { hydrateIcons: false });
             } else await ({ tools, templates, preferences })[domain].write(before[domain], { expectedRevision: saved[domain].revision });

@@ -37,7 +37,7 @@ function LibraryTagFilter({ tags, selected, onChange, disabled }) {
   </Popover>;
 }
 
-export default function ResourceLibrary({ navigation, tools, preferences, initialFilters, Dialog, onSaveView, onReveal, onTransfer, onBatchTags, onBusyChange }) {
+export default function ResourceLibrary({ navigation, tools, preferences, initialFilters, Dialog, onSaveView, onReveal, onTransfer, onBatchTags, onReviewDuplicates, onBusyChange }) {
   const presentation = useContext(PresentationContext), pending = useRef(false);
   const [filters, setFilters] = useState(() => libraryFilters(initialFilters));
   const [sort, setSort] = useState({ field: 'name', direction: 'asc' }), [page, setPage] = useState(0), [selected, setSelected] = useState([]);
@@ -128,7 +128,8 @@ export default function ResourceLibrary({ navigation, tools, preferences, initia
     <Button type="button" variant="secondary" onClick={presentation.requestUnlock}>{tr('输入密码查看隐藏内容')}</Button></div>;
   return <div className="resource-library" aria-busy={allBusy || undefined}>
     <div className="resource-library-search"><label className="resource-library-query"><MagnifyingGlass size={17} /><Input aria-label={tr('搜索链接')} placeholder={tr('搜索名称或备注')} maxLength={2000} value={filters.query} disabled={allBusy} onChange={(event) => changeFilters({ query: event.target.value })} /></label>
-      {onSaveView && <Button type="button" variant="secondary" disabled={allBusy || result.status !== 'ready'} onClick={() => run(() => onSaveView(structuredClone(filters)))}><BookmarkSimple size={16} />{tr('保存为清单')}</Button>}</div>
+      <div className="resource-library-header-actions">{onSaveView && <Button type="button" variant="secondary" disabled={allBusy || result.status !== 'ready'} onClick={() => run(() => onSaveView(structuredClone(filters)))}><BookmarkSimple size={16} />{tr('保存为清单')}</Button>}
+        {onReviewDuplicates && <Button type="button" variant="secondary" disabled={allBusy} onClick={() => run(() => onReviewDuplicates())}><Copy size={16} />{tr('重复链接审阅')}</Button>}</div></div>
     <div className="resource-library-filters"><Select label={tr('内容类型')} value={filters.type} options={typeOptions} disabled={allBusy} onChange={(type) => changeFilters({ type })} />
       <Select label={tr('位置')} value={scope} options={scopeOptions} disabled={allBusy} onChange={chooseScope} />
       <label className="resource-domain-filter">{tr('域名')}<Input value={filters.domain} placeholder="example.com" maxLength={253} disabled={allBusy} onChange={(event) => changeFilters({ domain: event.target.value })} /></label>

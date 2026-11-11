@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRecoveryCenter } from './recovery-center.js';
 import { createStorage } from './storage.js';
-import { createEmptyState } from './model.js';
+import { createEmptyState, deleteEntry } from './model.js';
+import { prepareNavigationDeletion, restoreTrashItem } from './navigation-trash-core.js';
 import { createConfiguredNavigation } from '../../tests/fixtures/navigation-state.mjs';
 import { validatePersonalTools } from './personal-tools.js';
-import { validateContentPreferences } from './content-preferences.js';
+import { validateContentPreferences, prepareContentPreferencesRestore } from './content-preferences.js';
 import { validateSavedDesktopTemplates, BUILTIN_DESKTOP_TEMPLATES } from './desktop-templates.js';
 import { defaultSavedFilters, resolveSavedView } from './saved-views.js';
 import { fromMarkdown } from '@futelab/folio/serialization';
@@ -19,32 +20,217 @@ const site = (id, url, iconUrl, order) => ({ id, url, iconUrl, order, type: 'sit
 const note = (body = 'before') => ({ id: 'note-a', revision: 1, createdAt: 1, updatedAt: 1, title: 'Private note', body, pinned: false });
 function harness() {
   let envelope = null, point = null, rejectPoint = false, pointWrites = 0;
-  const icons = new Map(), hydrations = [], restoredImages = [];
+  let preferences;
+  const icons = new Map(), assets = new Map(), hydrations = [], restoredImages = [], commits = [];
   const nav = createStorage({ initialState: createEmptyState, configStore: {
-    read: async () => clone(envelope), write: async (value) => { envelope = clone(value); }, subscribe: () => () => {},
-  }, assetStore: { get: async () => null }, syncStore: null, imageTools: { validate: async () => ({ width: 1, height: 1 }) },
+    read: async () => clone(envelope), write: async (value, records) => {
+      const incoming = records?.['covelet.content.preferences.v1'];
+      const staged = incoming ? preferences.prepare(incoming, { expectedRevision: incoming.revision - 1 }) : null;
+      envelope = clone(value); if (staged) preferences.commitPrepared(staged);
+      commits.push({ navigationRevision: value.state.revision, preferencesRevision: staged?.revision });
+    }, subscribe: () => () => {},
+  }, assetStore: { get: async (id) => clone(assets.get(id)), add: async (record) => assets.set(record.id, clone(record)), delete: async (id) => assets.delete(id) },
+  syncStore: null, imageTools: { validate: async () => ({ width: 1, height: 1 }) },
+  privacy: async (run) => run(await preferences.read(), (_keys, { replacePreferences, expectedRevision } = {}) => {
+    if (!replacePreferences) throw Error('Expected paired recovery preferences.');
+    return { 'covelet.content.preferences.v1': prepareContentPreferencesRestore(preferences.current(), replacePreferences, { expectedRevision }) };
+  }),
   iconResources: { read: async (source) => icons.get(source) || null,
     restore: async (record) => { restoredImages.push(record.url); if (!icons.has(record.url)) icons.set(record.url, clone(record)); return icons.get(record.url); },
     prepare: async (state, options) => { hydrations.push(state.entries.map((entry) => entry.id)); const report = { total: state.entries.length, completed: state.entries.length, cached: state.entries.length, failed: 0, missing: [] };
       options.onIconProgress?.(report); return report; } } });
   const domain = (validate, initial) => {
     let data = validate(initial), fail = false, beforeWrite;
+    function prepare(value, { expectedRevision }) {
+      beforeWrite?.();
+      if (data.revision !== expectedRevision) throw Object.assign(Error('conflict'), { code: 'REVISION_CONFLICT' });
+      if (fail) throw Error('quota');
+      return validate({ ...clone(value), revision: data.revision + 1 });
+    }
     return { validate, read: async () => clone(data),
       async write(value, { expectedRevision }) {
-        beforeWrite?.();
-        if (data.revision !== expectedRevision) throw Object.assign(Error('conflict'), { code: 'REVISION_CONFLICT' });
-        if (fail) throw Error('quota');
-        data = validate({ ...clone(value), revision: data.revision + 1 }); return clone(data);
+        data = prepare(value, { expectedRevision }); return clone(data);
       },
+      prepare, commitPrepared(value) { data = clone(value); }, current: () => clone(data),
       change(value) { data = validate({ ...data, ...clone(value), revision: data.revision + 1 }); },
       failWrites(value = true) { fail = value; }, beforeWrite(action) { beforeWrite = action; },
     };
   };
-  const tools = domain(validatePersonalTools, null), preferences = domain(validateContentPreferences, null), templates = domain(validateSavedDesktopTemplates, null);
+  const tools = domain(validatePersonalTools, null), templates = domain(validateSavedDesktopTemplates, null);
+  preferences = domain(validateContentPreferences, null);
   const points = { read: async () => clone(point), async write(value) { if (rejectPoint) throw Error('checkpoint quota'); pointWrites++; point = clone(value); } };
   const center = createRecoveryCenter({ nav, tools, preferences, templates, points, locks: { request: (_key, action) => action() } });
-  return { center, nav, tools, preferences, templates, points, icons, hydrations, restoredImages, get pointWrites() { return pointWrites; }, failPoint() { rejectPoint = true; } };
+  return { center, nav, tools, preferences, templates, points, icons, assets, commits, hydrations, restoredImages, get pointWrites() { return pointWrites; }, failPoint() { rejectPoint = true; } };
 }
+
+function singleNavigation(id, url, { privateFolder = false } = {}) {
+  const state = createEmptyState(), item = site(id, url, '', 0); delete item.iconUrl;
+  state.settings.desktopPages = { 0: { id: 'source-desktop', name: 'Source' } };
+  state.entries = privateFolder ? [{ id: 'private-folder', type: 'folder', name: 'Private', groupId: 'group-home', parentId: null,
+    page: 0, order: 0, icon: { kind: 'letter', value: 'P' } }, { ...item, parentId: 'private-folder' }] : [item];
+  return state;
+}
+
+test('navigation and preferences restore in one commit, and a failed paired preference write exposes neither', async () => {
+  const source = harness(), target = harness();
+  await source.nav.saveState(singleNavigation('incoming', 'https://incoming.test/'), 0);
+  source.preferences.change({ privateKeys: ['site:incoming'], aliases: { 'site:incoming': 'source alias' } });
+  await target.nav.saveState(singleNavigation('current', 'https://current.test/'), 0);
+  const beforeState = await target.nav.loadState(), beforePreferences = await target.preferences.read(), beforeWrites = target.commits.length;
+  const plan = await target.center.preview(await source.center.exportCompleteBackup());
+  target.preferences.failWrites();
+  await assert.rejects(target.center.restore(plan), /本次更改已撤销/);
+  assert.deepEqual(await target.nav.loadState(), beforeState); assert.deepEqual(await target.preferences.read(), beforePreferences);
+  assert.equal(target.commits.length, beforeWrites);
+  target.preferences.failWrites(false);
+  await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()));
+  const writes = target.commits.slice(beforeWrites);
+  assert.equal(writes.length, 1); assert.equal(writes[0].preferencesRevision, (await target.preferences.read()).revision);
+  assert.deepEqual((await target.preferences.read()).privateKeys, ['site:incoming']);
+});
+
+test('navigation-only recovery carries imported private markings and preserves local inherited privacy', async () => {
+  const source = harness(), target = harness();
+  await source.nav.saveState(singleNavigation('kept-child', 'https://incoming.test/'), 0);
+  source.preferences.change({ privateKeys: ['site:kept-child'] });
+  await target.nav.saveState(singleNavigation('local-child', 'https://local.test/', { privateFolder: true }), 0);
+  target.preferences.change({ privateKeys: ['folder:private-folder'], presentation: false, aliases: { 'note:keep': 'untouched' } });
+  await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { selected: ['navigation'] });
+  assert((await target.preferences.read()).privateKeys.includes('site:kept-child'));
+  assert.equal((await target.preferences.read()).aliases['note:keep'], 'untouched');
+  const oldPrivate = harness(), publicSameId = harness();
+  await oldPrivate.nav.saveState(singleNavigation('same-child', 'https://same.test/', { privateFolder: true }), 0);
+  oldPrivate.preferences.change({ privateKeys: ['folder:private-folder'], presentation: true });
+  await publicSameId.nav.saveState(singleNavigation('same-child', 'https://same.test/'), 0);
+  await oldPrivate.center.restore(await oldPrivate.center.preview(await publicSameId.center.exportCompleteBackup()));
+  assert((await oldPrivate.preferences.read()).privateKeys.includes('site:same-child'));
+  assert.equal((await oldPrivate.preferences.read()).presentation, true);
+});
+
+test('append remaps recycled identities and their orphan metadata without borrowing local same-ID content or images', async () => {
+  const source = harness(), target = harness(), original = singleNavigation('same-site', 'https://recycled.test/');
+  original.entries[0].icon = { kind: 'image', value: 'shared-image' };
+  source.assets.set('shared-image', { id: 'shared-image', blob: new Blob([PNG], { type: 'image/png' }) });
+  source.preferences.change({ privateKeys: ['site:same-site'], aliases: { 'site:same-site': 'recycled alias' }, library: {
+    version: 1, tags: [{ id: 'source-tag', name: 'Work' }], items: { 'site:same-site': { description: 'recycled description', tagIds: ['source-tag'] } },
+  } });
+  const recycled = prepareNavigationDeletion(original, deleteEntry(original, 'same-site'), await source.preferences.read(), { makeId: () => 'source-event' }).state;
+  await source.nav.saveState(recycled, 0);
+  const current = singleNavigation('same-site', 'https://local.test/');
+  current.entries[0].icon = { kind: 'image', value: 'shared-image' };
+  const localBlob = new Blob([PNG, new Uint8Array([1])], { type: 'image/png' });
+  target.assets.set('shared-image', { id: 'shared-image', blob: localBlob });
+  await target.nav.saveState(current, 0);
+  target.preferences.change({ aliases: { 'site:same-site': 'local alias' }, library: {
+    version: 1, tags: [{ id: 'local-tag', name: 'work' }], items: { 'site:same-site': { description: 'local description', tagIds: ['local-tag'] } },
+  } });
+  await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { mode: 'append' });
+  const saved = await target.nav.loadState(), preferences = await target.preferences.read(), owned = saved.trash.items[0].ownedEntries[0];
+  assert.notEqual(owned.id, 'same-site'); assert.notEqual(owned.icon.value, 'shared-image');
+  assert.equal(saved.entries[0].url, 'https://local.test/'); assert.equal(preferences.aliases['site:same-site'], 'local alias');
+  assert.equal(preferences.aliases[`site:${owned.id}`], 'recycled alias');
+  assert.deepEqual(preferences.library.items[`site:${owned.id}`], { description: 'recycled description', tagIds: ['local-tag'] });
+  assert(preferences.privateKeys.includes(`site:${owned.id}`));
+  assert.deepEqual(new Uint8Array(await target.assets.get('shared-image').blob.arrayBuffer()), new Uint8Array(await localBlob.arrayBuffer()));
+  assert.deepEqual(new Uint8Array(await target.assets.get(owned.icon.value).blob.arrayBuffer()), PNG);
+  const restored = restoreTrashItem(saved, preferences, saved.trash.items[0].id, { destinationValue: 'page-id:source-desktop' }).state;
+  assert(restored.entries.some((entry) => entry.id === owned.id && entry.url === 'https://recycled.test/'));
+});
+
+test('append cannot attach source children or folder views to a skipped local same-ID folder', async () => {
+  const source = harness(), target = harness(), original = singleNavigation('source-child', 'https://source-child.test/', { privateFolder: true });
+  await source.nav.saveState(original, 0);
+  source.preferences.change({ library: { version: 1, tags: [], items: {}, views: [
+    { id: 'folder-view', revision: 1, name: 'Source folder', ...defaultSavedFilters(), scope: { kind: 'folder', folderId: 'private-folder' } },
+  ] } });
+  await target.nav.saveState(singleNavigation('local-child', 'https://local.test/', { privateFolder: true }), 0);
+  await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { mode: 'append' });
+  const state = await target.nav.loadState(), preferences = await target.preferences.read();
+  assert.equal(state.entries.some((entry) => entry.id === 'source-child'), false);
+  assert.notEqual(preferences.library.views[0].scope.folderId, 'private-folder');
+  assert.equal(resolveSavedView(preferences.library.views[0], { navigation: state, preferences, tools: { notes: [], reading: [] } }).status, 'invalid');
+});
+
+test('incoming active IDs are remapped around local recycled owners, orphan metadata and absent member references', async () => {
+  for (const collision of ['owned', 'orphan', 'member']) {
+    const source = harness(), target = harness(), incoming = singleNavigation('shared', 'https://incoming.test/');
+    source.preferences.change({ aliases: { 'site:shared': 'incoming alias' } });
+    await source.nav.saveState(incoming, 0);
+    if (collision === 'owned') {
+      const original = singleNavigation('shared', 'https://recycled.test/');
+      await target.nav.saveState(prepareNavigationDeletion(original, deleteEntry(original, 'shared'), await target.preferences.read(), { makeId: () => 'owned-event' }).state, 0);
+    } else if (collision === 'orphan') target.preferences.change({ aliases: { 'site:shared': 'local orphan' } });
+    else {
+      const original = singleNavigation('shared', 'https://old-member.test/', { privateFolder: true });
+      const dissolved = prepareNavigationDeletion(original, deleteEntry(original, 'private-folder'), await target.preferences.read(), { makeId: () => 'member-event' }).state;
+      dissolved.entries = [];
+      await target.nav.saveState(dissolved, 0);
+    }
+    await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { mode: 'append' });
+    const state = await target.nav.loadState(), preferences = await target.preferences.read(), added = state.entries.find((entry) => entry.url === 'https://incoming.test/');
+    assert(added); assert.notEqual(added.id, 'shared', collision);
+    assert.equal(preferences.aliases[`site:${added.id}`], 'incoming alias');
+    if (collision === 'orphan') assert.equal(preferences.aliases['site:shared'], 'local orphan');
+    if (collision === 'owned') assert.equal(state.trash.items[0].ownedEntries[0].id, 'shared');
+    if (collision === 'member') assert.equal(state.trash.items[0].memberRefs[0].id, 'shared');
+  }
+});
+
+test('a concurrent first tool-write failure preserves imported metadata and marks the paired restore recoverable', async () => {
+  const source = harness(), target = harness();
+  await source.nav.saveState(singleNavigation('incoming', 'https://incoming.test/'), 0);
+  source.tools.change({ notes: [note('incoming body')] });
+  source.preferences.change({ aliases: { 'note:note-a': 'incoming metadata' } });
+  await target.nav.saveState(singleNavigation('current', 'https://current.test/'), 0);
+  target.tools.change({ notes: [note('before')] });
+  target.preferences.change({ aliases: { 'note:note-a': 'before metadata' } });
+  const plan = await target.center.preview(await source.center.exportCompleteBackup());
+  target.tools.beforeWrite(() => target.tools.change({ notes: [note('concurrent body')] }));
+  await assert.rejects(target.center.restore(plan), { code: 'RECOVERY_REQUIRED' });
+  assert.equal((await target.tools.read()).notes[0].body, 'concurrent body');
+  assert.equal((await target.preferences.read()).aliases['note:note-a'], 'incoming metadata');
+  assert.equal((await target.nav.loadState()).entries[0].id, 'incoming');
+  assert.equal((await target.center.getRecoveryPoint()).status, 'needs-recovery');
+  assert.equal((await target.center.previewRecoveryPoint()).preferences.aliases['note:note-a'], 'before metadata');
+});
+
+test('an atomic first-pair CAS rejection preserves concurrent preferences and permits a fresh preview retry', async () => {
+  const source = harness(), target = harness();
+  await source.nav.saveState(singleNavigation('incoming', 'https://incoming.test/'), 0);
+  await target.nav.saveState(singleNavigation('current', 'https://current.test/'), 0);
+  const before = await target.nav.loadState(), writes = target.commits.length, file = await source.center.exportCompleteBackup();
+  const plan = await target.center.preview(file);
+  target.preferences.beforeWrite(() => target.preferences.change({ aliases: { 'note:concurrent': 'retain' } }));
+  await assert.rejects(target.center.restore(plan), { code: 'REVISION_CONFLICT' });
+  assert.equal(target.commits.length, writes); assert.deepEqual(await target.nav.loadState(), before);
+  assert.equal((await target.preferences.read()).aliases['note:concurrent'], 'retain');
+  assert.equal((await target.center.getRecoveryPoint()).status, 'rolled-back');
+  target.preferences.beforeWrite(null);
+  await target.center.restore(await target.center.preview(file));
+  assert.equal((await target.nav.loadState()).entries[0].id, 'incoming');
+});
+
+test('append preserves missing desktop and tag view conditions even when the target has matching local IDs', async () => {
+  for (const selected of [['navigation', 'preferences'], ['preferences']]) {
+    const source = harness(), target = harness(), current = singleNavigation('local-site', 'https://local.test/');
+    current.settings.desktopPages[0].id = 'missing-desktop';
+    await target.nav.saveState(current, 0);
+    target.preferences.change({ library: { version: 1, tags: [{ id: 'missing-tag', name: 'Local tag' }], items: {
+      'site:local-site': { description: '', tagIds: ['missing-tag'] },
+    } } });
+    source.preferences.change({ library: { version: 1, tags: [], items: {}, views: [
+      { id: 'desktop-view', revision: 1, name: 'Missing desktop', ...defaultSavedFilters(), scope: { kind: 'desktop', desktopId: 'missing-desktop' } },
+      { id: 'tag-view', revision: 1, name: 'Missing tag', ...defaultSavedFilters(), tagIds: ['missing-tag'] },
+      { id: 'same-tag-view', revision: 1, name: 'Same missing tag', ...defaultSavedFilters(), tagIds: ['missing-tag'] },
+    ] } });
+    await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { mode: 'append', selected });
+    const preferences = await target.preferences.read(), navigation = await target.nav.loadState();
+    for (const view of preferences.library.views) assert.equal(resolveSavedView(view, { navigation, preferences, tools: { notes: [], reading: [] } }).status, 'invalid');
+    assert.equal(preferences.library.views[1].tagIds[0], preferences.library.views[2].tagIds[0]);
+    assert.notEqual(preferences.library.views[0].scope.desktopId, 'missing-desktop');
+    assert.notEqual(preferences.library.views[1].tagIds[0], 'missing-tag');
+  }
+});
 
 test('complete backup round trip includes rich tools, schemes, privacy and a pre-restore recovery point', async () => {
   const subject = harness();
@@ -62,7 +248,7 @@ test('complete backup round trip includes rich tools, schemes, privacy and a pre
   await subject.center.restore(plan);
   assert.equal((await subject.tools.read()).notes[0].body, 'before');
   assert.deepEqual((await subject.preferences.read()).privateKeys, ['note:note-a']);
-  assert.equal((await subject.preferences.read()).presentation, false); // Stub writes full values; production preserves the switch.
+  assert.equal((await subject.preferences.read()).presentation, true); // Paired recovery preserves this device's lock.
   assert.equal((await subject.nav.loadState()).entries.length, state.entries.length);
   const recovery = await subject.center.previewRecoveryPoint();
   assert.equal(recovery.tools.notes[0].body, 'changed');

@@ -238,7 +238,7 @@ function validateSettings(settings) {
 }
 
 export function validateState(input) {
-  keys(input, ['version', 'revision', 'groups', 'entries', 'providers', 'settings'], tr("数据"));
+  keys(input, ['version', 'revision', 'groups', 'entries', 'providers', 'settings', 'trash'], tr("数据"));
   if (input.version !== 1) fail(tr("不支持的数据版本"));
   integer(input.revision, 0, Number.MAX_SAFE_INTEGER, tr("数据修订号"));
   if (!Array.isArray(input.groups) || input.groups.length < 1 || input.groups.length > MAX_GROUPS) fail(tr("分组数量须为 1 至 {0}", [MAX_GROUPS]));
@@ -325,7 +325,65 @@ export function validateState(input) {
   state.providers = state.providers.filter((provider) => !(provider.id === 'baidu'
     && provider.name === '百度' && provider.template === 'https://www.baidu.com/s?wd={query}'));
   validateSettings(state.settings);
+  if (Object.hasOwn(state, 'trash')) validateNavigationTrash(state);
   return state;
+}
+
+export const NAVIGATION_TRASH_LIMITS = Object.freeze({ retentionDays: 30, events: 200, entries: 2000, members: 2000 });
+function validateNavigationTrash(state) {
+  const invalid = () => fail(tr('导航回收站无效或超出大小限制。'));
+  const trash = state.trash;
+  keys(trash, ['version', 'items'], tr('导航回收站'));
+  if (trash.version !== 1 || !Array.isArray(trash.items) || trash.items.length > NAVIGATION_TRASH_LIMITS.events) invalid();
+  const eventIds = new Set(), ownedIds = new Set(state.entries.map((entry) => entry.id));
+  let ownedCount = 0, memberCount = 0;
+  for (const item of trash.items) {
+    keys(item, ['id', 'kind', 'deletedAt', 'origin', 'ownedEntries', 'memberRefs'], tr('回收记录'));
+    identifier(item.id); if (eventIds.has(item.id)) invalid(); eventIds.add(item.id);
+    if (!['site', 'folder'].includes(item.kind) || !Number.isSafeInteger(item.deletedAt) || item.deletedAt < 0 || item.deletedAt > 8640000000000000
+      || !Array.isArray(item.ownedEntries) || !item.ownedEntries.length || !Array.isArray(item.memberRefs)) invalid();
+    keys(item.origin, ['desktopId', 'page', 'parentId'], tr('原位置'));
+    if (item.origin.desktopId !== null) identifier(item.origin.desktopId);
+    integer(item.origin.page, 0, MAX_DESKTOP_PAGE, tr('原桌面'));
+    if (item.origin.parentId !== null) identifier(item.origin.parentId);
+    const root = item.ownedEntries[0];
+    if (root.type !== item.kind || item.kind === 'site' && (item.ownedEntries.length !== 1 || item.memberRefs.length)) invalid();
+    for (const entry of item.ownedEntries) {
+      if (!entry || !['site', 'folder'].includes(entry.type) || ownedIds.has(entry.id)) invalid();
+      identifier(entry.id); identifier(entry.groupId);
+      if (entry.parentId !== null) identifier(entry.parentId);
+      if (entry.type === 'folder' && entry.parentId !== null) invalid();
+      integer(entry.order, 0, MAX_ENTRIES, tr('条目顺序'));
+      if (item.kind === 'folder' && entry !== root && (entry.type !== 'site' || entry.parentId !== root.id)) invalid();
+      ownedIds.add(entry.id); ownedCount++;
+    }
+    const members = new Set();
+    for (const member of item.memberRefs) {
+      keys(member, ['id', 'name', 'url', 'placement'], tr('原成员'));
+      identifier(member.id); name(member.name); if (members.has(member.id)) invalid(); members.add(member.id);
+      if (normalizeUrl(member.url) !== member.url) invalid();
+      keys(member.placement, ['desktopId', 'page', 'parentId', 'position', 'order'], tr('成员位置'));
+      const placement = member.placement;
+      if (placement.desktopId !== null) identifier(placement.desktopId);
+      integer(placement.page, 0, MAX_DESKTOP_PAGE, tr('成员桌面'));
+      if (placement.parentId !== null) invalid();
+      integer(placement.order, 0, MAX_ENTRIES, tr('成员顺序'));
+      if (placement.position !== undefined) {
+        keys(placement.position, ['row', 'column'], tr('成员位置'));
+        integer(placement.position.row, 0, DESKTOP_ROWS - 1, tr('所在行')); integer(placement.position.column, 0, 11, tr('所在列'));
+      }
+      memberCount++;
+    }
+  }
+  if (ownedCount > NAVIGATION_TRASH_LIMITS.entries || memberCount > NAVIGATION_TRASH_LIMITS.members) invalid();
+  // Reuse the complete strict entry validator once, with detached temporary
+  // containers. Historical parent IDs are checked above, not against live IDs.
+  const entries = trash.items.flatMap((item) => item.ownedEntries), base = { ...state };
+  delete base.trash;
+  const checked = validateState({ ...base, entries: entries.map((entry, order) => ({ ...entry, groupId: state.groups[0].id, parentId: null, order })) }).entries;
+  let index = 0;
+  for (const item of trash.items) item.ownedEntries = item.ownedEntries.map((entry) => ({ ...checked[index++], groupId: entry.groupId, parentId: entry.parentId, order: entry.order }));
+  if (new TextEncoder().encode(JSON.stringify(state)).length > 2 * 1024 * 1024) invalid();
 }
 
 // Older backups may contain user wallpaper assets. Active configurations only

@@ -6,6 +6,7 @@ import { validateNavigationIconRecord } from './icon-image-record.js';
 import { createEncryptedStore, localData } from './local-data.js';
 import { migrateLegacyIndexedDb } from './legacy-indexed-data.js';
 import { subscribeSyncedData } from './use-synced-data.js';
+import { navigationResourceEntries } from './navigation-resources.js';
 
 // Original image bytes use their own encrypted namespace, including full sync.
 const persistentImages = createEncryptedStore('navigation-icons');
@@ -25,7 +26,7 @@ function recordFailure(url, value) {
 const sourceVersions = new Map(), listeners = new Set();
 const retainedSources = new Map();
 export function retainNavigationIconResources(state) {
-  const sources = new Set((state?.entries || []).filter((entry) => entry.type === 'site' && entry.icon?.kind !== 'image').flatMap((entry) => [
+  const sources = new Set(navigationResourceEntries(state).filter((entry) => entry.type === 'site' && entry.icon?.kind !== 'image').flatMap((entry) => [
     siteIconAddress(entry), entry.iconVariants?.light?.url, entry.iconVariants?.dark?.url,
   ]).filter(Boolean));
   for (const source of sources) retainedSources.set(source, (retainedSources.get(source) || 0) + 1);
@@ -118,7 +119,7 @@ async function save(item, revision = cacheRevision, version = sourceVersions.get
   remember(item.url, item);
   try {
     const envelope = (await localData.get('owntab.local.v1'))['owntab.local.v1'];
-    const referenced = new Set([envelope?.state, ...(envelope?.snapshots || [])].flatMap((navigation) => (navigation?.entries || []).flatMap((entry) => [
+    const referenced = new Set([envelope?.state, ...(envelope?.snapshots || [])].flatMap((navigation) => navigationResourceEntries(navigation).flatMap((entry) => [
       siteIconAddress(entry), entry.iconUrl, entry.icon?.kind === 'url' ? entry.icon.value : '', entry.iconVariants?.light?.url, entry.iconVariants?.dark?.url,
     ])).filter(Boolean));
     const items = (await persistentImages.entries()).map(([, value]) => value).sort((a, b) => b.updatedAt - a.updatedAt);
