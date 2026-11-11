@@ -8,3 +8,11 @@ html, body, #root { min-width: 360px; min-height: 0; width: 360px; margin: 0; ov
 .popup-destination.ui-tabs-list { display: flex; width: 100%; gap: 3px; padding: 3px; margin: 0 0 18px; border-radius: 10px; background: color-mix(in srgb, var(--ink) 5%, transparent); }
 .popup-destination > button { flex: 1; min-width: 0; padding: 8px; border-radius: 8px; font-size: 13px; color: var(--muted); white-space: normal; overflow-wrap: anywhere; }
 .popup-destination > button[data-state=active] { color: var(--ink); background: var(--panel); }
+.note-capture-field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.note-capture textarea { min-height: 150px; resize: vertical; white-space: pre-wrap; }
+.note-capture-source { display: flex; flex-direction: column; gap: 5px; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.note-capture-source > span { color: var(--muted); }
+.note-capture-source > strong { font-weight: 500; }
+.note-capture .content-tag-options { max-height: 150px; overflow-y: auto; }
+.note-capture label.content-tag-option { display: inline-flex; flex-direction: row; }
+.quick-add .prompt-dialog { max-width: calc(100vw - 32px); }

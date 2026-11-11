@@ -20,6 +20,8 @@ import IconBackground from './components/IconBackground.jsx';
 import { saveReadingItem } from './lib/personal-tools.js';
 import { loadContentPreferences, useContentPreferences, getContentMetadata } from './lib/content-preferences.js';
 import ContentMetadataEditor from './components/ContentMetadataEditor.jsx';
+import NoteCapture from './components/NoteCapture.jsx';
+import PromptDialog from './components/PromptDialog.jsx';
 import { privateContentKeys, PresentationContext } from './lib/presentation.js';
 import { initializeLocalData } from './lib/initialize-local-data.js';
 import { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
@@ -50,6 +52,13 @@ function AddCurrentPage() {
   const assetLease = useRef(null), assetTimers = useRef(new Map());
   const original = useRef(null), iconEdited = useRef(false), previewBlob = useRef(null);
   const [destination, setDestination] = useState('navigation');
+  const [noteBusy, setNoteBusy] = useState(false), [noteDirty, setNoteDirty] = useState(false), [pendingDestination, setPendingDestination] = useState(null);
+  function changeDestination(value) {
+    if (locked || noteBusy || value === destination) return;
+    if (destination === 'note' && noteDirty) setPendingDestination(value);
+    else setDestination(value);
+  }
+  function closeNote() { if (noteDirty) setPendingDestination('close'); else window.close(); }
   const [navigation, setNavigation] = useState(null), [targetValue, setTargetValue] = useState('');
   const navigationSelectionRevision = useRef(null);
   const [metadata, setMetadata] = useState({ description: '', tagIds: [] });
@@ -241,10 +250,12 @@ function AddCurrentPage() {
   if (!contentPreferences.ready) return <main className="quick-add theme-system"><h1>Covelet</h1>{contentPreferences.error && <p className="form-error" role="alert">{contentPreferences.error}</p>}</main>;
   return <PresentationContext.Provider value={{ active: contentPreferences.data.presentation,
     hiddenKeys: privateContentKeys(navigation, contentPreferences.data), requestUnlock: () => {} }}>
-    <Tabs value={destination} onValueChange={setDestination} asChild><main className="quick-add theme-system">
-    <h1>{privateBlocked ? tr('已隐藏') : destination === 'reading' ? tr("添加到稍后读") : original.current ? tr("编辑网站") : tr("添加网站")}</h1>
-    <TabsList className="popup-destination" aria-label={tr("保存位置")}><TabsTrigger value="navigation" disabled={locked}>{tr("网站导航")}</TabsTrigger><TabsTrigger value="reading" disabled={locked}>{tr("稍后读")}</TabsTrigger></TabsList>
-    <TabsContent value={destination} className="popup-destination-panel">{privateBlocked
+    <Tabs value={destination} onValueChange={changeDestination} activationMode="manual" asChild><main className="quick-add theme-system">
+    <h1>{destination === 'note' ? tr('添加便笺') : privateBlocked ? tr('已隐藏') : destination === 'reading' ? tr("添加到稍后读") : original.current ? tr("编辑网站") : tr("添加网站")}</h1>
+    <TabsList className="popup-destination" aria-label={tr("保存位置")}><TabsTrigger value="navigation" disabled={locked || noteBusy}>{tr("网站导航")}</TabsTrigger><TabsTrigger value="reading" disabled={locked || noteBusy}>{tr("稍后读")}</TabsTrigger><TabsTrigger value="note" disabled={locked || noteBusy}>{tr('便笺')}</TabsTrigger></TabsList>
+    <TabsContent value={destination} className="popup-destination-panel">{destination === 'note'
+      ? <NoteCapture preferences={contentPreferences.data} onBusyChange={setNoteBusy} onDirtyChange={setNoteDirty} onCancel={closeNote} onSaved={() => window.close()} />
+      : privateBlocked
       ? <PrivacyPasswordForm purpose="unlock" onBusyChange={setBusy} onCancel={() => window.close()} /> : <form className="form-stack" onSubmit={save}>
       <label>{tr("名称")}<Input required maxLength={200} disabled={locked || initializing} value={form.name} onChange={(event) => patch({ name: event.target.value })} /></label>
       <label>{tr("网址")}<Input required maxLength={4096} disabled={locked || initializing} value={form.url} placeholder="https://example.com" onChange={(event) => {
@@ -278,6 +289,10 @@ function AddCurrentPage() {
       <div className="quick-add-actions"><Button variant="secondary" className="button" type="button" disabled={locked} onClick={() => window.close()}>{tr("取消")}</Button>
         <Button variant="default" className="button primary" type="submit" disabled={locked || metadataBusy || initializing || destination === 'navigation' && !targetValue}>{busy ? tr("保存中…") : tr("保存")}</Button></div>
     </form>}</TabsContent>
+    {pendingDestination && <PromptDialog action={tr('放弃修改')} destructive onCancel={() => setPendingDestination(null)} onConfirm={() => {
+      const target = pendingDestination; setPendingDestination(null); setNoteDirty(false);
+      if (target === 'close') window.close(); else setDestination(target);
+    }}><p>{tr('当前便笺尚未保存，放弃修改？')}</p></PromptDialog>}
   </main></Tabs></PresentationContext.Provider>;
 }
 

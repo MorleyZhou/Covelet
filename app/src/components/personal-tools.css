@@ -43,6 +43,28 @@
 .tool-record-list strong { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tool-record-list span { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tool-record-list small { font-size: 10px; color: var(--muted); }
+.notes-exchange-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+.notes-exchange-actions > div { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-inline-start: auto; }
+.notes-markdown-info { flex-shrink: 0; color: var(--muted); font-size: 12px; }
+.notes-markdown-info p { margin: 5px 0; line-height: 1.6; }
+.notes-exchange-hint { margin: 0; font-size: 12px; }
+.notes-export-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding-block: 8px; border-block: 1px solid var(--line); color: var(--muted); font-size: 12px; flex-shrink: 0; }
+.notes-export-toolbar > label { display: inline-flex; align-items: center; gap: 7px; }
+.notes-export-toolbar > button { margin-inline-start: auto; }
+.notes-export-toolbar > p { flex-basis: 100%; margin: 0; font-size: 11px; }
+.note-list-record { display: flex; align-items: flex-start; gap: 5px; min-width: 0; flex-shrink: 0; }
+.note-list-record > .ui-checkbox { margin-top: 13px; margin-inline-start: 3px; }
+.note-list-record > .note-list-open { display: flex; flex: 1; flex-direction: column; align-items: stretch; gap: 5px; min-width: 0; padding: 12px 5px; color: var(--ink); text-align: start; border-radius: 10px; }
+.note-list-record > .note-list-open[aria-pressed=true] { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.note-editor-fieldset { display: contents; margin: 0; padding: 0; border: 0; }
+.modal.wide.notes-markdown-preview-modal { display: flex; flex-direction: column; width: min(680px, calc(100vw - 32px)); }
+.notes-markdown-preview { display: flex; flex-direction: column; flex: 1; gap: 12px; min-height: 0; overflow: auto; }
+.notes-markdown-preview > p { margin: 0; font-size: 13px; line-height: 1.6; }
+.notes-markdown-files { max-height: min(350px, 45dvh); overflow: auto; overscroll-behavior: contain; }
+.notes-markdown-files > article { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.notes-markdown-files small { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.notes-markdown-files strong { font-size: 14px; overflow-wrap: anywhere; }
+.notes-markdown-files p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .personal-content-tags { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
 .personal-content-tags > span { padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--muted); font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
 .tool-record-list .personal-content-tags { white-space: normal; overflow: visible; }
@@ -58,7 +80,7 @@
 .note-editor-actions > button:last-child { margin-left: auto; }
 .note-editor-actions { flex-wrap: wrap; flex-shrink: 0; }
 .notes-workspace { min-height: 380px; }
-.note-editor-footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-shrink: 0; }
+.note-editor-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; flex-shrink: 0; }
 .note-editor-footer > small { margin-right: auto; color: var(--muted); font-size: 11px; }
 .tool-data-actions { flex-shrink: 0; font-size: 12px; color: var(--muted); margin-top: 4px; }
 .tool-data-actions .ui-disclosure-trigger { padding: 7px 0; width: fit-content; cursor: pointer; }
@@ -120,6 +142,7 @@
   .notes-workspace { grid-template-columns: 1fr; gap: 16px; min-height: 0; max-height: none; }
   .notes-workspace .tool-record-list { flex-direction: row; max-height: 105px; min-height: 70px; }
   .tool-record-list > button { min-width: 150px; max-width: 180px; }
+  .tool-record-list > .note-list-record { min-width: 210px; max-width: 240px; }
   .note-editor { min-height: 360px; }
   .reading-add-form { grid-template-columns: minmax(0, 1fr) auto; }
   .reading-add-form > label:first-child { grid-column: 1 / -1; }

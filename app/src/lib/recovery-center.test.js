@@ -8,6 +8,9 @@ import { validatePersonalTools } from './personal-tools.js';
 import { validateContentPreferences } from './content-preferences.js';
 import { validateSavedDesktopTemplates, BUILTIN_DESKTOP_TEMPLATES } from './desktop-templates.js';
 import { defaultSavedFilters, resolveSavedView } from './saved-views.js';
+import { fromMarkdown } from '@futelab/folio/serialization';
+import { captureNoteDocument } from './note-capture.js';
+import { noteDocumentText } from './note-document.js';
 
 const clone = (value) => structuredClone(value);
 const PNG = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB0kAAAAASUVORK5CYII=', 'base64'));
@@ -151,6 +154,19 @@ test('reading dates and revisit views survive complete append, replace and pre-r
   await target.center.restore(await target.center.preview(file));
   assert.equal((await target.tools.read()).reading[0].revisitOn, '2026-11-11');
   assert.equal((await target.center.previewRecoveryPoint()).tools.reading[0].revisitOn, '2040-01-01');
+});
+
+test('existing complete backups preserve Markdown tasks and captured literal text with source links', async () => {
+  const subject = harness();
+  const markdown = JSON.parse(JSON.stringify(fromMarkdown('- [x] Finished\n- [ ] Next\n\n[Source](https://example.test/article?q=1#part)')));
+  const captured = captureNoteDocument({ body: '<script>literal</script>\n**literal Markdown**', pageTitle: 'Actual page', sourceUrl: 'https://example.test/captured?q=1#part' });
+  const richNotes = [markdown, captured].map((document, index) => ({ ...note(), id: `rich-${index}`, title: `Rich ${index}`, document, body: noteDocumentText(document) }));
+  subject.tools.change({ notes: richNotes });
+  const file = await subject.center.exportCompleteBackup();
+  subject.tools.change({ notes: [note('Newer local body')] });
+  await subject.center.restore(await subject.center.preview(file));
+  assert.deepEqual((await subject.tools.read()).notes.map(({ revision, ...record }) => record), richNotes.map(({ revision, ...record }) => record));
+  assert.equal((await subject.center.previewRecoveryPoint()).tools.notes[0].body, 'Newer local body');
 });
 
 test('selected categories replace same-ID note contents without touching reading, navigation or aliases', async () => {
