@@ -6,6 +6,7 @@ import '@futelab/folio/styles.css';
 import { getLocale, tr } from '../i18n/index.js';
 import sources from '../i18n/folio-source.json' with { type: 'json' };
 import { NOTE_LIMITS } from '../lib/note-document.js';
+import { isFolioInitializationChange } from '../lib/folio-initialization.js';
 import { useDialogSurface } from './DialogSurface.jsx';
 import './folio-note.css';
 
@@ -41,7 +42,7 @@ export default function FolioNoteEditor({ document, body, documentId, preview, d
   useEffect(() => { if (!document) onInitialize(value); }, [document, value, onInitialize]);
   return <div className="folio-note-area" role="region" aria-label={tr('便笺内容')}>
     <div className="folio-note-edit-panel" hidden={preview}>
-      <FolioEditor className="folio-note-editor" documentId={documentId} value={value} onChange={onChange}
+      <FolioEditor className="folio-note-editor" documentId={documentId} value={value} onChange={(next) => { if (!isFolioInitializationChange(value, next)) onChange(next); }}
         editable={!disabled && !preview} placeholder={tr('开始记录…')} locale={locale} translations={translations}
         labels={labels} blockMenuLabels={blockMenuLabels} components={components} ui={ui}
         portalContainer={surface} onError={onError} />

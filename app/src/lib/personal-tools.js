@@ -308,6 +308,53 @@ export async function bulkReadingItems(ids, action, { expectedRevision, expected
     }, { expectedRevision, shouldWrite: (result) => result.count > 0 });
   });
 }
+
+// Markdown exchange uses one validated tools transaction, without treating
+// file names as identities or replacing an existing note.
+export async function importNoteDrafts(input, { expectedRevision, expectedPreferencesRevision } = {}) {
+  if (!Array.isArray(input) || !input.length || input.length > 50 || !Number.isSafeInteger(expectedRevision) || expectedRevision < 0
+    || !Number.isSafeInteger(expectedPreferencesRevision) || expectedPreferencesRevision < 0) throw revisionConflict();
+  const drafts = copy(input);
+  for (const draft of drafts) {
+    if (!draft || typeof draft !== 'object' || Object.keys(draft).some((key) => !['title', 'body', 'document'].includes(key))) throw revisionConflict();
+    title(draft.title); text(draft.body, 60000, tr('便笺'));
+    validateNoteDocument(draft.document);
+    if (noteDocumentText(draft.document) !== draft.body) throw revisionConflict();
+  }
+  return withNavigationPrivacy((preferences) => {
+    checkPreferencesRevision(preferences, expectedPreferencesRevision);
+    return mutate((data) => {
+      const ids = [];
+      for (const draft of drafts) {
+        const record = { ...newRecord(title(draft.title)), body: draft.body, document: draft.document, pinned: false };
+        data.notes.push(record); ids.push(record.id);
+      }
+      return { count: ids.length, ids };
+    }, { expectedRevision });
+  });
+}
+
+// Keep the fresh public/private decision and record baselines locked until
+// the complete export has been generated. This path never prunes/writes tools.
+export async function withExportableNotes(ids, { expectedRevision, expectedRecordRevisions, expectedPreferencesRevision } = {}, action) {
+  if (!Array.isArray(ids) || !ids.length || ids.length > 200 || new Set(ids).size !== ids.length
+    || ids.some((id) => typeof id !== 'string') || !Number.isSafeInteger(expectedRevision) || expectedRevision < 0
+    || !Number.isSafeInteger(expectedPreferencesRevision) || expectedPreferencesRevision < 0
+    || !expectedRecordRevisions || typeof expectedRecordRevisions !== 'object' || Array.isArray(expectedRecordRevisions)
+    || Object.keys(expectedRecordRevisions).length !== ids.length || typeof action !== 'function') throw revisionConflict();
+  const selectedIds = [...ids], revisions = copy(expectedRecordRevisions);
+  return withNavigationPrivacy((preferences) => {
+    checkPreferencesRevision(preferences, expectedPreferencesRevision);
+    for (const id of selectedIds) if (preferences.privateKeys.includes(`note:${id}`)) {
+      throw Object.assign(Error(tr('隐藏的便笺不能导出为 Markdown。')), { code: 'PRIVACY_LOCKED' });
+    }
+    return mutate((data) => {
+      const notes = selectedIds.map((id) => data.notes.find((record) => record.id === id));
+      if (notes.some((record, index) => !record || !Object.hasOwn(revisions, selectedIds[index]) || record.revision !== revisions[selectedIds[index]])) throw revisionConflict();
+      return action(copy(notes));
+    }, { expectedRevision, shouldWrite: () => false });
+  });
+}
 // Historical snapshot records remain valid for backup compatibility only.
 // A+ has no browser Reading List import or tab-snapshot runtime.
 export async function exportPersonalTools() {

@@ -27,6 +27,7 @@ import { getContentMetadata, getContentTags, useContentPreferences } from '../li
 import ContentMetadataEditor, { ContentTagFilter } from './ContentMetadataEditor.jsx';
 import { isReadingDue } from '../lib/reading-revisit.js';
 import { useLocalDateKey } from '../lib/use-local-date.js';
+import { inspectMarkdownNotes, importMarkdownNotes, exportMarkdownNotes } from '../lib/markdown-notes.js';
 
 const newest = (items) => [...items].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
 const stop = (event) => event.stopPropagation();
@@ -141,7 +142,7 @@ export default function PersonalWidget({ entry, open, onOpen, onClose, Dialog, p
     {open && Dialog && portalTarget && createPortal(<div className="personal-dialog-layer" onContextMenu={stop} onKeyDown={stop} onPointerDown={stop} onPointerMove={stop} onPointerUp={stop}>
       <Dialog title={builtinName(entry.extensionId, entry.name)} privacyKeys={[`widget:${entry.id}`]} onClose={close} closeDisabled={busy} className="personal-tools-modal" wide maximizable>
         {discard && <Confirm privacySafe busy={busy} action={tr("放弃修改")} onCancel={() => setDiscard(false)} onConfirm={onClose}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
-        {notes ? <NotesTools onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} onBusyChange={setBusy} onDirtyChange={setDirty} />}
+        {notes ? <NotesTools Dialog={Dialog} onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} onBusyChange={setBusy} onDirtyChange={setDirty} />}
       </Dialog></div>, portalTarget)}
   </>;
 }
@@ -151,11 +152,11 @@ export function PersonalToolsDialog({ kind, initialRecordId, Dialog, onClose }) 
   return <Dialog title={kind === 'note' ? tr('便笺') : tr('稍后读')} closeDisabled={busy} wide maximizable className="personal-tools-modal"
     onClose={() => { if (!busy) { if (dirty) setDiscard(true); else onClose(); } }}>
     {discard && <Confirm privacySafe busy={busy} action={tr('放弃修改')} onCancel={() => setDiscard(false)} onConfirm={onClose}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
-    {kind === 'note' ? <NotesTools initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} />}
+    {kind === 'note' ? <NotesTools Dialog={Dialog} initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} />}
   </Dialog>;
 }
 
-function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
+function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId }) {
   const { data: rawData, core, error: loadError } = usePersonalTools(), action = useAction(), data = usePresentedTools(rawData), presentation = useContext(PresentationContext);
   const contentPreferences = useContentPreferences(), preferences = contentPreferences.data;
   const locked = presentation.active || preferences.presentation;
@@ -165,6 +166,8 @@ function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
   const [selectedTagIds, setSelectedTagIds] = useState([]);
   const [preview, setPreview] = useState(false), [pending, setPending] = useState(null), [deleting, setDeleting] = useState(false);
   const [editorKey, setEditorKey] = useState(() => crypto.randomUUID());
+  const fileInput = useRef(null), [markdownPreview, setMarkdownPreview] = useState(null), [markdownStatus, setMarkdownStatus] = useState('');
+  const [selectionMode, setSelectionMode] = useState(false), [selected, setSelected] = useState({});
   const hidden = (key) => locked && (presentation.hiddenKeys.has(key) || preferences.privateKeys.includes(key));
   const notes = newest(data?.notes || []).filter((item) => !hidden(`note:${item.id}`)), latest = rawData?.notes.find((item) => item.id === draft.id);
   const draftHidden = Boolean(draft.id) && hidden(`note:${draft.id}`);
@@ -194,6 +197,61 @@ function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
   const matches = notes.filter((note) => matchesTags(metadataFor(`note:${note.id}`), selectedTagIds)
     && (!query || core?.contains(`${note.title}\n${note.body}`, query)));
   const availableTagIds = [...new Set(notes.flatMap((note) => metadataFor(`note:${note.id}`).tagIds))];
+  const exportBlocked = (id) => preferences.privateKeys.includes(`note:${id}`) || presentation.hiddenKeys.has(`note:${id}`);
+  const eligibleMatches = matches.filter((note) => !exportBlocked(note.id));
+  const selectedIds = Object.keys(selected).filter((id) => !exportBlocked(id));
+  const selectedStale = selectedIds.some((id) => !rawData?.notes.some((note) => note.id === id && note.revision === selected[id]));
+  const selectedMatches = eligibleMatches.filter((note) => Object.hasOwn(selected, note.id)).length;
+  const previewFresh = markdownPreview && rawData?.revision === markdownPreview.expectedRevision && preferences.revision === markdownPreview.expectedPreferencesRevision;
+  useEffect(() => {
+    setSelected((current) => Object.fromEntries(Object.entries(current).filter(([id]) => !exportBlocked(id))));
+  }, [preferences.privateKeys, presentation.hiddenKeys]);
+  function changeQuery(value) { setQuery(value); setSelected({}); setMarkdownStatus(''); }
+  function changeTags(ids) { setSelectedTagIds(ids); setSelected({}); setMarkdownStatus(''); }
+  function toggleExport(note, checked) {
+    setSelected((current) => { const next = { ...current }; if (checked) next[note.id] ??= note.revision; else delete next[note.id]; return next; });
+    action.setError(''); setMarkdownStatus('');
+  }
+  function toggleAllExports(checked) {
+    setSelected((current) => {
+      const next = { ...current };
+      for (const note of eligibleMatches) { if (checked) next[note.id] ??= note.revision; else delete next[note.id]; }
+      return next;
+    });
+    action.setError(''); setMarkdownStatus('');
+  }
+  function inspectFiles(event) {
+    const files = [...(event.target.files || [])]; event.target.value = '';
+    if (!files.length || !rawData || !contentPreferences.ready || dirty || busy || selectionMode) return;
+    const expectedRevision = rawData.revision, expectedPreferencesRevision = preferences.revision;
+    action.run(async () => {
+      setMarkdownStatus('');
+      let plan;
+      try { plan = await inspectMarkdownNotes(files); }
+      catch (reason) { throw reason.filename ? Error(tr('文件“{0}”：{1}', [reason.filename, userErrorMessage(reason)])) : reason; }
+      setMarkdownPreview({ plan, expectedRevision, expectedPreferencesRevision });
+    });
+  }
+  function confirmMarkdownImport() {
+    if (!previewFresh || busy || dirty) return;
+    action.run(async () => {
+      const { plan, expectedRevision, expectedPreferencesRevision } = markdownPreview;
+      const result = await importMarkdownNotes(plan, { expectedRevision, expectedPreferencesRevision });
+      setMarkdownPreview(null); setQuery(''); setSelectedTagIds([]); setSelected({});
+      setMarkdownStatus(tr('已导入 {0} 篇便笺。', [formatNumber(result.count)]));
+    });
+  }
+  function downloadMarkdown(ids, expectedRecordRevisions) {
+    if (!ids.length || dirty || busy) return;
+    action.run(async () => {
+      const { blob, filename } = await exportMarkdownNotes(ids, { expectedRevision: rawData.revision, expectedPreferencesRevision: preferences.revision, expectedRecordRevisions });
+      const url = URL.createObjectURL(blob), anchor = document.createElement('a');
+      anchor.href = url; anchor.download = filename; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  }
+  function noteButton(note) {
+    return <Button variant="unstyled" size="unstyled" type="button" className="note-list-open" key={note.id} aria-pressed={draft.id === note.id} disabled={busy || selectionMode || !contentPreferences.ready} onClick={() => choose(note)}><strong>{note.pinned && <PushPin size={12} weight="fill" />}{note.title}</strong><span>{note.body.slice(0, 90) || tr("空白便笺")}</span><ContentTagLabels tags={visibleTags} tagIds={metadataFor(`note:${note.id}`).tagIds} /><small>{formatDate(note.updatedAt)}</small></Button>;
+  }
   const documentError = useMemo(() => {
     try {
       if (draft.document) validateNoteDocument(draft.document);
@@ -206,11 +264,31 @@ function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
     try { return core.metrics(draft.body); } catch { return null; }
   }, [core, draft.body, documentError]);
   return <div className="personal-tools-body notes-tools-body">
-    <div className="personal-tools-toolbar"><div className="tool-search"><MagnifyingGlass size={16} /><Input unstyled aria-label={tr("搜索便笺")} placeholder={tr("搜索便笺")} value={query} maxLength={100} onChange={(event) => setQuery(event.target.value)} /></div><Button variant="secondary" type="button" className="button" disabled={busy || !contentPreferences.ready} onClick={() => choose(null)}><Plus size={17} />{tr("新便笺")}</Button></div>
-    <ContentTagFilter preferences={preferences} availableTagIds={availableTagIds} selectedTagIds={selectedTagIds} onChange={setSelectedTagIds} disabled={busy || !contentPreferences.ready} />
-    <MessageDialog message={loadError || contentPreferences.error || action.error || (!draftHidden && (documentError || (!busy && changedElsewhere ? tr('这条便笺已在其他页面更新。') : '')))} onClose={() => action.setError('')} />
+    <div className="personal-tools-toolbar"><div className="tool-search"><MagnifyingGlass size={16} /><Input unstyled aria-label={tr("搜索便笺")} placeholder={tr("搜索便笺")} value={query} maxLength={100} disabled={busy} onChange={(event) => changeQuery(event.target.value)} /></div><Button variant="secondary" type="button" className="button" disabled={busy || selectionMode || !contentPreferences.ready} onClick={() => choose(null)}><Plus size={17} />{tr("新便笺")}</Button></div>
+    <div className="notes-exchange-actions"><ContentTagFilter preferences={preferences} availableTagIds={availableTagIds} selectedTagIds={selectedTagIds} onChange={changeTags} disabled={busy || !contentPreferences.ready} />
+      <div><Button type="button" variant="ghost" size="sm" disabled={busy || dirty || selectionMode || !rawData || !contentPreferences.ready} onClick={() => fileInput.current?.click()}><UploadSimple size={16} />{tr('导入 Markdown 便笺')}</Button>
+        <Button type="button" variant="ghost" size="sm" disabled={busy || dirty || !contentPreferences.ready || !selectionMode && !eligibleMatches.length} onClick={() => { setSelectionMode((value) => !value); setSelected({}); setMarkdownStatus(''); action.setError(''); }}>{selectionMode ? tr('取消选择') : tr('选择导出')}</Button></div>
+      <Input ref={fileInput} type="file" multiple accept=".md,.markdown,text/markdown,text/plain" hidden onChange={inspectFiles} /></div>
+    <Disclosure title={tr('Markdown 导入导出说明')} className="notes-markdown-info"><p>{tr('图片会保留为文字或链接，不会下载图片。')}</p><p>{tr('普通段落开头、结尾或连续空行，以及复杂块和已有图片，可能无法原样导出。完整备份可保留原样。')}</p><p>{tr('Markdown 导出不包含标记隐藏的便笺。')}</p></Disclosure>
+    {dirty && <p className="hint notes-exchange-hint">{tr('保存当前修改后，可导入或导出。')}</p>}
+    {markdownStatus && <p className="hint notes-exchange-hint" role="status">{markdownStatus}</p>}
+    {selectionMode && <div className="notes-export-toolbar"><label><Checkbox aria-label={tr('全选可导出的便笺')} checked={eligibleMatches.length && selectedMatches === eligibleMatches.length ? true : selectedMatches ? 'indeterminate' : false}
+      disabled={busy || !eligibleMatches.length} onCheckedChange={(checked) => toggleAllExports(checked === true)} />{tr('全选当前结果')}</label><span>{tr('已选 {0} 篇便笺', [formatNumber(selectedIds.length)])}</span>
+      <Button type="button" size="sm" disabled={busy || !selectedIds.length || selectedStale} onClick={() => downloadMarkdown(selectedIds, Object.fromEntries(selectedIds.map((id) => [id, selected[id]])))}><DownloadSimple size={16} />{tr('导出所选')}</Button>
+      <p className={selectedStale ? 'form-error' : 'hint'} role={selectedStale ? 'alert' : undefined}>{selectedStale ? tr('所选内容已变化，请重新选择。') : tr('Markdown 导出不包含标记隐藏的便笺。')}</p></div>}
+    <MessageDialog message={loadError || contentPreferences.error || (!markdownPreview && action.error) || (!draftHidden && !selectionMode && (documentError || (!busy && changedElsewhere ? tr('这条便笺已在其他页面更新。') : '')))} onClose={() => action.setError('')} />
     {pending && <Confirm privacySafe action={tr("放弃修改")} busy={busy} onCancel={() => setPending(null)} onConfirm={() => select(pending.note)}>{tr("当前便笺尚未保存，放弃修改？")}</Confirm>}
-    <div className="notes-workspace"><div className="tool-record-list" aria-label={tr("便笺列表")}>{matches.map((note) => <Button variant="unstyled" size="unstyled" type="button" key={note.id} aria-pressed={draft.id === note.id} disabled={busy || !contentPreferences.ready} onClick={() => choose(note)}><strong>{note.pinned && <PushPin size={12} weight="fill" />}{note.title}</strong><span>{note.body.slice(0, 90) || tr("空白便笺")}</span><ContentTagLabels tags={visibleTags} tagIds={metadataFor(`note:${note.id}`).tagIds} /><small>{formatDate(note.updatedAt)}</small></Button>)}{!matches.length && <p className="tool-empty">{query || selectedTagIds.length ? tr("没有找到便笺") : tr("暂无便笺")}</p>}</div>
+    {markdownPreview && <Dialog title={tr('导入 Markdown 便笺')} wide className="notes-markdown-preview-modal" closeDisabled={busy} onClose={() => { if (!busy) { setMarkdownPreview(null); action.setError(''); } }}>
+      <div className="notes-markdown-preview"><p>{tr('将导入 {0} 篇便笺。', [formatNumber(markdownPreview.plan.count)])}</p>
+        <p className="hint">{tr('图片会保留为文字或链接，不会下载图片。')}</p>
+        {markdownPreview.plan.convertedImages > 0 && <p className="hint">{tr('{0} 张图片将保留为文字或链接。', [formatNumber(markdownPreview.plan.convertedImages)])}</p>}
+        <div className="notes-markdown-files" aria-label={tr('Markdown 导入预览')}>{markdownPreview.plan.entries.map((entry, index) => <article key={index}><small>{entry.filename}</small><strong>{entry.title}</strong><p>{entry.excerpt}</p></article>)}</div>
+        {(!previewFresh || action.error) && <p className="form-error" role="alert">{action.error || tr('内容已在其他页面更新，请重新预览。')}</p>}
+        <div className="modal-footer"><Button type="button" variant="secondary" disabled={busy} onClick={() => { setMarkdownPreview(null); action.setError(''); }}>{tr('取消')}</Button><Button type="button" disabled={busy || !previewFresh} onClick={confirmMarkdownImport}>{tr('确认导入')}</Button></div>
+      </div>
+    </Dialog>}
+    <div className="notes-workspace"><div className="tool-record-list" aria-label={tr("便笺列表")}>{matches.map((note) => selectionMode ? <div className="note-list-record" key={note.id}>
+      <Checkbox aria-label={tr('选择“{0}”', [note.title])} checked={Object.hasOwn(selected, note.id) && !exportBlocked(note.id)} disabled={busy || exportBlocked(note.id)} onCheckedChange={(checked) => toggleExport(note, checked === true)} />{noteButton(note)}</div> : noteButton(note))}{!matches.length && <p className="tool-empty">{query || selectedTagIds.length ? tr("没有找到便笺") : tr("暂无便笺")}</p>}</div>
     <PrivateEditor hidden={draftHidden} busy={busy} onBusyChange={setUnlocking}><form className="note-editor" onKeyDownCapture={(event) => {
       if (!event.defaultPrevented && !event.nativeEvent.isComposing && event.keyCode !== 229 && (event.ctrlKey || event.metaKey) && event.key === 'Enter'
         && event.target.closest('[contenteditable="true"], .note-title-input') && !event.target.closest('[role="dialog"]:not([data-ui-modal]), [role="alertdialog"]')) {
@@ -218,23 +296,26 @@ function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
       }
     }} onSubmit={(event) => {
       event.preventDefault();
-      if (!data || !core || !contentPreferences.ready || busy || draftHidden || !dirty || changedElsewhere || documentError) return;
+      if (!data || !core || !contentPreferences.ready || busy || selectionMode || draftHidden || !dirty || changedElsewhere || documentError) return;
       action.run(async () => {
         const saved = await saveNote(draft, { metadata, expectedPreferencesRevision: preferences.revision, expectedMetadata: originalMetadata });
         setDraft(saved); setOriginalMetadata(metadata); setDirty(false);
       });
     }}>
+      <fieldset className="note-editor-fieldset" disabled={selectionMode}>
       <label className="visually-hidden" htmlFor="note-title">{tr("便笺名称")}</label><Input unstyled id="note-title" className="note-title-input" value={draft.title} placeholder={tr("未命名便笺")} maxLength={200} disabled={busy} onChange={(event) => patch({ title: event.target.value })} />
       <div className="note-editor-actions"><Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={draft.pinned} onClick={() => patch({ pinned: !draft.pinned })}><PushPin size={16} weight={draft.pinned ? 'fill' : 'regular'} />{tr("置顶")}</Button>
         <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={preview} onClick={() => setPreview(!preview)}>{preview ? tr("编辑") : tr("预览")}</Button>
         <Button variant="ghost" type="button" className="button quiet" disabled={!draft.body || busy} onClick={() => action.run(async () => { try { await navigator.clipboard.writeText(draft.document ? noteDocumentText(draft.document) : draft.body); } catch { throw Error(tr("无法复制，请手动选择文字。")); } })} aria-label={tr("复制便笺")}><Copy size={16} /></Button></div>
       <ContentMetadataEditor preferences={preferences} contentKey={draft.id ? `note:${draft.id}` : undefined} value={metadata}
-        onChange={(value) => { setMetadata(value); setDirty(true); }} disabled={action.busy || unlocking || draftHidden || !contentPreferences.ready} allowDescription={false} onBusyChange={setMetadataBusy} />
-      <FolioNoteEditor key={editorKey} documentId={editorKey} document={draft.document} body={draft.body} preview={preview} disabled={busy || draftHidden}
+        onChange={(value) => { setMetadata(value); setDirty(true); }} disabled={action.busy || unlocking || draftHidden || selectionMode || !contentPreferences.ready} allowDescription={false} onBusyChange={setMetadataBusy} />
+      <FolioNoteEditor key={editorKey} documentId={editorKey} document={draft.document} body={draft.body} preview={preview} disabled={busy || draftHidden || selectionMode}
         onInitialize={(document) => setDraft((current) => current.document ? current : { ...current, document, body: noteDocumentText(document) })}
         onChange={(document) => patch({ document, body: noteDocumentText(document) })} onError={(reason) => action.setError(userErrorMessage(reason, tr('便笺未能保存，请重试。')))} />
       {deleting && !draftHidden && <Confirm busy={busy} onCancel={() => setDeleting(false)} onConfirm={() => action.run(async () => { await deletePersonalRecord('notes', draft.id, draft.revision); select(null); })}>{tr("删除“{0}”？", [draft.title])}</Confirm>}
-      <div className="note-editor-footer"><small>{tr("{0} 字符", [formatNumber(metrics?.characters ?? draft.body.length)])}</small>{draft.id && <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => setDeleting(true)} aria-label={tr("删除便笺")}><Trash size={16} /></Button>}<Button variant="default" type={changedElsewhere ? 'button' : 'submit'} className="button primary" onClick={changedElsewhere ? reopen : undefined} disabled={!data || !core || !contentPreferences.ready || busy || !changedElsewhere && (!dirty || Boolean(documentError))}>{changedElsewhere ? tr('重新打开') : tr("保存")}</Button></div>
+      <div className="note-editor-footer"><small>{tr("{0} 字符", [formatNumber(metrics?.characters ?? draft.body.length)])}</small>{draft.id && <><Button type="button" variant="ghost" size="sm" disabled={busy || dirty || changedElsewhere || draftHidden || exportBlocked(draft.id) || !contentPreferences.ready}
+        onClick={() => downloadMarkdown([draft.id], { [draft.id]: draft.revision })}><DownloadSimple size={16} />{tr('导出 Markdown')}</Button><Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => setDeleting(true)} aria-label={tr("删除便笺")}><Trash size={16} /></Button></>}<Button variant="default" type={changedElsewhere ? 'button' : 'submit'} className="button primary" onClick={changedElsewhere ? reopen : undefined} disabled={!data || !core || !contentPreferences.ready || busy || !changedElsewhere && (!dirty || Boolean(documentError))}>{changedElsewhere ? tr('重新打开') : tr("保存")}</Button></div>
+      </fieldset>
     </form></PrivateEditor></div><ToolDataActions data={rawData} run={action.run} busy={busy} />
   </div>;
 }
