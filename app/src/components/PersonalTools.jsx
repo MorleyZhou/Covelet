@@ -6,7 +6,7 @@ import { NotePencil, BookOpen, Plus, Trash, PencilSimple, Check, Archive, ArrowS
 import Select from './Select.jsx';
 import { WIDGET_NAMES, WIDGET_SIZE_OPTIONS, validateWidgetConfig } from '../lib/widget-model.js';
 import usePersonalTools from '../lib/use-personal-tools.js';
-import { saveNote, saveReadingItem, bulkReadingItems, deletePersonalRecord, exportPersonalTools, importPersonalTools, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash } from '../lib/personal-tools.js';
+import { saveNote, saveReadingItem, bulkReadingItems, deletePersonalRecord, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash } from '../lib/personal-tools.js';
 import { validateNoteDocument, noteDocumentText } from '../lib/note-document.js';
 import FolioNoteEditor from './FolioNoteEditor.jsx';
 import PromptDialog, { MessageDialog } from './PromptDialog.jsx';
@@ -99,17 +99,6 @@ export function PersonalToolsTrashPanel({ onBusyChange, disabled = false }) {
     <PersonalToolsTrash data={disabled ? null : data} run={action.run} busy={disabled || action.busy} standalone />
     {(error || action.error) && <p className="form-error" role="alert">{userErrorMessage(error || action.error)}</p>}
   </>;
-}
-function ToolDataActions({ data, run, busy, onImported }) {
-  const input = useRef(null);
-  return <Disclosure className="tool-data-actions" title={tr("备份与回收站")}><div className="tool-data-buttons">
-    <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => run(async () => {
-      const blob = await exportPersonalTools(), url = URL.createObjectURL(blob), anchor = document.createElement('a');
-      anchor.href = url; anchor.download = `Covelet-tools-${new Date().toISOString().slice(0, 10)}.json`; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-    })}><DownloadSimple size={16} />{tr("导出")}</Button>
-    <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => input.current?.click()}><UploadSimple size={16} />{tr("导入")}</Button>
-    <Input ref={input} type="file" accept="application/json,.json" hidden onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) run(async () => { await importPersonalTools(file); onImported?.(); }); }} />
-    </div><p>{tr('导入备份不会覆盖已有记录。')}</p><PersonalToolsTrash data={data} run={run} busy={busy} /></Disclosure>;
 }
 
 export function PersonalWidgetSettings({ extensionId, entry, introduction, onUse, onBusyChange }) {
@@ -269,8 +258,6 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId }) {
       <div><Button type="button" variant="ghost" size="sm" disabled={busy || dirty || selectionMode || !rawData || !contentPreferences.ready} onClick={() => fileInput.current?.click()}><UploadSimple size={16} />{tr('导入 Markdown 便笺')}</Button>
         <Button type="button" variant="ghost" size="sm" disabled={busy || dirty || !contentPreferences.ready || !selectionMode && !eligibleMatches.length} onClick={() => { setSelectionMode((value) => !value); setSelected({}); setMarkdownStatus(''); action.setError(''); }}>{selectionMode ? tr('取消选择') : tr('选择导出')}</Button></div>
       <Input ref={fileInput} type="file" multiple accept=".md,.markdown,text/markdown,text/plain" hidden onChange={inspectFiles} /></div>
-    <Disclosure title={tr('Markdown 导入导出说明')} className="notes-markdown-info"><p>{tr('图片会保留为文字或链接，不会下载图片。')}</p><p>{tr('普通段落开头、结尾或连续空行，以及复杂块和已有图片，可能无法原样导出。完整备份可保留原样。')}</p><p>{tr('Markdown 导出不包含标记隐藏的便笺。')}</p></Disclosure>
-    {dirty && <p className="hint notes-exchange-hint">{tr('保存当前修改后，可导入或导出。')}</p>}
     {markdownStatus && <p className="hint notes-exchange-hint" role="status">{markdownStatus}</p>}
     {selectionMode && <div className="notes-export-toolbar"><label><Checkbox aria-label={tr('全选可导出的便笺')} checked={eligibleMatches.length && selectedMatches === eligibleMatches.length ? true : selectedMatches ? 'indeterminate' : false}
       disabled={busy || !eligibleMatches.length} onCheckedChange={(checked) => toggleAllExports(checked === true)} />{tr('全选当前结果')}</label><span>{tr('已选 {0} 篇便笺', [formatNumber(selectedIds.length)])}</span>
@@ -303,6 +290,7 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId }) {
       });
     }}>
       <fieldset className="note-editor-fieldset" disabled={selectionMode}>
+      <div className="note-editor-scroll">
       <label className="visually-hidden" htmlFor="note-title">{tr("便笺名称")}</label><Input unstyled id="note-title" className="note-title-input" value={draft.title} placeholder={tr("未命名便笺")} maxLength={200} disabled={busy} onChange={(event) => patch({ title: event.target.value })} />
       <div className="note-editor-actions"><Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={draft.pinned} onClick={() => patch({ pinned: !draft.pinned })}><PushPin size={16} weight={draft.pinned ? 'fill' : 'regular'} />{tr("置顶")}</Button>
         <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={preview} onClick={() => setPreview(!preview)}>{preview ? tr("编辑") : tr("预览")}</Button>
@@ -313,10 +301,11 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId }) {
         onInitialize={(document) => setDraft((current) => current.document ? current : { ...current, document, body: noteDocumentText(document) })}
         onChange={(document) => patch({ document, body: noteDocumentText(document) })} onError={(reason) => action.setError(userErrorMessage(reason, tr('便笺未能保存，请重试。')))} />
       {deleting && !draftHidden && <Confirm busy={busy} onCancel={() => setDeleting(false)} onConfirm={() => action.run(async () => { await deletePersonalRecord('notes', draft.id, draft.revision); select(null); })}>{tr("删除“{0}”？", [draft.title])}</Confirm>}
+      </div>
       <div className="note-editor-footer"><small>{tr("{0} 字符", [formatNumber(metrics?.characters ?? draft.body.length)])}</small>{draft.id && <><Button type="button" variant="ghost" size="sm" disabled={busy || dirty || changedElsewhere || draftHidden || exportBlocked(draft.id) || !contentPreferences.ready}
         onClick={() => downloadMarkdown([draft.id], { [draft.id]: draft.revision })}><DownloadSimple size={16} />{tr('导出 Markdown')}</Button><Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => setDeleting(true)} aria-label={tr("删除便笺")}><Trash size={16} /></Button></>}<Button variant="default" type={changedElsewhere ? 'button' : 'submit'} className="button primary" onClick={changedElsewhere ? reopen : undefined} disabled={!data || !core || !contentPreferences.ready || busy || !changedElsewhere && (!dirty || Boolean(documentError))}>{changedElsewhere ? tr('重新打开') : tr("保存")}</Button></div>
       </fieldset>
-    </form></PrivateEditor></div><ToolDataActions data={rawData} run={action.run} busy={busy} />
+    </form></PrivateEditor></div>
   </div>;
 }
 
@@ -494,6 +483,5 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
       <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={tr("删除链接")} title={tr("删除")} onClick={() => setDeleting(item)}><Trash size={17} /></Button></div>}</div>)}{!records.length && <p className="tool-empty">{visibleQuery || selectedTagIds.length ? tr("没有找到链接") : filter === 'due' ? tr('暂无待再看的链接') : tr("暂无链接")}</p>}</TabsContent>
     {pageCount > 1 && <nav className="reading-pagination" aria-label={tr('列表分页')}><Button type="button" variant="ghost" size="sm" disabled={busy || currentPage === 0} onClick={() => setPage(currentPage - 1)}>{tr('上一页')}</Button>
       <span>{tr('第 {0} 页，共 {1} 页', [formatNumber(currentPage + 1), formatNumber(pageCount)])}</span><Button type="button" variant="ghost" size="sm" disabled={busy || currentPage >= pageCount - 1} onClick={() => setPage(currentPage + 1)}>{tr('下一页')}</Button></nav>}
-    <div className="reading-bottom-actions"><ToolDataActions data={rawData} run={action.run} busy={busy} /></div>
   </div></Tabs>;
 }

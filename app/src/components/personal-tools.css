@@ -29,7 +29,7 @@
 .tool-search svg { flex-shrink: 0; }
 .tool-search input { min-width: 0; width: 100%; max-width: 270px; padding: 0; background: transparent; border: 0; outline: none; color: var(--ink); font: inherit; font-size: 13px; }
 .tool-search input::placeholder { color: var(--muted); opacity: 1; }
-.notes-workspace { display: grid; grid-template-columns: 210px minmax(0, 1fr); flex: 1; min-height: 300px; gap: 24px; }
+.notes-workspace { display: grid; grid-template-columns: 210px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); flex: 1 1 380px; min-height: 0; gap: 24px; }
 .personal-record-editor { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .personal-record-editor .note-editor { flex: 1; }
 .personal-record-shield { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; flex: 1; min-width: 0; padding: 20px; }
@@ -45,8 +45,6 @@
 .tool-record-list small { font-size: 10px; color: var(--muted); }
 .notes-exchange-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
 .notes-exchange-actions > div { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-inline-start: auto; }
-.notes-markdown-info { flex-shrink: 0; color: var(--muted); font-size: 12px; }
-.notes-markdown-info p { margin: 5px 0; line-height: 1.6; }
 .notes-exchange-hint { margin: 0; font-size: 12px; }
 .notes-export-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding-block: 8px; border-block: 1px solid var(--line); color: var(--muted); font-size: 12px; flex-shrink: 0; }
 .notes-export-toolbar > label { display: inline-flex; align-items: center; gap: 7px; }
@@ -56,7 +54,7 @@
 .note-list-record > .ui-checkbox { margin-top: 13px; margin-inline-start: 3px; }
 .note-list-record > .note-list-open { display: flex; flex: 1; flex-direction: column; align-items: stretch; gap: 5px; min-width: 0; padding: 12px 5px; color: var(--ink); text-align: start; border-radius: 10px; }
 .note-list-record > .note-list-open[aria-pressed=true] { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-.note-editor-fieldset { display: contents; margin: 0; padding: 0; border: 0; }
+.note-editor-fieldset { display: flex; flex-direction: column; flex: 1; gap: 10px; min-width: 0; min-height: 0; margin: 0; padding: 0; border: 0; }
 .modal.wide.notes-markdown-preview-modal { display: flex; flex-direction: column; width: min(680px, calc(100vw - 32px)); }
 .notes-markdown-preview { display: flex; flex-direction: column; flex: 1; gap: 12px; min-height: 0; overflow: auto; }
 .notes-markdown-preview > p { margin: 0; font-size: 13px; line-height: 1.6; }
@@ -70,7 +68,9 @@
 .tool-record-list .personal-content-tags { white-space: normal; overflow: visible; }
 .tool-record-list .personal-content-tags > span { white-space: normal; overflow: visible; }
 .tool-empty { margin: auto; padding: 24px 12px; text-align: center; font-size: 13px; color: var(--muted); }
-.note-editor { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; padding: 2px; overflow: auto; overscroll-behavior: contain; scroll-padding: 8px; }
+.note-editor { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 2px; overflow: hidden; }
+.note-editor-scroll { display: flex; flex-direction: column; flex: 1; gap: 10px; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; scroll-padding: 8px; }
+.note-editor-scroll > :not(.folio-note-area) { flex-shrink: 0; }
 .note-editor .note-title-input { padding: 8px; width: 100%; border: 0; background: transparent; color: var(--ink); font-size: 22px; font-weight: 600; border-radius: 8px; flex-shrink: 0; caret-color: var(--accent); }
 .personal-tools-modal .note-title-input:focus { outline: none; box-shadow: none; }
 .personal-tools-modal .note-title-input:focus-visible { background: color-mix(in srgb, var(--ink) 3%, transparent); }
@@ -79,13 +79,8 @@
 .note-editor-actions { display: flex; align-items: center; gap: 6px; }
 .note-editor-actions > button:last-child { margin-left: auto; }
 .note-editor-actions { flex-wrap: wrap; flex-shrink: 0; }
-.notes-workspace { min-height: 380px; }
 .note-editor-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; flex-shrink: 0; }
 .note-editor-footer > small { margin-right: auto; color: var(--muted); font-size: 11px; }
-.tool-data-actions { flex-shrink: 0; font-size: 12px; color: var(--muted); margin-top: 4px; }
-.tool-data-actions .ui-disclosure-trigger { padding: 7px 0; width: fit-content; cursor: pointer; }
-.tool-data-buttons { display: flex; gap: 8px; }
-.tool-data-actions p { font-size: 11px; line-height: 1.7; max-width: 550px; margin-top: 8px; }
 .personal-trash { min-width: 0; width: 100%; color: var(--muted); font-size: 12px; }
 .personal-trash-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .personal-trash-list { max-height: 250px; min-width: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; }
@@ -130,7 +125,6 @@
 .reading-record-actions { display: flex; flex-shrink: 0; gap: 2px; }
 .reading-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; color: var(--muted); font-size: 12px; flex-shrink: 0; }
 .reading-record .button { padding: 7px; }
-.reading-bottom-actions { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: baseline; gap: 12px; }
 .extension-notes-icon { background: #d6a53b; color: white; }
 .extension-read-later-icon { background: #c56e48; color: white; }
 @media (forced-colors: active) {
@@ -139,11 +133,10 @@
 }
 @media (max-width: 680px) {
   .modal.wide.personal-tools-modal { width: calc(100vw - 20px); padding: 18px; }
-  .notes-workspace { grid-template-columns: 1fr; gap: 16px; min-height: 0; max-height: none; }
+  .notes-workspace { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); gap: 16px; min-height: 0; max-height: none; }
   .notes-workspace .tool-record-list { flex-direction: row; max-height: 105px; min-height: 70px; }
   .tool-record-list > button { min-width: 150px; max-width: 180px; }
   .tool-record-list > .note-list-record { min-width: 210px; max-width: 240px; }
-  .note-editor { min-height: 360px; }
   .reading-add-form { grid-template-columns: minmax(0, 1fr) auto; }
   .reading-add-form > label:first-child { grid-column: 1 / -1; }
   .reading-record { gap: 4px; }
