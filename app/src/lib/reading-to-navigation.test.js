@@ -9,7 +9,7 @@ const navigationKey = 'owntab.local.v1';
 const preferencesKey = 'covelet.content.preferences.v1';
 const toolsKey = 'covelet.tools.v1';
 const reading = { id: 'reading-1', url: 'https://example.com/article', title: 'Example article',
-  revision: 1, status: 'read', createdAt: 10, updatedAt: 20 };
+  revision: 1, status: 'read', createdAt: 10, updatedAt: 20, revisitOn: '2026-11-11' };
 
 function prepare(t, { locked = false, failWrite = false, holdTools = true } = {}) {
   const state = createEmptyState();
@@ -44,6 +44,7 @@ test('a private reading record and its copied link preserve their state in one a
   const [site] = saved.entries;
   assert.equal(site.page, 1);
   assert.equal(site.url, reading.url);
+  assert.equal(Object.hasOwn(site, 'revisitOn'), false);
   assert.deepEqual(records[toolsKey].reading, [reading]);
   assert.deepEqual(records[preferencesKey].privateKeys, ['reading:reading-1', `site:${site.id}`]);
   assert.deepEqual(Object.keys(writes.mock.calls[0].arguments[0]), [navigationKey, preferencesKey]);

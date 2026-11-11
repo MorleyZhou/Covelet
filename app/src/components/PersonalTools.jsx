@@ -1,12 +1,12 @@
 import { tr, getLocale, builtinName, formatNumber } from "../i18n/index.js";
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { PresentationContext, usePresentedTools } from '../lib/presentation.js';
 import { createPortal } from 'react-dom';
 import { NotePencil, BookOpen, Plus, Trash, PencilSimple, Check, Archive, ArrowSquareOut, Copy, PushPin, DownloadSimple, UploadSimple, MagnifyingGlass, SquaresFour } from '@phosphor-icons/react';
 import Select from './Select.jsx';
 import { WIDGET_NAMES, WIDGET_SIZE_OPTIONS, validateWidgetConfig } from '../lib/widget-model.js';
 import usePersonalTools from '../lib/use-personal-tools.js';
-import { saveNote, saveReadingItem, deletePersonalRecord, exportPersonalTools, importPersonalTools, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash } from '../lib/personal-tools.js';
+import { saveNote, saveReadingItem, bulkReadingItems, deletePersonalRecord, exportPersonalTools, importPersonalTools, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash } from '../lib/personal-tools.js';
 import { validateNoteDocument, noteDocumentText } from '../lib/note-document.js';
 import FolioNoteEditor from './FolioNoteEditor.jsx';
 import PromptDialog, { MessageDialog } from './PromptDialog.jsx';
@@ -15,6 +15,7 @@ import { DialogSurface } from './DialogSurface.jsx';
 import './personal-tools.css';
 import { Button } from './ui/button.jsx';
 import { Input } from './ui/input.jsx';
+import { Checkbox } from './ui/checkbox.jsx';
 import { Disclosure } from './ui/disclosure.jsx';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs.jsx';
 import { userErrorMessage } from '../lib/user-error.js';
@@ -24,10 +25,14 @@ import { copyReadingToNavigation } from '../lib/reading-to-navigation.js';
 import NavigationDestination from './NavigationDestination.jsx';
 import { getContentMetadata, getContentTags, useContentPreferences } from '../lib/content-preferences.js';
 import ContentMetadataEditor, { ContentTagFilter } from './ContentMetadataEditor.jsx';
+import { isReadingDue } from '../lib/reading-revisit.js';
+import { useLocalDateKey } from '../lib/use-local-date.js';
 
 const newest = (items) => [...items].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
 const stop = (event) => event.stopPropagation();
 const formatDate = (value) => new Date(value).toLocaleString(getLocale(), { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+const formatReadingDay = (value) => new Date(`${value}T00:00:00Z`).toLocaleDateString(getLocale(), { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+const READING_PAGE_SIZE = 50;
 const emptyMetadata = () => ({ description: '', tagIds: [] });
 const sameMetadata = (left, right) => left.description === right.description
   && left.tagIds.length === right.tagIds.length && left.tagIds.every((id) => right.tagIds.includes(id));
@@ -135,7 +140,7 @@ export default function PersonalWidget({ entry, open, onOpen, onClose, Dialog, p
     </Button>
     {open && Dialog && portalTarget && createPortal(<div className="personal-dialog-layer" onContextMenu={stop} onKeyDown={stop} onPointerDown={stop} onPointerMove={stop} onPointerUp={stop}>
       <Dialog title={builtinName(entry.extensionId, entry.name)} privacyKeys={[`widget:${entry.id}`]} onClose={close} closeDisabled={busy} className="personal-tools-modal" wide maximizable>
-        {discard && <Confirm privacySafe busy={busy} action={tr("放弃修改")} onCancel={() => setDiscard(false)} onConfirm={onClose}>{tr("放弃未保存的便笺修改？")}</Confirm>}
+        {discard && <Confirm privacySafe busy={busy} action={tr("放弃修改")} onCancel={() => setDiscard(false)} onConfirm={onClose}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
         {notes ? <NotesTools onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} onBusyChange={setBusy} onDirtyChange={setDirty} />}
       </Dialog></div>, portalTarget)}
   </>;
@@ -244,6 +249,9 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
   const [selectedTagIds, setSelectedTagIds] = useState([]), [discarding, setDiscarding] = useState(null);
   const [copy, setCopy] = useState(null), [copyStatus, setCopyStatus] = useState('');
   const [queryRecordId, setQueryRecordId] = useState(null);
+  const today = useLocalDateKey(), revisitInputId = useId(), listRef = useRef(null);
+  const [page, setPage] = useState(0), [selectionMode, setSelectionMode] = useState(false), [selected, setSelected] = useState({});
+  const [bulkAction, setBulkAction] = useState('read'), [bulkDelete, setBulkDelete] = useState(null), [bulkStatus, setBulkStatus] = useState('');
   const hidden = (key) => locked && (presentation.hiddenKeys.has(key) || preferences.privateKeys.includes(key));
   const draftHidden = Boolean(draft.id) && hidden(`reading:${draft.id}`);
   const deletionHidden = Boolean(deleting) && hidden(`reading:${deleting.id}`);
@@ -255,7 +263,7 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
   const latest = rawData?.reading.find((item) => item.id === draft.id);
   const changedElsewhere = draft.id && (!latest || latest.revision !== draft.revision
     || contentPreferences.ready && !draftHidden && !sameMetadata(metadataFor(`reading:${draft.id}`), originalMetadata));
-  const draftHasContent = Boolean(draft.url || draft.title || metadata.description || metadata.tagIds.length);
+  const draftHasContent = Boolean(draft.url || draft.title || draft.revisitOn || metadata.description || metadata.tagIds.length);
   const busy = action.busy || unlocking || metadataBusy;
   function select(record) {
     const nextMetadata = record ? metadataFor(`reading:${record.id}`) : emptyMetadata();
@@ -275,9 +283,53 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
     if (queryRecordId && hidden(`reading:${queryRecordId}`)) { setQuery(''); setQueryRecordId(null); }
   }, [queryRecordId, locked, presentation.hiddenKeys, preferences.privateKeys]);
   const visibleRecords = newest(data?.reading || []).filter((item) => !hidden(`reading:${item.id}`));
-  const records = visibleRecords.filter((item) => item.status === filter && matchesTags(metadataFor(`reading:${item.id}`), selectedTagIds)
+  const records = visibleRecords.filter((item) => (filter === 'due' ? isReadingDue(item, today) : item.status === filter) && matchesTags(metadataFor(`reading:${item.id}`), selectedTagIds)
     && (!visibleQuery || core?.contains(`${item.title}\n${item.url}\n${metadataFor(`reading:${item.id}`).description}`, visibleQuery)));
+  if (filter === 'due') records.sort((a, b) => a.revisitOn.localeCompare(b.revisitOn) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
   const availableTagIds = [...new Set(visibleRecords.flatMap((item) => metadataFor(`reading:${item.id}`).tagIds))];
+  const pageCount = Math.max(1, Math.ceil(records.length / READING_PAGE_SIZE)), currentPage = Math.min(page, pageCount - 1);
+  const pageRecords = records.slice(currentPage * READING_PAGE_SIZE, (currentPage + 1) * READING_PAGE_SIZE);
+  const selectedIds = Object.keys(selected).filter((id) => !hidden(`reading:${id}`));
+  const selectionStale = selectedIds.some((id) => !rawData?.reading.some((item) => item.id === id && item.revision === selected[id]));
+  const pageSelected = pageRecords.filter((item) => Object.hasOwn(selected, item.id)).length;
+  const bulkVisible = bulkDelete && bulkDelete.ids.every((id) => !hidden(`reading:${id}`));
+  const bulkValid = bulkVisible && rawData?.revision === bulkDelete.expectedRevision && preferences.revision === bulkDelete.expectedPreferencesRevision
+    && bulkDelete.ids.every((id) => rawData.reading.some((item) => item.id === id && item.revision === bulkDelete.expectedRecordRevisions[id]));
+  const selectedTagKey = selectedTagIds.join('\0');
+  useEffect(() => {
+    setSelected((current) => Object.fromEntries(Object.entries(current).filter(([id]) => !hidden(`reading:${id}`))));
+  }, [locked, presentation.hiddenKeys, preferences.privateKeys]);
+  useEffect(() => { if (listRef.current) listRef.current.scrollTop = 0; }, [filter, visibleQuery, selectedTagKey, currentPage]);
+  function clearSelection() { setSelected({}); setBulkDelete(null); setBulkStatus(''); }
+  function changeFilter(value) { setFilter(value); setPage(0); clearSelection(); action.setError(''); }
+  function changeTags(ids) { setSelectedTagIds(ids); setPage(0); clearSelection(); }
+  function toggleRecord(item, checked) {
+    setSelected((current) => {
+      const next = { ...current };
+      if (checked) next[item.id] ??= item.revision; else delete next[item.id];
+      return next;
+    });
+    setBulkStatus(''); action.setError('');
+  }
+  function togglePage(checked) {
+    setSelected((current) => {
+      const next = { ...current };
+      for (const item of pageRecords) { if (checked) next[item.id] ??= item.revision; else delete next[item.id]; }
+      return next;
+    });
+    setBulkStatus(''); action.setError('');
+  }
+  async function applyBulk(snapshot, operation) {
+    const result = await bulkReadingItems(snapshot.ids, operation, snapshot);
+    clearSelection(); setBulkStatus(tr('已处理 {0} 条链接。', [formatNumber(result.count)]));
+  }
+  function beginBulk() {
+    if (!rawData || busy || !contentPreferences.ready || !selectedIds.length || selectionStale) return;
+    const snapshot = { ids: [...selectedIds], expectedRevision: rawData.revision, expectedPreferencesRevision: preferences.revision,
+      expectedRecordRevisions: Object.fromEntries(selectedIds.map((id) => [id, selected[id]])) };
+    action.setError(''); setBulkStatus('');
+    if (bulkAction === 'delete') setBulkDelete(snapshot); else action.run(() => applyBulk(snapshot, bulkAction));
+  }
   function chooseDestination(record) {
     action.run(async () => {
       const state = await loadState();
@@ -302,27 +354,40 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
       }
     });
   }
-  return <Tabs value={filter} onValueChange={setFilter} asChild><div className="personal-tools-body reading-tools">
+  return <Tabs value={filter} onValueChange={changeFilter} asChild><div className="personal-tools-body reading-tools">
     <PrivateEditor hidden={draftHidden} busy={busy} onBusyChange={setUnlocking} onDiscard={() => setDiscarding({ record: null })} className="reading-draft-surface"><form className="reading-add-form" onSubmit={(event) => {
       event.preventDefault();
-      if (draftHidden || busy || !contentPreferences.ready || changedElsewhere) return;
+      if (draftHidden || selectionMode || busy || !contentPreferences.ready || changedElsewhere) return;
       action.run(async () => {
-        await saveReadingItem({ ...draft, status: draft.status || 'unread' }, { metadata, expectedPreferencesRevision: preferences.revision, expectedMetadata: originalMetadata });
+        await saveReadingItem({ ...draft, revisitOn: draft.revisitOn || null, status: draft.status || 'unread' }, { metadata, expectedPreferencesRevision: preferences.revision, expectedMetadata: originalMetadata });
         select(null);
       });
     }}>
-      <label>{tr("网址")}<Input type="text" inputMode="url" required value={draft.url} maxLength={4096} placeholder="https://…" disabled={busy} onChange={(event) => setDraft((value) => ({ ...value, url: event.target.value }))} /></label>
-      <label>{tr("名称")}<Input value={draft.title} maxLength={200} disabled={busy} placeholder={tr("可留空")} onChange={(event) => setDraft((value) => ({ ...value, title: event.target.value }))} /></label>
+      <label>{tr("网址")}<Input type="text" inputMode="url" required value={draft.url} maxLength={4096} placeholder="https://…" disabled={busy || selectionMode} onChange={(event) => setDraft((value) => ({ ...value, url: event.target.value }))} /></label>
+      <label>{tr("名称")}<Input value={draft.title} maxLength={200} disabled={busy || selectionMode} placeholder={tr("可留空")} onChange={(event) => setDraft((value) => ({ ...value, title: event.target.value }))} /></label>
       <div>{draft.id && <Button variant="secondary" className="button" type="button" disabled={busy} onClick={() => select(null)}>{tr("取消")}</Button>}<Button variant="default" type={changedElsewhere ? 'button' : 'submit'} className="button primary"
-        onClick={changedElsewhere ? () => setDiscarding({ record: latest || null }) : undefined} disabled={!data || !contentPreferences.ready || busy || !changedElsewhere && !draft.url.trim()}>{changedElsewhere ? tr('重新打开') : draft.id ? tr("保存") : tr("添加")}</Button></div>
+        onClick={changedElsewhere ? () => setDiscarding({ record: latest || null }) : undefined} disabled={!data || !contentPreferences.ready || selectionMode || busy || !changedElsewhere && !draft.url.trim()}>{changedElsewhere ? tr('重新打开') : draft.id ? tr("保存") : tr("添加")}</Button></div>
+      <div className="reading-revisit-field"><label htmlFor={revisitInputId}>{tr('再看日期')}<Input id={revisitInputId} type="date" min="0001-01-01" max="9999-12-31" value={draft.revisitOn || ''} disabled={busy || selectionMode}
+        onChange={(event) => setDraft((value) => ({ ...value, revisitOn: event.target.value }))} /></label>
+        {draft.revisitOn && <Button type="button" variant="ghost" disabled={busy || selectionMode} onClick={() => setDraft((value) => ({ ...value, revisitOn: '' }))}>{tr('清除日期')}</Button>}</div>
       <div className="reading-metadata-fields"><ContentMetadataEditor preferences={preferences} contentKey={draft.id ? `reading:${draft.id}` : undefined} value={metadata}
-        onChange={setMetadata} disabled={action.busy || unlocking || draftHidden || !contentPreferences.ready} onBusyChange={setMetadataBusy} /></div>
+        onChange={setMetadata} disabled={action.busy || unlocking || draftHidden || selectionMode || !contentPreferences.ready} onBusyChange={setMetadataBusy} /></div>
     </form></PrivateEditor>
     {discarding && <Confirm privacySafe action={tr('放弃修改')} busy={busy} onCancel={() => setDiscarding(null)} onConfirm={() => { select(discarding.record); setDiscarding(null); }}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
-    <div className="personal-tools-toolbar"><TabsList className="tool-segments" aria-label={tr("阅读状态")}>{[['unread', tr("未读")], ['read', tr("已读")], ['archived', tr("归档")]].map(([value, label]) => <TabsTrigger key={value} value={value}>{label}</TabsTrigger>)}</TabsList><div className="tool-search"><MagnifyingGlass size={16} /><Input unstyled aria-label={tr("搜索稍后读")} placeholder={tr("搜索")} maxLength={100} value={visibleQuery} onChange={(event) => { setQuery(event.target.value); setQueryRecordId(null); }} /></div></div>
-    <ContentTagFilter preferences={preferences} availableTagIds={availableTagIds} selectedTagIds={selectedTagIds} onChange={setSelectedTagIds} disabled={busy || !contentPreferences.ready} />
+    <div className="personal-tools-toolbar"><TabsList className="tool-segments" aria-label={tr('阅读筛选')}>{[['unread', tr("未读")], ['read', tr("已读")], ['archived', tr("归档")], ['due', tr('待再看')]].map(([value, label]) => <TabsTrigger key={value} value={value} disabled={busy}>{label}</TabsTrigger>)}</TabsList><div className="tool-search"><MagnifyingGlass size={16} /><Input unstyled aria-label={tr("搜索稍后读")} placeholder={tr("搜索")} maxLength={100} value={visibleQuery} disabled={busy} onChange={(event) => { setQuery(event.target.value); setQueryRecordId(null); setPage(0); clearSelection(); }} /></div></div>
+    <div className="reading-filter-actions"><ContentTagFilter preferences={preferences} availableTagIds={availableTagIds} selectedTagIds={selectedTagIds} onChange={changeTags} disabled={busy || !contentPreferences.ready} />
+      <Button type="button" variant="ghost" size="sm" disabled={busy || draftHasContent || !contentPreferences.ready || !selectionMode && !records.length} onClick={() => { setSelectionMode((value) => !value); clearSelection(); action.setError(''); }}>{selectionMode ? tr('取消选择') : tr('批量选择')}</Button></div>
+    {selectionMode && <div className="reading-bulk-toolbar"><label><Checkbox aria-label={tr('全选本页链接')} checked={pageRecords.length && pageSelected === pageRecords.length ? true : pageSelected ? 'indeterminate' : false}
+      disabled={busy || !pageRecords.length} onCheckedChange={(checked) => togglePage(checked === true)} />{tr('全选本页')}</label><span>{tr('已选 {0} 条链接', [formatNumber(selectedIds.length)])}</span>
+      <Select label={tr('批量操作')} value={bulkAction} disabled={busy} options={[{ value: 'read', label: tr('标为已读') }, { value: 'unread', label: tr('标为未读') }, { value: 'archived', label: tr('归档') }, { value: 'delete', label: tr('删除') }]}
+        onChange={setBulkAction} /><Button type="button" variant={bulkAction === 'delete' ? 'destructive' : 'default'} disabled={busy || !selectedIds.length || selectionStale} onClick={beginBulk}>{tr('应用')}</Button>
+      {selectionStale && !busy && <p className="form-error" role="alert">{tr('所选内容已变化，请重新选择。')}</p>}</div>}
     <MessageDialog message={loadError || contentPreferences.error || (!copy && action.error) || (!draftHidden && !busy && changedElsewhere ? tr('这条记录已在其他页面修改，请重新打开后再保存。') : '')} onClose={() => action.setError('')} />
     {copyStatus && <p className="hint" role="status">{copyStatus}</p>}
+    {bulkStatus && <p className="hint" role="status">{bulkStatus}</p>}
+    {bulkDelete && <Confirm privacySafe busy={busy} confirmDisabled={!bulkValid} onCancel={() => setBulkDelete(null)} onConfirm={() => {
+      if (bulkValid) action.run(() => applyBulk(bulkDelete, 'delete'));
+    }}>{bulkValid ? tr('删除所选 {0} 条链接？它们会移入回收站。', [formatNumber(bulkDelete.ids.length)]) : tr('所选内容已变化，请重新选择。')}</Confirm>}
     {copy && <Dialog title={tr('添加到桌面')} privacyKeys={[`reading:${copy.record.id}`]} onClose={closeDestination} closeDisabled={action.busy}>
       <form className="form-stack" onSubmit={addToDesktop}>
         <NavigationDestination state={copy.state} preferences={{ presentation: presentation.active, privateKeys: [...presentation.hiddenKeys] }}
@@ -335,14 +400,19 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
       </form>
     </Dialog>}
     {deleting && !deletionHidden && <Confirm busy={busy} onCancel={() => setDeleting(null)} onConfirm={() => action.run(async () => { await deletePersonalRecord('reading', deleting.id, deleting.revision); if (draft.id === deleting.id) select(null); setDeleting(null); })}>{tr("删除“{0}”？", [deleting.title])}</Confirm>}
-    <TabsContent value={filter} className="reading-records">{records.map((item) => <div className="reading-record" key={item.id}><div className="reading-record-content"><a href={item.url} target="_blank" rel="noreferrer noopener"><strong>{item.title}</strong><small>{new URL(item.url).hostname}</small><ArrowSquareOut size={15} /></a>
+    <TabsContent ref={listRef} value={filter} className="reading-records">{pageRecords.map((item) => <div className="reading-record" key={item.id} data-record-id={item.id}>{selectionMode && <Checkbox className="reading-record-select" aria-label={tr('选择“{0}”', [item.title])} checked={Object.hasOwn(selected, item.id)} disabled={busy} onCheckedChange={(checked) => toggleRecord(item, checked === true)} />}
+      <div className="reading-record-content"><a href={item.url} target="_blank" rel="noreferrer noopener"><strong>{item.title}</strong><small>{new URL(item.url).hostname}</small><ArrowSquareOut size={15} /></a>
+      {item.revisitOn && <div className="reading-record-revisit" data-due={isReadingDue(item, today) || undefined}><time dateTime={item.revisitOn}>{tr('再看日期：{0}', [formatReadingDay(item.revisitOn)])}</time>
+        {filter === 'due' && <span>{item.status === 'unread' ? tr('未读') : item.status === 'read' ? tr('已读') : tr('归档')}</span>}</div>}
       {metadataFor(`reading:${item.id}`).description && <p className="reading-record-description">{metadataFor(`reading:${item.id}`).description}</p>}
-      <ContentTagLabels tags={visibleTags} tagIds={metadataFor(`reading:${item.id}`).tagIds} /></div><div className="reading-record-actions">
+      <ContentTagLabels tags={visibleTags} tagIds={metadataFor(`reading:${item.id}`).tagIds} /></div>{!selectionMode && <div className="reading-record-actions">
       <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={item.status === 'unread' ? tr("标为已读") : tr("标为未读")} title={item.status === 'unread' ? tr("标为已读") : tr("标为未读")} onClick={() => action.run(() => saveReadingItem({ ...item, status: item.status === 'unread' ? 'read' : 'unread' }))}><Check size={17} weight={item.status === 'read' ? 'bold' : 'regular'} /></Button>
       {item.status !== 'archived' && <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={tr("归档")} title={tr("归档")} onClick={() => action.run(() => saveReadingItem({ ...item, status: 'archived' }))}><Archive size={17} /></Button>}
       <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={tr('添加到桌面')} title={tr('添加到桌面')} aria-haspopup="dialog" onClick={() => chooseDestination(item)}><SquaresFour size={17} /></Button>
       <Button variant="ghost" type="button" className="button quiet" disabled={busy || draftHasContent || !contentPreferences.ready} aria-label={tr("编辑链接")} title={tr("编辑")} onClick={() => select(item)}><PencilSimple size={17} /></Button>
-      <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={tr("删除链接")} title={tr("删除")} onClick={() => setDeleting(item)}><Trash size={17} /></Button></div></div>)}{!records.length && <p className="tool-empty">{visibleQuery || selectedTagIds.length ? tr("没有找到链接") : tr("暂无链接")}</p>}</TabsContent>
+      <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={tr("删除链接")} title={tr("删除")} onClick={() => setDeleting(item)}><Trash size={17} /></Button></div>}</div>)}{!records.length && <p className="tool-empty">{visibleQuery || selectedTagIds.length ? tr("没有找到链接") : filter === 'due' ? tr('暂无待再看的链接') : tr("暂无链接")}</p>}</TabsContent>
+    {pageCount > 1 && <nav className="reading-pagination" aria-label={tr('列表分页')}><Button type="button" variant="ghost" size="sm" disabled={busy || currentPage === 0} onClick={() => setPage(currentPage - 1)}>{tr('上一页')}</Button>
+      <span>{tr('第 {0} 页，共 {1} 页', [formatNumber(currentPage + 1), formatNumber(pageCount)])}</span><Button type="button" variant="ghost" size="sm" disabled={busy || currentPage >= pageCount - 1} onClick={() => setPage(currentPage + 1)}>{tr('下一页')}</Button></nav>}
     <div className="reading-bottom-actions"><ToolDataActions data={rawData} run={action.run} busy={busy} /></div>
   </div></Tabs>;
 }

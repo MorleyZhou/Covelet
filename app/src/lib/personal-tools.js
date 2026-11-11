@@ -5,6 +5,7 @@ import { sameJson } from './json-equal.js';
 import { localData } from './local-data.js';
 import { withNavigationPrivacy, loadContentPreferences, validateContentPreferences, contentPreferencesForKeys } from './content-preferences.js';
 import { userErrorMessage } from './user-error.js';
+import { validateRevisitOn } from './reading-revisit.js';
 
 const loadToolsCore = () => import('./tools-core.js').then((module) => module.loadToolsCore());
 
@@ -46,8 +47,9 @@ function checkCollections(input) {
   }
   const urls = new Set();
   for (const record of input.reading) {
-    if (Object.keys(record).some((key) => !['id', 'revision', 'createdAt', 'updatedAt', 'title', 'url', 'status'].includes(key)) || !['unread', 'read', 'archived'].includes(record.status)
+    if (Object.keys(record).some((key) => !['id', 'revision', 'createdAt', 'updatedAt', 'title', 'url', 'status', 'revisitOn'].includes(key)) || !['unread', 'read', 'archived'].includes(record.status)
       || normalizeUrl(record.url) !== record.url || urls.has(record.url)) fail(tr("这个稍后读链接无法读取，请从备份恢复。"));
+    if (Object.hasOwn(record, 'revisitOn')) validateRevisitOn(record.revisitOn);
     urls.add(record.url);
   }
   for (const record of input.snapshots) {
@@ -104,7 +106,7 @@ export function subscribePersonalTools(callback) {
   return () => { listeners.delete(receive); off(); };
 }
 let queue = Promise.resolve();
-async function mutate(update, { expectedRevision, extraRecords } = {}) {
+async function mutate(update, { expectedRevision, extraRecords, shouldWrite } = {}) {
   const run = async () => {
     const current = await readPersonalTools();
     if (expectedRevision !== undefined && (!Number.isSafeInteger(expectedRevision) || current.revision !== expectedRevision)) {
@@ -112,6 +114,7 @@ async function mutate(update, { expectedRevision, extraRecords } = {}) {
     }
     const next = pruneTrash(copy(current));
     const result = await update(next);
+    if (shouldWrite && !shouldWrite(result)) return copy(result);
     next.revision = current.revision + 1;
     const checked = check(next);
     const additional = extraRecords ? extraRecords(result) : {};
@@ -186,11 +189,28 @@ export function applySyncedPersonalTools({ notes, reading }, options = {}) {
     return data;
   }, options);
 }
-function saveContentRecord(kind, update, { metadata, expectedPreferencesRevision, expectedMetadata } = {}) {
-  if (metadata === undefined) return mutate(update);
-  return withNavigationPrivacy((_preferences, prepare) => mutate(update, {
-    extraRecords: (record) => prepare([], { metadata: [{ ...metadata, key: `${kind}:${record.id}`, expectedMetadata }], expectedRevision: expectedPreferencesRevision }),
-  }));
+const revisionConflict = () => Object.assign(Error(tr('所选项目已发生变化，请重新选择。')), { code: 'REVISION_CONFLICT' });
+function checkPreferencesRevision(preferences, expectedRevision) {
+  if (expectedRevision !== undefined && preferences.revision !== expectedRevision) throw revisionConflict();
+}
+function checkContentVisible(preferences, kind, id) {
+  if (preferences.presentation && preferences.privateKeys.includes(`${kind}:${id}`)) {
+    throw Object.assign(Error(tr('请先输入密码解除隐藏。')), { code: 'PRIVACY_LOCKED' });
+  }
+}
+function saveContentRecord(kind, update, { metadata, expectedPreferencesRevision, expectedMetadata, expectedRevision } = {}) {
+  return withNavigationPrivacy((preferences, prepare) => {
+    checkPreferencesRevision(preferences, expectedPreferencesRevision);
+    return mutate((data) => {
+      const record = update(data);
+      checkContentVisible(preferences, kind, record.id);
+      return record;
+    }, { expectedRevision,
+      ...(metadata === undefined ? {} : { extraRecords: (record) => prepare([], {
+        metadata: [{ ...metadata, key: `${kind}:${record.id}`, expectedMetadata }], expectedRevision: expectedPreferencesRevision,
+      }) }),
+    });
+  });
 }
 export async function saveNote({ id, revision, title: name, body, document, pinned = false }, options = {}) {
   if (document !== undefined) body = noteDocumentText(validateNoteDocument(document));
@@ -204,9 +224,13 @@ export async function saveNote({ id, revision, title: name, body, document, pinn
     return note;
   }, options);
 }
-export function deletePersonalRecord(kind, id, revision) {
+export function deletePersonalRecord(kind, id, revision, { expectedPreferencesRevision, expectedRevision } = {}) {
   if (!activeKinds.includes(kind)) fail(tr("记录类型无效。"));
-  return mutate((data) => { moveToTrash(data, kind, recordFor(data[kind], id, revision)); data[kind] = data[kind].filter((item) => item.id !== id); return true; });
+  return withNavigationPrivacy((preferences) => {
+    checkPreferencesRevision(preferences, expectedPreferencesRevision);
+    checkContentVisible(preferences, kind === 'notes' ? 'note' : 'reading', id);
+    return mutate((data) => { moveToTrash(data, kind, recordFor(data[kind], id, revision)); data[kind] = data[kind].filter((item) => item.id !== id); return true; }, { expectedRevision });
+  });
 }
 export function restoreTrashedPersonalRecord(trashId, options = {}) {
   return mutate((data) => {
@@ -244,16 +268,45 @@ export function emptyPersonalTrash({ expectedRevision, ids } = {}) {
     return count;
   }, { expectedRevision });
 }
-export function saveReadingItem({ id, revision, url, title: name, status = 'unread' }, options = {}) {
+export async function saveReadingItem({ id, revision, url, title: name, status = 'unread', revisitOn }, options = {}) {
   const address = normalizeUrl(url);
+  if (revisitOn !== undefined && revisitOn !== null) validateRevisitOn(revisitOn);
   return saveContentRecord('reading', (data) => {
     const existing = data.reading.find((item) => item.url === address && item.id !== id);
     if (existing) fail(tr("这个链接已在稍后读中。"));
     const record = id ? recordFor(data.reading, id, revision) : newRecord('');
     Object.assign(record, { title: title(name, new URL(address).hostname), url: address, status, updatedAt: Math.max(Date.now(), record.updatedAt), revision: record.revision + (id ? 1 : 0) });
+    if (revisitOn === null) delete record.revisitOn;
+    else if (revisitOn !== undefined) record.revisitOn = revisitOn;
     if (!id) data.reading.push(record);
     return record;
   }, options);
+}
+
+export async function bulkReadingItems(ids, action, { expectedRevision, expectedRecordRevisions, expectedPreferencesRevision } = {}) {
+  if (!Array.isArray(ids) || !ids.length || ids.length > 500 || new Set(ids).size !== ids.length
+    || ids.some((id) => typeof id !== 'string' || !/^[a-z\d-]{1,100}$/iu.test(id))
+    || !['read', 'unread', 'archived', 'delete'].includes(action)
+    || !Number.isSafeInteger(expectedRevision) || expectedRevision < 0
+    || !expectedRecordRevisions || typeof expectedRecordRevisions !== 'object' || Array.isArray(expectedRecordRevisions)
+    || Object.keys(expectedRecordRevisions).length !== ids.length
+    || ids.some((id) => !Object.hasOwn(expectedRecordRevisions, id) || !Number.isSafeInteger(expectedRecordRevisions[id]) || expectedRecordRevisions[id] < 1)) throw revisionConflict();
+  return withNavigationPrivacy((preferences) => {
+    checkPreferencesRevision(preferences, expectedPreferencesRevision);
+    return mutate((data) => {
+      const records = ids.map((id) => data.reading.find((record) => record.id === id));
+      if (records.some((record, index) => !record || record.revision !== expectedRecordRevisions[ids[index]])) throw revisionConflict();
+      for (const id of ids) checkContentVisible(preferences, 'reading', id);
+      const changed = records.filter((record) => action === 'delete' || record.status !== action);
+      if (action === 'delete') {
+        for (const record of changed) moveToTrash(data, 'reading', record);
+        const removing = new Set(ids); data.reading = data.reading.filter((record) => !removing.has(record.id));
+      } else for (const record of changed) {
+        record.status = action; record.revision++; record.updatedAt = Math.max(Date.now(), record.updatedAt);
+      }
+      return { count: changed.length, ids: changed.map((record) => record.id) };
+    }, { expectedRevision, shouldWrite: (result) => result.count > 0 });
+  });
 }
 // Historical snapshot records remain valid for backup compatibility only.
 // A+ has no browser Reading List import or tab-snapshot runtime.

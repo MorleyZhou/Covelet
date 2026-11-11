@@ -1534,3 +1534,22 @@ WebDAV 支持分步设置和连接测试，重启浏览器后需重新解锁。|
 清单已在其他页面更新，请重新打开。|This list changed in another tab. Reopen it.|清單已在其他分頁更新，請重新開啟。|別のタブでこのリストが更新されました。開き直してください。|다른 탭에서 이 목록이 변경되었습니다. 다시 열어 주세요.|Diese Liste wurde in einem anderen Tab geändert. Öffne sie erneut.|Cette liste a été modifiée dans un autre onglet. Rouvrez-la.|Этот список изменён в другой вкладке. Откройте его снова.
 清单条件无效，请重新选择。|Invalid list filters. Select them again.|清單條件無效，請重新選擇。|リストの条件が無効です。選び直してください。|목록 조건이 유효하지 않습니다. 다시 선택해 주세요.|Ungültige Listenfilter. Wähle sie erneut aus.|Filtres de liste invalides. Sélectionnez-les à nouveau.|Недопустимые условия списка. Выберите их снова.
 整理链接|Organize links|整理連結|リンクを整理|링크 정리|Links organisieren|Organiser les liens|Упорядочить ссылки
+# 0.4.6 reading revisit dates and bulk actions
+已处理 {0} 条链接。|Links processed ({0}).|已處理 {0} 條連結。|{0} 件のリンクを処理しました。|링크 {0}개를 처리했습니다.|Links verarbeitet ({0}).|Liens traités ({0}).|Обработано ссылок ({0}).
+再看日期|Revisit date|再看日期|再読日|다시 볼 날짜|Wiedervorlagedatum|Date de relecture|Дата повторного чтения
+清除日期|Clear date|清除日期|日付をクリア|날짜 지우기|Datum entfernen|Effacer la date|Убрать дату
+阅读筛选|Reading filters|閱讀篩選|読む項目の絞り込み|읽기 필터|Lesefilter|Filtres de lecture|Фильтры чтения
+待再看|Due to revisit|待再看|再読待ち|다시 볼 항목|Zur Wiedervorlage|À relire|Пора перечитать
+批量选择|Select multiple|批次選取|一括選択|여러 항목 선택|Mehrere auswählen|Sélection multiple|Выбрать несколько
+全选本页链接|Select all links on this page|全選此頁連結|このページのリンクをすべて選択|이 페이지의 모든 링크 선택|Alle Links auf dieser Seite auswählen|Sélectionner tous les liens de cette page|Выбрать все ссылки на этой странице
+全选本页|Select this page|全選此頁|このページをすべて選択|이 페이지 전체 선택|Diese Seite auswählen|Sélectionner cette page|Выбрать всё на странице
+已选 {0} 条链接|Links selected ({0})|已選 {0} 條連結|選択中のリンク（{0}）|선택한 링크({0})|Ausgewählte Links ({0})|Liens sélectionnés ({0})|Выбрано ссылок ({0})
+批量操作|Bulk action|批次操作|一括操作|일괄 작업|Stapelaktion|Action groupée|Групповое действие
+删除所选 {0} 条链接？它们会移入回收站。|Delete the selected links ({0})? They will move to Trash.|刪除所選 {0} 條連結？它們會移入回收站。|選択した {0} 件のリンクを削除しますか？ゴミ箱に移動します。|선택한 링크 {0}개를 삭제할까요? 휴지통으로 이동합니다.|Die ausgewählten Links ({0}) löschen? Sie werden in den Papierkorb verschoben.|Supprimer les liens sélectionnés ({0}) ? Ils seront déplacés dans la corbeille.|Удалить выбранные ссылки ({0})? Они будут перемещены в корзину.
+再看日期：{0}|Revisit on {0}|再看日期 {0}|再読日 {0}|다시 볼 날짜 {0}|Wiedervorlage am {0}|À relire le {0}|Перечитать {0}
+暂无待再看的链接|No links due to revisit|暫無待再看的連結|再読待ちのリンクはありません|다시 볼 링크가 없습니다|Keine Links zur Wiedervorlage|Aucun lien à relire|Нет ссылок для повторного чтения
+不限日期|No date filter|不限日期|日付で絞り込まない|날짜 제한 없음|Kein Datumsfilter|Sans filtre de date|Без фильтра по дате
+已设日期|Date set|已設日期|日付設定済み|날짜 설정됨|Mit Datum|Avec une date|Дата назначена
+未设日期|No date|未設日期|日付未設定|날짜 없음|Ohne Datum|Sans date|Без даты
+日期条件仅匹配稍后读，可与阅读状态组合。|Date filters apply to Read later and can be combined with reading status.|日期條件僅篩選稍後讀項目，可搭配閱讀狀態。|日付条件は「後で読む」の項目に適用され、読書状態と組み合わせられます。|날짜 조건은 나중에 읽기 항목에 적용되며 읽기 상태와 함께 사용할 수 있습니다.|Datumsfilter gelten für Später lesen und lassen sich mit dem Lesestatus kombinieren.|Les filtres de date s’appliquent aux éléments à lire plus tard et se combinent avec l’état de lecture.|Фильтры по дате применяются к отложенному чтению и сочетаются с состоянием прочтения.
+再看日期无效，请选择有效日期。|Choose a valid revisit date.|再看日期無效，請選擇有效日期。|有効な再読日を選択してください。|올바른 다시 볼 날짜를 선택해 주세요.|Wähle ein gültiges Wiedervorlagedatum.|Choisissez une date de relecture valide.|Выберите допустимую дату повторного чтения.

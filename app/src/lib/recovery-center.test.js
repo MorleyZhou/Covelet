@@ -132,6 +132,27 @@ test('append keeps a view invalid when deduplication omits its colliding source 
   assert.deepEqual(resolveSavedView(view, { navigation, tools: await target.tools.read(), preferences }), { status: 'invalid', reason: 'missing-desktop', rows: [] });
 });
 
+test('reading dates and revisit views survive complete append, replace and pre-restore copies', async () => {
+  const source = harness(), target = harness();
+  const dated = (id, revisitOn) => ({ id, revision: 1, createdAt: 1, updatedAt: 2, title: id, url: `https://example.test/${id}`, status: 'read', revisitOn });
+  source.tools.change({ reading: [dated('reading-a', '2026-11-11'), dated('reading-b', '2026-12-01')], trash: [
+    { id: 'trash-date', kind: 'reading', deletedAt: Date.now(), record: dated('reading-trash', '2026-11-12') },
+  ] });
+  source.preferences.change({ library: { version: 1, tags: [], items: {}, views: [
+    { id: 'due-view', revision: 1, name: 'Revisit', ...defaultSavedFilters(), revisit: 'due' },
+  ] } });
+  target.tools.change({ reading: [dated('reading-a', '2040-01-01')] });
+  const file = await source.center.exportCompleteBackup();
+  await target.center.restore(await target.center.preview(file), { mode: 'append' });
+  const appended = await target.tools.read();
+  assert.equal(appended.reading[0].revisitOn, '2040-01-01'); assert.equal(appended.reading[1].revisitOn, '2026-12-01');
+  assert.equal(appended.trash[0].record.revisitOn, '2026-11-12');
+  assert.equal((await target.preferences.read()).library.views[0].revisit, 'due');
+  await target.center.restore(await target.center.preview(file));
+  assert.equal((await target.tools.read()).reading[0].revisitOn, '2026-11-11');
+  assert.equal((await target.center.previewRecoveryPoint()).tools.reading[0].revisitOn, '2040-01-01');
+});
+
 test('selected categories replace same-ID note contents without touching reading, navigation or aliases', async () => {
   const subject = harness(); subject.tools.change({ notes: [note()] });
   const file = await subject.center.exportCompleteBackup();
