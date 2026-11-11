@@ -16051,5 +16051,167 @@
     "de": "Links organisieren",
     "fr": "Organiser les liens",
     "ru": "Упорядочить ссылки"
+  },
+  "已处理 {0} 条链接。": {
+    "en": "Links processed ({0}).",
+    "zh-TW": "已處理 {0} 條連結。",
+    "ja": "{0} 件のリンクを処理しました。",
+    "ko": "링크 {0}개를 처리했습니다.",
+    "de": "Links verarbeitet ({0}).",
+    "fr": "Liens traités ({0}).",
+    "ru": "Обработано ссылок ({0})."
+  },
+  "再看日期": {
+    "en": "Revisit date",
+    "zh-TW": "再看日期",
+    "ja": "再読日",
+    "ko": "다시 볼 날짜",
+    "de": "Wiedervorlagedatum",
+    "fr": "Date de relecture",
+    "ru": "Дата повторного чтения"
+  },
+  "清除日期": {
+    "en": "Clear date",
+    "zh-TW": "清除日期",
+    "ja": "日付をクリア",
+    "ko": "날짜 지우기",
+    "de": "Datum entfernen",
+    "fr": "Effacer la date",
+    "ru": "Убрать дату"
+  },
+  "阅读筛选": {
+    "en": "Reading filters",
+    "zh-TW": "閱讀篩選",
+    "ja": "読む項目の絞り込み",
+    "ko": "읽기 필터",
+    "de": "Lesefilter",
+    "fr": "Filtres de lecture",
+    "ru": "Фильтры чтения"
+  },
+  "待再看": {
+    "en": "Due to revisit",
+    "zh-TW": "待再看",
+    "ja": "再読待ち",
+    "ko": "다시 볼 항목",
+    "de": "Zur Wiedervorlage",
+    "fr": "À relire",
+    "ru": "Пора перечитать"
+  },
+  "批量选择": {
+    "en": "Select multiple",
+    "zh-TW": "批次選取",
+    "ja": "一括選択",
+    "ko": "여러 항목 선택",
+    "de": "Mehrere auswählen",
+    "fr": "Sélection multiple",
+    "ru": "Выбрать несколько"
+  },
+  "全选本页链接": {
+    "en": "Select all links on this page",
+    "zh-TW": "全選此頁連結",
+    "ja": "このページのリンクをすべて選択",
+    "ko": "이 페이지의 모든 링크 선택",
+    "de": "Alle Links auf dieser Seite auswählen",
+    "fr": "Sélectionner tous les liens de cette page",
+    "ru": "Выбрать все ссылки на этой странице"
+  },
+  "全选本页": {
+    "en": "Select this page",
+    "zh-TW": "全選此頁",
+    "ja": "このページをすべて選択",
+    "ko": "이 페이지 전체 선택",
+    "de": "Diese Seite auswählen",
+    "fr": "Sélectionner cette page",
+    "ru": "Выбрать всё на странице"
+  },
+  "已选 {0} 条链接": {
+    "en": "Links selected ({0})",
+    "zh-TW": "已選 {0} 條連結",
+    "ja": "選択中のリンク（{0}）",
+    "ko": "선택한 링크({0})",
+    "de": "Ausgewählte Links ({0})",
+    "fr": "Liens sélectionnés ({0})",
+    "ru": "Выбрано ссылок ({0})"
+  },
+  "批量操作": {
+    "en": "Bulk action",
+    "zh-TW": "批次操作",
+    "ja": "一括操作",
+    "ko": "일괄 작업",
+    "de": "Stapelaktion",
+    "fr": "Action groupée",
+    "ru": "Групповое действие"
+  },
+  "删除所选 {0} 条链接？它们会移入回收站。": {
+    "en": "Delete the selected links ({0})? They will move to Trash.",
+    "zh-TW": "刪除所選 {0} 條連結？它們會移入回收站。",
+    "ja": "選択した {0} 件のリンクを削除しますか？ゴミ箱に移動します。",
+    "ko": "선택한 링크 {0}개를 삭제할까요? 휴지통으로 이동합니다.",
+    "de": "Die ausgewählten Links ({0}) löschen? Sie werden in den Papierkorb verschoben.",
+    "fr": "Supprimer les liens sélectionnés ({0}) ? Ils seront déplacés dans la corbeille.",
+    "ru": "Удалить выбранные ссылки ({0})? Они будут перемещены в корзину."
+  },
+  "再看日期：{0}": {
+    "en": "Revisit on {0}",
+    "zh-TW": "再看日期 {0}",
+    "ja": "再読日 {0}",
+    "ko": "다시 볼 날짜 {0}",
+    "de": "Wiedervorlage am {0}",
+    "fr": "À relire le {0}",
+    "ru": "Перечитать {0}"
+  },
+  "暂无待再看的链接": {
+    "en": "No links due to revisit",
+    "zh-TW": "暫無待再看的連結",
+    "ja": "再読待ちのリンクはありません",
+    "ko": "다시 볼 링크가 없습니다",
+    "de": "Keine Links zur Wiedervorlage",
+    "fr": "Aucun lien à relire",
+    "ru": "Нет ссылок для повторного чтения"
+  },
+  "不限日期": {
+    "en": "No date filter",
+    "zh-TW": "不限日期",
+    "ja": "日付で絞り込まない",
+    "ko": "날짜 제한 없음",
+    "de": "Kein Datumsfilter",
+    "fr": "Sans filtre de date",
+    "ru": "Без фильтра по дате"
+  },
+  "已设日期": {
+    "en": "Date set",
+    "zh-TW": "已設日期",
+    "ja": "日付設定済み",
+    "ko": "날짜 설정됨",
+    "de": "Mit Datum",
+    "fr": "Avec une date",
+    "ru": "Дата назначена"
+  },
+  "未设日期": {
+    "en": "No date",
+    "zh-TW": "未設日期",
+    "ja": "日付未設定",
+    "ko": "날짜 없음",
+    "de": "Ohne Datum",
+    "fr": "Sans date",
+    "ru": "Без даты"
+  },
+  "日期条件仅匹配稍后读，可与阅读状态组合。": {
+    "en": "Date filters apply to Read later and can be combined with reading status.",
+    "zh-TW": "日期條件僅篩選稍後讀項目，可搭配閱讀狀態。",
+    "ja": "日付条件は「後で読む」の項目に適用され、読書状態と組み合わせられます。",
+    "ko": "날짜 조건은 나중에 읽기 항목에 적용되며 읽기 상태와 함께 사용할 수 있습니다.",
+    "de": "Datumsfilter gelten für Später lesen und lassen sich mit dem Lesestatus kombinieren.",
+    "fr": "Les filtres de date s’appliquent aux éléments à lire plus tard et se combinent avec l’état de lecture.",
+    "ru": "Фильтры по дате применяются к отложенному чтению и сочетаются с состоянием прочтения."
+  },
+  "再看日期无效，请选择有效日期。": {
+    "en": "Choose a valid revisit date.",
+    "zh-TW": "再看日期無效，請選擇有效日期。",
+    "ja": "有効な再読日を選択してください。",
+    "ko": "올바른 다시 볼 날짜를 선택해 주세요.",
+    "de": "Wähle ein gültiges Wiedervorlagedatum.",
+    "fr": "Choisissez une date de relecture valide.",
+    "ru": "Выберите допустимую дату повторного чтения."
   }
 }

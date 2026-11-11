@@ -4,6 +4,7 @@ import { tr, formatNumber } from '../i18n/index.js';
 import { deleteSavedView, getContentTags, getSavedViews, loadContentPreferences } from '../lib/content-preferences.js';
 import { defaultSavedFilters, filterSavedContent, resolveSavedView, viewFilters, SAVED_VIEW_LIMITS } from '../lib/saved-views.js';
 import { desktopPageName, logicalDesktopPages } from '../lib/desktop-pages.js';
+import { useLocalDateKey } from '../lib/use-local-date.js';
 import { PresentationContext } from '../lib/presentation.js';
 import { userErrorMessage } from '../lib/user-error.js';
 import PromptDialog from './PromptDialog.jsx';
@@ -22,12 +23,13 @@ function conditionMessage(result) {
 
 export default function SavedViews({ navigation, tools, preferences, initialFilters, Dialog, onApply, onSaveView, onClose, onBusyChange }) {
   const presentation = useContext(PresentationContext), working = useRef(false);
+  const today = useLocalDateKey();
   const [editor, setEditor] = useState(null), [deleting, setDeleting] = useState(null), [discarding, setDiscarding] = useState(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const locked = presentation.active || preferences.presentation;
   const effectivePreferences = useMemo(() => ({ ...preferences, presentation: locked }), [preferences, locked]);
   const hiddenKeys = locked ? presentation.hiddenKeys : undefined;
-  const environment = { navigation, tools, preferences: effectivePreferences, hiddenKeys };
+  const environment = { navigation, tools, preferences: effectivePreferences, hiddenKeys, today };
   const views = getSavedViews(effectivePreferences, { navigation, tools, hiddenKeys });
   const tags = getContentTags(effectivePreferences, { hiddenKeys });
   const typeOptions = [
@@ -44,10 +46,11 @@ export default function SavedViews({ navigation, tools, preferences, initialFilt
   const value = editor?.value;
   const originalView = editor?.original.id ? preferences.library?.views?.find((view) => view.id === editor.original.id) : null;
   const originalHidden = originalView && resolveSavedView(originalView, environment).status === 'hidden';
-  const preview = value ? filterSavedContent(navigation, tools, effectivePreferences, viewFilters(value), { hiddenKeys, allowDraftScopes: true }) : null;
+  const preview = value ? filterSavedContent(navigation, tools, effectivePreferences, viewFilters(value), { hiddenKeys, today, allowDraftScopes: true }) : null;
   const editorHidden = Boolean(value && (originalHidden || preview?.status === 'hidden'
     || locked && (editor.private || editor.originalPrivate || preferences.privateKeys.includes(`view:${value.id}`))));
-  const dirty = editor && (JSON.stringify(editor.value) !== JSON.stringify(editor.original) || editor.private !== editor.originalPrivate);
+  const dirty = editor && (JSON.stringify({ ...editor.value, revisit: editor.value.revisit ?? null })
+    !== JSON.stringify({ ...editor.original, revisit: editor.original.revisit ?? null }) || editor.private !== editor.originalPrivate);
   const missingTagIds = value?.tagIds.filter((id) => !preferences.library?.tags.some((tag) => tag.id === id)) || [];
   const scopeValue = value?.scope.kind === 'desktop' ? `desktop:${value.scope.desktopId}`
     : value?.scope.kind === 'folder' ? `folder:${value.scope.folderId}` : 'all';
@@ -123,9 +126,16 @@ export default function SavedViews({ navigation, tools, preferences, initialFilt
             : scope.startsWith('desktop:') ? { kind: 'desktop', desktopId: scope.slice(8) } : { kind: 'folder', folderId: scope.slice(7) } })} />
         </div>
         <label>{tr('域名')}<Input value={value.domain} maxLength={SAVED_VIEW_LIMITS.domain} placeholder="example.com" disabled={busy} onChange={(event) => patch({ domain: event.target.value })} /></label>
-        <Select label={tr('阅读状态')} value={value.readingStatus ?? 'all'} disabled={busy} options={[
-          { value: 'all', label: tr('全部状态') }, { value: 'unread', label: tr('未读') }, { value: 'read', label: tr('已读') }, { value: 'archived', label: tr('归档') },
-        ]} onChange={(readingStatus) => patch({ readingStatus: readingStatus === 'all' ? null : readingStatus })} />
+        <div className="saved-view-selects">
+          <Select label={tr('阅读状态')} value={value.readingStatus ?? 'all'} disabled={busy} options={[
+            { value: 'all', label: tr('全部状态') }, { value: 'unread', label: tr('未读') }, { value: 'read', label: tr('已读') }, { value: 'archived', label: tr('归档') },
+          ]} onChange={(readingStatus) => patch({ readingStatus: readingStatus === 'all' ? null : readingStatus })} />
+          <Select label={tr('再看日期')} value={value.revisit ?? 'all'} disabled={busy} options={[
+            { value: 'all', label: tr('不限日期') }, { value: 'due', label: tr('待再看') },
+            { value: 'scheduled', label: tr('已设日期') }, { value: 'none', label: tr('未设日期') },
+          ]} onChange={(revisit) => patch({ revisit: revisit === 'all' ? null : revisit })} />
+        </div>
+        {value.revisit && <p className="hint">{tr('日期条件仅匹配稍后读，可与阅读状态组合。')}</p>}
         <fieldset className="saved-view-tags" disabled={busy}>
           <legend>{tr('标签')}</legend><p className="hint">{tr('同时包含所选标签')}</p>
           <div className="saved-view-tag-options">

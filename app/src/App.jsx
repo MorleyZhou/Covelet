@@ -109,6 +109,7 @@ import { localData } from './lib/local-data.js';
 import { DEFAULT_DESKTOP_KEY } from './lib/sync-data-rules.js';
 import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode, getContentMetadata } from './lib/content-preferences.js';
 import { defaultSavedFilters, filterSavedContent, resolveSavedView, viewFilters } from './lib/saved-views.js';
+import { useLocalDateKey } from './lib/use-local-date.js';
 import { commitNavigationTransfer, commitNavigationTags } from './lib/navigation-library.js';
 import SavedViews from './components/SavedViews.jsx';
 import ResourceLibrary from './components/ResourceLibrary.jsx';
@@ -414,6 +415,7 @@ function Modal({ title, titleContent, onClose, onBack, backLabel = tr("返回"),
 
 export function App() {
   useLanguage();
+  const today = useLocalDateKey();
   const { data: personalData, error: personalDataError } = usePersonalTools({ loadCore: false });
   const { data: contentPreferences, error: contentPreferencesError, ready: contentPreferencesReady } = useContentPreferences();
   const [privacyBusy, setPrivacyBusy] = useState(false);
@@ -658,7 +660,7 @@ export function App() {
     ? createAdaptiveAppearance(wallpaperAppearance.palette, settings.shade) : null;
   const searchPage = Number(activeScreen.split(':')[0]);
   const currentSearchFilters = useMemo(() => ({ ...defaultSavedFilters(), ...(searchContext ? {
-    scope: searchContext.scope, domain: searchContext.domain, readingStatus: searchContext.readingStatus,
+    scope: searchContext.scope, domain: searchContext.domain, readingStatus: searchContext.readingStatus, revisit: searchContext.revisit ?? null,
   } : {}), query,
     type: searchFilter === 'current' ? 'navigation' : searchFilter,
     scope: searchFilter === 'current' ? { kind: 'desktop', desktopId: state?.settings.desktopPages?.[searchPage]?.id || `@page:${searchPage}` }
@@ -677,8 +679,8 @@ export function App() {
   const searchResult = useMemo(() => {
     if (!state || (!query.trim() && !searchTagIds.length && !searchContext)) return { status: 'ready', rows: [] };
     return filterSavedContent(state, personalData, contentPreferences, currentSearchFilters,
-      { hiddenKeys: presentation ? hiddenKeys : [], allowDraftScopes: true });
-  }, [state, personalData, contentPreferences, currentSearchFilters, presentation, hiddenKeys, query, searchTagIds, searchContext]);
+      { hiddenKeys: presentation ? hiddenKeys : [], allowDraftScopes: true, today });
+  }, [state, personalData, contentPreferences, currentSearchFilters, presentation, hiddenKeys, query, searchTagIds, searchContext, today]);
   const searchShielded = presentation && Boolean(searchContext?.protectOnLock || searchContext?.viewId && contentPreferences.privateKeys.includes(`view:${searchContext.viewId}`)
     || searchResult.status === 'hidden');
   useEffect(() => {
@@ -887,8 +889,8 @@ export function App() {
     }
     const saved = await saveStateWithPrivacy(next, latest.revision, (current, finish) => {
       const previous = current.library?.views?.find((view) => view.id === input.id);
-      if (previous && resolveSavedView(previous, { navigation: next, tools: personalData, preferences: current }).status === 'hidden'
-        || filterSavedContent(next, personalData, current, viewFilters(input)).status === 'hidden') {
+      if (previous && resolveSavedView(previous, { navigation: next, tools: personalData, preferences: current, today }).status === 'hidden'
+        || filterSavedContent(next, personalData, current, viewFilters(input), { today }).status === 'hidden') {
         throw Object.assign(Error(tr('请先输入密码解除隐藏。')), { code: 'PRIVACY_LOCKED' });
       }
       return finish([], { expectedRevision: options.expectedRevision, savedView: { draft: input,
@@ -901,11 +903,11 @@ export function App() {
     const [latest, preferences] = await Promise.all([loadState(), loadContentPreferences()]);
     const current = preferences.library?.views?.find((item) => item.id === view.id);
     if (!current || current.revision !== view.revision) throw Error(tr('清单已在其他页面更新，请重新打开。'));
-    const result = filterSavedContent(latest, personalData, preferences, filters);
+    const result = filterSavedContent(latest, personalData, preferences, filters, { today });
     if (preferences.presentation && preferences.privateKeys.includes(`view:${view.id}`) || result.status === 'hidden') throw Error(tr('请先输入密码解除隐藏。'));
     if (result.status !== 'ready') throw Error(tr('筛选条件已失效，请重新选择。'));
     const protectOnLock = preferences.privateKeys.includes(`view:${view.id}`)
-      || filterSavedContent(latest, personalData, { ...preferences, presentation: true }, filters).status === 'hidden';
+      || filterSavedContent(latest, personalData, { ...preferences, presentation: true }, filters, { today }).status === 'hidden';
     setSearchContext({ ...filters, viewId: view.id, name: view.name, protectOnLock });
     setQuery(filters.query); setSearchTagIds(filters.tagIds); setSearchFilter(filters.type); setCandidate(-1); setFocused(true); setFolder(null);
     if (filters.scope.kind === 'desktop') {

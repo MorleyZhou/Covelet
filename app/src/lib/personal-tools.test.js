@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   PERSONAL_TRASH_LIMITS, validatePersonalTools, loadPersonalTools, replacePersonalTools, mergePersonalTools,
   deletePersonalRecord, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash,
-  applySyncedPersonalTools, exportPersonalTools, importPersonalTools, saveReadingItem,
+  applySyncedPersonalTools, exportPersonalTools, importPersonalTools, saveReadingItem, bulkReadingItems,
 } from './personal-tools.js';
 import { createContentTag, getContentMetadata, loadContentPreferences, saveContentMetadata, saveContentSettings, saveSavedView } from './content-preferences.js';
 import { localData } from './local-data.js';
@@ -111,6 +111,80 @@ test('tools export v4 carries scoped metadata and imports it atomically without 
   assert.deepEqual(values, before);
   t.mock.method(localData, 'set', async () => { throw Error('synthetic failed commit'); });
   await assert.rejects(importPersonalTools(file), /未能保存/); assert.deepEqual(values, before);
+});
+
+test('reading revisit dates survive ordinary edits, explicit clearing, trash and tools file migration', async (t) => {
+  installLocks(t);
+  let saved = await saveReadingItem({ title: 'Revisit', url: 'https://example.com/revisit', revisitOn: '2026-11-11' });
+  assert.equal(saved.status, 'unread');
+  saved = await saveReadingItem({ id: saved.id, revision: saved.revision, title: saved.title, url: saved.url, status: 'read' });
+  assert.equal(saved.revisitOn, '2026-11-11');
+  const before = new Map(values);
+  await assert.rejects(saveReadingItem({ ...saved, revisitOn: '2026-02-29' }), { code: 'READING_REVISIT' });
+  assert.deepEqual(values, before);
+  saved = await saveReadingItem({ ...saved, status: 'archived' });
+  await deletePersonalRecord('reading', saved.id, saved.revision);
+  const deleted = await loadPersonalTools(); assert.equal(deleted.trash[0].record.revisitOn, '2026-11-11');
+  saved = await restoreTrashedPersonalRecord(deleted.trash[0].id);
+  assert.equal(saved.status, 'archived'); assert.equal(saved.revisitOn, '2026-11-11');
+  const file = await exportPersonalTools(); values.clear(); await importPersonalTools(file);
+  saved = (await loadPersonalTools()).reading[0]; assert.equal(saved.revisitOn, '2026-11-11');
+  saved = await saveReadingItem({ ...saved, revisitOn: null }); assert(!Object.hasOwn(saved, 'revisitOn'));
+  for (const revisitOn of ['', null, '2026-11-11T00:00:00Z']) assert.throws(() => validatePersonalTools(state({ reading: [{ ...reading(), revisitOn }] })), { code: 'READING_REVISIT' });
+});
+
+test('reading bulk changes commit once under preference and tools locks and retain dates and metadata', async (t) => {
+  const lockOrder = installLocks(t);
+  await replacePersonalTools(state({ notes: [note()], reading: [{ ...reading('a'), revisitOn: '2026-11-11' }, reading('b', 'https://example.com/b')] }));
+  const tag = await createContentTag('Batch'); await saveContentMetadata('reading:a', { description: 'keep reason', tagIds: [tag.id] });
+  const data = await loadPersonalTools(), preferences = await loadContentPreferences(), originalPrefs = values.get('covelet.content.preferences.v1');
+  const writes = t.mock.method(localData, 'set', async (patch) => {
+    assert.deepEqual(Object.keys(patch), [key]);
+    for (const [name, value] of Object.entries(patch)) values.set(name, JSON.stringify(value));
+  });
+  assert.deepEqual(await bulkReadingItems(['a', 'b'], 'read', { expectedRevision: data.revision,
+    expectedRecordRevisions: { a: 1, b: 1 }, expectedPreferencesRevision: preferences.revision }), { count: 2, ids: ['a', 'b'] });
+  assert.equal(writes.mock.callCount(), 1); assert.deepEqual(lockOrder.slice(-2), ['covelet.content.preferences.v1', key]);
+  const result = await loadPersonalTools(); assert.equal(result.revision, data.revision + 1);
+  assert(result.reading.every((record) => record.status === 'read' && record.revision === 2));
+  assert.equal(result.reading[0].revisitOn, '2026-11-11'); assert.deepEqual(result.notes, data.notes);
+  assert.equal(values.get('covelet.content.preferences.v1'), originalPrefs);
+  const before = new Map(values);
+  assert.deepEqual(await bulkReadingItems(['a', 'b'], 'read', { expectedRevision: result.revision, expectedRecordRevisions: { a: 2, b: 2 } }), { count: 0, ids: [] });
+  assert.deepEqual(values, before); assert.equal(writes.mock.callCount(), 1);
+  values.set(key, JSON.stringify({ ...result, trash: [{ id: 'expired', kind: 'notes', deletedAt: now - 31 * 86400000, record: note('expired-note') }] }));
+  const withExpiredTrash = new Map(values);
+  await bulkReadingItems(['a', 'b'], 'read', { expectedRevision: result.revision, expectedRecordRevisions: { a: 2, b: 2 } });
+  assert.deepEqual(values, withExpiredTrash); assert.equal(writes.mock.callCount(), 1);
+});
+
+test('bulk stale selections, hidden records, quota and full trash all preserve the whole batch', async (t) => {
+  installLocks(t);
+  await replacePersonalTools(state({ reading: [reading('a'), reading('b', 'https://example.com/b')] }));
+  let current = await loadPersonalTools(), options = { expectedRevision: current.revision, expectedRecordRevisions: { a: 1, b: 1 } };
+  const before = new Map(values);
+  for (const patch of [{ expectedRevision: 0 }, { expectedRecordRevisions: { a: 1, b: 2 } }, { expectedRecordRevisions: { a: 1 } }]) {
+    await assert.rejects(bulkReadingItems(['a', 'b'], 'archived', { ...options, ...patch }), { code: 'REVISION_CONFLICT' });
+  }
+  assert.deepEqual(values, before);
+  await saveContentSettings('reading:b', { private: true });
+  const prefs = await loadContentPreferences(); values.set('covelet.content.preferences.v1', JSON.stringify({ ...prefs, presentation: true }));
+  const locked = new Map(values);
+  await assert.rejects(bulkReadingItems(['a', 'b'], 'delete', options), { code: 'PRIVACY_LOCKED' });
+  await assert.rejects(saveReadingItem({ ...current.reading[1], status: 'read' }), { code: 'PRIVACY_LOCKED' });
+  await assert.rejects(deletePersonalRecord('reading', 'b', 1), { code: 'PRIVACY_LOCKED' });
+  assert.deepEqual(values, locked);
+  await bulkReadingItems(['a'], 'read', { expectedRevision: current.revision, expectedRecordRevisions: { a: 1 } });
+  values.set('covelet.content.preferences.v1', JSON.stringify(prefs));
+  current = await loadPersonalTools(); options = { expectedRevision: current.revision, expectedRecordRevisions: { a: 2, b: 1 } };
+  const unfilled = new Map(values), write = t.mock.method(localData, 'set', async () => { throw Error('synthetic quota failure'); });
+  await assert.rejects(bulkReadingItems(['a', 'b'], 'delete', options), /存储空间已满/); assert.deepEqual(values, unfilled); write.mock.restore();
+  const full = state({ reading: current.reading, trash: Array.from({ length: PERSONAL_TRASH_LIMITS.maxRecords - 1 }, (_, index) => ({ id: `trash-${index}`, kind: 'notes', deletedAt: now, record: note(`old-${index}`) })) });
+  await replacePersonalTools(full); current = await loadPersonalTools(); options.expectedRevision = current.revision;
+  const fullBefore = new Map(values);
+  await assert.rejects(bulkReadingItems(['a', 'b'], 'delete', options), /回收站已满/); assert.deepEqual(values, fullBefore);
+  assert.deepEqual(await bulkReadingItems(['b'], 'delete', { expectedRevision: current.revision, expectedRecordRevisions: { b: 1 } }), { count: 1, ids: ['b'] });
+  assert.equal((await loadPersonalTools()).trash.length, PERSONAL_TRASH_LIMITS.maxRecords);
 });
 
 test('v1/v2 tools migrate to v3 and trash records are strictly bounded and validated', () => {

@@ -95,6 +95,41 @@ test('deleted references remain invalid and never relax an ALL-tag or location c
   assert.doesNotThrow(() => validateSavedView(view({ tagIds: ['deleted'], scope: { kind: 'desktop', desktopId: 'deleted' } })));
 });
 
+test('revisit filters intersect with status and tags using the supplied local day without changing records', () => {
+  const { navigation, tools, preferences } = context(), today = '2026-11-11';
+  tools.reading = [
+    { id: 'today', title: 'Today', url: 'https://example.com/today', status: 'read', revisitOn: today },
+    { id: 'overdue', title: 'Overdue', url: 'https://example.com/overdue', status: 'archived', revisitOn: '2026-11-10' },
+    { id: 'future', title: 'Future', url: 'https://example.com/future', status: 'unread', revisitOn: '2026-11-12' },
+    { id: 'none', title: 'Unscheduled', url: 'https://example.com/none', status: 'unread' },
+  ];
+  preferences.library.items['reading:today'] = { description: 'selected', tagIds: ['work'] };
+  const before = structuredClone(tools);
+  const ids = (filters, day = today) => filterSavedContent(navigation, tools, preferences, filters, { today: day }).rows.map((row) => row.id);
+  assert.deepEqual(ids({ revisit: 'due' }), ['today', 'overdue']);
+  assert.deepEqual(ids({ revisit: 'scheduled' }), ['today', 'overdue', 'future']);
+  assert.deepEqual(ids({ revisit: 'none' }), ['none']);
+  assert.deepEqual(ids({ revisit: 'due', readingStatus: 'archived' }), ['overdue']);
+  assert.deepEqual(ids({ revisit: 'due', tagIds: ['work'] }), ['today']);
+  assert.deepEqual(ids({ revisit: 'due', type: 'navigation' }), []);
+  assert.deepEqual(ids({ revisit: 'due', scope: { kind: 'desktop', desktopId: 'desktop-a' } }), []);
+  assert.deepEqual(ids({ revisit: 'due' }, '2026-11-12'), ['today', 'overdue', 'future']);
+  assert.deepEqual(resolveSavedView(view({ revisit: 'due' }), { navigation, tools, preferences, today }).rows.map((row) => row.id), ['today', 'overdue']);
+  preferences.presentation = true; preferences.privateKeys = ['reading:today'];
+  assert.deepEqual(ids({ revisit: 'due' }), ['overdue']);
+  assert.deepEqual(tools, before);
+  assert.equal(filterSavedContent(navigation, tools, preferences, { revisit: 'due' }, { today: 'invalid' }).status, 'invalid');
+});
+
+test('saved revisit conditions are optional, bounded and omitted when unset without rewriting legacy views', () => {
+  const legacy = view(); delete legacy.revisit;
+  assert.equal(validateSavedFilters(legacy.revisit === undefined ? {} : { revisit: legacy.revisit }).revisit, null);
+  assert.deepEqual(validateSavedView(legacy), legacy);
+  assert.deepEqual(validateSavedView(view({ revisit: null })), legacy);
+  assert.equal(validateSavedView(view({ revisit: 'due' })).revisit, 'due');
+  for (const revisit of ['', 'today', false, {}, 1]) assert.throws(() => validateSavedFilters({ revisit }));
+});
+
 test('private views and inherited hidden references do not expose names, results or saved conditions', () => {
   const { navigation, tools, preferences } = context();
   preferences.presentation = true; preferences.privateKeys = ['folder:folder-a', 'view:private'];

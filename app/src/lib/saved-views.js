@@ -2,15 +2,16 @@ import { tr } from '../i18n/index.js';
 import { collectCoveletContent, visibleContentTagIds } from './content-search.js';
 import { logicalDesktopPages, namedDesktopRecords } from './desktop-pages.js';
 import { privateContentKeys } from './presentation.js';
+import { isDateKey, localDateKey, matchesReadingRevisit } from './reading-revisit.js';
 
 export const SAVED_VIEW_LIMITS = Object.freeze({ views: 50, name: 80, query: 2000, tags: 20, domain: 253 });
 export const SAVED_CONTENT_TYPES = Object.freeze(['site', 'folder', 'note', 'reading', 'desktop']);
-const FILTER_KEYS = ['query', 'type', 'scope', 'tagIds', 'domain', 'readingStatus'];
+const FILTER_KEYS = ['query', 'type', 'scope', 'tagIds', 'domain', 'readingStatus', 'revisit'];
 const identity = (value) => typeof value === 'string' && /^[a-z\d-]{1,100}$/i.test(value);
 const scopeIdentity = (value) => typeof value === 'string' && value.length > 0 && value.length <= 200 && !/[\s\u0000-\u001f\u007f]/u.test(value) && !value.startsWith('@page:');
 const fields = (value, keys) => value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).every((key) => keys.includes(key));
 const invalid = () => { throw Object.assign(Error(tr('清单条件无效，请重新选择。')), { code: 'SAVED_VIEW_INVALID' }); };
-export function defaultSavedFilters() { return { query: '', type: 'all', scope: { kind: 'all' }, tagIds: [], domain: '', readingStatus: null }; }
+export function defaultSavedFilters() { return { query: '', type: 'all', scope: { kind: 'all' }, tagIds: [], domain: '', readingStatus: null, revisit: null }; }
 
 function normalizedDomain(value) {
   if (typeof value !== 'string' || value.length > SAVED_VIEW_LIMITS.domain || /[\s/?#@\\]/u.test(value)) invalid();
@@ -25,7 +26,8 @@ export function validateSavedFilters(input, { allowDraftScopes = false } = {}) {
   if (typeof value.query !== 'string' || value.query.length > SAVED_VIEW_LIMITS.query || value.query.includes('\0')
     || !['all', 'navigation', ...SAVED_CONTENT_TYPES].includes(value.type) || !Array.isArray(value.tagIds) || value.tagIds.length > SAVED_VIEW_LIMITS.tags
     || new Set(value.tagIds).size !== value.tagIds.length || value.tagIds.some((id) => !identity(id))
-    || typeof value.domain !== 'string' || value.readingStatus !== null && !['unread', 'read', 'archived'].includes(value.readingStatus)) invalid();
+    || typeof value.domain !== 'string' || value.readingStatus !== null && !['unread', 'read', 'archived'].includes(value.readingStatus)
+    || value.revisit !== null && !['due', 'scheduled', 'none'].includes(value.revisit)) invalid();
   const scope = value.scope;
   if (!fields(scope, ['kind', 'desktopId', 'folderId'])) invalid();
   if (scope.kind === 'all') {
@@ -37,13 +39,15 @@ export function validateSavedFilters(input, { allowDraftScopes = false } = {}) {
     if (Object.keys(scope).length !== 2 || !scopeIdentity(scope.folderId)) invalid();
   } else invalid();
   return { query: value.query.trim(), type: value.type, scope: { ...scope }, tagIds: [...value.tagIds],
-    domain: normalizedDomain(value.domain.trim()), readingStatus: value.readingStatus };
+    domain: normalizedDomain(value.domain.trim()), readingStatus: value.readingStatus, revisit: value.revisit };
 }
 export function viewFilters(view) { return Object.fromEntries(FILTER_KEYS.filter((key) => Object.hasOwn(view, key)).map((key) => [key, structuredClone(view[key])])); }
 export function validateSavedView(input) {
   if (!fields(input, ['id', 'revision', 'name', ...FILTER_KEYS]) || !identity(input.id) || !Number.isSafeInteger(input.revision) || input.revision < 1
     || typeof input.name !== 'string' || !input.name.trim() || input.name.trim().length > SAVED_VIEW_LIMITS.name || /[\u0000-\u001f\u007f]/u.test(input.name)) invalid();
-  return { id: input.id, revision: input.revision, name: input.name.trim(), ...validateSavedFilters(viewFilters(input)) };
+  const filters = validateSavedFilters(viewFilters(input));
+  if (filters.revisit === null) delete filters.revisit;
+  return { id: input.id, revision: input.revision, name: input.name.trim(), ...filters };
 }
 
 function filterContext(navigation, tools, preferences, input, { hiddenKeys = [], allowedTypes = SAVED_CONTENT_TYPES, allowDraftScopes = false } = {}) {
@@ -73,6 +77,8 @@ export function filterSavedContent(navigation, tools, preferences, input, option
   const context = filterContext(navigation, tools, preferences, input, options);
   if (context.status !== 'ready') return { status: context.status, reason: context.reason, rows: [] };
   const { filters, hidden, page, allowedTypes } = context;
+  const today = options.today ?? localDateKey();
+  if (filters.revisit === 'due' && !isDateKey(today)) return { status: 'invalid', reason: 'invalid-filters', rows: [] };
   const folders = new Map((navigation?.entries || []).filter((entry) => entry.type === 'folder').map((entry) => [entry.id, entry]));
   const rows = collectCoveletContent(navigation, tools, filters.query, { aliases: preferences.aliases, hiddenKeys: hidden,
     desktops: navigation ? namedDesktopRecords(navigation.settings) : [], library: preferences.library, tagIds: filters.tagIds, allowEmptyQuery: true });
@@ -85,6 +91,7 @@ export function filterSavedContent(navigation, tools, preferences, input, option
       if (rowPage !== page) return false;
     }
     if (filters.readingStatus && (row.type !== 'reading' || row.record.status !== filters.readingStatus)) return false;
+    if (filters.revisit !== null && (row.type !== 'reading' || !matchesReadingRevisit(row.record, filters.revisit, today))) return false;
     if (filters.domain) {
       let hostname; try { hostname = new URL(row.url).hostname.toLowerCase().replace(/\.$/u, ''); } catch { return false; }
       if (hostname !== filters.domain) return false;
@@ -93,9 +100,9 @@ export function filterSavedContent(navigation, tools, preferences, input, option
   }) };
 }
 
-export function resolveSavedView(view, { navigation, tools, preferences, hiddenKeys = [] } = {}) {
+export function resolveSavedView(view, { navigation, tools, preferences, hiddenKeys = [], today } = {}) {
   if (preferences.presentation && (preferences.privateKeys || []).includes(`view:${view.id}`)) return { status: 'hidden', reason: 'private-view', rows: [] };
-  return filterSavedContent(navigation, tools, preferences, viewFilters(view), { hiddenKeys });
+  return filterSavedContent(navigation, tools, preferences, viewFilters(view), { hiddenKeys, today });
 }
 export function getSavedViews(preferences, { navigation, tools, hiddenKeys = [] } = {}) {
   return structuredClone((preferences.library?.views || []).filter((view) => {
