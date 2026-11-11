@@ -1,22 +1,67 @@
+.folder-launch-dialog.ui-dialog-content {
+  display: flex;
+  flex-direction: column;
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(700px, calc(100dvh - 32px));
+  overflow: hidden;
+}
+
+.folder-launch-dialog > .modal-title { margin-bottom: 14px; }
+
+.folder-launch-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.folder-launch-content p { margin: 0; }
+
+.folder-launch-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.folder-launch-summary .ui-button { color: var(--accent); padding-inline: 8px; }
+
 .folder-launch-list {
-  max-height: min(42vh, 320px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   margin: 0;
   padding: 0;
   list-style: none;
+  border-block: 1px solid var(--line);
 }
 
-.folder-launch-list label {
-  display: flex;
+.folder-launch-list .folder-launch-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
-  padding: 8px 4px;
+  min-height: 52px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.folder-launch-list label > span {
+.folder-launch-list li + li { border-top: 1px solid var(--line); }
+.folder-launch-row:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.folder-launch-row:has(.ui-checkbox:disabled) { cursor: default; }
+.folder-launch-row:has(.ui-checkbox:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.folder-launch-site {
   display: grid;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
+  text-align: start;
 }
 
 .folder-launch-list :is(strong, small) {
@@ -25,4 +70,20 @@
   white-space: nowrap;
 }
 
-.folder-launch-list small { opacity: .65; }
+.folder-launch-list strong { font-size: 14px; font-weight: 500; line-height: 1.4; }
+.folder-launch-list small { color: var(--muted); font-size: 12px; line-height: 1.4; }
+
+.folder-launch-footer.modal-footer {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding-top: 4px;
+  border-top: 0;
+}
+
+@media (max-width: 420px) {
+  .folder-launch-dialog.ui-dialog-content { padding: 20px; }
+  .folder-launch-summary { gap: 4px; }
+  .folder-launch-summary .hint { font-size: 12px; }
+  .folder-launch-row { padding-inline: 6px; }
+  .folder-launch-footer .ui-button { white-space: normal; }
+}

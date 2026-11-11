@@ -100,13 +100,20 @@ h2 {
   z-index: 2;
 }
 .header-actions {
+  --header-button-size: 44px;
   display: flex;
   gap: 15px;
 }
 .header-icon {
   display: grid;
   place-items: center;
-  padding: 8px;
+  width: var(--header-button-size);
+  height: var(--header-button-size);
+  min-width: var(--header-button-size);
+  min-height: var(--header-button-size);
+  flex: 0 0 var(--header-button-size);
+  aspect-ratio: 1;
+  padding: 0;
   color: #fff;
   border-radius: 50%;
   background: #ffffff1f;
@@ -522,7 +529,7 @@ h2 {
 /* Keep keyboard focus inside the painted control, including scroll edges. */
 .modal :is(button, input, textarea, select, [role="combobox"]):focus-visible { outline-offset: -2px; }
 .modal :is(input, textarea, fieldset, [contenteditable]) { min-width: 0; max-width: 100%; }
-.modal-title.folder-title { position: relative; align-items: flex-start; }
+.modal-title.folder-title { align-items: center; gap: 8px; }
 .modal.wide.preferences-modal { width: min(820px, calc(100vw - 32px)); height: min(700px, 90dvh); }
 .settings-modal[data-state=open] { display: flex; flex-direction: column; padding: 0; overflow: hidden; max-height: 90dvh; }
 .settings-modal > .modal-title { flex-shrink: 0; gap: 12px; padding: 22px 26px 16px; margin: 0; }
@@ -571,9 +578,10 @@ h2 {
 .context-help .ui-disclosure-trigger { width: fit-content; cursor: pointer; color: var(--ink); padding: 4px 0; }
 .context-help .ui-disclosure-trigger[data-state=open] { margin-bottom: 8px; }
 .context-help a { display: inline-block; color: var(--accent); margin-top: 8px; }
-.folder-title > .icon-button { position: absolute; top: 4px; right: 0; }
-.folder-name-editor { width: 100%; min-width: 0; padding: 0 40px; }
-.folder-name-input { width: 100%; min-width: 0; padding: 6px 8px; border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--ink); font-size: 24px; font-weight: 600; line-height: 1.3; text-align: center; text-overflow: ellipsis; transition: background 120ms ease; }
+.folder-title > .icon-button { flex: 0 0 36px; width: 36px; height: 36px; padding: 0; border-radius: 50%; }
+.folder-name-editor { flex: 1; min-width: 0; }
+.folder-name-input { width: 100%; min-width: 0; padding: 6px 8px; border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--ink); font-size: 24px; font-weight: 600; line-height: 1.3; text-align: start; text-overflow: ellipsis; transition: background 120ms ease; }
+.folder-launch-trigger { min-height: 36px; padding: 8px 10px; }
 .folder-name-input:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
 .folder-name-input:focus { background: color-mix(in srgb, var(--ink) 5%, transparent); }
 .folder-name-input[aria-busy] { opacity: .65; }
@@ -818,6 +826,8 @@ legend {
   margin-right: 6px;
 }
 [data-slot="toast-viewport"] { position: fixed; inset: 0; pointer-events: none; z-index: 1300; }
+/* Background notices must not cover the bulk-opening confirmation controls. */
+.owntab:has(.folder-launch-dialog[data-state=open]) > [data-slot="toast-viewport"] { z-index: 79; }
 .toast {
   position: fixed;
   right: max(16px, env(safe-area-inset-right));
@@ -928,7 +938,7 @@ legend {
 @media (max-width: 550px) {
   .owntab { padding: 20px 20px 24px; --rendered-icon-size: min(64px, var(--icon-size)); }
   .header-actions { gap: 8px; }
-  .header-icon { padding: 7px; }
+  .header-icon { padding: 0; }
   .header-icon svg { width: 22px; height: 22px; }
   .search-area { width: 100%; }
   .clock { margin-bottom: 24px; }
@@ -948,6 +958,8 @@ legend {
   .site-link { gap: 10px; }
   .site-name { font-size: 13px; }
   .modal { padding: 20px; }
+  .folder-launch-trigger { width: 36px; height: 36px; padding: 0; border-radius: 50%; }
+  .folder-launch-trigger > span { display: none; }
   .settings-layout { grid-template-columns: 112px minmax(0, 1fr); }
   .settings-modal > .modal-title { padding: 18px 18px 14px; }
   .settings-tabs { padding: 16px 8px; }
@@ -963,11 +975,12 @@ legend {
 }
 @media (max-height: 960px) {
   .owntab { padding-top: 20px; --rendered-icon-size: min(48px, var(--icon-size)); }
-  .owntab .header-icon { padding: 7px; }
+  .owntab .header-icon { padding: 0; }
   .search-area { margin-top: 20px; }
   .search-box { height: 52px; }
 }
 @media (max-height: 650px) {
+  .header-actions { --header-button-size: 36px; }
   .owntab { padding-top: 12px; padding-bottom: 16px; }
   .search-area { margin-top: 12px; }
   .clock-time { font-size: clamp(32px, 9dvh, 64px); letter-spacing: -2px; }

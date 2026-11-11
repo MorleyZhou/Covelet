@@ -302,6 +302,8 @@ Bing 每日壁纸|Bing daily wallpaper|Bing 每日桌布|Bing の日替わり壁
 快照已在其他页面更新。|This snapshot changed in another page.|此快照已在其他頁面更新。|別のページでスナップショットが更新されました。|다른 페이지에서 스냅샷이 변경되었습니다.|Dieser Snapshot wurde auf einer anderen Seite geändert.|Cet instantané a changé dans une autre page.|Этот снимок изменён на другой странице.
 保存名称|Save name|儲存名稱|名前を保存|이름 저장|Namen speichern|Enregistrer le nom|Сохранить имя
 全选|Select all|全選|すべて選択|모두 선택|Alle auswählen|Tout sélectionner|Выбрать всё
+图标设置|Icon settings|圖示設定|アイコン設定|아이콘 설정|Symboleinstellungen|Réglages de l’icône|Настройки значка
+选择前 {0} 个|Select first {0}|選取前 {0} 個|先頭の{0}件を選択|처음 {0}개 선택|Erste {0} auswählen|Sélectionner les {0} premiers|Выбрать первые {0}
 选择前 50 个|Select first 50|選取前 50 個|先頭 50 件を選択|처음 50개 선택|Erste 50 auswählen|Sélectionner les 50 premiers|Выбрать первые 50
 取消选择|Deselect|取消選取|選択を解除|선택 해제|Auswahl aufheben|Désélectionner|Снять выделение
 清除选择|Clear selection|清除選取|選択をクリア|선택 지우기|Auswahl löschen|Effacer la sélection|Очистить выбор

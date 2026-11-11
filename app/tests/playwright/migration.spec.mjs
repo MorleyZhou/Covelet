@@ -1,22 +1,24 @@
 import { readFile } from 'node:fs/promises';
 import { test, expect } from './extension.fixture.mjs';
 
-test('empty desktop offers first-use actions and remembers starting blank', async ({ extension }) => {
+test('first use opens a blank desktop with working header actions', async ({ extension }) => {
   const page = await extension.newtab();
-  const onboarding = page.locator('.empty-desktop');
-  await expect(onboarding.getByRole('button')).toHaveText(['添加常用网站', '导入书签', '空白开始']);
+  await expect(page.locator('.empty-desktop')).toHaveCount(0);
+  await expect(page.locator('.site-tile')).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   for (const viewport of [{ width: 390, height: 540 }, { width: 1280, height: 620 }]) {
     await page.setViewportSize(viewport);
-    await expect(onboarding.getByRole('button', { name: '添加常用网站' })).toBeInViewport();
-    await expect(onboarding.getByRole('button', { name: '空白开始' })).toBeInViewport();
+    for (const button of await page.locator('.header-icon').all()) {
+      await expect(button).toBeInViewport();
+      const box = await button.boundingBox();
+      expect(Math.abs(box.width - box.height)).toBeLessThan(1);
+    }
   }
-  await onboarding.getByRole('button', { name: '添加常用网站' }).click();
+  await page.getByRole('button', { name: '添加网站', exact: true }).click();
   const add = page.getByRole('dialog', { name: '添加网站', exact: true });
   await expect(add).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(add).toBeHidden();
-  await onboarding.getByRole('button', { name: '空白开始' }).click();
-  await expect(onboarding).toHaveCount(0);
   const restarted = await extension.restart();
   const freshTab = await restarted.newtab();
   await expect(freshTab.locator('.empty-desktop')).toHaveCount(0);
@@ -25,7 +27,8 @@ test('empty desktop offers first-use actions and remembers starting blank', asyn
 
 test('Markdown preview groups links and offline HTML download excludes marked links', async ({ extension }) => {
   const page = await extension.newtab();
-  await page.locator('.empty-desktop').getByRole('button', { name: '导入书签', exact: true }).click();
+  await page.locator('.desktop-page-viewport').press('Shift+F10');
+  await page.getByRole('menuitem', { name: '导入网址与书签 HTML', exact: true }).click();
   const importer = page.locator('.bookmark-import');
   await expect(importer.getByRole('button', { name: '导入 Markdown 链接文件', exact: true })).toBeVisible();
   const source = ['- [私密网址](https://private.example/)', '# 工作资料', '- [公开网址](https://public.example/?a=1&b=2)', '- [跳过](https://skip.example/)'].join('\n');

@@ -47,6 +47,7 @@ test('unpacked toolbar popup saves into a selected folder', async ({ extension }
   await createFolder(page);
   const name = 'Popup folder destination', url = 'https://example.com/popup-folder-destination';
   const popup = await openPopup(extension, name, url);
+  await popup.getByRole('button', { name: '图标设置', exact: true }).click();
   await popup.getByLabel('图标地址', { exact: true }).fill(iconUrl);
   await choose(popup, '目标位置', /新建文件夹/);
   await popup.getByRole('button', { name: '保存', exact: true }).click();

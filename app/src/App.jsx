@@ -126,7 +126,6 @@ import BookmarkImport from './components/BookmarkImport.jsx';
 import BookmarkExport from './components/BookmarkExport.jsx';
 import LayoutTransfer from './components/LayoutTransfer.jsx';
 import { layoutTransferPreferences, saveLayoutTransfer } from './lib/navigation-destinations.js';
-import EmptyDesktop from './components/EmptyDesktop.jsx';
 import FolderLaunchDialog from './components/FolderLaunchDialog.jsx';
 import SearchFilters from './components/SearchFilters.jsx';
 import { navigationResultPath } from './lib/search-scope.js';
@@ -356,7 +355,7 @@ function DragArtwork({ entry, entries, snapshot, compact = false, hidden = false
     : <SiteIcon entry={entry} initialAppearance={snapshot} children={entries.filter((child) => child.parentId === entry.id).sort((a, b) => a.order - b.order)} />;
 }
 
-function Modal({ title, titleContent, onClose, onBack, backLabel = tr("返回"), closeDisabled = false, children, wide = false, maximizable = false, className = "", privacyKeys = [] }) {
+function Modal({ title, titleContent, titleActions, onClose, onBack, backLabel = tr("返回"), closeDisabled = false, children, wide = false, maximizable = false, className = "", privacyKeys = [] }) {
   const ref = useRef(null);
   const presentation = useContext(PresentationContext), shielded = presentation.active && privacyKeys.some((key) => presentation.hiddenKeys.has(key));
   const [maximized, setMaximized] = useState(false), [surface, setSurface] = useState(null);
@@ -397,13 +396,13 @@ function Modal({ title, titleContent, onClose, onBack, backLabel = tr("返回"),
     >
       <div className={`modal-title ${titleContent ? "folder-title" : ""}`}>
         {onBack && <Button variant="unstyled" size="unstyled" type="button" className="icon-button" disabled={closeDisabled} onClick={onBack} aria-label={backLabel}><ArrowLeft size={22} /></Button>}
-        {titleContent && closeButton}
         {shielded ? <DialogTitle asChild><h2>{tr('内容已隐藏')}</h2></DialogTitle> : titleContent ? <DialogTitle className="visually-hidden">{title}</DialogTitle> : <DialogTitle asChild><h2 tabIndex={-1}>{title}</h2></DialogTitle>}
         {titleContent && <div style={{ display: shielded ? 'none' : 'contents' }} inert={shielded || undefined} aria-hidden={shielded || undefined}>{titleContent}</div>}
+        {!shielded && titleActions}
         {!shielded && maximizable && <Button variant="unstyled" size="unstyled" type="button" className="icon-button modal-maximize" aria-pressed={maximized}
           aria-label={maximized ? tr('还原窗口') : tr('最大化')} title={maximized ? tr('还原窗口') : tr('最大化')}
           onClick={() => setMaximized((value) => !value)}>{maximized ? <CornersIn size={20} /> : <CornersOut size={20} />}</Button>}
-        {!titleContent && closeButton}
+        {closeButton}
       </div>
       <DialogSurface.Provider value={contentSurface}>
         {shielded && <div className="presentation-dialog-shield"><p className="hint">{tr('此内容已隐藏，解锁后可继续编辑，未保存的修改会保留。')}</p>
@@ -1519,8 +1518,6 @@ export function App() {
             onClick={(event) => {
               if (layoutEditor.editing && !event.defaultPrevented && !event.target.closest('[data-entry-id],button,a')) layoutEditor.setSelectedIds([]);
             }}>
-            {!state.entries.length && !layoutEditor.editing && !modal && <EmptyDesktop onAdd={newEntry}
-              onImport={() => setModal({ kind: 'bookmarks' })} onDismiss={focusDesktop} />}
             <DesktopPages settings={desktopState.settings} entries={items} activeKey={activeScreen} draftPage={draftPage} drag={drag} editing={layoutEditor.editing}
               onActiveChange={setActiveScreen} onScreenChange={(screen) => { desktopScreen.current = screen; }}
               onNewPage={(page) => layoutEditor.addPage(page)} renderTiles={renderTiles} />
@@ -1551,11 +1548,11 @@ export function App() {
         {!folderId && renderContextMenu()}
         {!folderId && renderDragGhost()}
         {currentFolder && !modal && (
-          <Modal title={currentFolder.name} privacyKeys={[`folder:${currentFolder.id}`]} titleContent={<FolderName name={currentFolder.name} onSave={saveFolderName} />} onClose={() => { cancelDrag(); setFolder(null); }} wide>
-            <div className="folder-launch-actions">
-              <Button variant="secondary" type="button" disabled={layoutEditor.editing}
-                onClick={() => setModal({ kind: 'folder-launch', id: currentFolder.id })}>{tr('批量打开网站')}</Button>
-            </div>
+          <Modal title={currentFolder.name} privacyKeys={[`folder:${currentFolder.id}`]} titleContent={<FolderName name={currentFolder.name} onSave={saveFolderName} />}
+            titleActions={<Button variant="ghost" type="button" className="folder-launch-trigger" disabled={layoutEditor.editing}
+              aria-label={tr('批量打开网站')} title={tr('批量打开网站')}
+              onClick={() => setModal({ kind: 'folder-launch', id: currentFolder.id })}><ArrowSquareOut size={19} /><span>{tr('批量打开网站')}</span></Button>}
+            onClose={() => { cancelDrag(); setFolder(null); }} wide>
             <div className="folder-content" data-folder-panel={currentFolder.id}>
               <div className="sites-grid folder-sites" data-drop-parent={currentFolder.id}>
                 {renderTiles(state.entries.filter((item) => item.parentId === currentFolder.id).sort((a,b) => a.order-b.order))}

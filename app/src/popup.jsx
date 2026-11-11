@@ -256,7 +256,8 @@ function AddCurrentPage() {
     <TabsContent value={destination} className="popup-destination-panel">{destination === 'note'
       ? <NoteCapture preferences={contentPreferences.data} onBusyChange={setNoteBusy} onDirtyChange={setNoteDirty} onCancel={closeNote} onSaved={() => window.close()} />
       : privateBlocked
-      ? <PrivacyPasswordForm purpose="unlock" onBusyChange={setBusy} onCancel={() => window.close()} /> : <form className="form-stack" onSubmit={save}>
+      ? <PrivacyPasswordForm purpose="unlock" onBusyChange={setBusy} onCancel={() => window.close()} /> : <form className="popup-form" onSubmit={save}>
+      <div className="form-stack popup-form-body">
       <label>{tr("名称")}<Input required maxLength={200} disabled={locked || initializing} value={form.name} onChange={(event) => patch({ name: event.target.value })} /></label>
       <label>{tr("网址")}<Input required maxLength={4096} disabled={locked || initializing} value={form.url} placeholder="https://example.com" onChange={(event) => {
         const url = event.target.value;
@@ -266,11 +267,15 @@ function AddCurrentPage() {
         if (previous !== next) { iconEdited.current = true; setIconInfo({ phase: 'idle' }); setError(''); patch({ url, iconUrl: preferredIconAddress(url), iconFit: guessIconFit(preferredIconAddress(url)) }); }
         else patch({ url });
       }} /></label>
+      {destination === 'navigation' && navigation && <NavigationDestination state={navigation} preferences={contentPreferences.data} value={targetValue}
+        onChange={(value) => { setTargetValue(value); navigationSelectionRevision.current = navigation.revision; }} disabled={locked || initializing} />}
+      <Disclosure title={tr('备注与标签')} className="popup-details" disabled={locked || metadataBusy}>
       <ContentMetadataEditor preferences={contentPreferences.data} contentKey={original.current ? `site:${original.current.id}` : undefined}
         value={metadata} onChange={setMetadata} disabled={locked || initializing} onBusyChange={setMetadataBusy}
         onPreferencesChange={(next) => { metadataRevision.current = next.revision; }} />
-      {destination === 'navigation' && <>{navigation && <NavigationDestination state={navigation} preferences={contentPreferences.data} value={targetValue}
-        onChange={(value) => { setTargetValue(value); navigationSelectionRevision.current = navigation.revision; }} disabled={locked || initializing} />}
+      </Disclosure>
+      {destination === 'navigation' && <Disclosure title={tr('图标设置')} className="popup-details" disabled={locked}>
+      <div className="form-stack">
       <IconBackground value={iconBackground} onChange={(iconBackground) => patch({ iconBackground })}
         onReset={() => setForm((current) => { const next = { ...current }; delete next.iconBackground; return next; })}
         preview={<span className="site-icon" style={{ colorScheme: scheme, backgroundColor: iconBackground, color: iconTextColor(iconBackground) }}>
@@ -284,8 +289,9 @@ function AddCurrentPage() {
         {iconPending ? tr('正在获取图标…') : tr('获取图标')}
       </Button>
       {iconInfo.phase === 'error' && <p className="form-error" role="alert">{iconInfo.message}</p>}
-      </>}
+      </div></Disclosure>}
       {error && <p className="form-error" role="alert">{tr(error)}</p>}
+      </div>
       <div className="quick-add-actions"><Button variant="secondary" className="button" type="button" disabled={locked} onClick={() => window.close()}>{tr("取消")}</Button>
         <Button variant="default" className="button primary" type="submit" disabled={locked || metadataBusy || initializing || destination === 'navigation' && !targetValue}>{busy ? tr("保存中…") : tr("保存")}</Button></div>
     </form>}</TabsContent>
