@@ -91,6 +91,36 @@ const configure = (subject) => subject.api.saveCloudSyncSettings(profile, secret
 const saved = async (subject) => { const result = await subject.api.syncCloudNow(); assert.equal(result.phase, 'saved', `${result.code}: ${result.message}`); return result; };
 const valueOf = async (subject, key) => (await subject.localData.get(key))[key];
 
+test('encrypted full-data sync preserves metadata and rejects invalid libraries before any cloud publication', async () => {
+  const cloud = remote(), a = device(cloud, 'a'), b = device(cloud, 'b'), key = 'covelet.content.preferences.v1';
+  const library = { version: 1, tags: [{ id: 'tag-release', name: 'Release' }], items: {
+    'site:a': { description: 'Deployment reference', tagIds: ['tag-release'] },
+    'note:a': { description: '', tagIds: ['tag-release'] },
+  } };
+  await a.localData.set({ [key]: { version: 1, revision: 1, aliases: {}, privateKeys: [], presentation: false, library } });
+  await configure(a); await configure(b); await saved(a); await saved(b);
+  assert.deepEqual((await valueOf(b, key)).library, library);
+  assert(![...cloud.areas.values()].some((objects) => [...objects.values()].some((bytes) => decoder.decode(bytes).includes('Deployment reference'))));
+  const before = await valueOf(b, key), calls = cloud.calls.length;
+  await b.localData.set({ [key]: { ...before, library: { ...library, version: 99 } } });
+  const result = await b.api.syncCloudNow();
+  assert.equal(result.phase, 'error');
+  assert.equal(cloud.calls.slice(calls).filter((call) => call[1] === 'write').length, 0);
+  assert.deepEqual((await valueOf(a, key)).library, library);
+  await a.close(); await b.close();
+});
+
+test('metadata larger than the legacy 512 KiB envelope synchronizes through bounded full-data chunks', async () => {
+  const cloud = remote(), a = device(cloud, 'a'), b = device(cloud, 'b'), key = 'covelet.content.preferences.v1';
+  const library = { version: 1, tags: [], items: Object.fromEntries(Array.from({ length: 700 }, (_, index) => [`site:large-${index}`, { description: 'a'.repeat(1000), tagIds: [] }])) };
+  assert(encoder.encode(JSON.stringify(library)).length > 512 * 1024);
+  await a.localData.set({ [key]: { version: 1, revision: 1, aliases: {}, privateKeys: [], presentation: false, library } });
+  await configure(a); await configure(b); await saved(a); await saved(b);
+  assert.deepEqual((await valueOf(b, key)).library, library);
+  assert([...cloud.areas.values()].some((objects) => objects.size > 3));
+  await a.close(); await b.close();
+});
+
 test('a legacy connection remembers its credentials after a successful full-data sync only', async () => {
   const cloud = remote(), source = device(cloud, 'a'), legacy = device(cloud, 'b');
   const oldConfig = { version: 1, profile, autoSync: false, metadata: null };

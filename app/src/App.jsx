@@ -101,11 +101,13 @@ import HomeTime from "./components/HomeTime.jsx";
 import TimeAndDateSettings from './components/TimeAndDateSettings.jsx';
 import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashPanel } from "./components/PersonalTools.jsx";
 import usePersonalTools from './lib/use-personal-tools.js';
-import { exactDesktopMatches, searchCoveletContent } from './lib/content-search.js';
+import { exactDesktopMatches, searchCoveletContent, visibleContentTagIds } from './lib/content-search.js';
 import { defaultDesktopPage, desktopPageName, logicalDesktopPages, namedDesktopRecords, withDesktopPageIdentity } from './lib/desktop-pages.js';
 import { localData } from './lib/local-data.js';
 import { DEFAULT_DESKTOP_KEY } from './lib/sync-data-rules.js';
-import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode } from './lib/content-preferences.js';
+import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode, getContentMetadata } from './lib/content-preferences.js';
+import ContentMetadataEditor, { ContentTagFilter } from './components/ContentMetadataEditor.jsx';
+import { saveStateWithPrivacy } from './lib/storage.js';
 import { PresentationContext, privateContentKeys } from './lib/presentation.js';
 import ContentPreferences from './components/ContentPreferences.jsx';
 import PrivacyPasswordDialog, { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
@@ -423,9 +425,17 @@ export function App() {
     [candidate, setCandidate] = useState(-1),
     [focused, setFocused] = useState(false);
   const [searchFilter, setSearchFilter] = useState('all');
+  const [searchTagIds, setSearchTagIds] = useState([]);
+  const [entryMetadata, setEntryMetadata] = useState({ description: '', tagIds: [] });
+  const entryMetadataRevision = useRef(0);
+  const entryMetadataBase = useRef({ description: '', tagIds: [] });
+  const [entryMetadataBusy, setEntryMetadataBusy] = useState(false);
+  const contentSettingsDirty = useRef(false);
+  const [discardContentSettings, setDiscardContentSettings] = useState(false);
   const [modal, setModal] = useState(null),
     [entry, setEntry] = useState(null),
     [context, setContext] = useState(null);
+  useEffect(() => { contentSettingsDirty.current = false; setDiscardContentSettings(false); }, [modal?.kind, modal?.key]);
   const [notice, setNotice] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -641,15 +651,26 @@ export function App() {
     ? createAdaptiveAppearance(wallpaperAppearance.palette, settings.shade) : null;
   const desktops = useMemo(() => settings && ['all', 'desktop'].includes(searchFilter) ? namedDesktopRecords(settings) : [], [settings, searchFilter]);
   const searchPage = Number(activeScreen.split(':')[0]);
+  const availableSearchTagIds = useMemo(() => {
+    if (!state) return [];
+    return visibleContentTagIds(state, personalData, contentPreferences.library, presentation ? hiddenKeys : []);
+  }, [state, personalData, contentPreferences, presentation, hiddenKeys]);
+  useEffect(() => {
+    setSearchTagIds((current) => {
+      const next = current.filter((id) => availableSearchTagIds.includes(id));
+      return next.length === current.length ? current : next;
+    });
+  }, [availableSearchTagIds]);
   const candidates = useMemo(() => {
-    if (!state || !query.trim()) return [];
+    if (!state || (!query.trim() && !searchTagIds.length)) return [];
     const { entries, tools } = scopeSearchContent(state, personalData, searchFilter, searchPage);
     const visible = presentation ? hiddenKeys : undefined;
     const pages = logicalDesktopPages(state);
-    return searchCoveletContent(entries, tools, query, { aliases: contentPreferences.aliases, hiddenKeys: visible, desktops })
+    return searchCoveletContent(entries, tools, query, { aliases: contentPreferences.aliases, hiddenKeys: visible, desktops,
+      library: contentPreferences.library, tagIds: searchTagIds })
       .map((item) => ({ ...item, path: item.type === 'desktop' ? tr('第 {0} 屏', [formatNumber(pages.indexOf(item.record.page) + 1)])
         : navigationResultPath(item, state, visible, (page) => desktopPageName(state.settings, page)) }));
-  }, [state, personalData, query, contentPreferences, presentation, hiddenKeys, desktops, searchFilter, searchPage]);
+  }, [state, personalData, query, contentPreferences, presentation, hiddenKeys, desktops, searchFilter, searchPage, searchTagIds]);
   useEffect(() => { setCandidate((value) => Math.min(value, candidates.length - 1)); }, [candidates.length]);
   useLayoutEffect(() => {
     const list = suggestionsRef.current, option = list?.children[candidate];
@@ -831,6 +852,8 @@ export function App() {
     }
   }
   function newEntry() {
+    setEntryMetadata({ description: '', tagIds: [] }); entryMetadataRevision.current = contentPreferences.revision;
+    entryMetadataBase.current = { description: '', tagIds: [] };
     setNotice(null);
     setIconPreview(null); setEntryIconInfo({ phase: 'idle' }); iconOperation.current?.abort();
     setEntry({
@@ -859,6 +882,9 @@ export function App() {
       setModal({ kind: 'extensions', initialExtension: item.extensionId, editingId: item.id });
       return;
     }
+    entryMetadataBase.current = getContentMetadata(contentPreferences, `${item.type}:${item.id}`);
+    setEntryMetadata(entryMetadataBase.current);
+    entryMetadataRevision.current = contentPreferences.revision;
     setEntry(structuredClone(item));
     setIconPreview(structuredClone(item)); setEntryIconInfo({ phase: 'idle' }); iconOperation.current?.abort();
     setModal({ kind: "entry", revision: state.revision, isNew: false });
@@ -1035,8 +1061,12 @@ export function App() {
       if (modal.isNew) {
         next = moveEntry(next, value.id, { page: value.page, index: modal.targetIndex });
       }
-      const saved = await commit(next, undefined, modal.revision);
+      const saved = value.type === 'site' && !demo ? await saveStateWithPrivacy(next, modal.revision, (preferences, finish) => {
+        if (preferences.presentation && privateContentKeys(next, preferences).has(`site:${value.id}`)) throw Error(tr('请先输入密码解除隐藏。'));
+        return finish([], { metadata: [{ key: `site:${value.id}`, ...entryMetadata, expectedMetadata: entryMetadataBase.current }], expectedRevision: entryMetadataRevision.current });
+      }) : await commit(next, undefined, modal.revision);
       if (saved) {
+        setState(saved);
         if (!iconsReady) notify(iconFailureMessage(getNavigationIconFailure(siteIconAddress(value))), 'error');
         revealDesktopEntry(saved, value.id);
         setDraftPage(null);
@@ -1323,6 +1353,9 @@ export function App() {
                 }
               }}
             />
+            <ContentTagFilter preferences={contentPreferences} selectedTagIds={searchTagIds} availableTagIds={availableSearchTagIds}
+              onChange={(ids) => { setSearchTagIds(ids); setCandidate(-1); }}
+              onReturnFocus={() => { setFocused(true); inputRef.current?.focus(); }} />
             <SearchFilters value={searchFilter} onChange={(value) => { setSearchFilter(value); setCandidate(-1); }} onReturnFocus={() => inputRef.current?.focus()} />
             <Button variant="unstyled" size="unstyled" className="search-submit" type="submit" aria-label={tr("搜索")}>
               <MagnifyingGlass size={33} weight="light" />
@@ -1446,11 +1479,11 @@ export function App() {
           <Modal
             privacyKeys={modal.isNew ? [] : [`${entry.type}:${entry.id}`]}
             title={`${modal.isNew ? tr("添加") : tr("编辑")}${entry.type === "folder" ? tr("文件夹") : tr("网站")}`}
-            closeDisabled={entrySaving}
+            closeDisabled={entrySaving || entryMetadataBusy}
             onClose={closeEntry}
           >
             <form onSubmit={saveEntry} className="form-stack">
-              <fieldset disabled={entrySaving} style={{ display: 'contents', border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+              <fieldset disabled={entrySaving || entryMetadataBusy} style={{ display: 'contents', border: 0, padding: 0, margin: 0, minWidth: 0 }}>
               {entry.type === "site" && (
                 <>
                   <label>{tr("网址")}<Input autoFocus required value={entry.url} maxLength={2048} placeholder="https://example.com" onChange={(event) => {
@@ -1493,6 +1526,8 @@ export function App() {
                   }
                 />
               </div>
+              {entry.type === 'site' && <ContentMetadataEditor preferences={contentPreferences} contentKey={`site:${entry.id}`} value={entryMetadata} onChange={setEntryMetadata}
+                disabled={entrySaving} onBusyChange={setEntryMetadataBusy} onPreferencesChange={(next) => { entryMetadataRevision.current = next.revision; }} />}
               {entry.type === "site" && (siteInfo.message || siteInfo.errors?.length > 0) && <div className="site-recognition">
                 {siteInfo.message && <span className="hint" role="status">{tr(siteInfo.message)}</span>}
                 {siteInfo.errors?.map((message) => <span className="hint" role="status" key={message}>{tr(message)}</span>)}
@@ -1556,8 +1591,15 @@ export function App() {
             onLocalOnly={() => { setModal(null); notify(tr('已关闭同步，仅在本机保存数据。')); }} />
         </Modal>}
         {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} Dialog={Modal} onClose={() => setModal(null)} />}
-        {modal?.kind === 'content-preferences' && <Modal title={tr('内容与隐私')} privacyKeys={modal.key ? [modal.key] : []} closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
-          <ContentPreferences navigation={state} tools={personalData} preferences={contentPreferences} initialKey={modal.key} onBusyChange={setBusy} onClose={() => setModal(null)} />
+        {modal?.kind === 'content-preferences' && <Modal title={tr('内容与隐私')} privacyKeys={modal.key ? [modal.key] : []} closeDisabled={busy} onClose={() => {
+          if (!busy) { if (contentSettingsDirty.current) setDiscardContentSettings(true); else setModal(null); }
+        }}>
+          <ContentPreferences navigation={state} tools={personalData} preferences={contentPreferences} initialKey={modal.key} onBusyChange={setBusy}
+            onDirtyChange={(dirty) => { contentSettingsDirty.current = dirty; }} onClose={() => setModal(null)} />
+          {discardContentSettings && <PromptDialog privacySafe title={tr('放弃修改')} action={tr('放弃修改')} destructive
+            onCancel={() => setDiscardContentSettings(false)} onConfirm={() => { setDiscardContentSettings(false); setModal(null); }}>
+            <p>{tr('当前内容尚未保存，放弃修改？')}</p>
+          </PromptDialog>}
         </Modal>}
         {modal?.kind === "settings" && (
           <Settings
@@ -1825,7 +1867,7 @@ function Settings({
         {tab === "search" && (
           <>
             <p className="hint">{tr('支持搜索导航、便笺和稍后读，也可输入拼音首字母。')}</p>
-            <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onContentPreferences)}>{tr('内容别名与隐私标记')}</Button>
+            <Button variant="secondary" type="button" className="button" onClick={() => afterSave(onContentPreferences)}>{tr('内容备注、标签与隐私')}</Button>
             <div className="provider-list">
               <div>
                 <MagnifyingGlass className="provider-symbol" size={22} weight="light" aria-hidden="true" />

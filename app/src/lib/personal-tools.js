@@ -3,6 +3,7 @@ import { normalizeUrl } from './model.js';
 import { validateNoteDocument, noteDocumentText } from './note-document.js';
 import { sameJson } from './json-equal.js';
 import { localData } from './local-data.js';
+import { withNavigationPrivacy, loadContentPreferences, validateContentPreferences, contentPreferencesForKeys } from './content-preferences.js';
 import { userErrorMessage } from './user-error.js';
 
 const loadToolsCore = () => import('./tools-core.js').then((module) => module.loadToolsCore());
@@ -103,7 +104,7 @@ export function subscribePersonalTools(callback) {
   return () => { listeners.delete(receive); off(); };
 }
 let queue = Promise.resolve();
-async function mutate(update, { expectedRevision } = {}) {
+async function mutate(update, { expectedRevision, extraRecords } = {}) {
   const run = async () => {
     const current = await readPersonalTools();
     if (expectedRevision !== undefined && (!Number.isSafeInteger(expectedRevision) || current.revision !== expectedRevision)) {
@@ -113,7 +114,8 @@ async function mutate(update, { expectedRevision } = {}) {
     const result = await update(next);
     next.revision = current.revision + 1;
     const checked = check(next);
-    try { await localData.set({ [KEY]: checked }); }
+    const additional = extraRecords ? extraRecords(result) : {};
+    try { await localData.set({ [KEY]: checked, ...additional }); }
     catch (reason) { throw Error(/quota|storage.*full/i.test(reason.message) ? tr("存储空间已满，请先备份，再清理便笺、稍后读或回收站。") : userErrorMessage(reason, tr("内容未能保存，请重试。"))); }
     for (const listener of listeners) listener(checked);
     return copy(result);
@@ -184,17 +186,23 @@ export function applySyncedPersonalTools({ notes, reading }, options = {}) {
     return data;
   }, options);
 }
-export async function saveNote({ id, revision, title: name, body, document, pinned = false }) {
+function saveContentRecord(kind, update, { metadata, expectedPreferencesRevision, expectedMetadata } = {}) {
+  if (metadata === undefined) return mutate(update);
+  return withNavigationPrivacy((_preferences, prepare) => mutate(update, {
+    extraRecords: (record) => prepare([], { metadata: [{ ...metadata, key: `${kind}:${record.id}`, expectedMetadata }], expectedRevision: expectedPreferencesRevision }),
+  }));
+}
+export async function saveNote({ id, revision, title: name, body, document, pinned = false }, options = {}) {
   if (document !== undefined) body = noteDocumentText(validateNoteDocument(document));
   const core = await loadToolsCore(); core.metrics(text(body, 60000, tr("便笺")));
-  return mutate((data) => {
+  return saveContentRecord('note', (data) => {
     const note = id ? recordFor(data.notes, id, revision) : newRecord(tr("未命名便笺"));
     if (note.document && document === undefined && note.body !== body) fail(tr('请使用富文本编辑器修改此便笺。'));
     Object.assign(note, { title: title(name, body.trim().split('\n')[0]?.slice(0, 80) || tr("未命名便笺")), body, pinned: Boolean(pinned), updatedAt: Math.max(Date.now(), note.updatedAt), revision: note.revision + (id ? 1 : 0) });
     if (document !== undefined) note.document = copy(document);
     if (!id) data.notes.push(note);
     return note;
-  });
+  }, options);
 }
 export function deletePersonalRecord(kind, id, revision) {
   if (!activeKinds.includes(kind)) fail(tr("记录类型无效。"));
@@ -236,39 +244,71 @@ export function emptyPersonalTrash({ expectedRevision, ids } = {}) {
     return count;
   }, { expectedRevision });
 }
-export function saveReadingItem({ id, revision, url, title: name, status = 'unread' }) {
+export function saveReadingItem({ id, revision, url, title: name, status = 'unread' }, options = {}) {
   const address = normalizeUrl(url);
-  return mutate((data) => {
+  return saveContentRecord('reading', (data) => {
     const existing = data.reading.find((item) => item.url === address && item.id !== id);
     if (existing) fail(tr("这个链接已在稍后读中。"));
     const record = id ? recordFor(data.reading, id, revision) : newRecord('');
     Object.assign(record, { title: title(name, new URL(address).hostname), url: address, status, updatedAt: Math.max(Date.now(), record.updatedAt), revision: record.revision + (id ? 1 : 0) });
     if (!id) data.reading.push(record);
     return record;
-  });
+  }, options);
 }
 // Historical snapshot records remain valid for backup compatibility only.
 // A+ has no browser Reading List import or tab-snapshot runtime.
 export async function exportPersonalTools() {
-  const data = await loadPersonalTools();
-  return new Blob([JSON.stringify({ format: 'covelet-personal-tools', version: 3, exportedAt: new Date().toISOString(), data })], { type: 'application/json' });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const data = await loadPersonalTools(), preferences = await loadContentPreferences();
+    if ((await readPersonalTools()).revision !== data.revision || (await loadContentPreferences()).revision !== preferences.revision) continue;
+    const portable = contentPreferencesForKeys(preferences, personalContentKeys(data));
+    const hasPreferences = Boolean(portable.library || Object.keys(portable.aliases).length || portable.privateKeys.length);
+    const file = new Blob([JSON.stringify({ format: 'covelet-personal-tools', version: hasPreferences ? 4 : 3, exportedAt: new Date().toISOString(), data,
+      ...(hasPreferences ? { preferences: portable } : {}) })], { type: 'application/json' });
+    if (file.size > 5 * 1024 * 1024) fail(tr('工具备份文件过大。'));
+    return file;
+  }
+  throw Object.assign(Error(tr('内容已在其他页面更新，请重新打开后重试。')), { code: 'REVISION_CONFLICT' });
+}
+export function personalContentKeys(data, selected = ['notes', 'reading', 'trash']) {
+  return [...selected.flatMap((kind) => kind === 'notes' ? data.notes.map((item) => `note:${item.id}`)
+    : kind === 'reading' ? data.reading.map((item) => `reading:${item.id}`)
+      : kind === 'trash' ? data.trash.filter((item) => activeKinds.includes(item.kind)).map((item) => `${item.kind === 'notes' ? 'note' : 'reading'}:${item.record.id}`) : [])];
+}
+export function inspectPersonalToolsBackup(envelope) {
+  if (envelope?.format !== 'covelet-personal-tools' || ![1, 2, 3, 4].includes(envelope.version) || !envelope.data || typeof envelope.data !== 'object'
+    || envelope.data.version !== (envelope.version === 4 ? 3 : envelope.version)) fail(tr('工具备份格式不支持。'));
+  const data = check(envelope.data);
+  if (envelope.version !== 4) return { data, preferences: null };
+  if (Object.keys(envelope).some((key) => !['format', 'version', 'exportedAt', 'data', 'preferences'].includes(key)) || !envelope.preferences) fail(tr('工具备份格式不支持。'));
+  const preferences = validateContentPreferences(envelope.preferences), keys = new Set(personalContentKeys(data));
+  if ([...Object.keys(preferences.aliases), ...preferences.privateKeys, ...Object.keys(preferences.library?.items || {})].some((key) => !keys.has(key))) fail(tr('工具备份格式不支持。'));
+  return { data, preferences: contentPreferencesForKeys(preferences, keys) };
 }
 export async function importPersonalTools(file) {
   if (!(file instanceof Blob) || file.size > 5 * 1024 * 1024) fail(tr("工具备份文件过大。"));
   let envelope; try { envelope = JSON.parse(await file.text()); } catch { fail(tr("工具备份无法读取。")); }
-  if (envelope?.format !== 'covelet-personal-tools' || ![1, 2, 3].includes(envelope.version) || !envelope.data || typeof envelope.data !== 'object'
-    || envelope.data.version !== envelope.version) fail(tr("工具备份格式不支持。"));
-  const incoming = check(envelope.data);
-  return mutate((data) => {
+  const parsed = inspectPersonalToolsBackup(envelope), incoming = parsed.data;
+  const addedKeys = [];
+  const update = (data) => {
     let count = 0;
     // Merge only new IDs. Existing local edits always win; never silently replace.
     const ids = new Set([...data.notes, ...data.reading, ...data.snapshots].map((item) => item.id)), urls = new Set(data.reading.map((item) => item.url));
     for (const kind of activeKinds) for (const record of incoming[kind]) {
       if (ids.has(record.id) || kind === 'reading' && urls.has(record.url)) continue;
       data[kind].push(copy(record)); ids.add(record.id); if (kind === 'reading') urls.add(record.url); count++;
+      addedKeys.push(`${kind === 'notes' ? 'note' : 'reading'}:${record.id}`);
     }
     const trashIds = new Set(data.trash.map((item) => item.id));
-    for (const item of incoming.trash) if (activeKinds.includes(item.kind) && !trashIds.has(item.id) && item.deletedAt > Date.now() - retention) { data.trash.push(copy(item)); trashIds.add(item.id); count++; }
+    const knownRecordIds = new Set([...ids, ...data.trash.map((item) => item.record.id)]);
+    for (const item of incoming.trash) if (activeKinds.includes(item.kind) && !trashIds.has(item.id) && item.deletedAt > Date.now() - retention) {
+      data.trash.push(copy(item)); trashIds.add(item.id); count++;
+      if (!knownRecordIds.has(item.record.id)) addedKeys.push(`${item.kind === 'notes' ? 'note' : 'reading'}:${item.record.id}`);
+    }
     return count;
-  });
+  };
+  if (!parsed.preferences) return mutate(update);
+  return withNavigationPrivacy((_preferences, prepare) => mutate(update, { extraRecords: () => prepare([], {
+    appendPreferences: contentPreferencesForKeys(parsed.preferences, addedKeys),
+  }) }));
 }

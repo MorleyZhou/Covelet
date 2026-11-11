@@ -5,6 +5,7 @@ import {
   deletePersonalRecord, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash,
   applySyncedPersonalTools, exportPersonalTools, importPersonalTools, saveReadingItem,
 } from './personal-tools.js';
+import { createContentTag, getContentMetadata, loadContentPreferences, saveContentMetadata, saveContentSettings } from './content-preferences.js';
 import { localData } from './local-data.js';
 
 const key = 'covelet.tools.v1', values = new Map();
@@ -13,6 +14,17 @@ const note = (id = 'note-a', body = 'saved body', revision = 1) => ({ id, title:
 const reading = (id = 'reading-a', url = 'https://example.com/a') => ({ id, title: id, url, status: 'unread', revision: 1, createdAt: now - 1000, updatedAt: now - 500 });
 const snapshot = () => ({ id: 'snapshot-a', title: 'Saved tabs', revision: 1, createdAt: now - 1000, updatedAt: now - 500, tabs: [{ url: 'https://example.com/', title: 'Example', pinned: true }] });
 const state = (patch = {}) => ({ version: 3, revision: 0, notes: [], reading: [], snapshots: [], trash: [], ...patch });
+function installLocks(t) {
+  const originalNavigator = globalThis.navigator, queues = new Map(), lockOrder = [];
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { locks: {
+    request(name, options, callback) {
+      const action = callback || options; lockOrder.push(name);
+      const next = (queues.get(name) || Promise.resolve()).then(action); queues.set(name, next.catch(() => {})); return next;
+    },
+  } } });
+  t.after(() => Object.defineProperty(globalThis, 'navigator', { configurable: true, value: originalNavigator }));
+  return lockOrder;
+}
 beforeEach((t) => {
   values.clear();
   t.mock.method(localData, 'get', async (requested) => {
@@ -26,6 +38,73 @@ beforeEach((t) => {
   t.mock.method(localData, 'remove', async (requested) => {
     for (const name of Array.isArray(requested) ? requested : [requested]) values.delete(name);
   });
+});
+
+test('new content and its metadata commit atomically and stale metadata never changes either record', async (t) => {
+  const lockOrder = installLocks(t);
+  const tag = await createContentTag('reading tag');
+  let preferences = await loadContentPreferences(), writes = [];
+  t.mock.method(localData, 'set', async (patch) => {
+    writes.push(Object.keys(patch));
+    const serialized = Object.entries(patch).map(([name, value]) => [name, JSON.stringify(value)]);
+    for (const [name, value] of serialized) values.set(name, value);
+  });
+  const saved = await saveReadingItem({ title: 'Article', url: 'https://example.com/article' }, {
+    metadata: { description: 'for next release', tagIds: [tag.id] }, expectedPreferencesRevision: preferences.revision,
+  });
+  assert.deepEqual(writes, [[key, 'covelet.content.preferences.v1']]);
+  assert.deepEqual(lockOrder.slice(-2), ['covelet.content.preferences.v1', key]);
+  preferences = await loadContentPreferences();
+  assert.deepEqual(getContentMetadata(preferences, `reading:${saved.id}`), { description: 'for next release', tagIds: [tag.id] });
+  const baseline = getContentMetadata(preferences, `reading:${saved.id}`);
+  await saveContentMetadata(`reading:${saved.id}`, { description: 'other editor' });
+  await createContentTag('unrelated tag');
+  preferences = await loadContentPreferences();
+  const before = new Map(values);
+  await assert.rejects(saveReadingItem({ ...saved, title: 'stale title' }, {
+    metadata: baseline, expectedPreferencesRevision: preferences.revision, expectedMetadata: baseline,
+  }), { code: 'REVISION_CONFLICT' });
+  assert.deepEqual(values, before);
+  t.mock.method(localData, 'set', async () => { throw Error('synthetic failed commit'); });
+  await assert.rejects(saveReadingItem({ title: 'Failed', url: 'https://example.com/failed' }, { metadata: { description: 'atomic', tagIds: [] } }), /未能保存/);
+  assert.deepEqual(values, before);
+});
+
+test('tools export v4 carries scoped metadata and imports it atomically without replacing duplicates', async (t) => {
+  installLocks(t);
+  await replacePersonalTools(state({ notes: [note()], reading: [reading()] }));
+  const tag = await createContentTag('Work');
+  await saveContentMetadata('note:note-a', { tagIds: [tag.id] });
+  await saveContentMetadata('reading:reading-a', { description: 'read for release', tagIds: [tag.id] });
+  await saveContentSettings('note:note-a', { alias: 'project', private: true });
+  await saveContentMetadata('site:unrelated', { description: 'navigation-only secret', tagIds: [tag.id] });
+  const file = await exportPersonalTools(), envelope = JSON.parse(await file.text());
+  assert.equal(envelope.version, 4); assert.equal(envelope.data.version, 3);
+  assert.deepEqual(Object.keys(envelope.preferences.library.items).sort(), ['note:note-a', 'reading:reading-a']);
+  assert(!JSON.stringify(envelope).includes('navigation-only secret'));
+  values.clear();
+  const localTag = await createContentTag('work'), writes = [];
+  t.mock.method(localData, 'set', async (patch) => {
+    writes.push(Object.keys(patch));
+    const serialized = Object.entries(patch).map(([name, value]) => [name, JSON.stringify(value)]);
+    for (const [name, value] of serialized) values.set(name, value);
+  });
+  assert.equal(await importPersonalTools(file), 2);
+  assert.deepEqual(writes, [[key, 'covelet.content.preferences.v1']]);
+  let preferences = await loadContentPreferences();
+  assert.deepEqual(getContentMetadata(preferences, 'reading:reading-a'), { description: 'read for release', tagIds: [localTag.id] });
+  assert.deepEqual(preferences.privateKeys, ['note:note-a']); assert.equal(preferences.aliases['note:note-a'], 'project');
+  await saveContentMetadata('reading:reading-a', { description: 'keep new local description' });
+  assert.equal(await importPersonalTools(file), 0);
+  preferences = await loadContentPreferences();
+  assert.equal(getContentMetadata(preferences, 'reading:reading-a').description, 'keep new local description');
+  const malformed = structuredClone(envelope);
+  malformed.preferences.library.items['site:other'] = { description: 'must not enter navigation', tagIds: [] };
+  const before = new Map(values);
+  await assert.rejects(importPersonalTools(new Blob([JSON.stringify(malformed)])), /格式不支持/);
+  assert.deepEqual(values, before);
+  t.mock.method(localData, 'set', async () => { throw Error('synthetic failed commit'); });
+  await assert.rejects(importPersonalTools(file), /未能保存/); assert.deepEqual(values, before);
 });
 
 test('v1/v2 tools migrate to v3 and trash records are strictly bounded and validated', () => {

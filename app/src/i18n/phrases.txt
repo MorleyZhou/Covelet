@@ -1449,3 +1449,30 @@ WebDAV 支持分步设置和连接测试，重启浏览器后需重新解锁。|
 仅支持 HTTP 和 HTTPS 网址|Only HTTP and HTTPS URLs are supported|僅支援 HTTP 和 HTTPS 網址|HTTP と HTTPS の URL に対応しています|HTTP 및 HTTPS 주소만 지원합니다|Nur HTTP- und HTTPS-Adressen werden unterstützt|Seules les URL HTTP et HTTPS sont prises en charge|Поддерживаются только адреса HTTP и HTTPS
 主屏幕列表无效|Invalid desktop list|主螢幕清單無效|デスクトップ一覧が無効です|바탕 화면 목록이 잘못되었습니다|Ungültige Desktop-Liste|Liste de bureaux non valide|Недопустимый список рабочих столов
 这条记录已在其他页面修改，请重新打开后再保存。|This item changed in another tab. Reopen it before saving.|這筆記錄已在其他分頁修改，請重新開啟後再儲存。|別のタブで項目が変更されました。開き直してから保存してください。|다른 탭에서 이 항목이 변경되었습니다. 다시 열어서 저장해 주세요.|Dieser Eintrag wurde in einem anderen Tab geändert. Öffne ihn vor dem Speichern erneut.|Cet élément a été modifié dans un autre onglet. Rouvrez-le avant de l’enregistrer.|Эта запись изменена в другой вкладке. Откройте её снова перед сохранением.
+# 0.4.2 content descriptions and tags
+内容备注、标签与隐私|Content descriptions, tags and privacy|內容備註、標籤與隱私|コンテンツのメモ、タグ、プライバシー|콘텐츠 메모, 태그 및 개인정보 보호|Beschreibungen, Tags und Datenschutz|Descriptions, étiquettes et confidentialité|Описания, теги и конфиденциальность
+标签筛选已开启|Tag filter is active|標籤篩選已啟用|タグによる絞り込みが有効です|태그 필터 사용 중|Tag-Filter ist aktiv|Filtre par étiquettes actif|Фильтр по тегам включён
+标签筛选|Filter by tags|標籤篩選|タグで絞り込む|태그로 필터링|Nach Tags filtern|Filtrer par étiquettes|Фильтр по тегам
+标签|Tags|標籤|タグ|태그|Tags|Étiquettes|Теги
+同时包含所选标签|Match all selected tags|同時包含所選標籤|選択したすべてのタグを含む|선택한 모든 태그 포함|Alle ausgewählten Tags enthalten|Contenir toutes les étiquettes sélectionnées|Содержит все выбранные теги
+清除标签筛选|Clear tag filter|清除標籤篩選|タグの絞り込みを解除|태그 필터 지우기|Tag-Filter zurücksetzen|Effacer le filtre par étiquettes|Сбросить фильтр по тегам
+备注|Description|備註|メモ|메모|Beschreibung|Description|Описание
+新标签名称|New tag name|新標籤名稱|新しいタグ名|새 태그 이름|Name des neuen Tags|Nom de la nouvelle étiquette|Название нового тега
+添加标签|Add tag|新增標籤|タグを追加|태그 추가|Tag hinzufügen|Ajouter une étiquette|Добавить тег
+每项内容最多使用 20 个标签。|Each item can have up to 20 tags.|每項內容最多使用 20 個標籤。|各項目に付けられるタグは20個までです。|항목마다 태그를 최대 20개까지 사용할 수 있습니다.|Jeder Eintrag kann bis zu 20 Tags haben.|Chaque élément peut avoir jusqu’à 20 étiquettes.|Каждой записи можно назначить до 20 тегов.
+此内容已在其他页面更新，请重新打开。|This item changed in another tab. Reopen it.|此內容已在其他分頁更新，請重新開啟。|別のタブでこの項目が更新されました。開き直してください。|다른 탭에서 이 항목이 변경되었습니다. 다시 열어 주세요.|Dieser Eintrag wurde in einem anderen Tab geändert. Öffne ihn erneut.|Cet élément a été modifié dans un autre onglet. Rouvrez-le.|Эта запись изменена в другой вкладке. Откройте её снова.
+此标签已在其他页面更新，请重新选择。|This tag changed in another tab. Select it again.|此標籤已在其他分頁更新，請重新選擇。|別のタブでこのタグが更新されました。選び直してください。|다른 탭에서 이 태그가 변경되었습니다. 다시 선택해 주세요.|Dieser Tag wurde in einem anderen Tab geändert. Wähle ihn erneut aus.|Cette étiquette a été modifiée dans un autre onglet. Sélectionnez-la à nouveau.|Этот тег изменён в другой вкладке. Выберите его снова.
+管理标签|Manage tags|管理標籤|タグを管理|태그 관리|Tags verwalten|Gérer les étiquettes|Управление тегами
+选择标签|Select a tag|選擇標籤|タグを選択|태그 선택|Tag auswählen|Choisir une étiquette|Выбрать тег
+重命名标签|Rename tag|重新命名標籤|タグ名を変更|태그 이름 변경|Tag umbenennen|Renommer l’étiquette|Переименовать тег
+删除标签|Delete tag|刪除標籤|タグを削除|태그 삭제|Tag löschen|Supprimer l’étiquette|Удалить тег
+删除此标签及所有内容中的关联？|Delete this tag and remove it from all items?|刪除此標籤及所有內容中的關聯？|このタグを削除し、すべての項目から外しますか？|이 태그를 삭제하고 모든 항목에서 제거할까요?|Diesen Tag löschen und aus allen Einträgen entfernen?|Supprimer cette étiquette et la retirer de tous les éléments ?|Удалить этот тег и убрать его из всех записей?
+解锁后管理标签|Unlock to manage tags|解鎖後管理標籤|ロックを解除してタグを管理|잠금을 해제하여 태그 관리|Zum Verwalten der Tags entsperren|Déverrouiller pour gérer les étiquettes|Разблокировать для управления тегами
+桌面尺寸|Desktop size|桌面尺寸|デスクトップのサイズ|바탕 화면 크기|Desktop-Größe|Taille sur le bureau|Размер на рабочем столе
+从桌面移除|Remove from desktop|從桌面移除|デスクトップから削除|바탕 화면에서 제거|Vom Desktop entfernen|Retirer du bureau|Убрать с рабочего стола
+调整|Adjust|調整|調整|조정|Anpassen|Ajuster|Настроить
+打开 GitHub 贡献|Open GitHub contributions|開啟 GitHub 貢獻|GitHub の貢献を開く|GitHub 기여 내역 열기|GitHub-Beiträge öffnen|Ouvrir les contributions GitHub|Открыть вклад в GitHub
+备注和标签无效或超出大小限制。|Descriptions or tags are invalid or exceed the size limit.|備註與標籤無效或超出大小限制。|メモまたはタグが無効か、サイズ上限を超えています。|메모 또는 태그가 유효하지 않거나 크기 제한을 초과했습니다.|Beschreibungen oder Tags sind ungültig oder überschreiten das Größenlimit.|Les descriptions ou les étiquettes sont invalides ou dépassent la taille autorisée.|Описания или теги недопустимы либо превышают ограничение размера.
+标签已被移除，请重新选择。|This tag was removed. Select another tag.|標籤已移除，請重新選擇。|タグが削除されました。選び直してください。|태그가 삭제되었습니다. 다시 선택해 주세요.|Dieser Tag wurde entfernt. Wähle einen anderen Tag aus.|Cette étiquette a été supprimée. Choisissez-en une autre.|Этот тег удалён. Выберите другой тег.
+已有同名标签。|A tag with this name already exists.|已有同名標籤。|同じ名前のタグがすでにあります。|같은 이름의 태그가 이미 있습니다.|Ein Tag mit diesem Namen ist bereits vorhanden.|Une étiquette portant ce nom existe déjà.|Тег с таким названием уже существует.
+此标签名称不可用，请换一个名称。|This tag name is unavailable. Choose another name.|此標籤名稱無法使用，請換一個名稱。|このタグ名は使用できません。別の名前にしてください。|이 태그 이름은 사용할 수 없습니다. 다른 이름을 입력해 주세요.|Dieser Tag-Name ist nicht verfügbar. Wähle einen anderen Namen.|Ce nom d’étiquette est indisponible. Choisissez un autre nom.|Это название тега недоступно. Выберите другое название.

@@ -15304,5 +15304,239 @@
     "de": "Markdown-Links importieren und Lesezeichen je Desktop oder Ordner als HTML exportieren.",
     "fr": "Importez des liens Markdown et exportez des favoris HTML par bureau ou par dossier.",
     "ru": "Импортируйте ссылки из Markdown и экспортируйте закладки в HTML по рабочим столам или папкам."
+  },
+  "内容备注、标签与隐私": {
+    "en": "Content descriptions, tags and privacy",
+    "zh-TW": "內容備註、標籤與隱私",
+    "ja": "コンテンツのメモ、タグ、プライバシー",
+    "ko": "콘텐츠 메모, 태그 및 개인정보 보호",
+    "de": "Beschreibungen, Tags und Datenschutz",
+    "fr": "Descriptions, étiquettes et confidentialité",
+    "ru": "Описания, теги и конфиденциальность"
+  },
+  "标签筛选已开启": {
+    "en": "Tag filter is active",
+    "zh-TW": "標籤篩選已啟用",
+    "ja": "タグによる絞り込みが有効です",
+    "ko": "태그 필터 사용 중",
+    "de": "Tag-Filter ist aktiv",
+    "fr": "Filtre par étiquettes actif",
+    "ru": "Фильтр по тегам включён"
+  },
+  "标签筛选": {
+    "en": "Filter by tags",
+    "zh-TW": "標籤篩選",
+    "ja": "タグで絞り込む",
+    "ko": "태그로 필터링",
+    "de": "Nach Tags filtern",
+    "fr": "Filtrer par étiquettes",
+    "ru": "Фильтр по тегам"
+  },
+  "标签": {
+    "en": "Tags",
+    "zh-TW": "標籤",
+    "ja": "タグ",
+    "ko": "태그",
+    "de": "Tags",
+    "fr": "Étiquettes",
+    "ru": "Теги"
+  },
+  "同时包含所选标签": {
+    "en": "Match all selected tags",
+    "zh-TW": "同時包含所選標籤",
+    "ja": "選択したすべてのタグを含む",
+    "ko": "선택한 모든 태그 포함",
+    "de": "Alle ausgewählten Tags enthalten",
+    "fr": "Contenir toutes les étiquettes sélectionnées",
+    "ru": "Содержит все выбранные теги"
+  },
+  "清除标签筛选": {
+    "en": "Clear tag filter",
+    "zh-TW": "清除標籤篩選",
+    "ja": "タグの絞り込みを解除",
+    "ko": "태그 필터 지우기",
+    "de": "Tag-Filter zurücksetzen",
+    "fr": "Effacer le filtre par étiquettes",
+    "ru": "Сбросить фильтр по тегам"
+  },
+  "备注": {
+    "en": "Description",
+    "zh-TW": "備註",
+    "ja": "メモ",
+    "ko": "메모",
+    "de": "Beschreibung",
+    "fr": "Description",
+    "ru": "Описание"
+  },
+  "新标签名称": {
+    "en": "New tag name",
+    "zh-TW": "新標籤名稱",
+    "ja": "新しいタグ名",
+    "ko": "새 태그 이름",
+    "de": "Name des neuen Tags",
+    "fr": "Nom de la nouvelle étiquette",
+    "ru": "Название нового тега"
+  },
+  "添加标签": {
+    "en": "Add tag",
+    "zh-TW": "新增標籤",
+    "ja": "タグを追加",
+    "ko": "태그 추가",
+    "de": "Tag hinzufügen",
+    "fr": "Ajouter une étiquette",
+    "ru": "Добавить тег"
+  },
+  "每项内容最多使用 20 个标签。": {
+    "en": "Each item can have up to 20 tags.",
+    "zh-TW": "每項內容最多使用 20 個標籤。",
+    "ja": "各項目に付けられるタグは20個までです。",
+    "ko": "항목마다 태그를 최대 20개까지 사용할 수 있습니다.",
+    "de": "Jeder Eintrag kann bis zu 20 Tags haben.",
+    "fr": "Chaque élément peut avoir jusqu’à 20 étiquettes.",
+    "ru": "Каждой записи можно назначить до 20 тегов."
+  },
+  "此内容已在其他页面更新，请重新打开。": {
+    "en": "This item changed in another tab. Reopen it.",
+    "zh-TW": "此內容已在其他分頁更新，請重新開啟。",
+    "ja": "別のタブでこの項目が更新されました。開き直してください。",
+    "ko": "다른 탭에서 이 항목이 변경되었습니다. 다시 열어 주세요.",
+    "de": "Dieser Eintrag wurde in einem anderen Tab geändert. Öffne ihn erneut.",
+    "fr": "Cet élément a été modifié dans un autre onglet. Rouvrez-le.",
+    "ru": "Эта запись изменена в другой вкладке. Откройте её снова."
+  },
+  "此标签已在其他页面更新，请重新选择。": {
+    "en": "This tag changed in another tab. Select it again.",
+    "zh-TW": "此標籤已在其他分頁更新，請重新選擇。",
+    "ja": "別のタブでこのタグが更新されました。選び直してください。",
+    "ko": "다른 탭에서 이 태그가 변경되었습니다. 다시 선택해 주세요.",
+    "de": "Dieser Tag wurde in einem anderen Tab geändert. Wähle ihn erneut aus.",
+    "fr": "Cette étiquette a été modifiée dans un autre onglet. Sélectionnez-la à nouveau.",
+    "ru": "Этот тег изменён в другой вкладке. Выберите его снова."
+  },
+  "管理标签": {
+    "en": "Manage tags",
+    "zh-TW": "管理標籤",
+    "ja": "タグを管理",
+    "ko": "태그 관리",
+    "de": "Tags verwalten",
+    "fr": "Gérer les étiquettes",
+    "ru": "Управление тегами"
+  },
+  "选择标签": {
+    "en": "Select a tag",
+    "zh-TW": "選擇標籤",
+    "ja": "タグを選択",
+    "ko": "태그 선택",
+    "de": "Tag auswählen",
+    "fr": "Choisir une étiquette",
+    "ru": "Выбрать тег"
+  },
+  "重命名标签": {
+    "en": "Rename tag",
+    "zh-TW": "重新命名標籤",
+    "ja": "タグ名を変更",
+    "ko": "태그 이름 변경",
+    "de": "Tag umbenennen",
+    "fr": "Renommer l’étiquette",
+    "ru": "Переименовать тег"
+  },
+  "删除标签": {
+    "en": "Delete tag",
+    "zh-TW": "刪除標籤",
+    "ja": "タグを削除",
+    "ko": "태그 삭제",
+    "de": "Tag löschen",
+    "fr": "Supprimer l’étiquette",
+    "ru": "Удалить тег"
+  },
+  "删除此标签及所有内容中的关联？": {
+    "en": "Delete this tag and remove it from all items?",
+    "zh-TW": "刪除此標籤及所有內容中的關聯？",
+    "ja": "このタグを削除し、すべての項目から外しますか？",
+    "ko": "이 태그를 삭제하고 모든 항목에서 제거할까요?",
+    "de": "Diesen Tag löschen und aus allen Einträgen entfernen?",
+    "fr": "Supprimer cette étiquette et la retirer de tous les éléments ?",
+    "ru": "Удалить этот тег и убрать его из всех записей?"
+  },
+  "解锁后管理标签": {
+    "en": "Unlock to manage tags",
+    "zh-TW": "解鎖後管理標籤",
+    "ja": "ロックを解除してタグを管理",
+    "ko": "잠금을 해제하여 태그 관리",
+    "de": "Zum Verwalten der Tags entsperren",
+    "fr": "Déverrouiller pour gérer les étiquettes",
+    "ru": "Разблокировать для управления тегами"
+  },
+  "桌面尺寸": {
+    "en": "Desktop size",
+    "zh-TW": "桌面尺寸",
+    "ja": "デスクトップのサイズ",
+    "ko": "바탕 화면 크기",
+    "de": "Desktop-Größe",
+    "fr": "Taille sur le bureau",
+    "ru": "Размер на рабочем столе"
+  },
+  "从桌面移除": {
+    "en": "Remove from desktop",
+    "zh-TW": "從桌面移除",
+    "ja": "デスクトップから削除",
+    "ko": "바탕 화면에서 제거",
+    "de": "Vom Desktop entfernen",
+    "fr": "Retirer du bureau",
+    "ru": "Убрать с рабочего стола"
+  },
+  "调整": {
+    "en": "Adjust",
+    "zh-TW": "調整",
+    "ja": "調整",
+    "ko": "조정",
+    "de": "Anpassen",
+    "fr": "Ajuster",
+    "ru": "Настроить"
+  },
+  "打开 GitHub 贡献": {
+    "en": "Open GitHub contributions",
+    "zh-TW": "開啟 GitHub 貢獻",
+    "ja": "GitHub の貢献を開く",
+    "ko": "GitHub 기여 내역 열기",
+    "de": "GitHub-Beiträge öffnen",
+    "fr": "Ouvrir les contributions GitHub",
+    "ru": "Открыть вклад в GitHub"
+  },
+  "备注和标签无效或超出大小限制。": {
+    "en": "Descriptions or tags are invalid or exceed the size limit.",
+    "zh-TW": "備註與標籤無效或超出大小限制。",
+    "ja": "メモまたはタグが無効か、サイズ上限を超えています。",
+    "ko": "메모 또는 태그가 유효하지 않거나 크기 제한을 초과했습니다.",
+    "de": "Beschreibungen oder Tags sind ungültig oder überschreiten das Größenlimit.",
+    "fr": "Les descriptions ou les étiquettes sont invalides ou dépassent la taille autorisée.",
+    "ru": "Описания или теги недопустимы либо превышают ограничение размера."
+  },
+  "标签已被移除，请重新选择。": {
+    "en": "This tag was removed. Select another tag.",
+    "zh-TW": "標籤已移除，請重新選擇。",
+    "ja": "タグが削除されました。選び直してください。",
+    "ko": "태그가 삭제되었습니다. 다시 선택해 주세요.",
+    "de": "Dieser Tag wurde entfernt. Wähle einen anderen Tag aus.",
+    "fr": "Cette étiquette a été supprimée. Choisissez-en une autre.",
+    "ru": "Этот тег удалён. Выберите другой тег."
+  },
+  "已有同名标签。": {
+    "en": "A tag with this name already exists.",
+    "zh-TW": "已有同名標籤。",
+    "ja": "同じ名前のタグがすでにあります。",
+    "ko": "같은 이름의 태그가 이미 있습니다.",
+    "de": "Ein Tag mit diesem Namen ist bereits vorhanden.",
+    "fr": "Une étiquette portant ce nom existe déjà.",
+    "ru": "Тег с таким названием уже существует."
+  },
+  "此标签名称不可用，请换一个名称。": {
+    "en": "This tag name is unavailable. Choose another name.",
+    "zh-TW": "此標籤名稱無法使用，請換一個名稱。",
+    "ja": "このタグ名は使用できません。別の名前にしてください。",
+    "ko": "이 태그 이름은 사용할 수 없습니다. 다른 이름을 입력해 주세요.",
+    "de": "Dieser Tag-Name ist nicht verfügbar. Wähle einen anderen Namen.",
+    "fr": "Ce nom d’étiquette est indisponible. Choisissez un autre nom.",
+    "ru": "Это название тега недоступно. Выберите другое название."
   }
 }

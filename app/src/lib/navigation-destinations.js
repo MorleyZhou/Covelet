@@ -1,7 +1,8 @@
 import { tr } from '../i18n/index.js';
 import { migrateNavigationState } from './model.js';
-import { saveState, saveStateWithPrivacy } from './storage.js';
+import { loadState, saveState, saveStateWithPrivacy } from './storage.js';
 import { logicalDesktopPages } from './desktop-pages.js';
+import { privateContentKeys } from './presentation.js';
 
 export function desktopDestinationValue(state, page = logicalDesktopPages(state)[0]) {
   const id = state.settings.desktopPages?.[page]?.id;
@@ -89,19 +90,46 @@ export function prepareLayoutTransfer(state, { target, sources }, operation, mak
   return { state: migrateNavigationState({ ...state, entries }), ids, copies, target };
 }
 
+function originalCopySource(id, copies) {
+  const visited = new Set();
+  while (copies.has(id)) {
+    if (visited.has(id)) throw destinationChanged();
+    visited.add(id); id = copies.get(id);
+  }
+  return id;
+}
+
 export function layoutTransferPreferences(preferences, copies) {
   if (!copies.size) return preferences;
   const keys = new Set(preferences.privateKeys);
-  for (const [id, sourceId] of copies) if (keys.has(`site:${sourceId}`)) keys.add(`site:${id}`);
-  return { ...preferences, privateKeys: [...keys] };
+  for (const id of copies.keys()) if (keys.has(`site:${originalCopySource(id, copies)}`)) keys.add(`site:${id}`);
+  const library = preferences.library ? { ...preferences.library, items: { ...preferences.library.items } } : null;
+  if (library) for (const id of copies.keys()) {
+    const sourceId = originalCopySource(id, copies);
+    if (library.items[`site:${sourceId}`]) library.items[`site:${id}`] = structuredClone(library.items[`site:${sourceId}`]);
+  }
+  return { ...preferences, privateKeys: [...keys], ...(library ? { library } : {}) };
 }
 
 export function saveLayoutTransfer(state, expectedRevision, copies) {
   const savedCopies = state.entries.filter((entry) => copies.has(entry.id));
   if (!savedCopies.length) return saveState(state, expectedRevision);
-  return saveStateWithPrivacy(state, expectedRevision, (current, commit) => {
-    const privateKeys = new Set(layoutTransferPreferences(current, copies).privateKeys);
+  return saveStateWithPrivacy(state, expectedRevision, async (current, commit) => {
+    const persisted = await loadState();
+    const entries = [...persisted.entries, ...state.entries], sources = new Map(savedCopies.map((entry) => [entry.id, originalCopySource(entry.id, copies)]));
+    const effectiveKeys = privateContentKeys({ entries }, current);
+    const inherited = layoutTransferPreferences({ ...current, privateKeys: [...effectiveKeys] }, copies);
+    const privateKeys = new Set(inherited.privateKeys);
+    const hidden = privateContentKeys(state, inherited);
+    for (const entry of savedCopies) {
+      const sourceId = sources.get(entry.id);
+      if (!entries.some((item) => item.id === sourceId && item.type === 'site')) throw destinationChanged();
+      if (current.presentation && (effectiveKeys.has(`site:${sourceId}`) || hidden.has(`site:${entry.id}`))) {
+        throw Object.assign(Error(tr('请先输入密码解除隐藏。')), { code: 'PRIVACY_LOCKED' });
+      }
+    }
     const addedKeys = savedCopies.map((entry) => `site:${entry.id}`).filter((key) => privateKeys.has(key));
-    return commit(addedKeys);
+    return commit(addedKeys, { metadata: savedCopies.map((entry) => ({ key: `site:${entry.id}`,
+      ...(current.library?.items[`site:${sources.get(entry.id)}`] || { description: '', tagIds: [] }) })) });
   });
 }

@@ -3,7 +3,7 @@ import { tr, getLocale, initializeLanguage } from "./i18n/index.js";
 import { useLanguage } from './i18n/react.js';
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { loadState, saveStateWithPrivacy, getAssetUrl } from './lib/storage.js';
+import { loadState, saveStateWithPrivacy, getAssetUrl, subscribeState } from './lib/storage.js';
 import { letterIcon, moveEntry, normalizeUrl, DEFAULT_ICON_BACKGROUND } from './lib/model.js';
 import { preferredIconAddress, normalizeIconAddress, siteIconAddress, guessIconFit, withDiscoveredIcon, navigationIconDisplaySources } from './lib/site-icons.js';
 import { useNavigationIcon } from './lib/use-navigation-icon.js';
@@ -18,8 +18,9 @@ import { readBrowserFavicon } from './lib/browser-favicon.js';
 import { iconTextColor } from './lib/site-form.js';
 import IconBackground from './components/IconBackground.jsx';
 import { saveReadingItem } from './lib/personal-tools.js';
-import { loadContentPreferences, useContentPreferences } from './lib/content-preferences.js';
-import { privateContentKeys } from './lib/presentation.js';
+import { loadContentPreferences, useContentPreferences, getContentMetadata } from './lib/content-preferences.js';
+import ContentMetadataEditor from './components/ContentMetadataEditor.jsx';
+import { privateContentKeys, PresentationContext } from './lib/presentation.js';
 import { initializeLocalData } from './lib/initialize-local-data.js';
 import { PrivacyPasswordForm } from './components/PrivacyPassword.jsx';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs.jsx';
@@ -50,7 +51,14 @@ function AddCurrentPage() {
   const original = useRef(null), iconEdited = useRef(false), previewBlob = useRef(null);
   const [destination, setDestination] = useState('navigation');
   const [navigation, setNavigation] = useState(null), [targetValue, setTargetValue] = useState('');
-  const privateBlocked = hiddenEntry(original.current, contentPreferences.data);
+  const navigationSelectionRevision = useRef(null);
+  const [metadata, setMetadata] = useState({ description: '', tagIds: [] });
+  const metadataRevision = useRef(0);
+  const metadataBase = useRef({ description: '', tagIds: [] });
+  const [metadataBusy, setMetadataBusy] = useState(false);
+  const currentOriginal = navigation?.entries.find((entry) => entry.id === original.current?.id) || original.current;
+  const privateBlocked = hiddenEntry(currentOriginal, contentPreferences.data);
+  useEffect(() => subscribeState((next) => setNavigation((current) => current && current.revision > next.revision ? current : next)), []);
   useEffect(() => {
     if (!contentPreferences.ready) return;
     let active = true, objectUrl, selectedHd = false;
@@ -65,7 +73,11 @@ function AddCurrentPage() {
         const existing = state.entries.find((entry) => entry.type === 'site' && entry.url === url);
         if (!active) return;
         original.current = existing ? structuredClone(existing) : null;
-        setNavigation(state);
+        metadataBase.current = existing ? getContentMetadata(contentPreferences.data, `site:${existing.id}`) : { description: '', tagIds: [] };
+        setMetadata(metadataBase.current);
+        metadataRevision.current = contentPreferences.data.revision;
+        setNavigation((current) => current && current.revision > state.revision ? current : state);
+        navigationSelectionRevision.current = state.revision;
         setTargetValue(existing ? siteDestinationValue(state, existing) : desktopDestinationValue(state));
         let iconUrl = existing ? siteIconAddress(existing) : preferredIconAddress(url);
         try { if (!existing && tab?.favIconUrl) iconUrl = normalizeIconAddress(tab.favIconUrl); } catch { /* Nonportable browser icons use the origin fallback. */ }
@@ -155,7 +167,7 @@ function AddCurrentPage() {
   }
   async function save(event) {
     event.preventDefault();
-    if (locked || initializing || !contentPreferences.ready || privateBlocked || event.nativeEvent?.isComposing) return;
+    if (locked || metadataBusy || initializing || !contentPreferences.ready || privateBlocked || event.nativeEvent?.isComposing) return;
     setBusy(true); setError('');
     try {
       const url = normalizeUrl(form.url), name = form.name.trim();
@@ -168,11 +180,11 @@ function AddCurrentPage() {
       if (hiddenEntry(existing, preferences) || hiddenEntry(latest.entries.find((entry) => entry.type === 'site' && entry.url === url), preferences)) {
         throw Error(tr('请先输入密码解除隐藏。'));
       }
-      if (destination === 'reading') { await saveReadingItem({ title: name, url }); window.close(); return; }
+      if (destination === 'reading') { await saveReadingItem({ title: name, url }, { metadata, expectedMetadata: { description: '', tagIds: [] }, expectedPreferencesRevision: metadataRevision.current }); window.close(); return; }
       const iconUrl = normalizeIconAddress(form.iconUrl || preferredIconAddress(url));
       if (original.current && (!existing || JSON.stringify(existing) !== JSON.stringify(original.current))) throw Error(tr("此导航已在其他页面修改，请重新打开扩展。"));
       // A legacy desktop without an identity can be renumbered by another tab.
-      if (/^page:\d+$/.test(targetValue) && navigation?.revision !== latest.revision) throw destinationChanged();
+      if (/^page:\d+$/.test(targetValue) && navigationSelectionRevision.current !== latest.revision) throw destinationChanged();
       const target = navigationDestination(latest, targetValue, preferences);
       const duplicate = latest.entries.find((entry) => entry.id !== existing?.id && siteAtDestination(entry, target) && entry.url === url);
       if (duplicate) throw Error(tr("这个网址已在导航中。"));
@@ -196,7 +208,9 @@ function AddCurrentPage() {
       await saveStateWithPrivacy(next, latest.revision, (current, commit) => {
         if (hiddenEntry(existing, current)) throw Error(tr('请先输入密码解除隐藏。'));
         const currentTarget = navigationDestination(latest, targetValue, current);
-        return commit(inheritedSitePrivacy(existing, currentTarget, current));
+        return commit(inheritedSitePrivacy(existing, currentTarget, current), {
+          metadata: [{ key: `site:${entry.id}`, ...metadata, expectedMetadata: metadataBase.current }], expectedRevision: metadataRevision.current,
+        });
       });
       window.close();
     } catch (reason) {
@@ -225,7 +239,9 @@ function AddCurrentPage() {
   const imagePending = initializing || visualPending || preferLocal && asset.phase === 'loading' || Boolean(source) && cached.phase === 'loading';
   const renderedImage = fullBleed ? image : adapted.url || image;
   if (!contentPreferences.ready) return <main className="quick-add theme-system"><h1>Covelet</h1>{contentPreferences.error && <p className="form-error" role="alert">{contentPreferences.error}</p>}</main>;
-  return <Tabs value={destination} onValueChange={setDestination} asChild><main className="quick-add theme-system">
+  return <PresentationContext.Provider value={{ active: contentPreferences.data.presentation,
+    hiddenKeys: privateContentKeys(navigation, contentPreferences.data), requestUnlock: () => {} }}>
+    <Tabs value={destination} onValueChange={setDestination} asChild><main className="quick-add theme-system">
     <h1>{privateBlocked ? tr('已隐藏') : destination === 'reading' ? tr("添加到稍后读") : original.current ? tr("编辑网站") : tr("添加网站")}</h1>
     <TabsList className="popup-destination" aria-label={tr("保存位置")}><TabsTrigger value="navigation" disabled={locked}>{tr("网站导航")}</TabsTrigger><TabsTrigger value="reading" disabled={locked}>{tr("稍后读")}</TabsTrigger></TabsList>
     <TabsContent value={destination} className="popup-destination-panel">{privateBlocked
@@ -239,7 +255,11 @@ function AddCurrentPage() {
         if (previous !== next) { iconEdited.current = true; setIconInfo({ phase: 'idle' }); setError(''); patch({ url, iconUrl: preferredIconAddress(url), iconFit: guessIconFit(preferredIconAddress(url)) }); }
         else patch({ url });
       }} /></label>
-      {destination === 'navigation' && <>{navigation && <NavigationDestination state={navigation} preferences={contentPreferences.data} value={targetValue} onChange={setTargetValue} disabled={locked || initializing} />}
+      <ContentMetadataEditor preferences={contentPreferences.data} contentKey={original.current ? `site:${original.current.id}` : undefined}
+        value={metadata} onChange={setMetadata} disabled={locked || initializing} onBusyChange={setMetadataBusy}
+        onPreferencesChange={(next) => { metadataRevision.current = next.revision; }} />
+      {destination === 'navigation' && <>{navigation && <NavigationDestination state={navigation} preferences={contentPreferences.data} value={targetValue}
+        onChange={(value) => { setTargetValue(value); navigationSelectionRevision.current = navigation.revision; }} disabled={locked || initializing} />}
       <IconBackground value={iconBackground} onChange={(iconBackground) => patch({ iconBackground })}
         onReset={() => setForm((current) => { const next = { ...current }; delete next.iconBackground; return next; })}
         preview={<span className="site-icon" style={{ colorScheme: scheme, backgroundColor: iconBackground, color: iconTextColor(iconBackground) }}>
@@ -256,9 +276,9 @@ function AddCurrentPage() {
       </>}
       {error && <p className="form-error" role="alert">{tr(error)}</p>}
       <div className="quick-add-actions"><Button variant="secondary" className="button" type="button" disabled={locked} onClick={() => window.close()}>{tr("取消")}</Button>
-        <Button variant="default" className="button primary" type="submit" disabled={locked || initializing || destination === 'navigation' && !targetValue}>{busy ? tr("保存中…") : tr("保存")}</Button></div>
+        <Button variant="default" className="button primary" type="submit" disabled={locked || metadataBusy || initializing || destination === 'navigation' && !targetValue}>{busy ? tr("保存中…") : tr("保存")}</Button></div>
     </form>}</TabsContent>
-  </main></Tabs>;
+  </main></Tabs></PresentationContext.Provider>;
 }
 
 initializeLanguage().then(initializeLocalData).then(() => {

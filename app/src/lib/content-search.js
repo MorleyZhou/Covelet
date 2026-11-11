@@ -122,11 +122,12 @@ function noteExcerpt(body, tokens) {
  * Title/alias matching also supports approximate Chinese pinyin initials.
  * Results retain original entry/record references and original URLs.
  */
-export function searchCoveletContent(navigation, tools, query, { aliases = {}, hiddenKeys = [], desktops = [], limit = 24 } = {}) {
+export function searchCoveletContent(navigation, tools, query, { aliases = {}, hiddenKeys = [], desktops = [], library, tagIds = [], limit = 24 } = {}) {
   const normalized = normalize(query);
+  const selectedTags = Array.isArray(tagIds) ? [...new Set(tagIds)] : [];
   const boundedLimit = Number.isFinite(limit) ? Math.min(MAX_RESULTS, Math.max(0, Math.floor(limit))) : 24;
-  if (!normalized || normalized.length > 2000 || !boundedLimit) return [];
-  const tokens = [...new Set(normalized.split(' '))];
+  if ((!normalized && !selectedTags.length) || normalized.length > 2000 || !boundedLimit) return [];
+  const tokens = normalized ? [...new Set(normalized.split(' '))] : [];
   if (tokens.length > 64) return [];
   const hidden = hiddenKeys instanceof Set ? hiddenKeys : new Set(Array.isArray(hiddenKeys) ? hiddenKeys : []);
   const results = [];
@@ -136,13 +137,18 @@ export function searchCoveletContent(navigation, tools, query, { aliases = {}, h
     const key = contentKey(type, record.id);
     // Hidden data never reaches normalization, snippets, scoring or totals.
     if (hidden.has(key)) return;
+    const metadata = library?.items?.[key];
+    if (!selectedTags.every((id) => metadata?.tagIds?.includes(id))) return;
     const title = ['site', 'folder'].includes(type) ? record.name : record.title;
     const body = type === 'note' ? record.body : '';
+    const description = ['site', 'reading'].includes(type) ? metadata?.description || '' : '';
+    const tagNames = (library?.tags || []).filter((tag) => metadata?.tagIds?.includes(tag.id)).map((tag) => normalize(tag.name));
     const fields = searchableFields(record, type);
-    const score = matchScore(fields.title, fields.body, fields.address, fields.hostname, aliasesFor(aliases, key), tokens, normalized);
+    const score = normalized ? matchScore(fields.title, normalize(`${body} ${description}`), fields.address, fields.hostname,
+      [...aliasesFor(aliases, key), ...tagNames], tokens, normalized) : 1;
     if (!score) return;
     results.push({ key, type, id: record.id, title: typeof title === 'string' ? title : '',
-      subtitle: type === 'note' ? noteExcerpt(body, tokens) : typeof record.url === 'string' ? record.url : '',
+      subtitle: type === 'note' ? noteExcerpt(body, tokens) : description ? noteExcerpt(description, tokens) : typeof record.url === 'string' ? record.url : '',
       ...(type === 'note' ? {} : { url: record.url }),
       ...(['site', 'folder'].includes(type) ? { entry: record } : { record }), score });
   };
@@ -155,6 +161,16 @@ export function searchCoveletContent(navigation, tools, query, { aliases = {}, h
   for (const record of tools?.reading ?? []) add('reading', record);
   // Modern JS sort is stable: identical scores retain saved navigation/tool order.
   return results.sort((left, right) => right.score - left.score).slice(0, boundedLimit);
+}
+
+export function visibleContentTagIds(navigation, tools, library, hiddenKeys = []) {
+  const hidden = hiddenKeys instanceof Set ? hiddenKeys : new Set(hiddenKeys || []);
+  const records = [
+    ...(Array.isArray(navigation) ? navigation : navigation?.entries || []).filter((item) => item.type === 'site').map((item) => `site:${item.id}`),
+    ...(tools?.notes || []).map((item) => `note:${item.id}`),
+    ...(tools?.reading || []).map((item) => `reading:${item.id}`),
+  ];
+  return [...new Set(records.filter((key) => !hidden.has(key)).flatMap((key) => library?.items?.[key]?.tagIds || []))];
 }
 
 export function exactDesktopMatches(desktops, query) {

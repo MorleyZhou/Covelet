@@ -2,8 +2,8 @@ import { tr } from '../i18n/index.js';
 import { localData } from './local-data.js';
 import * as navigation from './storage.js';
 import { migrateNavigationState } from './model.js';
-import { loadPersonalTools, validatePersonalTools, replacePersonalTools } from './personal-tools.js';
-import { loadContentPreferences, validateContentPreferences, replaceContentPreferences } from './content-preferences.js';
+import { loadPersonalTools, validatePersonalTools, replacePersonalTools, inspectPersonalToolsBackup, personalContentKeys } from './personal-tools.js';
+import { loadContentPreferences, validateContentPreferences, replaceContentPreferences, mergeContentPreferences, contentPreferencesForKeys } from './content-preferences.js';
 import { loadDesktopTemplateEnvelope, validateSavedDesktopTemplates, replaceDesktopTemplates } from './desktop-templates.js';
 import { navigationIconSources } from './navigation-icon-intake.js';
 
@@ -36,7 +36,7 @@ const summary = (data) => ({
   notes: data.tools?.notes.length ?? 0, reading: data.tools?.reading.length ?? 0,
   trash: data.tools?.trash?.filter((item) => ['notes', 'reading'].includes(item.kind)).length ?? 0,
   templates: data.templates?.templates.length ?? 0,
-  preferences: data.preferences ? new Set([...Object.keys(data.preferences.aliases), ...data.preferences.privateKeys]).size : 0,
+  preferences: data.preferences ? new Set([...Object.keys(data.preferences.aliases), ...data.preferences.privateKeys, ...Object.keys(data.preferences.library?.items || {})]).size : 0,
 });
 
 // Each data domain retains its own revision lock. A durable recovery point is
@@ -76,9 +76,10 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     }
     let input;
     try { input = JSON.parse(await file.text()); } catch { fail(tr('备份文件无法读取。')); }
-    if (input?.format === 'covelet-personal-tools' && [1, 2, 3].includes(input.version) && input.data?.version === input.version) {
-      const checked = tools.validate(input.data), result = { format: 'legacy-tools', createdAt: typeof input.exportedAt === 'string' && Number.isFinite(Date.parse(input.exportedAt)) ? input.exportedAt : null, navigation: null,
-        tools: checked, preferences: null, templates: null, categories: ['notes', 'reading', 'trash'], source: null };
+    if (input?.format === 'covelet-personal-tools') {
+      const parsed = inspectPersonalToolsBackup(input), checked = tools.validate(parsed.data);
+      const result = { format: 'legacy-tools', createdAt: typeof input.exportedAt === 'string' && Number.isFinite(Date.parse(input.exportedAt)) ? input.exportedAt : null, navigation: null,
+        tools: checked, preferences: parsed.preferences, templates: null, categories: ['notes', 'reading', 'trash', ...(parsed.preferences ? ['preferences'] : [])], source: null };
       return { ...result, summary: summary(result) };
     }
     const required = ['format', 'version', 'createdAt', 'navigation', 'tools', 'preferences', 'templates'];
@@ -167,8 +168,15 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
         const list = mode === 'append' ? [...before.templates.templates, ...plan.templates.templates.filter((item) => !before.templates.templates.some((old) => old.id === item.id))] : plan.templates.templates;
         next.templates = templates.validate({ ...before.templates, templates: list });
       }
-      if (selected.includes('preferences')) next.preferences = preferences.validate(mode === 'append'
-        ? { ...before.preferences, aliases: { ...plan.preferences.aliases, ...before.preferences.aliases }, privateKeys: [...new Set([...before.preferences.privateKeys, ...plan.preferences.privateKeys])] } : plan.preferences);
+      if (selected.includes('preferences')) {
+        if (plan.format === 'legacy-tools' && plan.preferences) {
+          const existingKeys = new Set(personalContentKeys(before.tools));
+          const importedKeys = mode === 'replace' ? personalContentKeys(plan.tools, selected)
+            : personalContentKeys(next.tools || before.tools, selected).filter((key) => !existingKeys.has(key));
+          next.preferences = preferences.validate(mergeContentPreferences(before.preferences, contentPreferencesForKeys(plan.preferences, importedKeys),
+            { replaceKeys: mode === 'replace' ? personalContentKeys(before.tools, selected) : [] }));
+        } else next.preferences = preferences.validate(mode === 'append' ? mergeContentPreferences(before.preferences, plan.preferences) : plan.preferences);
+      }
       // Validation includes archive resources before the checkpoint and writes.
       if (next.navigation) next.navigation = await nav.validateBackupPlan(next.navigation);
       const point = { version: 1, id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: 'applying', data: snapshot.data, selected, mode,
