@@ -44,6 +44,8 @@ import {
   createInitialState,
   normalizeUrl,
   validateProviderTemplate,
+  normalizeProviderKeyword,
+  validateState,
   moveEntry,
   deleteEntry,
   migrateNavigationState,
@@ -58,7 +60,7 @@ import {
   putImage,
   getAssetUrl,
 } from "./lib/storage.js";
-import { submitWebSearch } from "./lib/search.js";
+import { submitWebSearch, resolveProviderKeyword } from "./lib/search.js";
 import { createWallpaperProvider, DEFAULT_WALLPAPER_INTERVAL, loadWallpaperInterval, loadWallpaperSource, saveWallpaperInterval, saveWallpaperSource, subscribeWallpaperInterval, subscribeWallpaperSource } from './lib/wallpaper.js';
 import { useIconDrag } from "./lib/use-icon-drag.js";
 import { canReadSite, supportsSiteInfo } from "./lib/site-info.js";
@@ -707,6 +709,9 @@ export function App() {
   }, [candidate, focused, query, state?.revision, personalData?.revision]);
   const currentFolder = state?.entries.find((item) => item.id === folderId);
   const selectedProvider = state?.providers.find((item) => item.id === provider);
+  const keywordSearch = searchShielded ? null : resolveProviderKeyword(query, state?.providers || []);
+  const keywordHint = keywordSearch && candidate < 0
+    && !exactDesktopMatches(searchResult.rows.filter((item) => item.type === 'desktop').map((item) => item.record), query).length ? keywordSearch : null;
   const items =
     desktopState?.entries
       .filter((item) => item.parentId === null && !item.detached)
@@ -869,7 +874,8 @@ export function App() {
         const matches = exactDesktopMatches(searchResult.rows.filter((item) => item.type === 'desktop').map((item) => item.record), query);
         if (matches.length === 1) { openContent({ type: 'desktop', record: matches[0] }); return; }
         if (matches.length > 1) { setFocused(true); return; }
-        await submitWebSearch(query, provider, state.providers, {
+        const keyword = resolveProviderKeyword(query, state.providers);
+        await submitWebSearch(keyword?.query ?? query, keyword?.provider.id ?? provider, state.providers, {
           newTab: settings.openNewTab,
         });
       }
@@ -1448,6 +1454,7 @@ export function App() {
               <MagnifyingGlass size={33} weight="light" />
             </Button>
           </form>
+          {keywordHint && <p className="search-keyword-hint" role="status">{tr('使用 {0} 搜索', [providerName(keywordHint.provider)])}</p>}
           {searchContext && !searchShielded && <div className="saved-search-context"><span>{searchContext.name}</span>
             <Button type="button" variant="ghost" size="sm" aria-label={tr('重置筛选')} title={tr('重置筛选')} onClick={clearWorkingView}><X size={15} /></Button></div>}
           {searchResult.status === 'invalid' && <p className="content-search-error" role="status">{tr('筛选条件已失效，请重新选择。')}</p>}
@@ -1778,6 +1785,7 @@ function Settings({
     [newName, setNewName] = useState(""),
     [editingProvider, setEditingProvider] = useState(null),
     [newTemplate, setNewTemplate] = useState(""),
+    [newKeyword, setNewKeyword] = useState(""),
     [error, setError] = useState("");
   const [saving, setSaving] = useState({ phase: "idle" });
   const [defaultId, setDefaultId] = useState(null), [choosingDefault, setChoosingDefault] = useState(false);
@@ -1844,15 +1852,17 @@ function Settings({
     try {
       if (!newName.trim()) throw Error(tr("请填写引擎名称"));
       const template = validateProviderTemplate(newTemplate);
-      const value = { id: editingProvider ?? uid(), name: newName.trim(), template };
+      const keyword = normalizeProviderKeyword(newKeyword);
+      const value = { id: editingProvider ?? uid(), name: newName.trim(), template, ...(keyword ? { keyword } : {}) };
+      const nextProviders = editingProvider ? providers.map((item) => item.id === editingProvider ? value : item) : [...providers, value];
+      validateState({ ...state, providers: nextProviders });
       // Saving an engine never prompts for a site's reading permission.
       const iconRequest = fetchProviderIconForSave(template);
-      setProviders((current) => editingProvider
-        ? current.map((item) => item.id === editingProvider ? value : item)
-        : [...current, value]);
+      setProviders(nextProviders);
       setEditingProvider(null);
       setNewName("");
       setNewTemplate("");
+      setNewKeyword("");
       setError("");
       Promise.resolve(iconRequest).then(() => {
         onProviderIconReady();
@@ -1984,6 +1994,7 @@ function Settings({
                   <SearchProviderIcon provider={p} epoch={providerIconEpoch} />
                   <span className="provider-details">
                     {providerName(p)}
+                    {p.keyword && <code className="provider-keyword">{p.keyword}</code>}
                     <small>{p.template}</small>
                   </span>
                   <Button variant="unstyled" size="unstyled"
@@ -2011,6 +2022,7 @@ function Settings({
                       setEditingProvider(p.id);
                       setNewName(p.name);
                       setNewTemplate(p.template);
+                      setNewKeyword(p.keyword || '');
                     }}
                   >
                     <PencilSimple size={18} />
@@ -2021,7 +2033,7 @@ function Settings({
                     aria-label={tr("删除{0}", [providerName(p)])}
                     onClick={() => {
                       setProviders(providers.filter((v) => v.id !== p.id));
-                      if (editingProvider === p.id) { setEditingProvider(null); setNewName(""); setNewTemplate(""); }
+                      if (editingProvider === p.id) { setEditingProvider(null); setNewName(""); setNewTemplate(""); setNewKeyword(''); }
                     }}
                   >
                     <Trash size={18} />
@@ -2044,6 +2056,10 @@ function Settings({
                 placeholder={tr("搜索地址，使用 {query} 表示关键词")}
               />
             </label>
+            <label>{tr('搜索关键词')}<Input value={newKeyword} maxLength={20} autoCapitalize="none" spellCheck="false"
+                aria-describedby="provider-keyword-help" placeholder={tr('例如：gh，可留空')}
+                onChange={(event) => setNewKeyword(event.target.value)} onKeyDown={providerInputKeyDown} /></label>
+            <p id="provider-keyword-help" className="hint">{tr('输入“关键词 空格 内容”可直接使用此引擎。')}</p>
             <Button variant="secondary"
               type="button"
               className="button"
@@ -2051,7 +2067,7 @@ function Settings({
             >
               {editingProvider ? tr("保存引擎") : tr("添加引擎")}
             </Button>
-            {editingProvider && <Button variant="ghost" type="button" className="button quiet" onClick={() => { setEditingProvider(null); setNewName(""); setNewTemplate(""); setError(""); }}>{tr("取消修改")}</Button>}
+            {editingProvider && <Button variant="ghost" type="button" className="button quiet" onClick={() => { setEditingProvider(null); setNewName(""); setNewTemplate(""); setNewKeyword(''); setError(""); }}>{tr("取消修改")}</Button>}
           </>
         )}
         {tab === 'time' && <TimeAndDateSettings disabled={demo} />}

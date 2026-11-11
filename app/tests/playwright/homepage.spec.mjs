@@ -51,6 +51,8 @@ test('settings separate backup, trash, and about, and sync opens from Extensions
   const settings = await openSettings(page, '关于');
   const version = await page.evaluate(() => chrome.runtime.getManifest().version);
   await settings.getByRole('button', { name: `${version} 更新内容`, exact: true }).click();
+  await expect(settings).toContainText('网站和稍后读支持备注，网站、便笺与稍后读共用标签。');
+  await settings.getByRole('button', { name: '0.4.0 更新内容', exact: true }).click();
   await expect(settings).toContainText('命名桌面、设置默认桌面并搜索跳转。');
   await settings.getByRole('button', { name: '0.3.1 更新内容', exact: true }).click();
   await expect(settings).toContainText('首页保持一屏。');
@@ -68,8 +70,8 @@ test('settings separate backup, trash, and about, and sync opens from Extensions
   await expect(settings.getByRole('tabpanel', { name: '回收站', exact: true })).toContainText('回收站为空');
   await settings.getByRole('tab', { name: '备份与恢复', exact: true }).click();
   const backup = settings.getByRole('tabpanel', { name: '备份与恢复', exact: true });
-  await expect(backup.getByRole('button')).toHaveText(['导出备份', '恢复备份']);
-  await expect(backup).toContainText('导出的备份文件未加密，请妥善保管。');
+  await expect(backup.getByRole('button')).toHaveText(['导出备份', '加密导出', '恢复备份']);
+  await expect(backup).toContainText('普通备份文件未加密，请妥善保管。');
   await expect(page.getByRole('dialog')).toHaveCount(1);
   await page.keyboard.press('Escape');
   await expect(settings).toBeHidden();

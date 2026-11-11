@@ -106,6 +106,7 @@ test('a real later edit invalidates restore without overwriting navigation, note
   const other = await extension.newtab();
   await addSite(other, '预览后新增的导航', 'https://example.com/covelet-after-preview');
   const current = await exportCompleteBackup(page);
+  await expect(recovery.locator('.recovery-preview')).toBeVisible();
   await recovery.getByRole('button', { name: '确认恢复', exact: true }).click();
   await expect(recovery.getByRole('alert')).toContainText('数据已更新，请重新选择备份文件。');
   await expect(recovery.locator('.recovery-preview')).toHaveCount(0);

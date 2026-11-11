@@ -12,6 +12,8 @@ import { defaultSavedFilters, resolveSavedView } from './saved-views.js';
 import { fromMarkdown } from '@futelab/folio/serialization';
 import { captureNoteDocument } from './note-capture.js';
 import { noteDocumentText } from './note-document.js';
+import { localData } from './local-data.js';
+import { encryptCompleteBackup, decryptCompleteBackup, isEncryptedBackup, PASSWORD_BACKUP_LIMITS } from './password-backup.js';
 
 const clone = (value) => structuredClone(value);
 const PNG = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB0kAAAAASUVORK5CYII=', 'base64'));
@@ -70,6 +72,66 @@ function singleNavigation(id, url, { privateFolder = false } = {}) {
     page: 0, order: 0, icon: { kind: 'letter', value: 'P' } }, { ...item, parentId: 'private-folder' }] : [item];
   return state;
 }
+
+test('password-encrypted full backup remains readonly until explicit restore and retains navigation trash, images, rich notes, dates, views and metadata', async () => {
+  const source = harness(), target = harness(), navigation = singleNavigation('encrypted-site', 'https://encrypted.test/');
+  navigation.entries[0].icon = { kind: 'image', value: 'shared-image' };
+  navigation.trash = { version: 1, items: [{ id: 'encrypted-trash', kind: 'site', deletedAt: Date.now(), origin: { desktopId: 'source-desktop', page: 0, parentId: null }, ownedEntries: [{ ...navigation.entries[0], id: 'recycled-site', name: 'Recycled', url: 'https://recycled.test/' }], memberRefs: [] }] };
+  source.assets.set('shared-image', { id: 'shared-image', blob: new Blob([PNG], { type: 'image/png' }) });
+  await source.nav.saveState(navigation, 0);
+  const document = JSON.parse(JSON.stringify(fromMarkdown('## Kept\n\n[Source](https://source.test/)')));
+  source.tools.change({ notes: [{ ...note(), document, body: noteDocumentText(document) }], reading: [{ id: 'dated-reading', revision: 1, createdAt: 1, updatedAt: 2, title: 'Dated', url: 'https://reading.test/', status: 'archived', revisitOn: '2026-12-01' }] });
+  source.preferences.change({ privateKeys: ['note:note-a'], aliases: { 'site:recycled-site': 'Trash alias' }, library: { version: 1, tags: [{ id: 'kept-tag', name: 'Kept tag' }], items: { 'site:recycled-site': { description: 'Owned metadata', tagIds: ['kept-tag'] }, 'note:note-a': { description: '', tagIds: ['kept-tag'] } }, views: [{ id: 'kept-view', revision: 1, name: 'Due', ...defaultSavedFilters(), type: 'reading', revisit: 'due' }] } });
+  source.templates.change({ templates: [{ id: 'kept-scheme', name: 'Mine', createdAt: 1, template: BUILTIN_DESKTOP_TEMPLATES[0] }] });
+  const previousSource = clone({ tools: await source.tools.read(), preferences: await source.preferences.read(), templates: await source.templates.read(), state: await source.nav.loadState() }), sourceWrites = source.commits.length;
+  const encrypted = await source.center.exportEncryptedBackup('Complete-backup-password'); assert.equal(await isEncryptedBackup(encrypted), true);
+  assert.deepEqual({ tools: await source.tools.read(), preferences: await source.preferences.read(), templates: await source.templates.read(), state: await source.nav.loadState() }, previousSource);
+  assert.equal(source.commits.length, sourceWrites); assert.equal(source.pointWrites, 0);
+  const plain = await decryptCompleteBackup(encrypted, 'Complete-backup-password'), plan = await target.center.previewEncryptedBackup(encrypted, 'Complete-backup-password');
+  assert.deepEqual(plan.summary, (await target.center.preview(plain)).summary); assert.equal(target.commits.length, 0); assert.equal(target.pointWrites, 0);
+  await target.center.restore(plan);
+  const restored = await target.nav.loadState(); assert.equal(restored.entries[0].icon.value, restored.trash.items[0].ownedEntries[0].icon.value);
+  assert.equal(target.assets.size, 1); assert.equal((await target.tools.read()).notes[0].body, noteDocumentText(document));
+  assert.equal((await target.tools.read()).reading[0].revisitOn, '2026-12-01'); assert.equal((await target.tools.read()).reading[0].status, 'archived');
+  assert.equal((await target.preferences.read()).library.views[0].revisit, 'due'); assert.equal((await target.preferences.read()).library.items['site:recycled-site'].description, 'Owned metadata');
+  assert.equal((await target.templates.read()).templates[0].id, 'kept-scheme'); assert.equal(target.pointWrites, 2);
+});
+
+test('password errors, corruption, oversized input, invalid decrypted domains and cancellation never write business data or recovery points', async () => {
+  const source = harness(), target = harness(), password = 'Complete-backup-password';
+  const encrypted = await source.center.exportEncryptedBackup(password), original = clone({ state: await target.nav.loadState(), tools: await target.tools.read(), preferences: await target.preferences.read(), templates: await target.templates.read() });
+  const corrupted = new Uint8Array(await encrypted.arrayBuffer()); corrupted[corrupted.length - 1] ^= 1;
+  await assert.rejects(target.center.previewEncryptedBackup(encrypted, 'wrong-password'), { code: 'BACKUP_DECRYPT_FAILED' });
+  await assert.rejects(target.center.previewEncryptedBackup(new Blob([corrupted]), password), { code: 'BACKUP_DECRYPT_FAILED' });
+  class Oversized extends Blob { get size() { return PASSWORD_BACKUP_LIMITS.plaintext + PASSWORD_BACKUP_LIMITS.overhead + 1; } }
+  await assert.rejects(target.center.previewEncryptedBackup(new Oversized(), password), { code: 'INVALID_ENCRYPTED_BACKUP' });
+  const json = JSON.parse(await (await source.center.exportCompleteBackup()).text());
+  const invalidUTF8 = Buffer.from(JSON.stringify({ ...json, tools: { ...json.tools, notes: [note('UTF8_SENTINEL')] } }));
+  invalidUTF8[invalidUTF8.indexOf('UTF8_SENTINEL')] = 0xff;
+  const authenticatedInvalidUTF8 = await encryptCompleteBackup(new Blob([invalidUTF8]), password);
+  await assert.rejects(target.center.previewEncryptedBackup(authenticatedInvalidUTF8, password), { code: 'INVALID_BACKUP', message: '备份文件无法读取。' });
+  for (const invalid of ['not JSON', JSON.stringify({ ...json, tools: { ...json.tools, notes: [{ ...note(), body: null }] } }), JSON.stringify({ ...json, preferences: { ...json.preferences, library: { version: 1, tags: [], items: { 'site:missing': { description: '', tagIds: ['dangling-tag'] } } } } })]) {
+    await assert.rejects(target.center.previewEncryptedBackup(await encryptCompleteBackup(new Blob([invalid]), password), password));
+  }
+  const controller = new AbortController(); controller.abort();
+  await assert.rejects(target.center.exportEncryptedBackup(password, { signal: controller.signal }), { name: 'AbortError' });
+  await assert.rejects(target.center.previewEncryptedBackup(encrypted, password, { signal: controller.signal }), { name: 'AbortError' });
+  assert.deepEqual({ state: await target.nav.loadState(), tools: await target.tools.read(), preferences: await target.preferences.read(), templates: await target.templates.read() }, original);
+  assert.equal(target.commits.length, 0); assert.equal(target.pointWrites, 0); assert.equal(target.assets.size, 0); assert.equal(target.icons.size, 0);
+});
+
+test('default recovery reader captures and previews expired personal trash without pruning or advancing its revision', async (t) => {
+  const subject = harness(), expired = validatePersonalTools({ version: 3, revision: 42, notes: [], reading: [], snapshots: [], trash: [{ id: 'expired-trash', kind: 'notes', deletedAt: Date.now() - 31 * 86400000, record: note('Expired persisted body') }] });
+  let writes = 0;
+  t.mock.method(localData, 'get', async (keys) => (Array.isArray(keys) ? keys : [keys]).includes('covelet.tools.v1') ? { 'covelet.tools.v1': clone(expired) } : {});
+  t.mock.method(localData, 'set', async () => { writes++; throw Error('Unexpected backup write'); });
+  const center = createRecoveryCenter({ nav: subject.nav, preferences: subject.preferences, templates: subject.templates, points: subject.points });
+  const plain = await center.exportCompleteBackup(), encrypted = await center.exportEncryptedBackup('Readonly-backup-password');
+  assert.deepEqual(JSON.parse(await plain.text()).tools, expired);
+  assert.deepEqual((await center.preview(plain)).tools, expired);
+  assert.deepEqual((await center.previewEncryptedBackup(encrypted, 'Readonly-backup-password')).tools, expired);
+  assert.equal(writes, 0); assert.equal(subject.commits.length, 0); assert.equal(subject.pointWrites, 0);
+});
 
 test('navigation and preferences restore in one commit, and a failed paired preference write exposes neither', async () => {
   const source = harness(), target = harness();

@@ -1,10 +1,19 @@
 import { tr } from '../i18n/index.js';
-import manifest from '../../extension.manifest.json' with { type: 'json' };
 import { Disclosure } from './ui/disclosure.jsx';
 
 export default function WhatsNew() {
   return <>
-    <Disclosure title={tr('{0} 更新内容', [manifest.version])}>
+    <Disclosure title={tr('{0} 更新内容', ['0.5.0'])}>
+      <ul>
+        <li>{tr('网站和稍后读支持备注，网站、便笺与稍后读共用标签。')}</li>
+        <li>{tr('保存动态清单，在链接列表中按位置整理，并审阅重复网址。')}</li>
+        <li>{tr('网页选文连同出处存为便笺，便笺支持 Markdown 导入导出。')}</li>
+        <li>{tr('稍后读支持再看日期，以及批量标记、归档和删除。')}</li>
+        <li>{tr('用搜索引擎关键词快速搜索，删除的网站和文件夹可从回收站恢复。')}</li>
+        <li>{tr('完整备份可用独立密码加密，在另一浏览器中离线恢复。')}</li>
+      </ul>
+    </Disclosure>
+    <Disclosure title={tr('{0} 更新内容', ['0.4.0'])}>
       <ul>
         <li>{tr('命名桌面、设置默认桌面并搜索跳转。')}</li>
         <li>{tr('批量打开文件夹中的网站，或将链接保存到指定桌面。')}</li>

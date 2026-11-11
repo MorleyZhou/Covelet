@@ -17023,5 +17023,266 @@
     "de": "Bilder des Papierkorbinhalts fehlen. Die aktuellen Daten wurden nicht geändert.",
     "fr": "Des images du contenu de la corbeille sont introuvables. Les données actuelles n’ont pas été modifiées.",
     "ru": "Изображения содержимого корзины отсутствуют. Текущие данные не изменены."
+  },
+  "普通备份文件未加密，请妥善保管。": {
+    "en": "Regular backup files are not encrypted. Keep them safe.",
+    "zh-TW": "一般備份檔案未加密，請妥善保管。",
+    "ja": "通常のバックアップファイルは暗号化されていません。安全に保管してください。",
+    "ko": "일반 백업 파일은 암호화되지 않습니다. 안전하게 보관하세요.",
+    "de": "Normale Sicherungsdateien sind nicht verschlüsselt. Bewahre sie sicher auf.",
+    "fr": "Les sauvegardes ordinaires ne sont pas chiffrées. Conservez-les en lieu sûr.",
+    "ru": "Обычные резервные копии не зашифрованы. Храните их в безопасном месте."
+  },
+  "加密导出": {
+    "en": "Encrypted export",
+    "zh-TW": "加密匯出",
+    "ja": "暗号化して書き出す",
+    "ko": "암호화 내보내기",
+    "de": "Verschlüsselt exportieren",
+    "fr": "Exporter avec chiffrement",
+    "ru": "Экспорт с шифрованием"
+  },
+  "加密导出备份": {
+    "en": "Export encrypted backup",
+    "zh-TW": "加密匯出備份",
+    "ja": "暗号化バックアップを書き出す",
+    "ko": "암호화 백업 내보내기",
+    "de": "Verschlüsselte Sicherung exportieren",
+    "fr": "Exporter une sauvegarde chiffrée",
+    "ru": "Экспорт зашифрованной копии"
+  },
+  "解锁备份": {
+    "en": "Unlock backup",
+    "zh-TW": "解鎖備份",
+    "ja": "バックアップのロックを解除",
+    "ko": "백업 잠금 해제",
+    "de": "Sicherung entsperren",
+    "fr": "Déverrouiller la sauvegarde",
+    "ru": "Разблокировать копию"
+  },
+  "密码须为 8–256 个字符，不会保存。丢失密码将无法恢复。": {
+    "en": "Use 8–256 characters. The password is not saved. If you lose it, the backup cannot be recovered.",
+    "zh-TW": "密碼須為 8–256 個字元，不會儲存。遺失密碼將無法還原。",
+    "ja": "パスワードは8～256文字で、保存されません。紛失すると復元できません。",
+    "ko": "비밀번호는 8~256자이며 저장되지 않습니다. 잊어버리면 백업을 복원할 수 없습니다.",
+    "de": "Verwende 8–256 Zeichen. Das Passwort wird nicht gespeichert. Geht es verloren, lässt sich die Sicherung nicht wiederherstellen.",
+    "fr": "Utilisez 8 à 256 caractères. Le mot de passe n’est pas enregistré. Si vous le perdez, la sauvegarde ne pourra pas être restaurée.",
+    "ru": "Используйте 8–256 символов. Пароль не сохраняется. При его утрате восстановить копию невозможно."
+  },
+  "请输入导出时使用的密码。": {
+    "en": "Enter the password used when exporting.",
+    "zh-TW": "請輸入匯出時使用的密碼。",
+    "ja": "書き出し時に設定したパスワードを入力してください。",
+    "ko": "내보낼 때 사용한 비밀번호를 입력하세요.",
+    "de": "Gib das beim Export verwendete Passwort ein.",
+    "fr": "Saisissez le mot de passe utilisé lors de l’exportation.",
+    "ru": "Введите пароль, использованный при экспорте."
+  },
+  "备份密码": {
+    "en": "Backup password",
+    "zh-TW": "備份密碼",
+    "ja": "バックアップのパスワード",
+    "ko": "백업 비밀번호",
+    "de": "Sicherungspasswort",
+    "fr": "Mot de passe de la sauvegarde",
+    "ru": "Пароль резервной копии"
+  },
+  "确认备份密码": {
+    "en": "Confirm backup password",
+    "zh-TW": "確認備份密碼",
+    "ja": "バックアップのパスワードを確認",
+    "ko": "백업 비밀번호 확인",
+    "de": "Sicherungspasswort bestätigen",
+    "fr": "Confirmer le mot de passe",
+    "ru": "Подтвердите пароль копии"
+  },
+  "正在加密备份…": {
+    "en": "Encrypting backup…",
+    "zh-TW": "正在加密備份…",
+    "ja": "バックアップを暗号化中…",
+    "ko": "백업 암호화 중…",
+    "de": "Sicherung wird verschlüsselt…",
+    "fr": "Chiffrement de la sauvegarde…",
+    "ru": "Шифрование резервной копии…"
+  },
+  "正在解锁备份…": {
+    "en": "Unlocking backup…",
+    "zh-TW": "正在解鎖備份…",
+    "ja": "バックアップのロックを解除中…",
+    "ko": "백업 잠금 해제 중…",
+    "de": "Sicherung wird entsperrt…",
+    "fr": "Déverrouillage de la sauvegarde…",
+    "ru": "Разблокировка копии…"
+  },
+  "加密并下载": {
+    "en": "Encrypt and download",
+    "zh-TW": "加密並下載",
+    "ja": "暗号化してダウンロード",
+    "ko": "암호화 후 다운로드",
+    "de": "Verschlüsseln und herunterladen",
+    "fr": "Chiffrer et télécharger",
+    "ru": "Зашифровать и скачать"
+  },
+  "解锁并预览": {
+    "en": "Unlock and preview",
+    "zh-TW": "解鎖並預覽",
+    "ja": "ロックを解除してプレビュー",
+    "ko": "잠금 해제 후 미리 보기",
+    "de": "Entsperren und Vorschau",
+    "fr": "Déverrouiller et prévisualiser",
+    "ru": "Разблокировать и просмотреть"
+  },
+  "正在读取备份…": {
+    "en": "Reading backup…",
+    "zh-TW": "正在讀取備份…",
+    "ja": "バックアップを読み込み中…",
+    "ko": "백업 읽는 중…",
+    "de": "Sicherung wird gelesen…",
+    "fr": "Lecture de la sauvegarde…",
+    "ru": "Чтение резервной копии…"
+  },
+  "加密备份格式无效或超过 50 MiB。": {
+    "en": "The encrypted backup format is invalid or exceeds 50 MiB.",
+    "zh-TW": "加密備份格式無效或超過 50 MiB。",
+    "ja": "暗号化バックアップの形式が無効か、50 MiBを超えています。",
+    "ko": "암호화 백업 형식이 잘못되었거나 50 MiB를 초과합니다.",
+    "de": "Das Format der verschlüsselten Sicherung ist ungültig oder überschreitet 50 MiB.",
+    "fr": "Le format de la sauvegarde chiffrée est invalide ou dépasse 50 Mio.",
+    "ru": "Формат зашифрованной копии недопустим или размер превышает 50 МиБ."
+  },
+  "密码须为 8–256 个字符，且不能包含无效字符。": {
+    "en": "The password must contain 8–256 characters and no invalid characters.",
+    "zh-TW": "密碼須為 8–256 個字元，且不能包含無效字元。",
+    "ja": "パスワードは8～256文字で、無効な文字を含めることはできません。",
+    "ko": "비밀번호는 8~256자여야 하며 잘못된 문자를 포함할 수 없습니다.",
+    "de": "Das Passwort muss 8–256 Zeichen lang sein und darf keine ungültigen Zeichen enthalten.",
+    "fr": "Le mot de passe doit contenir entre 8 et 256 caractères, sans caractère invalide.",
+    "ru": "Пароль должен содержать 8–256 символов и не включать недопустимые символы."
+  },
+  "当前浏览器不支持备份加密。": {
+    "en": "This browser does not support backup encryption.",
+    "zh-TW": "目前瀏覽器不支援備份加密。",
+    "ja": "このブラウザはバックアップの暗号化に対応していません。",
+    "ko": "이 브라우저는 백업 암호화를 지원하지 않습니다.",
+    "de": "Dieser Browser unterstützt keine Sicherungsverschlüsselung.",
+    "fr": "Ce navigateur ne prend pas en charge le chiffrement des sauvegardes.",
+    "ru": "Этот браузер не поддерживает шифрование резервных копий."
+  },
+  "密码不正确，或加密备份已损坏。": {
+    "en": "The password is incorrect, or the encrypted backup is damaged.",
+    "zh-TW": "密碼不正確，或加密備份已損壞。",
+    "ja": "パスワードが違うか、暗号化バックアップが破損しています。",
+    "ko": "비밀번호가 올바르지 않거나 암호화 백업이 손상되었습니다.",
+    "de": "Das Passwort ist falsch oder die verschlüsselte Sicherung ist beschädigt.",
+    "fr": "Le mot de passe est incorrect ou la sauvegarde chiffrée est endommagée.",
+    "ru": "Неверный пароль или зашифрованная копия повреждена."
+  },
+  "网站和稍后读支持备注，网站、便笺与稍后读共用标签。": {
+    "en": "Add remarks to websites and Read Later, and use shared tags across websites, notes and Read Later.",
+    "zh-TW": "網站和稍後讀支援備註，網站、便箋與稍後讀共用標籤。",
+    "ja": "サイトと後で読むにメモを付け、サイト・ノート・後で読むでタグを共有できます。",
+    "ko": "웹사이트와 나중에 읽기에 설명을 추가하고 웹사이트, 메모, 나중에 읽기에서 태그를 함께 사용합니다.",
+    "de": "Websites und Leseliste unterstützen Notizen. Tags gelten gemeinsam für Websites, Notizen und Leseliste.",
+    "fr": "Ajoutez des remarques aux sites et à Lire plus tard, avec des étiquettes partagées entre sites, notes et Lire plus tard.",
+    "ru": "Добавляйте описания к сайтам и списку чтения; используйте общие теги для сайтов, заметок и чтения."
+  },
+  "保存动态清单，在链接列表中按位置整理，并审阅重复网址。": {
+    "en": "Save dynamic lists, organize links by location and review duplicate URLs.",
+    "zh-TW": "儲存動態清單，在連結列表中依位置整理，並檢視重複網址。",
+    "ja": "動的リストを保存し、リンク一覧を場所ごとに整理して重複URLを確認できます。",
+    "ko": "동적 목록을 저장하고 링크 목록을 위치별로 정리하며 중복 URL을 검토합니다.",
+    "de": "Dynamische Listen speichern, Links nach Ort ordnen und doppelte URLs prüfen.",
+    "fr": "Enregistrez des listes dynamiques, classez les liens par emplacement et examinez les URL en double.",
+    "ru": "Сохраняйте динамические списки, упорядочивайте ссылки по расположению и проверяйте дубли URL."
+  },
+  "网页选文连同出处存为便笺，便笺支持 Markdown 导入导出。": {
+    "en": "Save selected webpage text with its source as a note, and import or export notes as Markdown.",
+    "zh-TW": "網頁選文連同出處存為便箋，便箋支援 Markdown 匯入匯出。",
+    "ja": "選択したページのテキストを出典付きのノートに保存し、Markdownで入出力できます。",
+    "ko": "선택한 웹페이지 텍스트를 출처와 함께 메모로 저장하고 Markdown으로 가져오거나 내보냅니다.",
+    "de": "Ausgewählten Webseitentext mit Quelle als Notiz speichern und Notizen als Markdown importieren oder exportieren.",
+    "fr": "Enregistrez le texte sélectionné d’une page avec sa source dans une note, et importez ou exportez les notes en Markdown.",
+    "ru": "Сохраняйте выделенный текст страницы с источником в заметку; импортируйте и экспортируйте заметки в Markdown."
+  },
+  "稍后读支持再看日期，以及批量标记、归档和删除。": {
+    "en": "Set revisit dates in Read Later, and mark, archive or delete multiple items at once.",
+    "zh-TW": "稍後讀支援再看日期，以及批次標記、封存和刪除。",
+    "ja": "後で読むに再読日を設定し、複数項目をまとめて既読・未読にしたり、アーカイブ・削除できます。",
+    "ko": "나중에 읽기에 다시 볼 날짜를 지정하고 여러 항목을 한 번에 표시, 보관 또는 삭제합니다.",
+    "de": "Wiedervorlagen in der Leseliste festlegen und mehrere Einträge gleichzeitig markieren, archivieren oder löschen.",
+    "fr": "Fixez des dates de relecture et marquez, archivez ou supprimez plusieurs éléments de Lire plus tard à la fois.",
+    "ru": "Назначайте даты повторного чтения и массово отмечайте, архивируйте или удаляйте записи."
+  },
+  "用搜索引擎关键词快速搜索，删除的网站和文件夹可从回收站恢复。": {
+    "en": "Search quickly with engine keywords, and restore deleted websites and folders from Trash.",
+    "zh-TW": "用搜尋引擎關鍵詞快速搜尋，刪除的網站和資料夾可從回收站還原。",
+    "ja": "検索エンジンのキーワードで素早く検索でき、削除したサイトやフォルダはゴミ箱から復元できます。",
+    "ko": "검색 엔진 키워드로 빠르게 검색하고 삭제한 웹사이트와 폴더를 휴지통에서 복원합니다.",
+    "de": "Mit Suchmaschinenkürzeln schnell suchen und gelöschte Websites und Ordner aus dem Papierkorb wiederherstellen.",
+    "fr": "Recherchez rapidement avec des mots-clés de moteur et restaurez les sites et dossiers supprimés depuis la corbeille.",
+    "ru": "Быстро ищите по ключевым словам поисковиков; восстанавливайте удалённые сайты и папки из корзины."
+  },
+  "完整备份可用独立密码加密，在另一浏览器中离线恢复。": {
+    "en": "Encrypt complete backups with a separate password and restore them offline in another browser.",
+    "zh-TW": "完整備份可用獨立密碼加密，在另一瀏覽器中離線還原。",
+    "ja": "完全バックアップを専用パスワードで暗号化し、別のブラウザでオフライン復元できます。",
+    "ko": "전체 백업을 별도 비밀번호로 암호화하고 다른 브라우저에서 오프라인으로 복원합니다.",
+    "de": "Vollständige Sicherungen mit einem eigenen Passwort verschlüsseln und in einem anderen Browser offline wiederherstellen.",
+    "fr": "Chiffrez les sauvegardes complètes avec un mot de passe distinct et restaurez-les hors ligne dans un autre navigateur.",
+    "ru": "Шифруйте полные копии отдельным паролем и восстанавливайте их офлайн в другом браузере."
+  },
+  "搜索关键词须以字母开头，使用 1 至 20 个字母、数字、_ 或 -。": {
+    "en": "Search keywords must start with a letter and contain 1–20 letters, digits, _ or -.",
+    "zh-TW": "搜尋關鍵詞須以字母開頭，使用 1 至 20 個字母、數字、_ 或 -。",
+    "ja": "検索キーワードは英字で始まり、英数字・_・-の1～20文字で指定してください。",
+    "ko": "검색 키워드는 영문자로 시작하며 영문자, 숫자, _ 또는 -로 1~20자여야 합니다.",
+    "de": "Suchkürzel müssen mit einem Buchstaben beginnen und aus 1–20 Buchstaben, Ziffern, _ oder - bestehen.",
+    "fr": "Le mot-clé doit commencer par une lettre et comporter de 1 à 20 lettres, chiffres, _ ou -.",
+    "ru": "Ключевое слово должно начинаться с буквы и содержать 1–20 букв, цифр, _ или -."
+  },
+  "搜索关键词不能重复。": {
+    "en": "Search keywords must be unique.",
+    "zh-TW": "搜尋關鍵詞不能重複。",
+    "ja": "検索キーワードは重複できません。",
+    "ko": "검색 키워드는 중복될 수 없습니다.",
+    "de": "Suchkürzel dürfen sich nicht wiederholen.",
+    "fr": "Les mots-clés de recherche doivent être uniques.",
+    "ru": "Ключевые слова поиска не должны повторяться."
+  },
+  "搜索关键词": {
+    "en": "Search keyword",
+    "zh-TW": "搜尋關鍵詞",
+    "ja": "検索キーワード",
+    "ko": "검색 키워드",
+    "de": "Suchkürzel",
+    "fr": "Mot-clé de recherche",
+    "ru": "Ключевое слово поиска"
+  },
+  "例如：gh，可留空": {
+    "en": "For example: gh. Optional.",
+    "zh-TW": "例如：gh，可留空",
+    "ja": "例：gh（省略可）",
+    "ko": "예: gh. 비워 둘 수 있습니다.",
+    "de": "Zum Beispiel: gh. Optional.",
+    "fr": "Par exemple : gh. Facultatif.",
+    "ru": "Например: gh. Необязательно."
+  },
+  "输入“关键词 空格 内容”可直接使用此引擎。": {
+    "en": "Type “keyword space query” to use this engine directly.",
+    "zh-TW": "輸入「關鍵詞 空格 內容」可直接使用此引擎。",
+    "ja": "「キーワード 空白 検索語」でこのエンジンを直接使えます。",
+    "ko": "“키워드 공백 검색어”를 입력하면 이 엔진을 바로 사용합니다.",
+    "de": "Mit „Kürzel Leerzeichen Suchbegriff“ diese Suchmaschine direkt verwenden.",
+    "fr": "Saisissez « mot-clé espace recherche » pour utiliser directement ce moteur.",
+    "ru": "Введите «ключевое слово пробел запрос», чтобы сразу использовать этот поисковик."
+  },
+  "使用 {0} 搜索": {
+    "en": "Search with {0}",
+    "zh-TW": "使用 {0} 搜尋",
+    "ja": "{0}で検索",
+    "ko": "{0}(으)로 검색",
+    "de": "Mit {0} suchen",
+    "fr": "Rechercher avec {0}",
+    "ru": "Поиск через {0}"
   }
 }

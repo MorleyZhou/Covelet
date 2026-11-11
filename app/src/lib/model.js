@@ -73,6 +73,15 @@ export function normalizeUrl(input) {
   return url.href;
 }
 
+export function normalizeProviderKeyword(value) {
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string') fail(tr('搜索关键词须以字母开头，使用 1 至 20 个字母、数字、_ 或 -。'));
+  const keyword = value.trim();
+  if (!keyword) return undefined;
+  if (!/^[A-Za-z][A-Za-z0-9_-]{0,19}$/u.test(keyword)) fail(tr('搜索关键词须以字母开头，使用 1 至 20 个字母、数字、_ 或 -。'));
+  return keyword.toLowerCase();
+}
+
 export function validateProviderTemplate(input) {
   if (typeof input !== 'string' || input.length > MAX_URL) fail(tr("搜索模板格式无效"));
   const template = input.trim();
@@ -311,19 +320,25 @@ export function validateState(input) {
     values.sort((a, b) => a - b);
     if (values.some((value, index) => value !== index)) fail(tr("每个容器的条目顺序须连续且不重复"));
   }
-  const providers = new Set();
+  const providers = new Set(), providerKeywords = new Set();
   for (const provider of state.providers) {
-    keys(provider, ['id', 'name', 'template'], tr("搜索引擎")); identifier(provider.id, tr("搜索引擎标识"));
+    keys(provider, ['id', 'name', 'template', 'keyword'], tr("搜索引擎")); identifier(provider.id, tr("搜索引擎标识"));
     if (provider.id === 'browser') fail(tr("浏览器默认搜索由浏览器提供，不能保存为额外搜索引擎"));
     if (providers.has(provider.id)) fail(tr("搜索引擎标识重复"));
     providers.add(provider.id); provider.name = name(provider.name, tr("搜索引擎名称"));
     provider.template = validateProviderTemplate(provider.template);
+    const keyword = normalizeProviderKeyword(provider.keyword);
+    if (keyword === undefined) delete provider.keyword;
+    else {
+      if (providerKeywords.has(keyword)) fail(tr('搜索关键词不能重复。'));
+      providerKeywords.add(keyword); provider.keyword = keyword;
+    }
   }
   // Retire the former built-in ID only when its validated name and template
   // still equal the old defaults. Cosmetic whitespace/default ports normalize
   // above; a distinct ID or a substantive name/template edit stays portable.
   state.providers = state.providers.filter((provider) => !(provider.id === 'baidu'
-    && provider.name === '百度' && provider.template === 'https://www.baidu.com/s?wd={query}'));
+    && provider.name === '百度' && provider.template === 'https://www.baidu.com/s?wd={query}' && !provider.keyword));
   validateSettings(state.settings);
   if (Object.hasOwn(state, 'trash')) validateNavigationTrash(state);
   return state;

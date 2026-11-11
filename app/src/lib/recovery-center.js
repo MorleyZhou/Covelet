@@ -2,7 +2,7 @@ import { tr } from '../i18n/index.js';
 import { localData } from './local-data.js';
 import * as navigation from './storage.js';
 import { migrateNavigationState } from './model.js';
-import { loadPersonalTools, validatePersonalTools, replacePersonalTools, inspectPersonalToolsBackup, personalContentKeys } from './personal-tools.js';
+import { loadPersonalToolsSnapshot, validatePersonalTools, replacePersonalTools, inspectPersonalToolsBackup, personalContentKeys } from './personal-tools.js';
 import { loadContentPreferences, validateContentPreferences, replaceContentPreferences, mergeContentPreferences, contentPreferencesForKeys } from './content-preferences.js';
 import { loadDesktopTemplateEnvelope, validateSavedDesktopTemplates, replaceDesktopTemplates } from './desktop-templates.js';
 import { navigationIconSources } from './navigation-icon-intake.js';
@@ -10,6 +10,7 @@ import { cloneTrashForAppend } from './navigation-trash-core.js';
 import { navigationResourceEntries } from './navigation-resources.js';
 import { remapNavigationPreferences, preserveInvalidViewReferences } from './navigation-recovery.js';
 import { privateContentKeys } from './presentation.js';
+import { encryptCompleteBackup, decryptCompleteBackup, throwIfBackupCancelled, validateBackupPassword } from './password-backup.js';
 
 const FORMAT = 'covelet-complete-backup';
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -46,7 +47,7 @@ const summary = (data) => ({
 
 // Each data domain retains its own revision lock. A durable recovery point is
 // committed before the first change; rollback never overwrites a later edit.
-export function createRecoveryCenter({ nav = navigation, tools = { read: loadPersonalTools, validate: validatePersonalTools, write: replacePersonalTools },
+export function createRecoveryCenter({ nav = navigation, tools = { read: loadPersonalToolsSnapshot, validate: validatePersonalTools, write: replacePersonalTools },
   preferences = { read: loadContentPreferences, validate: validateContentPreferences, write: replaceContentPreferences },
   templates = { read: loadDesktopTemplateEnvelope, validate: validateSavedDesktopTemplates, write: replaceDesktopTemplates },
   points = checkpointStore, locks = globalThis.navigator?.locks } = {}) {
@@ -58,29 +59,39 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
   const pointRecord = (point) => { const { previous: _previous, ...value } = point; return value; };
   const findPoint = (point, id) => !id || point?.id === id ? point : point?.previous?.id === id ? point.previous : null;
   const pointInfo = (point) => point ? { id: point.id, createdAt: point.createdAt, status: point.status } : null;
-  async function capture() {
+  async function capture({ signal } = {}) {
     // Retry when another tab changes a domain while assets are being read.
     for (let attempt = 0; attempt < 3; attempt++) {
-      const before = await readDomains(), blob = await nav.exportBackup(before.state), after = await readDomains();
+      throwIfBackupCancelled(signal); const before = await readDomains(); throwIfBackupCancelled(signal);
+      const blob = await nav.exportBackup(before.state); throwIfBackupCancelled(signal);
+      const after = await readDomains(); throwIfBackupCancelled(signal);
       if (JSON.stringify(versions(before)) !== JSON.stringify(versions(after))) continue;
+      const bytes = new Uint8Array(await blob.arrayBuffer()); throwIfBackupCancelled(signal);
       const data = { format: FORMAT, version: 1, createdAt: new Date().toISOString(),
-        navigation: toBase64(new Uint8Array(await blob.arrayBuffer())),
+        navigation: toBase64(bytes),
         tools: tools.validate(before.tools), preferences: preferences.validate({ ...before.preferences, presentation: false }), templates: templates.validate(before.templates) };
       if (encodedBytes(data) > MAX_BYTES) fail(tr('完整备份超过 50 MiB，请先清理不需要的内容。'));
       return { data, current: before };
     }
     conflict();
   }
-  async function inspect(file) {
+  async function inspect(file, { signal } = {}) {
+    throwIfBackupCancelled(signal);
     if (!(file instanceof Blob) || !file.size || file.size > MAX_BYTES) fail(tr('完整备份文件须在 50 MiB 以内。'));
-    const prefix = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+    const prefix = new Uint8Array(await file.slice(0, 4).arrayBuffer()); throwIfBackupCancelled(signal);
     if (prefix[0] === 80 && prefix[1] === 75) {
-      const plan = await nav.inspectBackup(file);
+      const plan = await nav.inspectBackup(file); throwIfBackupCancelled(signal);
       return { format: 'legacy-navigation', createdAt: null, navigation: plan, tools: null, templates: null, preferences: null,
         categories: ['navigation'], summary: summary({ navigation: plan }), source: null };
     }
     let input;
-    try { input = JSON.parse(await file.text()); } catch { fail(tr('备份文件无法读取。')); }
+    let contents;
+    try {
+      const bytes = await file.arrayBuffer(); throwIfBackupCancelled(signal);
+      contents = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch { throwIfBackupCancelled(signal); fail(tr('备份文件无法读取。')); }
+    throwIfBackupCancelled(signal);
+    try { input = JSON.parse(contents); } catch { fail(tr('备份文件无法读取。')); }
     if (input?.format === 'covelet-personal-tools') {
       const parsed = inspectPersonalToolsBackup(input), checked = tools.validate(parsed.data);
       const result = { format: 'legacy-tools', createdAt: typeof input.exportedAt === 'string' && Number.isFinite(Date.parse(input.exportedAt)) ? input.exportedAt : null, navigation: null,
@@ -90,14 +101,16 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     const required = ['format', 'version', 'createdAt', 'navigation', 'tools', 'preferences', 'templates'];
     if (!fields(input, required) || required.some((key) => !Object.hasOwn(input, key) || input[key] == null) || input.format !== FORMAT || input.version !== 1
       || typeof input.createdAt !== 'string' || !Number.isFinite(Date.parse(input.createdAt))) fail(tr('完整备份格式或版本不受支持。'));
+    const navigation = await nav.inspectBackup(new Blob([fromBase64(input.navigation)], { type: 'application/zip' })); throwIfBackupCancelled(signal);
     const result = { format: FORMAT, createdAt: input.createdAt, source: copy(input),
-      navigation: await nav.inspectBackup(new Blob([fromBase64(input.navigation)], { type: 'application/zip' })),
+      navigation,
       tools: tools.validate(input.tools), preferences: preferences.validate(input.preferences), templates: templates.validate(input.templates),
       categories: RECOVERY_CATEGORIES };
     return { ...result, summary: summary(result) };
   }
-  async function preview(file) {
-    const plan = await inspect(file), current = await readDomains();
+  async function preview(file, options = {}) {
+    throwIfBackupCancelled(options.signal); const plan = await inspect(file, options); throwIfBackupCancelled(options.signal);
+    const current = await readDomains(); throwIfBackupCancelled(options.signal);
     return { ...plan, expected: versions(current) };
   }
   function selectedTools(current, incoming, selected, mode) {
@@ -304,7 +317,20 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
   }
   return {
     preview, restore,
-    async exportCompleteBackup() { const { data } = await capture(); return new Blob([JSON.stringify(data)], { type: 'application/json' }); },
+    async exportCompleteBackup(options = {}) { const { data } = await capture(options); throwIfBackupCancelled(options.signal); return new Blob([JSON.stringify(data)], { type: 'application/json' }); },
+    async exportEncryptedBackup(password, options = {}) {
+      throwIfBackupCancelled(options.signal); validateBackupPassword(password);
+      const { data } = await capture(options); throwIfBackupCancelled(options.signal);
+      const blob = await encryptCompleteBackup(new Blob([JSON.stringify(data)], { type: 'application/json' }), password, options); throwIfBackupCancelled(options.signal);
+      return blob;
+    },
+    async previewEncryptedBackup(file, password, options = {}) {
+      throwIfBackupCancelled(options.signal);
+      const plain = await decryptCompleteBackup(file, password, options); throwIfBackupCancelled(options.signal);
+      const plan = await preview(plain, options); throwIfBackupCancelled(options.signal);
+      if (plan.format !== FORMAT) fail(tr('完整备份格式或版本不受支持。'));
+      return plan;
+    },
     async getRecoveryPoint() { const point = await points.read(); return point ? { ...pointInfo(point), previous: pointInfo(point.previous) } : null; },
     async previewRecoveryPoint(id) {
       const point = findPoint(await points.read(), id);
