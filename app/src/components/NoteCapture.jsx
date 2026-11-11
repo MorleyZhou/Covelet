@@ -11,6 +11,7 @@ import { Input } from './ui/input.jsx';
 import { Textarea } from './ui/textarea.jsx';
 import { Checkbox } from './ui/checkbox.jsx';
 import PromptDialog from './PromptDialog.jsx';
+import { Disclosure } from './ui/disclosure.jsx';
 
 export default function NoteCapture({ preferences, onBusyChange, onDirtyChange, onCancel, onSaved }) {
   const [draft, setDraft] = useState({ title: '', body: '', pageTitle: '', sourceUrl: '', tagIds: [] });
@@ -52,7 +53,7 @@ export default function NoteCapture({ preferences, onBusyChange, onDirtyChange, 
     active.current = true; capture();
     return () => { active.current = false; job.current?.abort(); onBusyChange?.(false); onDirtyChange?.(false); };
   }, []);
-  return <form className="form-stack note-capture" aria-busy={busy || undefined} onSubmit={async (event) => {
+  return <form className="popup-form note-capture" aria-busy={busy || undefined} onSubmit={async (event) => {
     event.preventDefault(); event.stopPropagation();
     if (pending.current || event.nativeEvent?.isComposing) return;
     pending.current = true; setWorking(true); setError('');
@@ -77,16 +78,18 @@ export default function NoteCapture({ preferences, onBusyChange, onDirtyChange, 
     }
     finally { pending.current = false; setWorking(false); }
   }}>
-    <Button type="button" variant="secondary" disabled={busy} onClick={() => dirty ? setRereading(true) : capture()}>{capturing ? tr('正在读取选文…') : tr('读取页面选文')}</Button>
+    <div className="form-stack popup-form-body">
+    <Button type="button" variant="secondary" className="note-capture-read" disabled={busy} onClick={() => dirty ? setRereading(true) : capture()}>{capturing ? tr('正在读取选文…') : tr('读取页面选文')}</Button>
     {notice && <p className="hint" role="status">{notice}</p>}
     <div className="note-capture-field"><label htmlFor={titleId}>{tr('标题')}</label><Input id={titleId} maxLength={200} value={draft.title} disabled={busy} onChange={(event) => patch({ title: event.target.value })} /></div>
-    <div className="note-capture-field"><label htmlFor={bodyId}>{tr('便笺内容')}</label><Textarea id={bodyId} rows={7} maxLength={60000} value={draft.body} disabled={busy} onChange={(event) => patch({ body: event.target.value })} /></div>
-    {draft.sourceUrl && <div className="note-capture-source"><span>{tr('来源')}</span><strong>{draft.pageTitle}</strong><a href={draft.sourceUrl} target="_blank" rel="noopener noreferrer">{draft.sourceUrl}</a></div>}
-    {tags.length > 0 && <fieldset className="content-tag-picker" disabled={busy}><legend>{tr('标签')}</legend><div className="content-tag-options">{tags.map((tag) => <label className="content-tag-option" key={tag.id}>
+    <div className="note-capture-field"><label htmlFor={bodyId}>{tr('便笺内容')}</label><Textarea id={bodyId} rows={5} maxLength={60000} value={draft.body} disabled={busy} onChange={(event) => patch({ body: event.target.value })} /></div>
+    {draft.sourceUrl && <div className="note-capture-source"><span>{tr('来源')}</span><a href={draft.sourceUrl} title={draft.sourceUrl} target="_blank" rel="noopener noreferrer">{draft.sourceUrl}</a></div>}
+    {tags.length > 0 && <Disclosure title={tr('标签')} className="popup-details" disabled={busy}><fieldset className="content-tag-picker" aria-label={tr('标签')} disabled={busy}><div className="content-tag-options">{tags.map((tag) => <label className="content-tag-option" key={tag.id}>
       <Checkbox checked={draft.tagIds.includes(tag.id)} disabled={!draft.tagIds.includes(tag.id) && draft.tagIds.length >= 20}
         onCheckedChange={(checked) => patch({ tagIds: checked === true ? [...draft.tagIds, tag.id] : draft.tagIds.filter((id) => id !== tag.id) })} /><span>{tag.name}</span>
-    </label>)}</div></fieldset>}
+    </label>)}</div></fieldset></Disclosure>}
     {error && <p className="form-error" role="alert">{error}</p>}
+    </div>
     <div className="quick-add-actions"><Button type="button" variant="secondary" disabled={busy} onClick={onCancel}>{tr('取消')}</Button><Button type="submit" disabled={busy || !draft.body.trim()}>{busy ? tr('保存中…') : tr('保存')}</Button></div>
     {rereading && <PromptDialog action={tr('放弃修改')} destructive onCancel={() => setRereading(false)} onConfirm={capture}><p>{tr('当前便笺尚未保存，放弃修改？')}</p></PromptDialog>}
   </form>;

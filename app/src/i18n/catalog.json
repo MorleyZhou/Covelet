@@ -5549,6 +5549,24 @@
     "fr": "Tout sélectionner",
     "ru": "Выбрать всё"
   },
+  "图标设置": {
+    "en": "Icon settings",
+    "zh-TW": "圖示設定",
+    "ja": "アイコン設定",
+    "ko": "아이콘 설정",
+    "de": "Symboleinstellungen",
+    "fr": "Réglages de l’icône",
+    "ru": "Настройки значка"
+  },
+  "选择前 {0} 个": {
+    "en": "Select first {0}",
+    "zh-TW": "選取前 {0} 個",
+    "ja": "先頭の{0}件を選択",
+    "ko": "처음 {0}개 선택",
+    "de": "Erste {0} auswählen",
+    "fr": "Sélectionner les {0} premiers",
+    "ru": "Выбрать первые {0}"
+  },
   "选择前 50 个": {
     "en": "Select first 50",
     "zh-TW": "選取前 50 個",
