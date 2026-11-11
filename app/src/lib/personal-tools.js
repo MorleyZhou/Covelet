@@ -282,7 +282,8 @@ export function inspectPersonalToolsBackup(envelope) {
   if (envelope.version !== 4) return { data, preferences: null };
   if (Object.keys(envelope).some((key) => !['format', 'version', 'exportedAt', 'data', 'preferences'].includes(key)) || !envelope.preferences) fail(tr('工具备份格式不支持。'));
   const preferences = validateContentPreferences(envelope.preferences), keys = new Set(personalContentKeys(data));
-  if ([...Object.keys(preferences.aliases), ...preferences.privateKeys, ...Object.keys(preferences.library?.items || {})].some((key) => !keys.has(key))) fail(tr('工具备份格式不支持。'));
+  if (Object.hasOwn(preferences.library || {}, 'views')
+    || [...Object.keys(preferences.aliases), ...preferences.privateKeys, ...Object.keys(preferences.library?.items || {})].some((key) => !keys.has(key))) fail(tr('工具备份格式不支持。'));
   return { data, preferences: contentPreferencesForKeys(preferences, keys) };
 }
 export async function importPersonalTools(file) {

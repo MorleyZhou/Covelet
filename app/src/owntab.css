@@ -194,6 +194,8 @@ h2 {
   border-radius: 50%;
 }
 .search-submit svg { width: 24px; height: 24px; }
+.saved-search-context { display: flex; align-items: center; gap: 6px; width: fit-content; max-width: 100%; margin: 6px auto 0; padding: 0 4px 0 10px; border-radius: 10px; background: var(--search-surface, #ffffffd9); color: var(--search-text, #1d1d1f); font-size: 12px; }
+.saved-search-context > span { min-width: 0; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .search-submit:hover {
   background: #ffffff80;
 }

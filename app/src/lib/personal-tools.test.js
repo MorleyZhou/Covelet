@@ -5,7 +5,7 @@ import {
   deletePersonalRecord, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash,
   applySyncedPersonalTools, exportPersonalTools, importPersonalTools, saveReadingItem,
 } from './personal-tools.js';
-import { createContentTag, getContentMetadata, loadContentPreferences, saveContentMetadata, saveContentSettings } from './content-preferences.js';
+import { createContentTag, getContentMetadata, loadContentPreferences, saveContentMetadata, saveContentSettings, saveSavedView } from './content-preferences.js';
 import { localData } from './local-data.js';
 
 const key = 'covelet.tools.v1', values = new Map();
@@ -78,12 +78,14 @@ test('tools export v4 carries scoped metadata and imports it atomically without 
   await saveContentMetadata('reading:reading-a', { description: 'read for release', tagIds: [tag.id] });
   await saveContentSettings('note:note-a', { alias: 'project', private: true });
   await saveContentMetadata('site:unrelated', { description: 'navigation-only secret', tagIds: [tag.id] });
+  await saveSavedView({ name: 'Private view' }, { private: true });
   const file = await exportPersonalTools(), envelope = JSON.parse(await file.text());
   assert.equal(envelope.version, 4); assert.equal(envelope.data.version, 3);
   assert.deepEqual(Object.keys(envelope.preferences.library.items).sort(), ['note:note-a', 'reading:reading-a']);
   assert(!JSON.stringify(envelope).includes('navigation-only secret'));
+  assert(!JSON.stringify(envelope).includes('Private view')); assert.equal(Object.hasOwn(envelope.preferences.library, 'views'), false);
   values.clear();
-  const localTag = await createContentTag('work'), writes = [];
+  const localTag = await createContentTag('work'), localView = await saveSavedView({ name: 'Existing local view' }, { private: true }), writes = [];
   t.mock.method(localData, 'set', async (patch) => {
     writes.push(Object.keys(patch));
     const serialized = Object.entries(patch).map(([name, value]) => [name, JSON.stringify(value)]);
@@ -93,7 +95,8 @@ test('tools export v4 carries scoped metadata and imports it atomically without 
   assert.deepEqual(writes, [[key, 'covelet.content.preferences.v1']]);
   let preferences = await loadContentPreferences();
   assert.deepEqual(getContentMetadata(preferences, 'reading:reading-a'), { description: 'read for release', tagIds: [localTag.id] });
-  assert.deepEqual(preferences.privateKeys, ['note:note-a']); assert.equal(preferences.aliases['note:note-a'], 'project');
+  assert.deepEqual(preferences.privateKeys, [`view:${localView.id}`, 'note:note-a']); assert.equal(preferences.aliases['note:note-a'], 'project');
+  assert.deepEqual(preferences.library.views, [localView]);
   await saveContentMetadata('reading:reading-a', { description: 'keep new local description' });
   assert.equal(await importPersonalTools(file), 0);
   preferences = await loadContentPreferences();
@@ -102,6 +105,9 @@ test('tools export v4 carries scoped metadata and imports it atomically without 
   malformed.preferences.library.items['site:other'] = { description: 'must not enter navigation', tagIds: [] };
   const before = new Map(values);
   await assert.rejects(importPersonalTools(new Blob([JSON.stringify(malformed)])), /格式不支持/);
+  const unsupportedViews = structuredClone(envelope);
+  unsupportedViews.preferences.library.views = [localView];
+  await assert.rejects(importPersonalTools(new Blob([JSON.stringify(unsupportedViews)])), /格式不支持/);
   assert.deepEqual(values, before);
   t.mock.method(localData, 'set', async () => { throw Error('synthetic failed commit'); });
   await assert.rejects(importPersonalTools(file), /未能保存/); assert.deepEqual(values, before);

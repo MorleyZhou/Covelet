@@ -96,10 +96,12 @@ test('encrypted full-data sync preserves metadata and rejects invalid libraries 
   const library = { version: 1, tags: [{ id: 'tag-release', name: 'Release' }], items: {
     'site:a': { description: 'Deployment reference', tagIds: ['tag-release'] },
     'note:a': { description: '', tagIds: ['tag-release'] },
-  } };
-  await a.localData.set({ [key]: { version: 1, revision: 1, aliases: {}, privateKeys: [], presentation: false, library } });
+  }, views: [{ id: 'view-release', revision: 1, name: 'Release references', query: 'Deployment', type: 'all', scope: { kind: 'all' },
+    tagIds: ['tag-release'], domain: '', readingStatus: null }] };
+  await a.localData.set({ [key]: { version: 1, revision: 1, aliases: {}, privateKeys: ['view:view-release'], presentation: false, library } });
   await configure(a); await configure(b); await saved(a); await saved(b);
   assert.deepEqual((await valueOf(b, key)).library, library);
+  assert.deepEqual((await valueOf(b, key)).privateKeys, ['view:view-release']);
   assert(![...cloud.areas.values()].some((objects) => [...objects.values()].some((bytes) => decoder.decode(bytes).includes('Deployment reference'))));
   const before = await valueOf(b, key), calls = cloud.calls.length;
   await b.localData.set({ [key]: { ...before, library: { ...library, version: 99 } } });

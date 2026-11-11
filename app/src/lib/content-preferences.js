@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { tr } from '../i18n/index.js';
 import { localData } from './local-data.js';
 import { createPrivacyCredential, validatePrivacyCredential, verifyPrivacyPassword, validateNewPrivacyPassword } from './privacy-lock.js';
+import { SAVED_VIEW_LIMITS, resolveSavedView, validateSavedView } from './saved-views.js';
+export { getSavedViews } from './saved-views.js';
 
 const demo = typeof location !== 'undefined' && import.meta.env?.DEV && new URLSearchParams(location.search).has('demo');
 const KEY = demo ? 'covelet.content.preferences.demo.v1' : 'covelet.content.preferences.v1';
@@ -10,6 +12,7 @@ const native = () => !demo && Boolean(globalThis.chrome?.runtime?.id && globalTh
 const listeners = new Set();
 const empty = () => ({ version: 1, revision: 0, aliases: {}, privateKeys: [], presentation: false });
 const validKey = (key) => /^(site|note|reading|widget|folder):[^\s\u0000-\u001f\u007f]{1,200}$/u.test(key);
+const validPrivateKey = (key) => validKey(key) || typeof key === 'string' && /^view:[a-z\d-]{1,100}$/iu.test(key);
 const metadataKey = (key) => typeof key === 'string' && /^(site|note|reading):[^\s\u0000-\u001f\u007f]{1,200}$/u.test(key);
 const tagIdentity = (id) => typeof id === 'string' && /^[a-z\d-]{1,100}$/i.test(id);
 const fields = (value, allowed) => value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).every((key) => allowed.includes(key));
@@ -28,7 +31,7 @@ function checkedMetadata(value, tags) {
   return { description: value.description.trim(), tagIds: [...value.tagIds] };
 }
 function checkedLibrary(value) {
-  if (!fields(value, ['version', 'tags', 'items']) || value.version !== 1 || !Array.isArray(value.tags) || value.tags.length > CONTENT_LIBRARY_LIMITS.tags
+  if (!fields(value, ['version', 'tags', 'items', 'views']) || value.version !== 1 || !Array.isArray(value.tags) || value.tags.length > CONTENT_LIBRARY_LIMITS.tags
     || !fields(value.items, Object.keys(value.items || {})) || Object.keys(value.items).length > CONTENT_LIBRARY_LIMITS.items) invalidLibrary();
   const ids = new Set(), names = new Set(), tags = value.tags.map((tag) => {
     if (!fields(tag, ['id', 'name']) || !tagIdentity(tag.id) || ids.has(tag.id)) invalidLibrary();
@@ -42,6 +45,15 @@ function checkedLibrary(value) {
     items[key] = checkedMetadata(metadata, ids);
   }
   const result = { version: 1, tags, items };
+  if (Object.hasOwn(value, 'views')) {
+    if (!Array.isArray(value.views) || value.views.length > SAVED_VIEW_LIMITS.views) invalidLibrary();
+    const ids = new Set();
+    result.views = value.views.map((entry) => {
+      const view = validateSavedView(entry);
+      if (ids.has(view.id)) invalidLibrary();
+      ids.add(view.id); return view;
+    });
+  }
   if (new TextEncoder().encode(JSON.stringify(result)).length > CONTENT_LIBRARY_LIMITS.bytes) invalidLibrary();
   return result;
 }
@@ -64,7 +76,7 @@ function validate(value) {
     || Object.keys(value.aliases).length > 12000 || value.revision !== undefined && (!Number.isSafeInteger(value.revision) || value.revision < 0)
     || Object.keys(value).some((key) => !['version', 'revision', 'aliases', 'privateKeys', 'presentation', 'library'].includes(key))
     || value.presentation !== undefined && typeof value.presentation !== 'boolean'
-    || value.privateKeys !== undefined && (!Array.isArray(value.privateKeys) || value.privateKeys.length > 12000 || value.privateKeys.some((key) => typeof key !== 'string' || !validKey(key)))) throw Error(tr('本机内容偏好无效。'));
+    || value.privateKeys !== undefined && (!Array.isArray(value.privateKeys) || value.privateKeys.length > 12000 || value.privateKeys.some((key) => typeof key !== 'string' || !validPrivateKey(key)))) throw Error(tr('本机内容偏好无效。'));
   const aliases = {};
   for (const [key, alias] of Object.entries(value.aliases)) {
     if (!validKey(key) || typeof alias !== 'string' || alias.length > 200 || /[\u0000-\u001f]/.test(alias)) throw Error(tr('搜索别名无效。'));
@@ -153,6 +165,48 @@ export function deleteContentTag(id, options = {}) {
     }
   }, options);
 }
+export function prepareSavedView(current, draft, { expectedViewRevision = draft.revision, private: privateValue } = {}) {
+  const preferences = validate(current), library = structuredClone(preferences.library || emptyLibrary());
+  const id = draft.id || `view-${crypto.randomUUID()}`, views = library.views || [], existing = views.find((view) => view.id === id);
+  if (preferences.presentation && (preferences.privateKeys.includes(`view:${id}`)
+    || [existing, draft].some((view) => view?.scope?.kind === 'folder' && preferences.privateKeys.includes(`folder:${view.scope.folderId}`)))) {
+    throw privacyError('请先输入密码解除隐藏。', 'PRIVACY_LOCKED');
+  }
+  if (existing ? existing.revision !== expectedViewRevision : draft.id && expectedViewRevision !== 0) {
+    throw Object.assign(Error(tr('清单已在其他页面更新，请重新打开。')), { code: 'REVISION_CONFLICT' });
+  }
+  if (privateValue !== undefined && typeof privateValue !== 'boolean') invalidLibrary();
+  const view = validateSavedView({ ...draft, id, revision: existing ? existing.revision + 1 : 1 });
+  library.views = existing ? views.map((item) => item.id === id ? view : item) : [...views, view];
+  const privateKeys = new Set(preferences.privateKeys);
+  if (privateValue === true) privateKeys.add(`view:${id}`);
+  if (privateValue === false) privateKeys.delete(`view:${id}`);
+  return validate({ ...preferences, library, privateKeys: [...privateKeys] });
+}
+async function guardSavedViewVisibility(preferences, views) {
+  if (!preferences.presentation) return;
+  const values = await localData.get(['owntab.local.v1', 'covelet.tools.v1']);
+  const environment = { navigation: values['owntab.local.v1']?.state, tools: values['covelet.tools.v1'], preferences };
+  if (views.some((view) => view && resolveSavedView(view, environment).status === 'hidden')) {
+    throw privacyError('请先输入密码解除隐藏。', 'PRIVACY_LOCKED');
+  }
+}
+export async function saveSavedView(draft, options = {}) {
+  const input = draft.id ? draft : { ...draft, id: `view-${crypto.randomUUID()}`, revision: 0 };
+  const next = await mutateContentPreferences(async (current) => {
+    await guardSavedViewVisibility(current, [current.library?.views?.find((view) => view.id === input.id), input]);
+    return prepareSavedView(current, input, options);
+  }, options);
+  return structuredClone(next.library.views.find((view) => view.id === input.id));
+}
+export function deleteSavedView(id, { expectedViewRevision, ...options } = {}) {
+  return mutateContentPreferences(async (current) => {
+    const view = current.library?.views?.find((entry) => entry.id === id);
+    if (!view || view.revision !== expectedViewRevision) throw Object.assign(Error(tr('清单已在其他页面更新，请重新打开。')), { code: 'REVISION_CONFLICT' });
+    await guardSavedViewVisibility(current, [view]);
+    return { ...current, library: { ...current.library, views: current.library.views.filter((entry) => entry.id !== id) }, privateKeys: current.privateKeys.filter((key) => key !== `view:${id}`) };
+  }, options);
+}
 async function readCredential() {
   return validatePrivacyCredential((await localData.get(LOCK_KEY))[LOCK_KEY]);
 }
@@ -208,7 +262,7 @@ export function contentPreferencesForKeys(preferences, keys) {
   }
   return validate(result);
 }
-export function mergeContentPreferences(current, incoming, { replaceKeys = [] } = {}) {
+export function mergeContentPreferences(current, incoming, { replaceKeys = [], desktopIdMap = new Map() } = {}) {
   const before = validate(current), source = validate(incoming);
   const replacing = new Set(replaceKeys);
   const result = { ...before, aliases: { ...source.aliases, ...Object.fromEntries(Object.entries(before.aliases).filter(([key]) => !replacing.has(key))) }, privateKeys: [...new Set([...before.privateKeys, ...source.privateKeys])] };
@@ -222,6 +276,16 @@ export function mergeContentPreferences(current, incoming, { replaceKeys = [] } 
   }
   for (const [key, value] of Object.entries(source.library?.items || {})) {
     if (!Object.hasOwn(library.items, key)) library.items[key] = { description: value.description, tagIds: [...new Set(value.tagIds.map((id) => mapping.get(id)))] };
+  }
+  if (source.library && Object.hasOwn(source.library, 'views')) {
+    library.views ??= [];
+    const ids = new Set(library.views.map((view) => view.id));
+    for (const incomingView of source.library.views) {
+      if (ids.has(incomingView.id)) continue;
+      const view = { ...structuredClone(incomingView), tagIds: [...new Set(incomingView.tagIds.map((id) => mapping.get(id) || id))] };
+      if (view.scope.kind === 'desktop' && desktopIdMap.has(view.scope.desktopId)) view.scope.desktopId = desktopIdMap.get(view.scope.desktopId);
+      library.views.push(view); ids.add(view.id);
+    }
   }
   return validate({ ...result, library });
 }
@@ -256,9 +320,8 @@ async function withPreferencesLock(run) {
 export function withNavigationPrivacy(run) {
   return withPreferencesLock(async () => {
     const current = await loadContentPreferences();
-    return run(current, (addedKeys = [], { metadata = [], copies = [], expectedRevision, appendPreferences } = {}) => {
+    return run(current, (addedKeys = [], { metadata = [], copies = [], expectedRevision, appendPreferences, savedView } = {}) => {
       if (expectedRevision !== undefined && current.revision !== expectedRevision) throw Object.assign(Error(tr('内容已在其他页面更新，请重新打开后重试。')), { code: 'REVISION_CONFLICT' });
-      const privateKeys = [...new Set([...current.privateKeys, ...(appendPreferences?.privateKeys || []), ...addedKeys])];
       let next = appendPreferences ? mergeContentPreferences(current, appendPreferences) : current;
       for (const { from, to } of copies) {
         if (hiddenMetadata(current, from)) throw privacyError('请先输入密码解除隐藏。', 'PRIVACY_LOCKED');
@@ -268,6 +331,8 @@ export function withNavigationPrivacy(run) {
         checkExpectedMetadata(current, patch.key, patch.expectedMetadata);
         next = applyContentMetadata(next, patch.key, patch);
       }
+      if (savedView) next = prepareSavedView(next, savedView.draft, savedView);
+      const privateKeys = [...new Set([...next.privateKeys, ...addedKeys])];
       if (next === current && privateKeys.length === current.privateKeys.length) return {};
       return { [KEY]: validate({ ...next, privateKeys, revision: current.revision + 1 }) };
     });

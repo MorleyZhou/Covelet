@@ -4,6 +4,8 @@ import { changePrivacyPassword, getPrivacyLockStatus, loadContentPreferences, re
   saveContentSettings, setPresentationMode, validateContentPreferences } from './content-preferences.js';
 import { CONTENT_LIBRARY_LIMITS, createContentTag, renameContentTag, deleteContentTag, saveContentMetadata,
   getContentMetadata, getContentTags, mergeContentPreferences, withNavigationPrivacy } from './content-preferences.js';
+import { saveSavedView, deleteSavedView, prepareSavedView, getSavedViews, contentPreferencesForKeys } from './content-preferences.js';
+import { defaultSavedFilters } from './saved-views.js';
 import { localData } from './local-data.js';
 
 const KEY = 'covelet.content.preferences.v1', LOCK = 'covelet.privacy.lock.v1';
@@ -225,4 +227,90 @@ test('appending preferences remaps same-name tag identities and retains existing
   assert.deepEqual(merged.library.tags, current.library.tags);
   assert.deepEqual(getContentMetadata(merged, 'site:shared'), getContentMetadata(current, 'site:shared'));
   assert.deepEqual(getContentMetadata(merged, 'note:fresh').tagIds, ['tag-current']);
+});
+
+test('saved view CRUD uses its own revision across unrelated tag mutations and preserves private markings', async () => {
+  const initial = await loadContentPreferences(); assert.equal(Object.hasOwn(initial, 'library'), false);
+  const saved = await saveSavedView({ name: 'Project', ...defaultSavedFilters(), type: 'navigation' }, { expectedRevision: initial.revision, private: true });
+  assert.equal(saved.revision, 1); assert.equal(saved.type, 'navigation');
+  const renamed = await saveSavedView({ ...saved, name: 'Renamed' }, { expectedViewRevision: saved.revision });
+  assert.equal(renamed.revision, 2);
+  await createContentTag('Unrelated');
+  const current = await loadContentPreferences(), before = structuredClone(records);
+  await assert.rejects(saveSavedView({ ...saved, name: 'stale' }, { expectedRevision: current.revision, expectedViewRevision: saved.revision }), { code: 'REVISION_CONFLICT' });
+  await assert.rejects(deleteSavedView(saved.id, { expectedViewRevision: 1 }), { code: 'REVISION_CONFLICT' });
+  assert.deepEqual(records, before);
+  await setPresentationMode(true, { setup: true, password: PASSWORD });
+  assert.deepEqual(getSavedViews(await loadContentPreferences()), []);
+  await assert.rejects(saveSavedView({ ...renamed, name: 'hidden edit' }, { expectedViewRevision: 2 }), { code: 'PRIVACY_LOCKED' });
+  await assert.rejects(deleteSavedView(saved.id, { expectedViewRevision: 2 }), { code: 'PRIVACY_LOCKED' });
+  await setPresentationMode(false, { password: PASSWORD });
+  await deleteSavedView(saved.id, { expectedViewRevision: 2 });
+  const deleted = await loadContentPreferences();
+  assert.deepEqual(deleted.library.views, []); assert(!deleted.privateKeys.includes(`view:${saved.id}`));
+  assert.equal(deleted.library.tags[0].name, 'Unrelated');
+});
+
+test('view references survive tag deletion and tool subsets omit views and their privacy keys', async () => {
+  const tag = await createContentTag('Used');
+  await saveContentMetadata('note:a', { tagIds: [tag.id] });
+  const saved = await saveSavedView({ name: 'Tagged', ...defaultSavedFilters(), tagIds: [tag.id] }, { private: true });
+  const subset = contentPreferencesForKeys(await loadContentPreferences(), ['note:a']);
+  assert.equal(Object.hasOwn(subset.library, 'views'), false); assert.deepEqual(subset.privateKeys, []);
+  await deleteContentTag(tag.id);
+  assert.deepEqual((await loadContentPreferences()).library.views[0].tagIds, [tag.id]);
+  assert.equal((await loadContentPreferences()).library.views[0].id, saved.id);
+});
+
+test('saved view mutations check fresh inherited privacy before an old editor can remove hidden conditions', async () => {
+  const secretTag = await createContentTag('Private project'), publicTag = await createContentTag('Public project');
+  await saveContentMetadata('site:child', { tagIds: [secretTag.id] });
+  await saveContentMetadata('note:public', { tagIds: [publicTag.id] });
+  const byTag = await saveSavedView({ name: 'Private tag view', tagIds: [secretTag.id] });
+  const byFolder = await saveSavedView({ name: 'Private folder view', scope: { kind: 'folder', folderId: 'private-folder' } });
+  const publicView = await saveSavedView({ name: 'Public view', tagIds: [publicTag.id] });
+  records['owntab.local.v1'] = { state: { settings: { pages: [0], desktopPages: {} }, entries: [
+    { id: 'private-folder', type: 'folder', parentId: null }, { id: 'child', type: 'site', parentId: 'private-folder' },
+  ] } };
+  records['covelet.tools.v1'] = { notes: [{ id: 'public', title: 'Public note', body: 'visible' }], reading: [] };
+  await saveContentSettings('folder:private-folder', { private: true });
+  await setPresentationMode(true, { setup: true, password: PASSWORD });
+  const before = structuredClone(records);
+  for (const original of [byTag, byFolder]) {
+    await assert.rejects(saveSavedView({ ...original, name: 'Stale edit', tagIds: [], scope: { kind: 'all' } }, {
+      expectedRevision: records[KEY].revision, expectedViewRevision: original.revision,
+    }), { code: 'PRIVACY_LOCKED' });
+    await assert.rejects(deleteSavedView(original.id, { expectedViewRevision: original.revision }), { code: 'PRIVACY_LOCKED' });
+  }
+  assert.deepEqual(records, before);
+  assert.throws(() => prepareSavedView(before[KEY], { ...byFolder, scope: { kind: 'all' } }), { code: 'PRIVACY_LOCKED' });
+  const renamed = await saveSavedView({ ...publicView, name: 'Public renamed' }, { expectedViewRevision: publicView.revision });
+  assert.equal(renamed.name, 'Public renamed');
+});
+
+test('the navigation transaction can prepare a stable view without persisting a temporary desktop scope', async () => {
+  const before = await loadContentPreferences();
+  assert.throws(() => prepareSavedView(before, { name: 'Temporary', ...defaultSavedFilters(), scope: { kind: 'desktop', desktopId: '@page:0' } }));
+  const draft = { id: 'stable-view', revision: 0, name: 'Work', ...defaultSavedFilters(), scope: { kind: 'desktop', desktopId: 'stable-desktop' } };
+  await withNavigationPrivacy(async (_current, prepare) => {
+    const patch = prepare([], { expectedRevision: before.revision, savedView: { draft, expectedViewRevision: 0, private: true } });
+    assert.equal(Object.hasOwn(records, KEY), false);
+    assert.equal(patch[KEY].library.views[0].scope.desktopId, 'stable-desktop');
+    assert.deepEqual(patch[KEY].privateKeys, ['view:stable-view']);
+    await localData.set(patch);
+  });
+  assert.equal((await loadContentPreferences()).library.views[0].revision, 1);
+});
+
+test('view append remaps only incoming tag and desktop references and keeps local same-ID definitions', () => {
+  const empty = validateContentPreferences(null);
+  const local = { ...empty, library: { version: 1, tags: [{ id: 'tag-local', name: 'Work' }], items: {},
+    views: [{ id: 'view-local', revision: 4, name: 'Keep', ...defaultSavedFilters() }] } };
+  const incoming = { ...empty, library: { version: 1, tags: [{ id: 'tag-source', name: 'work' }], items: {}, views: [
+    { id: 'view-local', revision: 1, name: 'Old', ...defaultSavedFilters() },
+    { id: 'view-new', revision: 1, name: 'Imported', ...defaultSavedFilters(), scope: { kind: 'desktop', desktopId: 'source-desktop' }, tagIds: ['tag-source'] },
+  ] } };
+  const merged = mergeContentPreferences(local, incoming, { desktopIdMap: new Map([['source-desktop', 'new-desktop']]) });
+  assert.equal(merged.library.views[0].name, 'Keep'); assert.equal(merged.library.views[0].revision, 4);
+  assert.deepEqual(merged.library.views[1].tagIds, ['tag-local']); assert.equal(merged.library.views[1].scope.desktopId, 'new-desktop');
 });

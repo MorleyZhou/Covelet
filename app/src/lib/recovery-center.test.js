@@ -7,6 +7,7 @@ import { createConfiguredNavigation } from '../../tests/fixtures/navigation-stat
 import { validatePersonalTools } from './personal-tools.js';
 import { validateContentPreferences } from './content-preferences.js';
 import { validateSavedDesktopTemplates, BUILTIN_DESKTOP_TEMPLATES } from './desktop-templates.js';
+import { defaultSavedFilters, resolveSavedView } from './saved-views.js';
 
 const clone = (value) => structuredClone(value);
 const PNG = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB0kAAAAASUVORK5CYII=', 'base64'));
@@ -82,6 +83,53 @@ test('complete backups and recovery points retain metadata while append remaps i
   const merged = (await subject.preferences.read()).library;
   assert.deepEqual(merged.tags, edited.tags); assert.deepEqual(merged.items['site:saved'], edited.items['site:saved']);
   assert.deepEqual(merged.items['reading:fresh'], { description: 'new reference', tagIds: ['tag-current'] });
+});
+
+test('complete restore retains saved views and append maps imported desktop identities instead of pointing at the existing desktop', async () => {
+  const source = harness(), target = harness(), original = createEmptyState(), current = createEmptyState();
+  original.settings.desktopPages = { 0: { id: 'shared-desktop', name: 'Imported desktop' } };
+  original.entries = [site('incoming-site', 'https://incoming.example/', '', 0)];
+  current.settings.desktopPages = { 0: { id: 'shared-desktop', name: 'Current desktop' } };
+  current.entries = [site('current-site', 'https://current.example/', '', 0)];
+  delete original.entries[0].iconUrl; delete current.entries[0].iconUrl;
+  await source.nav.saveState(original, 0); await target.nav.saveState(current, 0);
+  source.preferences.change({ privateKeys: ['view:incoming-view'], library: { version: 1, tags: [], items: {}, views: [
+    { id: 'incoming-view', revision: 1, name: 'Incoming', ...defaultSavedFilters(), scope: { kind: 'desktop', desktopId: 'shared-desktop' } },
+  ] } });
+  target.preferences.change({ library: { version: 1, tags: [], items: {}, views: [
+    { id: 'current-view', revision: 2, name: 'Current', ...defaultSavedFilters(), scope: { kind: 'desktop', desktopId: 'shared-desktop' } },
+  ] } });
+  const file = await source.center.exportCompleteBackup();
+  await target.center.restore(await target.center.preview(file), { mode: 'append' });
+  const restored = await target.preferences.read(), state = await target.nav.loadState();
+  const imported = restored.library.views.find((view) => view.id === 'incoming-view');
+  assert.notEqual(imported.scope.desktopId, 'shared-desktop');
+  const importedPage = state.entries.find((entry) => entry.id === 'incoming-site').page;
+  assert.equal(state.settings.desktopPages[importedPage].id, imported.scope.desktopId);
+  assert.equal(restored.library.views.find((view) => view.id === 'current-view').scope.desktopId, 'shared-desktop');
+  assert(restored.privateKeys.includes('view:incoming-view'));
+  const point = await target.center.previewRecoveryPoint();
+  assert.equal(point.preferences.library.views[0].id, 'current-view');
+  await target.center.restore(await target.center.preview(file));
+  assert.deepEqual((await target.preferences.read()).library.views, (await source.preferences.read()).library.views);
+});
+
+test('append keeps a view invalid when deduplication omits its colliding source desktop', async () => {
+  const source = harness(), target = harness();
+  for (const [subject, id] of [[source, 'incoming-site'], [target, 'local-site']]) {
+    const state = createEmptyState();
+    state.settings.desktopPages = { 0: { id: 'shared-desktop', name: id } };
+    state.entries = [site(id, 'https://duplicate.example/', undefined, 0)]; delete state.entries[0].iconUrl;
+    await subject.nav.saveState(state, 0);
+  }
+  source.preferences.change({ library: { version: 1, tags: [], items: {}, views: [
+    { id: 'incoming-view', revision: 1, name: 'Source desktop only', ...defaultSavedFilters(), scope: { kind: 'desktop', desktopId: 'shared-desktop' } },
+  ] } });
+  await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { mode: 'append' });
+  const preferences = await target.preferences.read(), navigation = await target.nav.loadState(), view = preferences.library.views[0];
+  assert.notEqual(view.scope.desktopId, 'shared-desktop');
+  assert.deepEqual(navigation.entries.map((entry) => entry.id), ['local-site']);
+  assert.deepEqual(resolveSavedView(view, { navigation, tools: await target.tools.read(), preferences }), { status: 'invalid', reason: 'missing-desktop', rows: [] });
 });
 
 test('selected categories replace same-ID note contents without touching reading, navigation or aliases', async () => {
