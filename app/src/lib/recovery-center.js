@@ -36,7 +36,8 @@ const summary = (data) => ({
   notes: data.tools?.notes.length ?? 0, reading: data.tools?.reading.length ?? 0,
   trash: data.tools?.trash?.filter((item) => ['notes', 'reading'].includes(item.kind)).length ?? 0,
   templates: data.templates?.templates.length ?? 0,
-  preferences: data.preferences ? new Set([...Object.keys(data.preferences.aliases), ...data.preferences.privateKeys, ...Object.keys(data.preferences.library?.items || {})]).size : 0,
+  preferences: data.preferences ? new Set([...Object.keys(data.preferences.aliases), ...data.preferences.privateKeys,
+    ...Object.keys(data.preferences.library?.items || {}), ...(data.preferences.library?.views || []).map((view) => `view:${view.id}`)]).size : 0,
 });
 
 // Each data domain retains its own revision lock. A durable recovery point is
@@ -140,17 +141,20 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       if (next.parentId === null && !state.settings.pages.includes(next.page)) state.settings.pages.push(next.page);
     }
     state.settings.pages.sort((a, b) => a - b);
-    const desktopIds = new Set(Object.values(state.settings.desktopPages ?? {}).map((page) => page.id));
+    const desktopIds = new Set(Object.values(state.settings.desktopPages ?? {}).map((page) => page.id)), desktopIdMap = new Map();
     for (const [page, metadata] of Object.entries(source.settings.desktopPages ?? {})) {
       const target = pageMap.get(Number(page));
-      if (!state.settings.pages.includes(target)) continue;
       const id = desktopIds.has(metadata.id) ? crypto.randomUUID() : metadata.id;
+      desktopIdMap.set(metadata.id, id);
+      // Even if every source site was deduplicated, its view must not fall
+      // through to a different local desktop that happens to share its ID.
+      if (!state.settings.pages.includes(target)) continue;
       (state.settings.desktopPages ??= {})[target] = { ...metadata, id };
       desktopIds.add(id);
     }
     const icons = new Map(existing.icons), appendedSources = new Set(navigationIconSources({ entries: appended }).map((item) => item.source));
     for (const [source, record] of incoming.icons || []) if (appendedSources.has(source) && !icons.has(source)) icons.set(source, record);
-    return { state: migrateNavigationState(state), assets, icons };
+    return { plan: { state: migrateNavigationState(state), assets, icons }, desktopIdMap };
   }
   async function restore(plan, { selected = plan.categories, mode = 'replace', onIconProgress, onIconResult } = {}) {
     if (!plan?.expected || !['replace', 'append'].includes(mode) || !Array.isArray(selected) || !selected.length || selected.some((key) => !RECOVERY_CATEGORIES.includes(key) || !plan.categories.includes(key))) fail(tr('请选择有效的恢复类别。'));
@@ -161,8 +165,13 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       if (plan.recoveryPointId && !sourcePoint) fail(tr('恢复前副本已更新，请重新预览。'));
       if (existingPoint && ['applying', 'needs-recovery'].includes(existingPoint.status) && !sourcePoint) fail(tr('上次恢复未完成，请先从「恢复前副本」找回需要的内容，再导入其他备份。'));
       // Re-validate mutable preview values before any persistence.
-      const next = {};
-      if (selected.includes('navigation')) next.navigation = mode === 'append' ? await mergeNavigation(before.state, plan.navigation) : plan.navigation;
+      const next = {}; let desktopIdMap = new Map();
+      if (selected.includes('navigation')) {
+        if (mode === 'append') {
+          const merged = await mergeNavigation(before.state, plan.navigation);
+          next.navigation = merged.plan; desktopIdMap = merged.desktopIdMap;
+        } else next.navigation = plan.navigation;
+      }
       if (selected.some((key) => ['notes', 'reading', 'trash'].includes(key))) next.tools = selectedTools(before.tools, plan.tools, selected, mode);
       if (selected.includes('templates')) {
         const list = mode === 'append' ? [...before.templates.templates, ...plan.templates.templates.filter((item) => !before.templates.templates.some((old) => old.id === item.id))] : plan.templates.templates;
@@ -175,7 +184,7 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
             : personalContentKeys(next.tools || before.tools, selected).filter((key) => !existingKeys.has(key));
           next.preferences = preferences.validate(mergeContentPreferences(before.preferences, contentPreferencesForKeys(plan.preferences, importedKeys),
             { replaceKeys: mode === 'replace' ? personalContentKeys(before.tools, selected) : [] }));
-        } else next.preferences = preferences.validate(mode === 'append' ? mergeContentPreferences(before.preferences, plan.preferences) : plan.preferences);
+        } else next.preferences = preferences.validate(mode === 'append' ? mergeContentPreferences(before.preferences, plan.preferences, { desktopIdMap }) : plan.preferences);
       }
       // Validation includes archive resources before the checkpoint and writes.
       if (next.navigation) next.navigation = await nav.validateBackupPlan(next.navigation);

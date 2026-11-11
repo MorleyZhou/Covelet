@@ -122,11 +122,10 @@ function noteExcerpt(body, tokens) {
  * Title/alias matching also supports approximate Chinese pinyin initials.
  * Results retain original entry/record references and original URLs.
  */
-export function searchCoveletContent(navigation, tools, query, { aliases = {}, hiddenKeys = [], desktops = [], library, tagIds = [], limit = 24 } = {}) {
+export function collectCoveletContent(navigation, tools, query, { aliases = {}, hiddenKeys = [], desktops = [], library, tagIds = [], allowEmptyQuery = false } = {}) {
   const normalized = normalize(query);
   const selectedTags = Array.isArray(tagIds) ? [...new Set(tagIds)] : [];
-  const boundedLimit = Number.isFinite(limit) ? Math.min(MAX_RESULTS, Math.max(0, Math.floor(limit))) : 24;
-  if ((!normalized && !selectedTags.length) || normalized.length > 2000 || !boundedLimit) return [];
+  if ((!normalized && !selectedTags.length && !allowEmptyQuery) || normalized.length > 2000) return [];
   const tokens = normalized ? [...new Set(normalized.split(' '))] : [];
   if (tokens.length > 64) return [];
   const hidden = hiddenKeys instanceof Set ? hiddenKeys : new Set(Array.isArray(hiddenKeys) ? hiddenKeys : []);
@@ -160,7 +159,12 @@ export function searchCoveletContent(navigation, tools, query, { aliases = {}, h
   for (const record of tools?.notes ?? []) add('note', record);
   for (const record of tools?.reading ?? []) add('reading', record);
   // Modern JS sort is stable: identical scores retain saved navigation/tool order.
-  return results.sort((left, right) => right.score - left.score).slice(0, boundedLimit);
+  return results.sort((left, right) => right.score - left.score);
+}
+
+export function searchCoveletContent(navigation, tools, query, options = {}) {
+  const limit = Number.isFinite(options.limit) ? Math.min(MAX_RESULTS, Math.max(0, Math.floor(options.limit))) : 24;
+  return limit ? collectCoveletContent(navigation, tools, query, options).slice(0, limit) : [];
 }
 
 export function visibleContentTagIds(navigation, tools, library, hiddenKeys = []) {

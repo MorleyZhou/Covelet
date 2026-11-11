@@ -29,6 +29,7 @@ export default function SearchFilters({ value, onChange, onReturnFocus }) {
         <DropdownMenuRadioItem value="all" onSelect={() => { chosen.current = true; }}>{tr('全部内容')}</DropdownMenuRadioItem>
         <DropdownMenuRadioItem value="current" onSelect={() => { chosen.current = true; }}>{tr('当前桌面')}</DropdownMenuRadioItem>
         <DropdownMenuSeparator />
+        <DropdownMenuRadioItem value="navigation" onSelect={() => { chosen.current = true; }}>{tr('网站与文件夹')}</DropdownMenuRadioItem>
         <DropdownMenuRadioItem value="desktop" onSelect={() => { chosen.current = true; }}>{tr('桌面')}</DropdownMenuRadioItem>
         <DropdownMenuRadioItem value="site" onSelect={() => { chosen.current = true; }}>{tr('网站')}</DropdownMenuRadioItem>
         <DropdownMenuRadioItem value="folder" onSelect={() => { chosen.current = true; }}>{tr('文件夹')}</DropdownMenuRadioItem>

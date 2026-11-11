@@ -8,6 +8,7 @@ import { readNavigationIconResource, restoreNavigationIconResource, retainNaviga
 import { prepareImportedNavigationIcons } from './navigation-icon-intake.js';
 import { ICON_IMAGE_LIMIT } from './icon-image-format.js';
 import { withNavigationPrivacy } from './content-preferences.js';
+import { sameJson } from './json-equal.js';
 
 const STORE_KEY = 'owntab.local.v1';
 const LOCK_NAME = 'owntab.local.write.v1';
@@ -334,6 +335,10 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
     if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0) fail(tr("保存时缺少有效的数据版本。"), 'REVISION_CONFLICT');
     const envelope = await readEnvelope();
     if (envelope.state.revision !== expectedRevision) fail(tr("数据已在另一个标签页更新，请重新加载后再试。"), 'REVISION_CONFLICT');
+    if (preferences !== undefined && sameJson(migrateNavigationState({ ...clone(next), revision: expectedRevision }), envelope.state)) {
+      if (Object.keys(preferences).length) await getConfig().write(envelope, preferences);
+      return clone(envelope.state);
+    }
     const saved = migrateNavigationState({ ...clone(next), revision: expectedRevision + 1 });
     if (strToU8(JSON.stringify(saved)).length > LIMITS.json) fail(tr("配置数据超过 2 MiB。"), 'STORAGE_LIMIT');
     await getConfig().write({ ...envelope, state: saved, snapshots: [envelope.state, ...envelope.snapshots].slice(0, 3) }, preferences);

@@ -1476,3 +1476,61 @@ WebDAV 支持分步设置和连接测试，重启浏览器后需重新解锁。|
 标签已被移除，请重新选择。|This tag was removed. Select another tag.|標籤已移除，請重新選擇。|タグが削除されました。選び直してください。|태그가 삭제되었습니다. 다시 선택해 주세요.|Dieser Tag wurde entfernt. Wähle einen anderen Tag aus.|Cette étiquette a été supprimée. Choisissez-en une autre.|Этот тег удалён. Выберите другой тег.
 已有同名标签。|A tag with this name already exists.|已有同名標籤。|同じ名前のタグがすでにあります。|같은 이름의 태그가 이미 있습니다.|Ein Tag mit diesem Namen ist bereits vorhanden.|Une étiquette portant ce nom existe déjà.|Тег с таким названием уже существует.
 此标签名称不可用，请换一个名称。|This tag name is unavailable. Choose another name.|此標籤名稱無法使用，請換一個名稱。|このタグ名は使用できません。別の名前にしてください。|이 태그 이름은 사용할 수 없습니다. 다른 이름을 입력해 주세요.|Dieser Tag-Name ist nicht verfügbar. Wähle einen anderen Namen.|Ce nom d’étiquette est indisponible. Choisissez un autre nom.|Это название тега недоступно. Выберите другое название.
+# 0.4.4 saved views and link management
+全部位置|All locations|全部位置|すべての場所|모든 위치|Alle Orte|Tous les emplacements|Все расположения
+位置已失效|Location unavailable|位置已失效|場所が無効です|위치를 사용할 수 없음|Ort nicht verfügbar|Emplacement indisponible|Расположение недоступно
+网站与文件夹|Sites and folders|網站與資料夾|サイトとフォルダー|사이트 및 폴더|Websites und Ordner|Sites et dossiers|Сайты и папки
+不支持的内容类型|Unsupported content type|不支援的內容類型|対応していないコンテンツの種類|지원하지 않는 콘텐츠 유형|Nicht unterstützter Inhaltstyp|Type de contenu non pris en charge|Неподдерживаемый тип содержимого
+已整理所选网站。|Selected sites organized.|已整理所選網站。|選択したサイトを整理しました。|선택한 사이트를 정리했습니다.|Ausgewählte Websites wurden organisiert.|Les sites sélectionnés ont été organisés.|Выбранные сайты упорядочены.
+筛选条件包含隐藏内容，解锁后可查看。|These filters include hidden content. Unlock to view it.|篩選條件包含隱藏內容，解鎖後可檢視。|絞り込み条件に非表示の内容が含まれます。ロックを解除して表示してください。|필터 조건에 숨겨진 콘텐츠가 포함되어 있습니다. 잠금을 해제하여 확인하세요.|Diese Filter enthalten ausgeblendete Inhalte. Zum Anzeigen entsperren.|Ces filtres incluent du contenu masqué. Déverrouillez pour l’afficher.|Фильтры включают скрытое содержимое. Разблокируйте для просмотра.
+搜索链接|Search links|搜尋連結|リンクを検索|링크 검색|Links suchen|Rechercher des liens|Поиск ссылок
+搜索名称或备注|Search names or descriptions|搜尋名稱或備註|名前またはメモを検索|이름 또는 메모 검색|Namen oder Beschreibungen suchen|Rechercher des noms ou descriptions|Поиск по названиям или описаниям
+保存为清单|Save as list|儲存為清單|リストとして保存|목록으로 저장|Als Liste speichern|Enregistrer comme liste|Сохранить как список
+内容类型|Content type|內容類型|コンテンツの種類|콘텐츠 유형|Inhaltstyp|Type de contenu|Тип содержимого
+域名|Domain|網域|ドメイン|도메인|Domain|Domaine|Домен
+重置筛选|Reset filters|重設篩選|絞り込みをリセット|필터 초기화|Filter zurücksetzen|Réinitialiser les filtres|Сбросить фильтры
+已选 {0} 个网站|Sites selected ({0})|已選 {0} 個網站|選択中のサイト（{0}）|선택한 사이트({0})|Ausgewählte Websites ({0})|Sites sélectionnés ({0})|Выбрано сайтов ({0})
+{0} 项|Items ({0})|{0} 項|{0} 件|{0}개 항목|Einträge ({0})|Éléments ({0})|Записи ({0})
+编辑标签|Edit tags|編輯標籤|タグを編集|태그 편집|Tags bearbeiten|Modifier les étiquettes|Изменить теги
+移动或复制|Move or copy|移動或複製|移動またはコピー|이동 또는 복사|Verschieben oder kopieren|Déplacer ou copier|Переместить или скопировать
+排序|Sort|排序|並べ替え|정렬|Sortieren|Trier|Сортировка
+名称升序|Name, ascending|名稱升冪|名前の昇順|이름 오름차순|Name, aufsteigend|Nom croissant|По названию, по возрастанию
+名称降序|Name, descending|名稱降冪|名前の降順|이름 내림차순|Name, absteigend|Nom décroissant|По названию, по убыванию
+按域名|By domain|依網域|ドメイン順|도메인순|Nach Domain|Par domaine|По домену
+按位置|By location|依位置|場所順|위치순|Nach Ort|Par emplacement|По расположению
+筛选条件已失效，请重新选择。|These filters are no longer valid. Select them again.|篩選條件已失效，請重新選擇。|絞り込み条件が無効になりました。選び直してください。|필터 조건이 더 이상 유효하지 않습니다. 다시 선택해 주세요.|Diese Filter sind nicht mehr gültig. Wähle sie erneut aus.|Ces filtres ne sont plus valides. Sélectionnez-les à nouveau.|Фильтры больше недействительны. Выберите их снова.
+链接列表|Link list|連結列表|リンク一覧|링크 목록|Linkliste|Liste de liens|Список ссылок
+全选本页网站|Select all sites on this page|全選此頁網站|このページのサイトをすべて選択|이 페이지의 모든 사이트 선택|Alle Websites auf dieser Seite auswählen|Sélectionner tous les sites de cette page|Выбрать все сайты на этой странице
+选择“{0}”|Select “{0}”|選擇「{0}」|「{0}」を選択|“{0}” 선택|„{0}“ auswählen|Sélectionner « {0} »|Выбрать «{0}»
+编辑“{0}”的备注与标签|Edit description and tags for “{0}”|編輯「{0}」的備註與標籤|「{0}」のメモとタグを編集|“{0}”의 메모 및 태그 편집|Beschreibung und Tags für „{0}“ bearbeiten|Modifier la description et les étiquettes de « {0} »|Изменить описание и теги для «{0}»
+列表分页|List pages|列表分頁|一覧のページ|목록 페이지|Listenseiten|Pages de la liste|Страницы списка
+上一页|Previous page|上一頁|前のページ|이전 페이지|Vorherige Seite|Page précédente|Предыдущая страница
+第 {0} 页，共 {1} 页|Page {0} of {1}|第 {0} 頁，共 {1} 頁|{1} ページ中 {0} ページ|{1}페이지 중 {0}페이지|Seite {0} von {1}|Page {0} sur {1}|Страница {0} из {1}
+下一页|Next page|下一頁|次のページ|다음 페이지|Nächste Seite|Page suivante|Следующая страница
+备注与标签|Description and tags|備註與標籤|メモとタグ|메모 및 태그|Beschreibung und Tags|Description et étiquettes|Описание и теги
+所选内容已变化，请重新选择。|The selection changed. Select the items again.|所選內容已變更，請重新選擇。|選択した項目が変更されました。選び直してください。|선택한 항목이 변경되었습니다. 다시 선택해 주세요.|Die Auswahl hat sich geändert. Wähle die Einträge erneut aus.|La sélection a changé. Sélectionnez à nouveau les éléments.|Выбранные записи изменились. Выберите их снова.
+移除标签|Remove tags|移除標籤|タグを外す|태그 제거|Tags entfernen|Retirer les étiquettes|Убрать теги
+应用|Apply|套用|適用|적용|Anwenden|Appliquer|Применить
+清单包含隐藏条件，请先解锁。|This list includes hidden filters. Unlock to view it.|清單包含隱藏條件，請先解鎖。|リストに非表示の条件が含まれます。ロックを解除してください。|목록에 숨겨진 조건이 포함되어 있습니다. 먼저 잠금을 해제하세요.|Diese Liste enthält ausgeblendete Filter. Entsperre sie zum Anzeigen.|Cette liste contient des filtres masqués. Déverrouillez pour l’afficher.|Список содержит скрытые условия. Разблокируйте для просмотра.
+清单中的标签已被删除，请调整条件。|Tags in this list were deleted. Update its filters.|清單中的標籤已刪除，請調整條件。|リストのタグが削除されました。条件を変更してください。|목록의 태그가 삭제되었습니다. 조건을 수정해 주세요.|Tags dieser Liste wurden gelöscht. Passe die Filter an.|Des étiquettes de cette liste ont été supprimées. Modifiez ses filtres.|Теги этого списка удалены. Измените условия.
+清单中的范围已被删除，请重新选择。|The scope of this list was deleted. Select another scope.|清單中的範圍已刪除，請重新選擇。|リストの対象範囲が削除されました。選び直してください。|목록의 범위가 삭제되었습니다. 다시 선택해 주세요.|Der Bereich dieser Liste wurde gelöscht. Wähle einen neuen Bereich.|La portée de cette liste a été supprimée. Choisissez-en une autre.|Область этого списка удалена. Выберите другую.
+筛选条件无效，请检查后重试。|Invalid filters. Review them and try again.|篩選條件無效，請檢查後重試。|絞り込み条件が無効です。確認してやり直してください。|필터 조건이 유효하지 않습니다. 확인 후 다시 시도해 주세요.|Ungültige Filter. Prüfe sie und versuche es erneut.|Filtres invalides. Vérifiez-les et réessayez.|Недопустимые условия. Проверьте их и повторите попытку.
+范围已失效|Scope unavailable|範圍已失效|範囲が無効です|범위를 사용할 수 없음|Bereich nicht verfügbar|Portée indisponible|Область недоступна
+动态清单|Smart lists|動態清單|スマートリスト|스마트 목록|Dynamische Listen|Listes dynamiques|Умные списки
+新建清单|New list|新增清單|新しいリスト|새 목록|Neue Liste|Nouvelle liste|Новый список
+保存当前筛选|Save current filters|儲存目前篩選|現在の絞り込みを保存|현재 필터 저장|Aktuelle Filter speichern|Enregistrer les filtres actuels|Сохранить текущие условия
+编辑清单|Edit list|編輯清單|リストを編集|목록 편집|Liste bearbeiten|Modifier la liste|Изменить список
+删除清单|Delete list|刪除清單|リストを削除|목록 삭제|Liste löschen|Supprimer la liste|Удалить список
+还没有动态清单|No smart lists yet|尚無動態清單|スマートリストはまだありません|아직 스마트 목록이 없습니다|Noch keine dynamischen Listen|Aucune liste dynamique pour le moment|Умных списков пока нет
+返回清单|Back to lists|返回清單|リスト一覧に戻る|목록으로 돌아가기|Zurück zu den Listen|Retour aux listes|К спискам
+清单名称|List name|清單名稱|リスト名|목록 이름|Listenname|Nom de la liste|Название списка
+搜索文字|Search text|搜尋文字|検索文字列|검색어|Suchtext|Texte de recherche|Текст поиска
+筛选范围|Search scope|篩選範圍|絞り込み範囲|필터 범위|Suchbereich|Portée de recherche|Область поиска
+全部状态|All statuses|全部狀態|すべての状態|모든 상태|Alle Status|Tous les états|Все состояния
+移除失效标签|Remove deleted tags|移除失效標籤|削除されたタグを外す|삭제된 태그 제거|Gelöschte Tags entfernen|Retirer les étiquettes supprimées|Убрать удалённые теги
+开启隐藏时锁定此清单|Lock this list when hiding content|開啟隱藏時鎖定此清單|コンテンツを非表示にするとき、このリストをロック|콘텐츠를 숨길 때 이 목록 잠금|Diese Liste beim Ausblenden von Inhalten sperren|Verrouiller cette liste lors du masquage du contenu|Блокировать этот список при скрытии содержимого
+当前匹配 {0} 项|Matches ({0})|目前符合 {0} 項|現在の一致件数（{0}）|현재 일치 항목({0})|Treffer ({0})|Résultats ({0})|Совпадения ({0})
+删除此动态清单？|Delete this smart list?|刪除此動態清單？|このスマートリストを削除しますか？|이 스마트 목록을 삭제할까요?|Diese dynamische Liste löschen?|Supprimer cette liste dynamique ?|Удалить этот умный список?
+清单已在其他页面更新，请重新打开。|This list changed in another tab. Reopen it.|清單已在其他分頁更新，請重新開啟。|別のタブでこのリストが更新されました。開き直してください。|다른 탭에서 이 목록이 변경되었습니다. 다시 열어 주세요.|Diese Liste wurde in einem anderen Tab geändert. Öffne sie erneut.|Cette liste a été modifiée dans un autre onglet. Rouvrez-la.|Этот список изменён в другой вкладке. Откройте его снова.
+清单条件无效，请重新选择。|Invalid list filters. Select them again.|清單條件無效，請重新選擇。|リストの条件が無効です。選び直してください。|목록 조건이 유효하지 않습니다. 다시 선택해 주세요.|Ungültige Listenfilter. Wähle sie erneut aus.|Filtres de liste invalides. Sélectionnez-les à nouveau.|Недопустимые условия списка. Выберите их снова.
+整理链接|Organize links|整理連結|リンクを整理|링크 정리|Links organisieren|Organiser les liens|Упорядочить ссылки

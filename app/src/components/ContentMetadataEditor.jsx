@@ -14,7 +14,7 @@ import './content-metadata.css';
 
 const emptyMetadata = { description: '', tagIds: [] };
 
-export function ContentTagFilter({ preferences, selectedTagIds = [], onChange, availableTagIds, disabled = false, onReturnFocus }) {
+export function ContentTagFilter({ preferences, selectedTagIds = [], onChange, availableTagIds, disabled = false, onReturnFocus, preserveInvalid = false }) {
   const presentation = useContext(PresentationContext), container = useFloatingContainer(), [open, setOpen] = useState(false);
   const locked = presentation.active || preferences.presentation;
   const tags = getContentTags({ ...preferences, presentation: locked }, { hiddenKeys: locked ? presentation.hiddenKeys : undefined })
@@ -22,9 +22,9 @@ export function ContentTagFilter({ preferences, selectedTagIds = [], onChange, a
   const visibleIds = tags.map((tag) => tag.id), visibleKey = visibleIds.join('\0');
   useEffect(() => {
     const selected = selectedTagIds.filter((id) => visibleIds.includes(id));
-    if (selected.length !== selectedTagIds.length) onChange(selected);
+    if (!preserveInvalid && selected.length !== selectedTagIds.length) onChange(selected);
     if (disabled || !visibleIds.length) setOpen(false);
-  }, [visibleKey, selectedTagIds, disabled, onChange]);
+  }, [visibleKey, selectedTagIds, disabled, onChange, preserveInvalid]);
   if (!tags.length && !selectedTagIds.length) return null;
   return <Popover open={open && !disabled} onOpenChange={setOpen}>
     <PopoverTrigger asChild><Button type="button" variant="ghost" size="sm" className="content-tag-filter-trigger" disabled={disabled}

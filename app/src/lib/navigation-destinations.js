@@ -43,16 +43,21 @@ export function appendSiteAt(state, site, target) {
   return { ...state, entries: [...state.entries, entry] };
 }
 
-export function previewLayoutTransfer(state, selectedIds, value, preferences, operation) {
+export function previewLayoutTransfer(state, selectedIds, value, preferences, operation, { scope = 'roots' } = {}) {
   const target = navigationDestination(state, value, preferences);
   const selected = new Set(selectedIds);
-  const hidden = new Set(preferences.presentation ? preferences.privateKeys : []);
+  const hidden = preferences.presentation ? privateContentKeys(state, preferences) : new Set();
   const visible = (site) => !hidden.has(`site:${site.id}`);
   const existing = new Set(state.entries.filter((site) => siteAtDestination(site, target) && visible(site)).map((site) => site.url));
   const sources = [];
   let duplicates = 0;
-  const candidates = state.entries.filter((site) => site.type === 'site' && site.parentId === null && selected.has(site.id) && visible(site))
-    .sort((a, b) => a.order - b.order);
+  const candidates = state.entries.filter((site) => site.type === 'site' && (scope === 'all-sites' || site.parentId === null) && selected.has(site.id) && visible(site))
+    .sort((a, b) => {
+      if (scope !== 'all-sites') return a.order - b.order;
+      const rootA = a.parentId ? state.entries.find((item) => item.id === a.parentId) : a;
+      const rootB = b.parentId ? state.entries.find((item) => item.id === b.parentId) : b;
+      return (rootA?.page ?? 0) - (rootB?.page ?? 0) || (rootA?.order ?? 0) - (rootB?.order ?? 0) || a.order - b.order;
+    });
   for (const site of candidates) {
     if (operation === 'move' && siteAtDestination(site, target)) continue;
     if (existing.has(site.url)) { duplicates++; continue; }

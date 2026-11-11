@@ -32,6 +32,8 @@ import {
   CornersIn,
   NotePencil,
   BookOpen,
+  BookmarkSimple,
+  ListBullets,
   Eye,
   EyeSlash,
   LockSimple,
@@ -101,11 +103,15 @@ import HomeTime from "./components/HomeTime.jsx";
 import TimeAndDateSettings from './components/TimeAndDateSettings.jsx';
 import PersonalWidget, { PersonalToolsDialog, PersonalToolsTrashPanel } from "./components/PersonalTools.jsx";
 import usePersonalTools from './lib/use-personal-tools.js';
-import { exactDesktopMatches, searchCoveletContent, visibleContentTagIds } from './lib/content-search.js';
-import { defaultDesktopPage, desktopPageName, logicalDesktopPages, namedDesktopRecords, withDesktopPageIdentity } from './lib/desktop-pages.js';
+import { exactDesktopMatches, visibleContentTagIds } from './lib/content-search.js';
+import { defaultDesktopPage, desktopPageName, logicalDesktopPages, withDesktopPageIdentity } from './lib/desktop-pages.js';
 import { localData } from './lib/local-data.js';
 import { DEFAULT_DESKTOP_KEY } from './lib/sync-data-rules.js';
 import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode, getContentMetadata } from './lib/content-preferences.js';
+import { defaultSavedFilters, filterSavedContent, resolveSavedView, viewFilters } from './lib/saved-views.js';
+import { commitNavigationTransfer, commitNavigationTags } from './lib/navigation-library.js';
+import SavedViews from './components/SavedViews.jsx';
+import ResourceLibrary from './components/ResourceLibrary.jsx';
 import ContentMetadataEditor, { ContentTagFilter } from './components/ContentMetadataEditor.jsx';
 import { saveStateWithPrivacy } from './lib/storage.js';
 import { PresentationContext, privateContentKeys } from './lib/presentation.js';
@@ -118,7 +124,7 @@ import { layoutTransferPreferences, saveLayoutTransfer } from './lib/navigation-
 import EmptyDesktop from './components/EmptyDesktop.jsx';
 import FolderLaunchDialog from './components/FolderLaunchDialog.jsx';
 import SearchFilters from './components/SearchFilters.jsx';
-import { navigationResultPath, scopeSearchContent } from './lib/search-scope.js';
+import { navigationResultPath } from './lib/search-scope.js';
 import RecoveryCenter from './components/RecoveryCenter.jsx';
 import { focusDesktopNeighbor } from "./lib/desktop-focus.js";
 import { GITHUB_WIDGET_ID } from "./lib/widget-model.js";
@@ -425,6 +431,7 @@ export function App() {
     [candidate, setCandidate] = useState(-1),
     [focused, setFocused] = useState(false);
   const [searchFilter, setSearchFilter] = useState('all');
+  const [searchContext, setSearchContext] = useState(null);
   const [searchTagIds, setSearchTagIds] = useState([]);
   const [entryMetadata, setEntryMetadata] = useState({ description: '', tagIds: [] });
   const entryMetadataRevision = useRef(0);
@@ -649,28 +656,42 @@ export function App() {
   const wallpaperAppearance = useWallpaperAppearance(imageUrl, visualEnabled);
   const adaptive = visualEnabled && wallpaperAppearance.phase === "ready"
     ? createAdaptiveAppearance(wallpaperAppearance.palette, settings.shade) : null;
-  const desktops = useMemo(() => settings && ['all', 'desktop'].includes(searchFilter) ? namedDesktopRecords(settings) : [], [settings, searchFilter]);
   const searchPage = Number(activeScreen.split(':')[0]);
+  const currentSearchFilters = useMemo(() => ({ ...defaultSavedFilters(), ...(searchContext ? {
+    scope: searchContext.scope, domain: searchContext.domain, readingStatus: searchContext.readingStatus,
+  } : {}), query,
+    type: searchFilter === 'current' ? 'navigation' : searchFilter,
+    scope: searchFilter === 'current' ? { kind: 'desktop', desktopId: state?.settings.desktopPages?.[searchPage]?.id || `@page:${searchPage}` }
+      : searchContext?.scope || { kind: 'all' }, tagIds: searchTagIds }), [query, searchFilter, searchContext, searchTagIds, state, searchPage]);
   const availableSearchTagIds = useMemo(() => {
     if (!state) return [];
     return visibleContentTagIds(state, personalData, contentPreferences.library, presentation ? hiddenKeys : []);
   }, [state, personalData, contentPreferences, presentation, hiddenKeys]);
   useEffect(() => {
+    if (searchContext) return;
     setSearchTagIds((current) => {
       const next = current.filter((id) => availableSearchTagIds.includes(id));
       return next.length === current.length ? current : next;
     });
-  }, [availableSearchTagIds]);
+  }, [availableSearchTagIds, searchContext]);
+  const searchResult = useMemo(() => {
+    if (!state || (!query.trim() && !searchTagIds.length && !searchContext)) return { status: 'ready', rows: [] };
+    return filterSavedContent(state, personalData, contentPreferences, currentSearchFilters,
+      { hiddenKeys: presentation ? hiddenKeys : [], allowDraftScopes: true });
+  }, [state, personalData, contentPreferences, currentSearchFilters, presentation, hiddenKeys, query, searchTagIds, searchContext]);
+  const searchShielded = presentation && Boolean(searchContext?.protectOnLock || searchContext?.viewId && contentPreferences.privateKeys.includes(`view:${searchContext.viewId}`)
+    || searchResult.status === 'hidden');
+  useEffect(() => {
+    if (searchShielded) { setQuery(''); setSearchTagIds([]); setSearchContext(null); setSearchFilter('all'); setFocused(false); setCandidate(-1); }
+  }, [searchShielded]);
   const candidates = useMemo(() => {
-    if (!state || (!query.trim() && !searchTagIds.length)) return [];
-    const { entries, tools } = scopeSearchContent(state, personalData, searchFilter, searchPage);
+    if (!state || searchShielded || searchResult.status !== 'ready') return [];
     const visible = presentation ? hiddenKeys : undefined;
     const pages = logicalDesktopPages(state);
-    return searchCoveletContent(entries, tools, query, { aliases: contentPreferences.aliases, hiddenKeys: visible, desktops,
-      library: contentPreferences.library, tagIds: searchTagIds })
+    return searchResult.rows.slice(0, 24)
       .map((item) => ({ ...item, path: item.type === 'desktop' ? tr('第 {0} 屏', [formatNumber(pages.indexOf(item.record.page) + 1)])
         : navigationResultPath(item, state, visible, (page) => desktopPageName(state.settings, page)) }));
-  }, [state, personalData, query, contentPreferences, presentation, hiddenKeys, desktops, searchFilter, searchPage, searchTagIds]);
+  }, [state, searchShielded, searchResult, presentation, hiddenKeys]);
   useEffect(() => { setCandidate((value) => Math.min(value, candidates.length - 1)); }, [candidates.length]);
   useLayoutEffect(() => {
     const list = suggestionsRef.current, option = list?.children[candidate];
@@ -822,7 +843,7 @@ export function App() {
   }
   async function submit(e) {
     e.preventDefault();
-    if (composingSearch.current || e.nativeEvent.isComposing) return;
+    if (composingSearch.current || e.nativeEvent.isComposing || searchShielded) return;
     if (candidate >= 0 && candidates[candidate]) {
       openContent(candidates[candidate]);
       return;
@@ -840,7 +861,7 @@ export function App() {
           window.open(url, "_blank", "noopener,noreferrer");
         else location.assign(url);
       } else {
-        const matches = exactDesktopMatches(desktops, query);
+        const matches = exactDesktopMatches(searchResult.rows.filter((item) => item.type === 'desktop').map((item) => item.record), query);
         if (matches.length === 1) { openContent({ type: 'desktop', record: matches[0] }); return; }
         if (matches.length > 1) { setFocused(true); return; }
         await submitWebSearch(query, provider, state.providers, {
@@ -850,6 +871,62 @@ export function App() {
     } catch (e) {
       notify(userErrorMessage(e), "error");
     }
+  }
+  async function saveWorkingView(draft, options) {
+    const [latest, preferences] = await Promise.all([loadState(), loadContentPreferences()]);
+    if (preferences.revision !== options.expectedRevision) throw Object.assign(Error(tr('内容已在其他页面更新，请重新打开后重试。')), { code: 'REVISION_CONFLICT' });
+    const input = { ...draft, id: draft.id || `view-${crypto.randomUUID()}`, revision: draft.revision ?? 0 };
+    let next = latest;
+    if (input.scope.kind === 'desktop' && input.scope.desktopId.startsWith('@page:')) {
+      const page = Number(input.scope.desktopId.slice(6));
+      if (latest.revision !== options.expectedNavigationRevision || !Number.isSafeInteger(page) || !logicalDesktopPages(latest).includes(page)) {
+        throw Object.assign(Error(tr('目标位置已变化，请重新选择。')), { code: 'REVISION_CONFLICT' });
+      }
+      next = { ...latest, settings: withDesktopPageIdentity(latest.settings, page) };
+      input.scope = { kind: 'desktop', desktopId: next.settings.desktopPages[page].id };
+    }
+    const saved = await saveStateWithPrivacy(next, latest.revision, (current, finish) => {
+      const previous = current.library?.views?.find((view) => view.id === input.id);
+      if (previous && resolveSavedView(previous, { navigation: next, tools: personalData, preferences: current }).status === 'hidden'
+        || filterSavedContent(next, personalData, current, viewFilters(input)).status === 'hidden') {
+        throw Object.assign(Error(tr('请先输入密码解除隐藏。')), { code: 'PRIVACY_LOCKED' });
+      }
+      return finish([], { expectedRevision: options.expectedRevision, savedView: { draft: input,
+        expectedViewRevision: options.expectedViewRevision, private: options.private } });
+    });
+    setState(saved);
+    return (await loadContentPreferences()).library.views.find((view) => view.id === input.id);
+  }
+  async function applyWorkingView(filters, view) {
+    const [latest, preferences] = await Promise.all([loadState(), loadContentPreferences()]);
+    const current = preferences.library?.views?.find((item) => item.id === view.id);
+    if (!current || current.revision !== view.revision) throw Error(tr('清单已在其他页面更新，请重新打开。'));
+    const result = filterSavedContent(latest, personalData, preferences, filters);
+    if (preferences.presentation && preferences.privateKeys.includes(`view:${view.id}`) || result.status === 'hidden') throw Error(tr('请先输入密码解除隐藏。'));
+    if (result.status !== 'ready') throw Error(tr('筛选条件已失效，请重新选择。'));
+    const protectOnLock = preferences.privateKeys.includes(`view:${view.id}`)
+      || filterSavedContent(latest, personalData, { ...preferences, presentation: true }, filters).status === 'hidden';
+    setSearchContext({ ...filters, viewId: view.id, name: view.name, protectOnLock });
+    setQuery(filters.query); setSearchTagIds(filters.tagIds); setSearchFilter(filters.type); setCandidate(-1); setFocused(true); setFolder(null);
+    if (filters.scope.kind === 'desktop') {
+      const page = Object.entries(latest.settings.desktopPages || {}).find(([, metadata]) => metadata.id === filters.scope.desktopId)?.[0];
+      if (page !== undefined) setActiveScreen(`${page}:0`);
+    }
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
+  function clearWorkingView() {
+    setSearchContext(null); setQuery(''); setSearchTagIds([]); setSearchFilter('all'); setCandidate(-1); inputRef.current?.focus();
+  }
+  async function transferLibraryItems(payload) {
+    const result = await commitNavigationTransfer(payload); setState(result.state); return result;
+  }
+  async function tagLibraryItems(payload) {
+    const result = await commitNavigationTags(payload); setState(result.state); return result;
+  }
+  function revealLibraryItem(entry) {
+    const current = state.entries.find((item) => item.id === entry.id);
+    if (!current || presentation && hiddenKeys.has(`${current.type}:${current.id}`)) return;
+    setModal(null); revealDesktopEntry(state, current.parentId || current.id); setFolder(current.parentId || null);
   }
   function newEntry() {
     setEntryMetadata({ description: '', tagIds: [] }); entryMetadataRevision.current = contentPreferences.revision;
@@ -1247,6 +1324,10 @@ export function App() {
         />
         <header className="page-header">
           <div className="header-actions" inert={layoutEditor.editing || undefined}>
+            <Button variant="unstyled" size="unstyled" className="header-icon" type="button" aria-label={tr('动态清单')} title={tr('动态清单')}
+              onClick={() => setModal({ kind: 'saved-views', initialFilters: currentSearchFilters })}><BookmarkSimple size={23} /></Button>
+            <Button variant="unstyled" size="unstyled" className="header-icon" type="button" aria-label={tr('整理链接')} title={tr('整理链接')}
+              onClick={() => setModal({ kind: 'resource-library' })}><ListBullets size={24} /></Button>
             <Button variant="unstyled" size="unstyled" className="header-icon" type="button" aria-label={tr("添加网站")} title={tr("添加网站")} onClick={newEntry}><Plus size={25} /></Button>
             <Button variant="unstyled" size="unstyled" className="header-icon" type="button" disabled={privacyBusy || Boolean(modal) || Boolean(privacyDialog)} aria-pressed={presentation} aria-label={presentation ? tr('关闭隐藏') : tr('开启隐藏')} title={presentation ? tr('关闭隐藏') : tr('开启隐藏')}
               onClick={togglePresentation}>{presentation ? <EyeSlash size={25} /> : <Eye size={25} />}</Button>
@@ -1316,7 +1397,7 @@ export function App() {
             <Input unstyled
               ref={inputRef}
               type="text"
-              value={query}
+              value={searchShielded ? '' : query}
               aria-label={tr("搜索或输入网址")}
               placeholder={tr("搜索或输入网址")}
               autoComplete="off"
@@ -1354,6 +1435,7 @@ export function App() {
               }}
             />
             <ContentTagFilter preferences={contentPreferences} selectedTagIds={searchTagIds} availableTagIds={availableSearchTagIds}
+              preserveInvalid={Boolean(searchContext)} disabled={searchShielded}
               onChange={(ids) => { setSearchTagIds(ids); setCandidate(-1); }}
               onReturnFocus={() => { setFocused(true); inputRef.current?.focus(); }} />
             <SearchFilters value={searchFilter} onChange={(value) => { setSearchFilter(value); setCandidate(-1); }} onReturnFocus={() => inputRef.current?.focus()} />
@@ -1361,6 +1443,9 @@ export function App() {
               <MagnifyingGlass size={33} weight="light" />
             </Button>
           </form>
+          {searchContext && !searchShielded && <div className="saved-search-context"><span>{searchContext.name}</span>
+            <Button type="button" variant="ghost" size="sm" aria-label={tr('重置筛选')} title={tr('重置筛选')} onClick={clearWorkingView}><X size={15} /></Button></div>}
+          {searchResult.status === 'invalid' && <p className="content-search-error" role="status">{tr('筛选条件已失效，请重新选择。')}</p>}
           {focused && candidates.length > 0 && (
             <div ref={suggestionsRef} id="search-candidates" role="listbox" className="suggestions">
               {candidates.map((item, i) => (
@@ -1591,6 +1676,13 @@ export function App() {
             onLocalOnly={() => { setModal(null); notify(tr('已关闭同步，仅在本机保存数据。')); }} />
         </Modal>}
         {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} Dialog={Modal} onClose={() => setModal(null)} />}
+        {modal?.kind === 'saved-views' && <SavedViews navigation={state} tools={personalData} preferences={contentPreferences} initialFilters={modal.initialFilters}
+          Dialog={Modal} onSaveView={saveWorkingView} onApply={applyWorkingView} onBusyChange={setBusy} onClose={() => setModal(null)} />}
+        {modal?.kind === 'resource-library' && <Modal title={tr('整理链接')} wide maximizable className="resource-library-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
+          <ResourceLibrary navigation={state} tools={personalData} preferences={contentPreferences} initialFilters={modal.initialFilters} Dialog={Modal}
+            onSaveView={(filters) => setModal({ kind: 'saved-views', initialFilters: filters })} onReveal={revealLibraryItem}
+            onTransfer={transferLibraryItems} onBatchTags={tagLibraryItems} onBusyChange={setBusy} />
+        </Modal>}
         {modal?.kind === 'content-preferences' && <Modal title={tr('内容与隐私')} privacyKeys={modal.key ? [modal.key] : []} closeDisabled={busy} onClose={() => {
           if (!busy) { if (contentSettingsDirty.current) setDiscardContentSettings(true); else setModal(null); }
         }}>

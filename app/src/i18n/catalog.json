@@ -15538,5 +15538,518 @@
     "de": "Dieser Tag-Name ist nicht verfügbar. Wähle einen anderen Namen.",
     "fr": "Ce nom d’étiquette est indisponible. Choisissez un autre nom.",
     "ru": "Это название тега недоступно. Выберите другое название."
+  },
+  "全部位置": {
+    "en": "All locations",
+    "zh-TW": "全部位置",
+    "ja": "すべての場所",
+    "ko": "모든 위치",
+    "de": "Alle Orte",
+    "fr": "Tous les emplacements",
+    "ru": "Все расположения"
+  },
+  "位置已失效": {
+    "en": "Location unavailable",
+    "zh-TW": "位置已失效",
+    "ja": "場所が無効です",
+    "ko": "위치를 사용할 수 없음",
+    "de": "Ort nicht verfügbar",
+    "fr": "Emplacement indisponible",
+    "ru": "Расположение недоступно"
+  },
+  "网站与文件夹": {
+    "en": "Sites and folders",
+    "zh-TW": "網站與資料夾",
+    "ja": "サイトとフォルダー",
+    "ko": "사이트 및 폴더",
+    "de": "Websites und Ordner",
+    "fr": "Sites et dossiers",
+    "ru": "Сайты и папки"
+  },
+  "不支持的内容类型": {
+    "en": "Unsupported content type",
+    "zh-TW": "不支援的內容類型",
+    "ja": "対応していないコンテンツの種類",
+    "ko": "지원하지 않는 콘텐츠 유형",
+    "de": "Nicht unterstützter Inhaltstyp",
+    "fr": "Type de contenu non pris en charge",
+    "ru": "Неподдерживаемый тип содержимого"
+  },
+  "已整理所选网站。": {
+    "en": "Selected sites organized.",
+    "zh-TW": "已整理所選網站。",
+    "ja": "選択したサイトを整理しました。",
+    "ko": "선택한 사이트를 정리했습니다.",
+    "de": "Ausgewählte Websites wurden organisiert.",
+    "fr": "Les sites sélectionnés ont été organisés.",
+    "ru": "Выбранные сайты упорядочены."
+  },
+  "筛选条件包含隐藏内容，解锁后可查看。": {
+    "en": "These filters include hidden content. Unlock to view it.",
+    "zh-TW": "篩選條件包含隱藏內容，解鎖後可檢視。",
+    "ja": "絞り込み条件に非表示の内容が含まれます。ロックを解除して表示してください。",
+    "ko": "필터 조건에 숨겨진 콘텐츠가 포함되어 있습니다. 잠금을 해제하여 확인하세요.",
+    "de": "Diese Filter enthalten ausgeblendete Inhalte. Zum Anzeigen entsperren.",
+    "fr": "Ces filtres incluent du contenu masqué. Déverrouillez pour l’afficher.",
+    "ru": "Фильтры включают скрытое содержимое. Разблокируйте для просмотра."
+  },
+  "搜索链接": {
+    "en": "Search links",
+    "zh-TW": "搜尋連結",
+    "ja": "リンクを検索",
+    "ko": "링크 검색",
+    "de": "Links suchen",
+    "fr": "Rechercher des liens",
+    "ru": "Поиск ссылок"
+  },
+  "搜索名称或备注": {
+    "en": "Search names or descriptions",
+    "zh-TW": "搜尋名稱或備註",
+    "ja": "名前またはメモを検索",
+    "ko": "이름 또는 메모 검색",
+    "de": "Namen oder Beschreibungen suchen",
+    "fr": "Rechercher des noms ou descriptions",
+    "ru": "Поиск по названиям или описаниям"
+  },
+  "保存为清单": {
+    "en": "Save as list",
+    "zh-TW": "儲存為清單",
+    "ja": "リストとして保存",
+    "ko": "목록으로 저장",
+    "de": "Als Liste speichern",
+    "fr": "Enregistrer comme liste",
+    "ru": "Сохранить как список"
+  },
+  "内容类型": {
+    "en": "Content type",
+    "zh-TW": "內容類型",
+    "ja": "コンテンツの種類",
+    "ko": "콘텐츠 유형",
+    "de": "Inhaltstyp",
+    "fr": "Type de contenu",
+    "ru": "Тип содержимого"
+  },
+  "域名": {
+    "en": "Domain",
+    "zh-TW": "網域",
+    "ja": "ドメイン",
+    "ko": "도메인",
+    "de": "Domain",
+    "fr": "Domaine",
+    "ru": "Домен"
+  },
+  "重置筛选": {
+    "en": "Reset filters",
+    "zh-TW": "重設篩選",
+    "ja": "絞り込みをリセット",
+    "ko": "필터 초기화",
+    "de": "Filter zurücksetzen",
+    "fr": "Réinitialiser les filtres",
+    "ru": "Сбросить фильтры"
+  },
+  "已选 {0} 个网站": {
+    "en": "Sites selected ({0})",
+    "zh-TW": "已選 {0} 個網站",
+    "ja": "選択中のサイト（{0}）",
+    "ko": "선택한 사이트({0})",
+    "de": "Ausgewählte Websites ({0})",
+    "fr": "Sites sélectionnés ({0})",
+    "ru": "Выбрано сайтов ({0})"
+  },
+  "{0} 项": {
+    "en": "Items ({0})",
+    "zh-TW": "{0} 項",
+    "ja": "{0} 件",
+    "ko": "{0}개 항목",
+    "de": "Einträge ({0})",
+    "fr": "Éléments ({0})",
+    "ru": "Записи ({0})"
+  },
+  "编辑标签": {
+    "en": "Edit tags",
+    "zh-TW": "編輯標籤",
+    "ja": "タグを編集",
+    "ko": "태그 편집",
+    "de": "Tags bearbeiten",
+    "fr": "Modifier les étiquettes",
+    "ru": "Изменить теги"
+  },
+  "移动或复制": {
+    "en": "Move or copy",
+    "zh-TW": "移動或複製",
+    "ja": "移動またはコピー",
+    "ko": "이동 또는 복사",
+    "de": "Verschieben oder kopieren",
+    "fr": "Déplacer ou copier",
+    "ru": "Переместить или скопировать"
+  },
+  "排序": {
+    "en": "Sort",
+    "zh-TW": "排序",
+    "ja": "並べ替え",
+    "ko": "정렬",
+    "de": "Sortieren",
+    "fr": "Trier",
+    "ru": "Сортировка"
+  },
+  "名称升序": {
+    "en": "Name, ascending",
+    "zh-TW": "名稱升冪",
+    "ja": "名前の昇順",
+    "ko": "이름 오름차순",
+    "de": "Name, aufsteigend",
+    "fr": "Nom croissant",
+    "ru": "По названию, по возрастанию"
+  },
+  "名称降序": {
+    "en": "Name, descending",
+    "zh-TW": "名稱降冪",
+    "ja": "名前の降順",
+    "ko": "이름 내림차순",
+    "de": "Name, absteigend",
+    "fr": "Nom décroissant",
+    "ru": "По названию, по убыванию"
+  },
+  "按域名": {
+    "en": "By domain",
+    "zh-TW": "依網域",
+    "ja": "ドメイン順",
+    "ko": "도메인순",
+    "de": "Nach Domain",
+    "fr": "Par domaine",
+    "ru": "По домену"
+  },
+  "按位置": {
+    "en": "By location",
+    "zh-TW": "依位置",
+    "ja": "場所順",
+    "ko": "위치순",
+    "de": "Nach Ort",
+    "fr": "Par emplacement",
+    "ru": "По расположению"
+  },
+  "筛选条件已失效，请重新选择。": {
+    "en": "These filters are no longer valid. Select them again.",
+    "zh-TW": "篩選條件已失效，請重新選擇。",
+    "ja": "絞り込み条件が無効になりました。選び直してください。",
+    "ko": "필터 조건이 더 이상 유효하지 않습니다. 다시 선택해 주세요.",
+    "de": "Diese Filter sind nicht mehr gültig. Wähle sie erneut aus.",
+    "fr": "Ces filtres ne sont plus valides. Sélectionnez-les à nouveau.",
+    "ru": "Фильтры больше недействительны. Выберите их снова."
+  },
+  "链接列表": {
+    "en": "Link list",
+    "zh-TW": "連結列表",
+    "ja": "リンク一覧",
+    "ko": "링크 목록",
+    "de": "Linkliste",
+    "fr": "Liste de liens",
+    "ru": "Список ссылок"
+  },
+  "全选本页网站": {
+    "en": "Select all sites on this page",
+    "zh-TW": "全選此頁網站",
+    "ja": "このページのサイトをすべて選択",
+    "ko": "이 페이지의 모든 사이트 선택",
+    "de": "Alle Websites auf dieser Seite auswählen",
+    "fr": "Sélectionner tous les sites de cette page",
+    "ru": "Выбрать все сайты на этой странице"
+  },
+  "选择“{0}”": {
+    "en": "Select “{0}”",
+    "zh-TW": "選擇「{0}」",
+    "ja": "「{0}」を選択",
+    "ko": "“{0}” 선택",
+    "de": "„{0}“ auswählen",
+    "fr": "Sélectionner « {0} »",
+    "ru": "Выбрать «{0}»"
+  },
+  "编辑“{0}”的备注与标签": {
+    "en": "Edit description and tags for “{0}”",
+    "zh-TW": "編輯「{0}」的備註與標籤",
+    "ja": "「{0}」のメモとタグを編集",
+    "ko": "“{0}”의 메모 및 태그 편집",
+    "de": "Beschreibung und Tags für „{0}“ bearbeiten",
+    "fr": "Modifier la description et les étiquettes de « {0} »",
+    "ru": "Изменить описание и теги для «{0}»"
+  },
+  "列表分页": {
+    "en": "List pages",
+    "zh-TW": "列表分頁",
+    "ja": "一覧のページ",
+    "ko": "목록 페이지",
+    "de": "Listenseiten",
+    "fr": "Pages de la liste",
+    "ru": "Страницы списка"
+  },
+  "上一页": {
+    "en": "Previous page",
+    "zh-TW": "上一頁",
+    "ja": "前のページ",
+    "ko": "이전 페이지",
+    "de": "Vorherige Seite",
+    "fr": "Page précédente",
+    "ru": "Предыдущая страница"
+  },
+  "第 {0} 页，共 {1} 页": {
+    "en": "Page {0} of {1}",
+    "zh-TW": "第 {0} 頁，共 {1} 頁",
+    "ja": "{1} ページ中 {0} ページ",
+    "ko": "{1}페이지 중 {0}페이지",
+    "de": "Seite {0} von {1}",
+    "fr": "Page {0} sur {1}",
+    "ru": "Страница {0} из {1}"
+  },
+  "下一页": {
+    "en": "Next page",
+    "zh-TW": "下一頁",
+    "ja": "次のページ",
+    "ko": "다음 페이지",
+    "de": "Nächste Seite",
+    "fr": "Page suivante",
+    "ru": "Следующая страница"
+  },
+  "备注与标签": {
+    "en": "Description and tags",
+    "zh-TW": "備註與標籤",
+    "ja": "メモとタグ",
+    "ko": "메모 및 태그",
+    "de": "Beschreibung und Tags",
+    "fr": "Description et étiquettes",
+    "ru": "Описание и теги"
+  },
+  "所选内容已变化，请重新选择。": {
+    "en": "The selection changed. Select the items again.",
+    "zh-TW": "所選內容已變更，請重新選擇。",
+    "ja": "選択した項目が変更されました。選び直してください。",
+    "ko": "선택한 항목이 변경되었습니다. 다시 선택해 주세요.",
+    "de": "Die Auswahl hat sich geändert. Wähle die Einträge erneut aus.",
+    "fr": "La sélection a changé. Sélectionnez à nouveau les éléments.",
+    "ru": "Выбранные записи изменились. Выберите их снова."
+  },
+  "移除标签": {
+    "en": "Remove tags",
+    "zh-TW": "移除標籤",
+    "ja": "タグを外す",
+    "ko": "태그 제거",
+    "de": "Tags entfernen",
+    "fr": "Retirer les étiquettes",
+    "ru": "Убрать теги"
+  },
+  "应用": {
+    "en": "Apply",
+    "zh-TW": "套用",
+    "ja": "適用",
+    "ko": "적용",
+    "de": "Anwenden",
+    "fr": "Appliquer",
+    "ru": "Применить"
+  },
+  "清单包含隐藏条件，请先解锁。": {
+    "en": "This list includes hidden filters. Unlock to view it.",
+    "zh-TW": "清單包含隱藏條件，請先解鎖。",
+    "ja": "リストに非表示の条件が含まれます。ロックを解除してください。",
+    "ko": "목록에 숨겨진 조건이 포함되어 있습니다. 먼저 잠금을 해제하세요.",
+    "de": "Diese Liste enthält ausgeblendete Filter. Entsperre sie zum Anzeigen.",
+    "fr": "Cette liste contient des filtres masqués. Déverrouillez pour l’afficher.",
+    "ru": "Список содержит скрытые условия. Разблокируйте для просмотра."
+  },
+  "清单中的标签已被删除，请调整条件。": {
+    "en": "Tags in this list were deleted. Update its filters.",
+    "zh-TW": "清單中的標籤已刪除，請調整條件。",
+    "ja": "リストのタグが削除されました。条件を変更してください。",
+    "ko": "목록의 태그가 삭제되었습니다. 조건을 수정해 주세요.",
+    "de": "Tags dieser Liste wurden gelöscht. Passe die Filter an.",
+    "fr": "Des étiquettes de cette liste ont été supprimées. Modifiez ses filtres.",
+    "ru": "Теги этого списка удалены. Измените условия."
+  },
+  "清单中的范围已被删除，请重新选择。": {
+    "en": "The scope of this list was deleted. Select another scope.",
+    "zh-TW": "清單中的範圍已刪除，請重新選擇。",
+    "ja": "リストの対象範囲が削除されました。選び直してください。",
+    "ko": "목록의 범위가 삭제되었습니다. 다시 선택해 주세요.",
+    "de": "Der Bereich dieser Liste wurde gelöscht. Wähle einen neuen Bereich.",
+    "fr": "La portée de cette liste a été supprimée. Choisissez-en une autre.",
+    "ru": "Область этого списка удалена. Выберите другую."
+  },
+  "筛选条件无效，请检查后重试。": {
+    "en": "Invalid filters. Review them and try again.",
+    "zh-TW": "篩選條件無效，請檢查後重試。",
+    "ja": "絞り込み条件が無効です。確認してやり直してください。",
+    "ko": "필터 조건이 유효하지 않습니다. 확인 후 다시 시도해 주세요.",
+    "de": "Ungültige Filter. Prüfe sie und versuche es erneut.",
+    "fr": "Filtres invalides. Vérifiez-les et réessayez.",
+    "ru": "Недопустимые условия. Проверьте их и повторите попытку."
+  },
+  "范围已失效": {
+    "en": "Scope unavailable",
+    "zh-TW": "範圍已失效",
+    "ja": "範囲が無効です",
+    "ko": "범위를 사용할 수 없음",
+    "de": "Bereich nicht verfügbar",
+    "fr": "Portée indisponible",
+    "ru": "Область недоступна"
+  },
+  "动态清单": {
+    "en": "Smart lists",
+    "zh-TW": "動態清單",
+    "ja": "スマートリスト",
+    "ko": "스마트 목록",
+    "de": "Dynamische Listen",
+    "fr": "Listes dynamiques",
+    "ru": "Умные списки"
+  },
+  "新建清单": {
+    "en": "New list",
+    "zh-TW": "新增清單",
+    "ja": "新しいリスト",
+    "ko": "새 목록",
+    "de": "Neue Liste",
+    "fr": "Nouvelle liste",
+    "ru": "Новый список"
+  },
+  "保存当前筛选": {
+    "en": "Save current filters",
+    "zh-TW": "儲存目前篩選",
+    "ja": "現在の絞り込みを保存",
+    "ko": "현재 필터 저장",
+    "de": "Aktuelle Filter speichern",
+    "fr": "Enregistrer les filtres actuels",
+    "ru": "Сохранить текущие условия"
+  },
+  "编辑清单": {
+    "en": "Edit list",
+    "zh-TW": "編輯清單",
+    "ja": "リストを編集",
+    "ko": "목록 편집",
+    "de": "Liste bearbeiten",
+    "fr": "Modifier la liste",
+    "ru": "Изменить список"
+  },
+  "删除清单": {
+    "en": "Delete list",
+    "zh-TW": "刪除清單",
+    "ja": "リストを削除",
+    "ko": "목록 삭제",
+    "de": "Liste löschen",
+    "fr": "Supprimer la liste",
+    "ru": "Удалить список"
+  },
+  "还没有动态清单": {
+    "en": "No smart lists yet",
+    "zh-TW": "尚無動態清單",
+    "ja": "スマートリストはまだありません",
+    "ko": "아직 스마트 목록이 없습니다",
+    "de": "Noch keine dynamischen Listen",
+    "fr": "Aucune liste dynamique pour le moment",
+    "ru": "Умных списков пока нет"
+  },
+  "返回清单": {
+    "en": "Back to lists",
+    "zh-TW": "返回清單",
+    "ja": "リスト一覧に戻る",
+    "ko": "목록으로 돌아가기",
+    "de": "Zurück zu den Listen",
+    "fr": "Retour aux listes",
+    "ru": "К спискам"
+  },
+  "清单名称": {
+    "en": "List name",
+    "zh-TW": "清單名稱",
+    "ja": "リスト名",
+    "ko": "목록 이름",
+    "de": "Listenname",
+    "fr": "Nom de la liste",
+    "ru": "Название списка"
+  },
+  "搜索文字": {
+    "en": "Search text",
+    "zh-TW": "搜尋文字",
+    "ja": "検索文字列",
+    "ko": "검색어",
+    "de": "Suchtext",
+    "fr": "Texte de recherche",
+    "ru": "Текст поиска"
+  },
+  "筛选范围": {
+    "en": "Search scope",
+    "zh-TW": "篩選範圍",
+    "ja": "絞り込み範囲",
+    "ko": "필터 범위",
+    "de": "Suchbereich",
+    "fr": "Portée de recherche",
+    "ru": "Область поиска"
+  },
+  "全部状态": {
+    "en": "All statuses",
+    "zh-TW": "全部狀態",
+    "ja": "すべての状態",
+    "ko": "모든 상태",
+    "de": "Alle Status",
+    "fr": "Tous les états",
+    "ru": "Все состояния"
+  },
+  "移除失效标签": {
+    "en": "Remove deleted tags",
+    "zh-TW": "移除失效標籤",
+    "ja": "削除されたタグを外す",
+    "ko": "삭제된 태그 제거",
+    "de": "Gelöschte Tags entfernen",
+    "fr": "Retirer les étiquettes supprimées",
+    "ru": "Убрать удалённые теги"
+  },
+  "开启隐藏时锁定此清单": {
+    "en": "Lock this list when hiding content",
+    "zh-TW": "開啟隱藏時鎖定此清單",
+    "ja": "コンテンツを非表示にするとき、このリストをロック",
+    "ko": "콘텐츠를 숨길 때 이 목록 잠금",
+    "de": "Diese Liste beim Ausblenden von Inhalten sperren",
+    "fr": "Verrouiller cette liste lors du masquage du contenu",
+    "ru": "Блокировать этот список при скрытии содержимого"
+  },
+  "当前匹配 {0} 项": {
+    "en": "Matches ({0})",
+    "zh-TW": "目前符合 {0} 項",
+    "ja": "現在の一致件数（{0}）",
+    "ko": "현재 일치 항목({0})",
+    "de": "Treffer ({0})",
+    "fr": "Résultats ({0})",
+    "ru": "Совпадения ({0})"
+  },
+  "删除此动态清单？": {
+    "en": "Delete this smart list?",
+    "zh-TW": "刪除此動態清單？",
+    "ja": "このスマートリストを削除しますか？",
+    "ko": "이 스마트 목록을 삭제할까요?",
+    "de": "Diese dynamische Liste löschen?",
+    "fr": "Supprimer cette liste dynamique ?",
+    "ru": "Удалить этот умный список?"
+  },
+  "清单已在其他页面更新，请重新打开。": {
+    "en": "This list changed in another tab. Reopen it.",
+    "zh-TW": "清單已在其他分頁更新，請重新開啟。",
+    "ja": "別のタブでこのリストが更新されました。開き直してください。",
+    "ko": "다른 탭에서 이 목록이 변경되었습니다. 다시 열어 주세요.",
+    "de": "Diese Liste wurde in einem anderen Tab geändert. Öffne sie erneut.",
+    "fr": "Cette liste a été modifiée dans un autre onglet. Rouvrez-la.",
+    "ru": "Этот список изменён в другой вкладке. Откройте его снова."
+  },
+  "清单条件无效，请重新选择。": {
+    "en": "Invalid list filters. Select them again.",
+    "zh-TW": "清單條件無效，請重新選擇。",
+    "ja": "リストの条件が無効です。選び直してください。",
+    "ko": "목록 조건이 유효하지 않습니다. 다시 선택해 주세요.",
+    "de": "Ungültige Listenfilter. Wähle sie erneut aus.",
+    "fr": "Filtres de liste invalides. Sélectionnez-les à nouveau.",
+    "ru": "Недопустимые условия списка. Выберите их снова."
+  },
+  "整理链接": {
+    "en": "Organize links",
+    "zh-TW": "整理連結",
+    "ja": "リンクを整理",
+    "ko": "링크 정리",
+    "de": "Links organisieren",
+    "fr": "Organiser les liens",
+    "ru": "Упорядочить ссылки"
   }
 }
