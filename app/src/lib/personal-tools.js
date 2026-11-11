@@ -92,6 +92,9 @@ async function readPersonalTools() {
   try { return check((await localData.get(KEY))[KEY]); }
   catch (reason) { throw Error(userErrorMessage(reason, tr("无法读取便笺和稍后读，请重试。"))); }
 }
+// Backup/preview reads must retain the exact persisted snapshot, including
+// expired trash, until an explicit mutation performs locked maintenance.
+export async function loadPersonalToolsSnapshot() { return readPersonalTools(); }
 export async function loadPersonalTools() {
   const data = await readPersonalTools();
   // Expiry is a locked local write so backups and other pages agree on what
@@ -359,7 +362,7 @@ export async function withExportableNotes(ids, { expectedRevision, expectedRecor
 // A+ has no browser Reading List import or tab-snapshot runtime.
 export async function exportPersonalTools() {
   for (let attempt = 0; attempt < 3; attempt++) {
-    const data = await loadPersonalTools(), preferences = await loadContentPreferences();
+    const data = await loadPersonalToolsSnapshot(), preferences = await loadContentPreferences();
     if ((await readPersonalTools()).revision !== data.revision || (await loadContentPreferences()).revision !== preferences.revision) continue;
     const portable = contentPreferencesForKeys(preferences, personalContentKeys(data));
     const hasPreferences = Boolean(portable.library || Object.keys(portable.aliases).length || portable.privateKeys.length);

@@ -1,7 +1,7 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  PERSONAL_TRASH_LIMITS, validatePersonalTools, loadPersonalTools, replacePersonalTools, mergePersonalTools,
+  PERSONAL_TRASH_LIMITS, validatePersonalTools, loadPersonalTools, loadPersonalToolsSnapshot, replacePersonalTools, mergePersonalTools,
   deletePersonalRecord, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash,
   applySyncedPersonalTools, exportPersonalTools, importPersonalTools, saveReadingItem, bulkReadingItems,
 } from './personal-tools.js';
@@ -225,6 +225,15 @@ test('trash restoration rejects active ID or URL collisions without overwriting 
   assert.equal(data.notes[0].revision, 5);
   await replacePersonalTools(state({ reading: [reading()], trash: [{ id: 'trash-url', kind: 'reading', deletedAt: now, record: reading('different-id') }] }));
   await assert.rejects(restoreTrashedPersonalRecord('trash-url'), /稍后读/);
+});
+
+test('readonly snapshot and tools export retain persisted expired trash without a cleanup write', async (t) => {
+  const persisted = state({ revision: 12, trash: [{ id: 'expired', kind: 'notes', deletedAt: now - 31 * 86400000, record: note() }] });
+  values.set(key, JSON.stringify(persisted)); let writes = 0;
+  t.mock.method(localData, 'set', async () => { writes++; throw Error('Readonly operation attempted a write'); });
+  assert.deepEqual(await loadPersonalToolsSnapshot(), persisted);
+  assert.deepEqual(JSON.parse(await (await exportPersonalTools()).text()).data, persisted);
+  assert.deepEqual(JSON.parse(values.get(key)), persisted); assert.equal(writes, 0);
 });
 
 test('expired records are removed on locked read while fresh records remain and destructive actions guard revisions', async () => {

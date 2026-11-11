@@ -141,6 +141,8 @@ h2 {
   position: relative;
   flex-shrink: 0;
 }
+.search-keyword-hint { width: fit-content; max-width: 100%; margin: 6px auto 0; padding: 4px 10px; border-radius: 10px; background: var(--search-surface, #ffffffd9); color: var(--search-text, #1d1d1f); text-align: center; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.provider-keyword { margin-inline-start: 8px; color: var(--muted); font-size: 11px; }
 .engine-button {
   display: flex;
   align-items: center;
@@ -650,6 +652,10 @@ h2 {
   scroll-padding: 12px;
 }
 .settings-tabs button {
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
   min-height: 44px;
   padding: 11px 14px;
   color: var(--muted);

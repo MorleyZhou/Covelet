@@ -1,4 +1,11 @@
 .recovery-center { min-width:0; }
 .recovery-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.recovery-center .recovery-actions > button { min-width:0; max-width:100%; height:auto; white-space:normal; overflow-wrap:anywhere; }
 .recovery-center .recovery-preview { gap:12px; padding-top:12px; border-top:1px solid var(--line); }
 .recovery-filename { overflow-wrap:anywhere; }
+.recovery-center .recovery-password-panel { gap:12px; border:1px solid var(--line); border-radius:12px; padding:16px; }
+.recovery-password-panel > strong { font-size:14px; }
+.recovery-password-panel > label { display:flex; flex-direction:column; gap:7px; font-size:12px; color:var(--muted); }
+.recovery-password-panel .hint { margin:0; line-height:1.65; }
+.recovery-password-panel .recovery-actions { justify-content:flex-end; }
+.recovery-center > .recovery-actions > [role="status"] { align-self:center; font-size:12px; color:var(--muted); }
