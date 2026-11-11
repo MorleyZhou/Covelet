@@ -22,10 +22,20 @@ import { loadState } from '../lib/storage.js';
 import { desktopDestinationValue } from '../lib/navigation-destinations.js';
 import { copyReadingToNavigation } from '../lib/reading-to-navigation.js';
 import NavigationDestination from './NavigationDestination.jsx';
+import { getContentMetadata, getContentTags, useContentPreferences } from '../lib/content-preferences.js';
+import ContentMetadataEditor, { ContentTagFilter } from './ContentMetadataEditor.jsx';
 
 const newest = (items) => [...items].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
 const stop = (event) => event.stopPropagation();
 const formatDate = (value) => new Date(value).toLocaleString(getLocale(), { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+const emptyMetadata = () => ({ description: '', tagIds: [] });
+const sameMetadata = (left, right) => left.description === right.description
+  && left.tagIds.length === right.tagIds.length && left.tagIds.every((id) => right.tagIds.includes(id));
+const matchesTags = (metadata, selected) => selected.every((id) => metadata.tagIds.includes(id));
+function ContentTagLabels({ tags, tagIds }) {
+  const selected = tags.filter((tag) => tagIds.includes(tag.id));
+  return selected.length ? <span className="personal-content-tags" aria-label={tr('标签')}>{selected.map((tag) => <span key={tag.id}>{tag.name}</span>)}</span> : null;
+}
 function useAction(onBusyChange) {
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), active = useRef(true), gate = useRef(false);
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
@@ -142,27 +152,43 @@ export function PersonalToolsDialog({ kind, initialRecordId, Dialog, onClose }) 
 
 function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
   const { data: rawData, core, error: loadError } = usePersonalTools(), action = useAction(), data = usePresentedTools(rawData), presentation = useContext(PresentationContext);
-  const [unlocking, setUnlocking] = useState(false);
+  const contentPreferences = useContentPreferences(), preferences = contentPreferences.data;
+  const locked = presentation.active || preferences.presentation;
+  const [unlocking, setUnlocking] = useState(false), [metadataBusy, setMetadataBusy] = useState(false);
   const [draft, setDraft] = useState({ title: '', body: '', pinned: false }), [dirty, setDirty] = useState(false), [query, setQuery] = useState('');
+  const [metadata, setMetadata] = useState(emptyMetadata), [originalMetadata, setOriginalMetadata] = useState(emptyMetadata);
+  const [selectedTagIds, setSelectedTagIds] = useState([]);
   const [preview, setPreview] = useState(false), [pending, setPending] = useState(null), [deleting, setDeleting] = useState(false);
   const [editorKey, setEditorKey] = useState(() => crypto.randomUUID());
-  const notes = newest(data?.notes || []), latest = rawData?.notes.find((item) => item.id === draft.id);
-  const draftHidden = presentation.active && Boolean(draft.id) && presentation.hiddenKeys.has(`note:${draft.id}`);
-  const changedElsewhere = draft.id && (!latest || latest.revision !== draft.revision);
+  const hidden = (key) => locked && (presentation.hiddenKeys.has(key) || preferences.privateKeys.includes(key));
+  const notes = newest(data?.notes || []).filter((item) => !hidden(`note:${item.id}`)), latest = rawData?.notes.find((item) => item.id === draft.id);
+  const draftHidden = Boolean(draft.id) && hidden(`note:${draft.id}`);
+  const metadataFor = (key) => getContentMetadata({ ...preferences, presentation: locked }, key, { hiddenKeys: presentation.hiddenKeys });
+  const visibleTags = getContentTags({ ...preferences, presentation: locked }, { hiddenKeys: presentation.hiddenKeys });
+  const changedElsewhere = draft.id && (!latest || latest.revision !== draft.revision
+    || contentPreferences.ready && !draftHidden && !sameMetadata(metadataFor(`note:${draft.id}`), originalMetadata));
+  const busy = action.busy || unlocking || metadataBusy;
   useEffect(() => { onDirtyChange(dirty); }, [dirty, onDirtyChange]);
-  useEffect(() => { onBusyChange?.(action.busy || unlocking); }, [action.busy, unlocking, onBusyChange]);
-  const select = (note) => { setEditorKey(note?.id || crypto.randomUUID()); setDraft(note ? { ...note } : { title: '', body: '', pinned: false }); setDirty(false); setPreview(false); setPending(null); setDeleting(false); action.setError(''); };
+  useEffect(() => { onBusyChange?.(busy); }, [busy, onBusyChange]);
+  const select = (note) => {
+    const nextMetadata = note ? metadataFor(`note:${note.id}`) : emptyMetadata();
+    setEditorKey(note?.id || crypto.randomUUID()); setDraft(note ? { ...note } : { title: '', body: '', pinned: false });
+    setMetadata(nextMetadata); setOriginalMetadata(nextMetadata);
+    setDirty(false); setPreview(false); setPending(null); setDeleting(false); action.setError('');
+  };
   const selectedInitial = useRef(null);
   useEffect(() => {
-    if (!initialRecordId || !data || selectedInitial.current === initialRecordId) return;
+    if (!initialRecordId || !data || !contentPreferences.ready || selectedInitial.current === initialRecordId) return;
     selectedInitial.current = initialRecordId;
     const record = data.notes.find((item) => item.id === initialRecordId);
     if (record) select(record); else action.setError(tr('这条记录已被移除。'));
-  }, [initialRecordId, data]);
+  }, [initialRecordId, data, contentPreferences.ready]);
   const choose = (note) => dirty ? setPending({ note }) : select(note);
   const reopen = () => { if (dirty) setPending({ note: latest || null }); else select(latest || null); };
   const patch = (value) => { setDraft((current) => ({ ...current, ...value })); setDirty(true); };
-  const matches = notes.filter((note) => !query || core?.contains(`${note.title}\n${note.body}`, query));
+  const matches = notes.filter((note) => matchesTags(metadataFor(`note:${note.id}`), selectedTagIds)
+    && (!query || core?.contains(`${note.title}\n${note.body}`, query)));
+  const availableTagIds = [...new Set(notes.flatMap((note) => metadataFor(`note:${note.id}`).tagIds))];
   const documentError = useMemo(() => {
     try {
       if (draft.document) validateNoteDocument(draft.document);
@@ -175,45 +201,67 @@ function NotesTools({ onDirtyChange, onBusyChange, initialRecordId }) {
     try { return core.metrics(draft.body); } catch { return null; }
   }, [core, draft.body, documentError]);
   return <div className="personal-tools-body notes-tools-body">
-    <div className="personal-tools-toolbar"><div className="tool-search"><MagnifyingGlass size={16} /><Input unstyled aria-label={tr("搜索便笺")} placeholder={tr("搜索便笺")} value={query} maxLength={100} onChange={(event) => setQuery(event.target.value)} /></div><Button variant="secondary" type="button" className="button" disabled={action.busy} onClick={() => choose(null)}><Plus size={17} />{tr("新便笺")}</Button></div>
-    <MessageDialog message={loadError || action.error || (!draftHidden && (documentError || (!action.busy && changedElsewhere ? tr('这条便笺已在其他页面更新。') : '')))} onClose={() => action.setError('')} />
-    {pending && <Confirm privacySafe action={tr("放弃修改")} busy={action.busy || unlocking} onCancel={() => setPending(null)} onConfirm={() => select(pending.note)}>{tr("当前便笺尚未保存，放弃修改？")}</Confirm>}
-    <div className="notes-workspace"><div className="tool-record-list" aria-label={tr("便笺列表")}>{matches.map((note) => <Button variant="unstyled" size="unstyled" type="button" key={note.id} aria-pressed={draft.id === note.id} disabled={action.busy} onClick={() => choose(note)}><strong>{note.pinned && <PushPin size={12} weight="fill" />}{note.title}</strong><span>{note.body.slice(0, 90) || tr("空白便笺")}</span><small>{formatDate(note.updatedAt)}</small></Button>)}{!matches.length && <p className="tool-empty">{query ? tr("没有找到便笺") : tr("暂无便笺")}</p>}</div>
-    <PrivateEditor hidden={draftHidden} busy={action.busy || unlocking} onBusyChange={setUnlocking}><form className="note-editor" onKeyDownCapture={(event) => {
+    <div className="personal-tools-toolbar"><div className="tool-search"><MagnifyingGlass size={16} /><Input unstyled aria-label={tr("搜索便笺")} placeholder={tr("搜索便笺")} value={query} maxLength={100} onChange={(event) => setQuery(event.target.value)} /></div><Button variant="secondary" type="button" className="button" disabled={busy || !contentPreferences.ready} onClick={() => choose(null)}><Plus size={17} />{tr("新便笺")}</Button></div>
+    <ContentTagFilter preferences={preferences} availableTagIds={availableTagIds} selectedTagIds={selectedTagIds} onChange={setSelectedTagIds} disabled={busy || !contentPreferences.ready} />
+    <MessageDialog message={loadError || contentPreferences.error || action.error || (!draftHidden && (documentError || (!busy && changedElsewhere ? tr('这条便笺已在其他页面更新。') : '')))} onClose={() => action.setError('')} />
+    {pending && <Confirm privacySafe action={tr("放弃修改")} busy={busy} onCancel={() => setPending(null)} onConfirm={() => select(pending.note)}>{tr("当前便笺尚未保存，放弃修改？")}</Confirm>}
+    <div className="notes-workspace"><div className="tool-record-list" aria-label={tr("便笺列表")}>{matches.map((note) => <Button variant="unstyled" size="unstyled" type="button" key={note.id} aria-pressed={draft.id === note.id} disabled={busy || !contentPreferences.ready} onClick={() => choose(note)}><strong>{note.pinned && <PushPin size={12} weight="fill" />}{note.title}</strong><span>{note.body.slice(0, 90) || tr("空白便笺")}</span><ContentTagLabels tags={visibleTags} tagIds={metadataFor(`note:${note.id}`).tagIds} /><small>{formatDate(note.updatedAt)}</small></Button>)}{!matches.length && <p className="tool-empty">{query || selectedTagIds.length ? tr("没有找到便笺") : tr("暂无便笺")}</p>}</div>
+    <PrivateEditor hidden={draftHidden} busy={busy} onBusyChange={setUnlocking}><form className="note-editor" onKeyDownCapture={(event) => {
       if (!event.defaultPrevented && !event.nativeEvent.isComposing && event.keyCode !== 229 && (event.ctrlKey || event.metaKey) && event.key === 'Enter'
         && event.target.closest('[contenteditable="true"], .note-title-input') && !event.target.closest('[role="dialog"]:not([data-ui-modal]), [role="alertdialog"]')) {
         event.preventDefault(); event.stopPropagation(); event.currentTarget.requestSubmit();
       }
     }} onSubmit={(event) => {
       event.preventDefault();
-      if (!data || !core || action.busy || draftHidden || !dirty || changedElsewhere || documentError) return;
-      action.run(async () => { const saved = await saveNote(draft); setDraft(saved); setDirty(false); });
+      if (!data || !core || !contentPreferences.ready || busy || draftHidden || !dirty || changedElsewhere || documentError) return;
+      action.run(async () => {
+        const saved = await saveNote(draft, { metadata, expectedPreferencesRevision: preferences.revision, expectedMetadata: originalMetadata });
+        setDraft(saved); setOriginalMetadata(metadata); setDirty(false);
+      });
     }}>
-      <label className="visually-hidden" htmlFor="note-title">{tr("便笺名称")}</label><Input unstyled id="note-title" className="note-title-input" value={draft.title} placeholder={tr("未命名便笺")} maxLength={200} disabled={action.busy} onChange={(event) => patch({ title: event.target.value })} />
-      <div className="note-editor-actions"><Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-pressed={draft.pinned} onClick={() => patch({ pinned: !draft.pinned })}><PushPin size={16} weight={draft.pinned ? 'fill' : 'regular'} />{tr("置顶")}</Button>
-        <Button variant="ghost" type="button" className="button quiet" aria-pressed={preview} onClick={() => setPreview(!preview)}>{preview ? tr("编辑") : tr("预览")}</Button>
-        <Button variant="ghost" type="button" className="button quiet" disabled={!draft.body || action.busy} onClick={() => action.run(async () => { try { await navigator.clipboard.writeText(draft.document ? noteDocumentText(draft.document) : draft.body); } catch { throw Error(tr("无法复制，请手动选择文字。")); } })} aria-label={tr("复制便笺")}><Copy size={16} /></Button></div>
-      <FolioNoteEditor key={editorKey} documentId={editorKey} document={draft.document} body={draft.body} preview={preview} disabled={action.busy || draftHidden}
+      <label className="visually-hidden" htmlFor="note-title">{tr("便笺名称")}</label><Input unstyled id="note-title" className="note-title-input" value={draft.title} placeholder={tr("未命名便笺")} maxLength={200} disabled={busy} onChange={(event) => patch({ title: event.target.value })} />
+      <div className="note-editor-actions"><Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={draft.pinned} onClick={() => patch({ pinned: !draft.pinned })}><PushPin size={16} weight={draft.pinned ? 'fill' : 'regular'} />{tr("置顶")}</Button>
+        <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={preview} onClick={() => setPreview(!preview)}>{preview ? tr("编辑") : tr("预览")}</Button>
+        <Button variant="ghost" type="button" className="button quiet" disabled={!draft.body || busy} onClick={() => action.run(async () => { try { await navigator.clipboard.writeText(draft.document ? noteDocumentText(draft.document) : draft.body); } catch { throw Error(tr("无法复制，请手动选择文字。")); } })} aria-label={tr("复制便笺")}><Copy size={16} /></Button></div>
+      <ContentMetadataEditor preferences={preferences} contentKey={draft.id ? `note:${draft.id}` : undefined} value={metadata}
+        onChange={(value) => { setMetadata(value); setDirty(true); }} disabled={action.busy || unlocking || draftHidden || !contentPreferences.ready} allowDescription={false} onBusyChange={setMetadataBusy} />
+      <FolioNoteEditor key={editorKey} documentId={editorKey} document={draft.document} body={draft.body} preview={preview} disabled={busy || draftHidden}
         onInitialize={(document) => setDraft((current) => current.document ? current : { ...current, document, body: noteDocumentText(document) })}
         onChange={(document) => patch({ document, body: noteDocumentText(document) })} onError={(reason) => action.setError(userErrorMessage(reason, tr('便笺未能保存，请重试。')))} />
-      {deleting && !draftHidden && <Confirm busy={action.busy} onCancel={() => setDeleting(false)} onConfirm={() => action.run(async () => { await deletePersonalRecord('notes', draft.id, draft.revision); select(null); })}>{tr("删除“{0}”？", [draft.title])}</Confirm>}
-      <div className="note-editor-footer"><small>{tr("{0} 字符", [formatNumber(metrics?.characters ?? draft.body.length)])}</small>{draft.id && <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} onClick={() => setDeleting(true)} aria-label={tr("删除便笺")}><Trash size={16} /></Button>}<Button variant="default" type={changedElsewhere ? 'button' : 'submit'} className="button primary" onClick={changedElsewhere ? reopen : undefined} disabled={!data || !core || action.busy || !changedElsewhere && (!dirty || Boolean(documentError))}>{changedElsewhere ? tr('重新打开') : tr("保存")}</Button></div>
-    </form></PrivateEditor></div><ToolDataActions data={rawData} run={action.run} busy={action.busy} />
+      {deleting && !draftHidden && <Confirm busy={busy} onCancel={() => setDeleting(false)} onConfirm={() => action.run(async () => { await deletePersonalRecord('notes', draft.id, draft.revision); select(null); })}>{tr("删除“{0}”？", [draft.title])}</Confirm>}
+      <div className="note-editor-footer"><small>{tr("{0} 字符", [formatNumber(metrics?.characters ?? draft.body.length)])}</small>{draft.id && <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => setDeleting(true)} aria-label={tr("删除便笺")}><Trash size={16} /></Button>}<Button variant="default" type={changedElsewhere ? 'button' : 'submit'} className="button primary" onClick={changedElsewhere ? reopen : undefined} disabled={!data || !core || !contentPreferences.ready || busy || !changedElsewhere && (!dirty || Boolean(documentError))}>{changedElsewhere ? tr('重新打开') : tr("保存")}</Button></div>
+    </form></PrivateEditor></div><ToolDataActions data={rawData} run={action.run} busy={busy} />
   </div>;
 }
 
 function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) {
   const { data: rawData, core, error: loadError } = usePersonalTools(), action = useAction(), data = usePresentedTools(rawData), presentation = useContext(PresentationContext);
-  const [unlocking, setUnlocking] = useState(false);
+  const contentPreferences = useContentPreferences(), preferences = contentPreferences.data;
+  const locked = presentation.active || preferences.presentation;
+  const [unlocking, setUnlocking] = useState(false), [metadataBusy, setMetadataBusy] = useState(false);
   const [filter, setFilter] = useState('unread'), [query, setQuery] = useState(''), [draft, setDraft] = useState({ title: '', url: '' }), [deleting, setDeleting] = useState(null);
-  const [discarding, setDiscarding] = useState(false);
+  const [metadata, setMetadata] = useState(emptyMetadata), [originalMetadata, setOriginalMetadata] = useState(emptyMetadata);
+  const [selectedTagIds, setSelectedTagIds] = useState([]), [discarding, setDiscarding] = useState(null);
   const [copy, setCopy] = useState(null), [copyStatus, setCopyStatus] = useState('');
   const [queryRecordId, setQueryRecordId] = useState(null);
-  const draftHidden = presentation.active && Boolean(draft.id) && presentation.hiddenKeys.has(`reading:${draft.id}`);
-  const deletionHidden = presentation.active && Boolean(deleting) && presentation.hiddenKeys.has(`reading:${deleting.id}`);
-  const copyHidden = presentation.active && copy && presentation.hiddenKeys.has(`reading:${copy.record.id}`);
-  const queryHidden = presentation.active && Boolean(queryRecordId) && presentation.hiddenKeys.has(`reading:${queryRecordId}`);
+  const hidden = (key) => locked && (presentation.hiddenKeys.has(key) || preferences.privateKeys.includes(key));
+  const draftHidden = Boolean(draft.id) && hidden(`reading:${draft.id}`);
+  const deletionHidden = Boolean(deleting) && hidden(`reading:${deleting.id}`);
+  const copyHidden = copy && hidden(`reading:${copy.record.id}`);
+  const queryHidden = Boolean(queryRecordId) && hidden(`reading:${queryRecordId}`);
   const visibleQuery = queryHidden ? '' : query;
+  const metadataFor = (key) => getContentMetadata({ ...preferences, presentation: locked }, key, { hiddenKeys: presentation.hiddenKeys });
+  const visibleTags = getContentTags({ ...preferences, presentation: locked }, { hiddenKeys: presentation.hiddenKeys });
+  const latest = rawData?.reading.find((item) => item.id === draft.id);
+  const changedElsewhere = draft.id && (!latest || latest.revision !== draft.revision
+    || contentPreferences.ready && !draftHidden && !sameMetadata(metadataFor(`reading:${draft.id}`), originalMetadata));
+  const draftHasContent = Boolean(draft.url || draft.title || metadata.description || metadata.tagIds.length);
+  const busy = action.busy || unlocking || metadataBusy;
+  function select(record) {
+    const nextMetadata = record ? metadataFor(`reading:${record.id}`) : emptyMetadata();
+    setDraft(record ? { ...record } : { title: '', url: '' });
+    setMetadata(nextMetadata); setOriginalMetadata(nextMetadata); action.setError('');
+  }
   const selectedInitial = useRef(null);
   useEffect(() => {
     if (!initialRecordId || !data || selectedInitial.current === initialRecordId) return;
@@ -221,12 +269,15 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
     const record = data.reading.find((item) => item.id === initialRecordId);
     if (record) { setFilter(record.status); setQuery(record.title); setQueryRecordId(record.id); } else action.setError(tr('这条记录已被移除。'));
   }, [initialRecordId, data]);
-  useEffect(() => { onDirtyChange(Boolean(draft.url || draft.title)); }, [draft, onDirtyChange]);
-  useEffect(() => { onBusyChange?.(action.busy || unlocking); }, [action.busy, unlocking, onBusyChange]);
+  useEffect(() => { onDirtyChange(draftHasContent); }, [draftHasContent, onDirtyChange]);
+  useEffect(() => { onBusyChange?.(busy); }, [busy, onBusyChange]);
   useEffect(() => {
-    if (queryRecordId && presentation.active && presentation.hiddenKeys.has(`reading:${queryRecordId}`)) { setQuery(''); setQueryRecordId(null); }
-  }, [queryRecordId, presentation.active, presentation.hiddenKeys]);
-  const records = newest(data?.reading || []).filter((item) => item.status === filter && (!visibleQuery || core?.contains(`${item.title}\n${item.url}`, visibleQuery)));
+    if (queryRecordId && hidden(`reading:${queryRecordId}`)) { setQuery(''); setQueryRecordId(null); }
+  }, [queryRecordId, locked, presentation.hiddenKeys, preferences.privateKeys]);
+  const visibleRecords = newest(data?.reading || []).filter((item) => !hidden(`reading:${item.id}`));
+  const records = visibleRecords.filter((item) => item.status === filter && matchesTags(metadataFor(`reading:${item.id}`), selectedTagIds)
+    && (!visibleQuery || core?.contains(`${item.title}\n${item.url}\n${metadataFor(`reading:${item.id}`).description}`, visibleQuery)));
+  const availableTagIds = [...new Set(visibleRecords.flatMap((item) => metadataFor(`reading:${item.id}`).tagIds))];
   function chooseDestination(record) {
     action.run(async () => {
       const state = await loadState();
@@ -252,14 +303,25 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
     });
   }
   return <Tabs value={filter} onValueChange={setFilter} asChild><div className="personal-tools-body reading-tools">
-    <PrivateEditor hidden={draftHidden} busy={action.busy || unlocking} onBusyChange={setUnlocking} onDiscard={() => setDiscarding(true)} className="reading-draft-surface"><form className="reading-add-form" onSubmit={(event) => { event.preventDefault(); if (draftHidden) return; action.run(async () => { await saveReadingItem({ ...draft, status: draft.status || 'unread' }); setDraft({ title: '', url: '' }); }); }}>
-      <label>{tr("网址")}<Input type="text" inputMode="url" required value={draft.url} maxLength={4096} placeholder="https://…" disabled={action.busy} onChange={(event) => setDraft((value) => ({ ...value, url: event.target.value }))} /></label>
-      <label>{tr("名称")}<Input value={draft.title} maxLength={200} disabled={action.busy} placeholder={tr("可留空")} onChange={(event) => setDraft((value) => ({ ...value, title: event.target.value }))} /></label>
-      <div>{draft.id && <Button variant="secondary" className="button" type="button" disabled={action.busy} onClick={() => setDraft({ title: '', url: '' })}>{tr("取消")}</Button>}<Button variant="default" type="submit" className="button primary" disabled={!data || action.busy || !draft.url.trim()}>{draft.id ? tr("保存") : tr("添加")}</Button></div>
+    <PrivateEditor hidden={draftHidden} busy={busy} onBusyChange={setUnlocking} onDiscard={() => setDiscarding({ record: null })} className="reading-draft-surface"><form className="reading-add-form" onSubmit={(event) => {
+      event.preventDefault();
+      if (draftHidden || busy || !contentPreferences.ready || changedElsewhere) return;
+      action.run(async () => {
+        await saveReadingItem({ ...draft, status: draft.status || 'unread' }, { metadata, expectedPreferencesRevision: preferences.revision, expectedMetadata: originalMetadata });
+        select(null);
+      });
+    }}>
+      <label>{tr("网址")}<Input type="text" inputMode="url" required value={draft.url} maxLength={4096} placeholder="https://…" disabled={busy} onChange={(event) => setDraft((value) => ({ ...value, url: event.target.value }))} /></label>
+      <label>{tr("名称")}<Input value={draft.title} maxLength={200} disabled={busy} placeholder={tr("可留空")} onChange={(event) => setDraft((value) => ({ ...value, title: event.target.value }))} /></label>
+      <div>{draft.id && <Button variant="secondary" className="button" type="button" disabled={busy} onClick={() => select(null)}>{tr("取消")}</Button>}<Button variant="default" type={changedElsewhere ? 'button' : 'submit'} className="button primary"
+        onClick={changedElsewhere ? () => setDiscarding({ record: latest || null }) : undefined} disabled={!data || !contentPreferences.ready || busy || !changedElsewhere && !draft.url.trim()}>{changedElsewhere ? tr('重新打开') : draft.id ? tr("保存") : tr("添加")}</Button></div>
+      <div className="reading-metadata-fields"><ContentMetadataEditor preferences={preferences} contentKey={draft.id ? `reading:${draft.id}` : undefined} value={metadata}
+        onChange={setMetadata} disabled={action.busy || unlocking || draftHidden || !contentPreferences.ready} onBusyChange={setMetadataBusy} /></div>
     </form></PrivateEditor>
-    {discarding && <Confirm privacySafe action={tr('放弃修改')} busy={action.busy || unlocking} onCancel={() => setDiscarding(false)} onConfirm={() => { setDraft({ title: '', url: '' }); setDiscarding(false); }}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
+    {discarding && <Confirm privacySafe action={tr('放弃修改')} busy={busy} onCancel={() => setDiscarding(null)} onConfirm={() => { select(discarding.record); setDiscarding(null); }}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
     <div className="personal-tools-toolbar"><TabsList className="tool-segments" aria-label={tr("阅读状态")}>{[['unread', tr("未读")], ['read', tr("已读")], ['archived', tr("归档")]].map(([value, label]) => <TabsTrigger key={value} value={value}>{label}</TabsTrigger>)}</TabsList><div className="tool-search"><MagnifyingGlass size={16} /><Input unstyled aria-label={tr("搜索稍后读")} placeholder={tr("搜索")} maxLength={100} value={visibleQuery} onChange={(event) => { setQuery(event.target.value); setQueryRecordId(null); }} /></div></div>
-    <MessageDialog message={loadError || (!copy && action.error)} onClose={() => action.setError('')} />
+    <ContentTagFilter preferences={preferences} availableTagIds={availableTagIds} selectedTagIds={selectedTagIds} onChange={setSelectedTagIds} disabled={busy || !contentPreferences.ready} />
+    <MessageDialog message={loadError || contentPreferences.error || (!copy && action.error) || (!draftHidden && !busy && changedElsewhere ? tr('这条记录已在其他页面修改，请重新打开后再保存。') : '')} onClose={() => action.setError('')} />
     {copyStatus && <p className="hint" role="status">{copyStatus}</p>}
     {copy && <Dialog title={tr('添加到桌面')} privacyKeys={[`reading:${copy.record.id}`]} onClose={closeDestination} closeDisabled={action.busy}>
       <form className="form-stack" onSubmit={addToDesktop}>
@@ -272,13 +334,15 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
         </div>
       </form>
     </Dialog>}
-    {deleting && !deletionHidden && <Confirm busy={action.busy} onCancel={() => setDeleting(null)} onConfirm={() => action.run(async () => { await deletePersonalRecord('reading', deleting.id, deleting.revision); if (draft.id === deleting.id) setDraft({ title: '', url: '' }); setDeleting(null); })}>{tr("删除“{0}”？", [deleting.title])}</Confirm>}
-    <TabsContent value={filter} className="reading-records">{records.map((item) => <div className="reading-record" key={item.id}><a href={item.url} target="_blank" rel="noreferrer noopener"><strong>{item.title}</strong><small>{new URL(item.url).hostname}</small><ArrowSquareOut size={15} /></a><div>
-      <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={item.status === 'unread' ? tr("标为已读") : tr("标为未读")} title={item.status === 'unread' ? tr("标为已读") : tr("标为未读")} onClick={() => action.run(() => saveReadingItem({ ...item, status: item.status === 'unread' ? 'read' : 'unread' }))}><Check size={17} weight={item.status === 'read' ? 'bold' : 'regular'} /></Button>
-      {item.status !== 'archived' && <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={tr("归档")} title={tr("归档")} onClick={() => action.run(() => saveReadingItem({ ...item, status: 'archived' }))}><Archive size={17} /></Button>}
-      <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={tr('添加到桌面')} title={tr('添加到桌面')} aria-haspopup="dialog" onClick={() => chooseDestination(item)}><SquaresFour size={17} /></Button>
-      <Button variant="ghost" type="button" className="button quiet" disabled={action.busy || Boolean(draft.url || draft.title)} aria-label={tr("编辑链接")} title={tr("编辑")} onClick={() => setDraft(item)}><PencilSimple size={17} /></Button>
-      <Button variant="ghost" type="button" className="button quiet" disabled={action.busy} aria-label={tr("删除链接")} title={tr("删除")} onClick={() => setDeleting(item)}><Trash size={17} /></Button></div></div>)}{!records.length && <p className="tool-empty">{visibleQuery ? tr("没有找到链接") : tr("暂无链接")}</p>}</TabsContent>
-    <div className="reading-bottom-actions"><ToolDataActions data={rawData} run={action.run} busy={action.busy} /></div>
+    {deleting && !deletionHidden && <Confirm busy={busy} onCancel={() => setDeleting(null)} onConfirm={() => action.run(async () => { await deletePersonalRecord('reading', deleting.id, deleting.revision); if (draft.id === deleting.id) select(null); setDeleting(null); })}>{tr("删除“{0}”？", [deleting.title])}</Confirm>}
+    <TabsContent value={filter} className="reading-records">{records.map((item) => <div className="reading-record" key={item.id}><div className="reading-record-content"><a href={item.url} target="_blank" rel="noreferrer noopener"><strong>{item.title}</strong><small>{new URL(item.url).hostname}</small><ArrowSquareOut size={15} /></a>
+      {metadataFor(`reading:${item.id}`).description && <p className="reading-record-description">{metadataFor(`reading:${item.id}`).description}</p>}
+      <ContentTagLabels tags={visibleTags} tagIds={metadataFor(`reading:${item.id}`).tagIds} /></div><div className="reading-record-actions">
+      <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={item.status === 'unread' ? tr("标为已读") : tr("标为未读")} title={item.status === 'unread' ? tr("标为已读") : tr("标为未读")} onClick={() => action.run(() => saveReadingItem({ ...item, status: item.status === 'unread' ? 'read' : 'unread' }))}><Check size={17} weight={item.status === 'read' ? 'bold' : 'regular'} /></Button>
+      {item.status !== 'archived' && <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={tr("归档")} title={tr("归档")} onClick={() => action.run(() => saveReadingItem({ ...item, status: 'archived' }))}><Archive size={17} /></Button>}
+      <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={tr('添加到桌面')} title={tr('添加到桌面')} aria-haspopup="dialog" onClick={() => chooseDestination(item)}><SquaresFour size={17} /></Button>
+      <Button variant="ghost" type="button" className="button quiet" disabled={busy || draftHasContent || !contentPreferences.ready} aria-label={tr("编辑链接")} title={tr("编辑")} onClick={() => select(item)}><PencilSimple size={17} /></Button>
+      <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={tr("删除链接")} title={tr("删除")} onClick={() => setDeleting(item)}><Trash size={17} /></Button></div></div>)}{!records.length && <p className="tool-empty">{visibleQuery || selectedTagIds.length ? tr("没有找到链接") : tr("暂无链接")}</p>}</TabsContent>
+    <div className="reading-bottom-actions"><ToolDataActions data={rawData} run={action.run} busy={busy} /></div>
   </div></Tabs>;
 }

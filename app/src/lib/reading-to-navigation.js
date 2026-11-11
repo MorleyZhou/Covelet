@@ -1,7 +1,7 @@
 import { tr } from '../i18n/index.js';
 import { letterIcon } from './model.js';
 import { loadState, saveStateWithPrivacy } from './storage.js';
-import { loadContentPreferences } from './content-preferences.js';
+import { loadContentPreferences, getContentMetadata } from './content-preferences.js';
 import { withReadingRecord } from './personal-tools.js';
 import { appendSiteAt, destinationChanged, navigationDestination, siteAtDestination } from './navigation-destinations.js';
 
@@ -18,6 +18,6 @@ export async function copyReadingToNavigation(source, value, expectedRevision) {
     navigationDestination(state, value, current);
     if (record.url !== source.url || record.title !== source.title) throw Error(tr('这条记录已在其他页面修改，请重新打开后再保存。'));
     if (state.entries.some((entry) => siteAtDestination(entry, target) && entry.url === site.url)) throw Error(tr('这个网址已在导航中。'));
-    return commit(hidden ? [`site:${site.id}`] : []);
+    return commit(hidden ? [`site:${site.id}`] : [], { metadata: [{ key: `site:${site.id}`, ...getContentMetadata(current, `reading:${record.id}`) }] });
   }));
 }

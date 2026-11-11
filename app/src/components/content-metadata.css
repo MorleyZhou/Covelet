@@ -1,0 +1,27 @@
+.content-metadata-editor { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.content-metadata-description { display: flex; flex-direction: column; gap: 7px; }
+.content-metadata-editor textarea { min-height: 82px; }
+.content-tag-picker, .content-tag-filter { min-width: 0; margin: 0; padding: 0; border: 0; }
+.content-tag-picker legend, .content-tag-filter legend { padding: 0; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+.content-tag-options { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px; max-height: 136px; overflow: auto; padding: 2px; }
+.content-metadata-editor .content-tag-options label.content-tag-option, .content-tag-filter .content-tag-options label.content-tag-option { display: inline-flex; flex-direction: row; align-items: center; gap: 7px; min-width: 0; max-width: 100%; font-size: 13px; line-height: 1.45; cursor: pointer; }
+.content-tag-option > span { overflow-wrap: anywhere; }
+.content-tag-option:has(button:disabled) { opacity: .55; cursor: default; }
+.content-tag-create { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.content-tag-create input { flex: 1 1 120px; min-width: 0; }
+.content-tag-create button { flex: 0 0 auto; }
+.content-tag-filter-trigger { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; }
+.content-tag-filter-trigger[data-active] { color: var(--accent, #0879ef); background: color-mix(in srgb, currentColor 10%, transparent); }
+.content-tag-filter-panel { width: min(310px, calc(100vw - 32px)); padding: 14px; }
+.content-tag-filter { display: flex; flex-direction: column; gap: 10px; }
+.content-tag-filter .content-tag-options { display: flex; flex-direction: column; align-items: stretch; flex-wrap: nowrap; max-height: min(260px, 45vh); gap: 10px; }
+.content-tag-filter > .hint { margin: 0; font-size: 12px; color: var(--muted); }
+.content-tag-filter > button { align-self: flex-start; }
+.content-tag-manager { padding-top: 12px; border-top: 1px solid var(--line); }
+.content-tag-manager > summary { width: fit-content; cursor: pointer; font-size: 13px; font-weight: 600; }
+.content-tag-manager > .form-stack { padding-top: 12px; }
+.content-tag-manager-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 420px) {
+  .content-tag-create { flex-wrap: wrap; }
+  .content-tag-create button { margin-inline-start: auto; }
+}

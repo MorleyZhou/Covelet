@@ -65,6 +65,25 @@ test('complete backup round trip includes rich tools, schemes, privacy and a pre
   assert.equal((await subject.center.getRecoveryPoint()).status, 'complete');
 });
 
+test('complete backups and recovery points retain metadata while append remaps incoming tag identities', async () => {
+  const subject = harness(), oldLibrary = { version: 1, tags: [{ id: 'tag-a', name: 'Work' }], items: { 'site:saved': { description: 'old description', tagIds: ['tag-a'] } } };
+  subject.preferences.change({ library: oldLibrary });
+  const file = await subject.center.exportCompleteBackup();
+  assert.deepEqual(JSON.parse(await file.text()).preferences.library, oldLibrary);
+  const edited = { version: 1, tags: [{ id: 'tag-current', name: 'work' }], items: { 'site:saved': { description: 'new description', tagIds: ['tag-current'] } } };
+  subject.preferences.change({ library: edited });
+  await subject.center.restore(await subject.center.preview(file));
+  assert.deepEqual((await subject.preferences.read()).library, oldLibrary);
+  assert.deepEqual((await subject.center.previewRecoveryPoint()).preferences.library, edited);
+  subject.preferences.change({ library: edited });
+  const incoming = harness();
+  incoming.preferences.change({ library: { ...oldLibrary, items: { 'reading:fresh': { description: 'new reference', tagIds: ['tag-a'] } } } });
+  await subject.center.restore(await subject.center.preview(await incoming.center.exportCompleteBackup()), { selected: ['preferences'], mode: 'append' });
+  const merged = (await subject.preferences.read()).library;
+  assert.deepEqual(merged.tags, edited.tags); assert.deepEqual(merged.items['site:saved'], edited.items['site:saved']);
+  assert.deepEqual(merged.items['reading:fresh'], { description: 'new reference', tagIds: ['tag-current'] });
+});
+
 test('selected categories replace same-ID note contents without touching reading, navigation or aliases', async () => {
   const subject = harness(); subject.tools.change({ notes: [note()] });
   const file = await subject.center.exportCompleteBackup();
@@ -128,6 +147,28 @@ test('old navigation ZIP and v2 tools JSON are previewed through the same recove
   assert.deepEqual(navigation.categories, ['navigation']);
   const tools = await subject.center.preview(new Blob([JSON.stringify({ format: 'covelet-personal-tools', version: 2, data: { version: 2, revision: 0, notes: [note()], reading: [], snapshots: [] } })]));
   assert.equal(tools.tools.version, 3); assert.equal(tools.summary.notes, 1);
+});
+
+test('v4 tools recovery replaces selected tool metadata while preserving unrelated navigation and reading preferences', async () => {
+  const subject = harness(); subject.tools.change({ notes: [note('current note')] });
+  subject.preferences.change({ aliases: { 'site:kept': 'navigation alias' }, library: { version: 1, tags: [{ id: 'tag-local', name: 'Work' }], items: {
+    'site:kept': { description: 'navigation description', tagIds: ['tag-local'] }, 'note:note-a': { description: '', tagIds: [] },
+    'reading:kept': { description: 'reading description', tagIds: ['tag-local'] },
+  } } });
+  const data = validatePersonalTools({ version: 3, revision: 0, notes: [note('old note')], reading: [], snapshots: [], trash: [] });
+  const file = new Blob([JSON.stringify({ format: 'covelet-personal-tools', version: 4, data, preferences: {
+    version: 1, revision: 0, aliases: { 'note:note-a': 'restored note alias' }, privateKeys: ['note:note-a'], presentation: false,
+    library: { version: 1, tags: [{ id: 'tag-incoming', name: 'work' }], items: { 'note:note-a': { description: '', tagIds: ['tag-incoming'] } } },
+  } })]);
+  const plan = await subject.center.preview(file);
+  assert(plan.categories.includes('preferences'));
+  await subject.center.restore(plan, { selected: ['notes', 'preferences'], mode: 'replace' });
+  const restored = await subject.preferences.read();
+  assert.equal((await subject.tools.read()).notes[0].body, 'old note');
+  assert.equal(restored.aliases['site:kept'], 'navigation alias'); assert.equal(restored.aliases['note:note-a'], 'restored note alias');
+  assert.equal(restored.library.items['site:kept'].description, 'navigation description');
+  assert.equal(restored.library.items['reading:kept'].description, 'reading description');
+  assert.deepEqual(restored.library.items['note:note-a'].tagIds, ['tag-local']);
 });
 
 test('stale preview and invalid data never write a checkpoint or alter local contents', async () => {

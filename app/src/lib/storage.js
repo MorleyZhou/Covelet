@@ -351,7 +351,7 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
     saveState(next, expectedRevision) { return exclusive(() => writeState(next, expectedRevision)); },
     saveStateWithPrivacy(next, expectedRevision, action) {
       return exclusive(() => withNavigationPrivacy((current, changes) =>
-        action(current, (addedKeys = []) => writeState(next, expectedRevision, changes(addedKeys)))));
+        action(current, (addedKeys = [], metadataOptions = {}) => writeState(next, expectedRevision, changes(addedKeys, metadataOptions)))));
     },
     subscribeState(callback) {
       return getConfig().subscribe((state) => {

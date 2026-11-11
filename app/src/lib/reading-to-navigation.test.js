@@ -72,7 +72,7 @@ test('failed persistence leaves both navigation and the private marker unchanged
 });
 
 test('saving a copy of a private draft copy marks only the entries that survive the draft', async (t) => {
-  const { records, writes } = prepare(t, { locked: true, holdTools: false });
+  const { records, writes } = prepare(t, { locked: false, holdTools: false });
   const state = structuredClone(records[navigationKey].state);
   const original = { id: 'original', type: 'site', groupId: 'group-home', parentId: null, page: 0, order: 0,
     name: 'Private site', url: 'https://example.com/private', icon: { kind: 'letter', value: 'P' } };
