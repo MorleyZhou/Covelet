@@ -59,6 +59,37 @@ test('portable ZIP contains only referenced cached URL images and both adaptive 
   assert.equal(adaptive.updatedAt, 123456);
 });
 
+test('ZIP retains expired-but-stored owned images and remaps an asset shared with active navigation exactly once', async () => {
+  const source = harness(), state = createEmptyState(), remote = 'https://cdn.example/trashed.png';
+  state.entries = [{ id: 'active', type: 'site', name: 'Active', url: 'https://active.example/', groupId: 'group-home', parentId: null,
+    icon: { kind: 'image', value: 'shared' }, order: 0 }];
+  state.trash = { version: 1, items: [{ id: 'trash-group', kind: 'folder', deletedAt: Date.now() - 31 * 86400000,
+    origin: { desktopId: null, page: 0, parentId: null }, memberRefs: [], ownedEntries: [
+      { id: 'gone-folder', type: 'folder', name: 'Deleted folder', groupId: 'group-home', parentId: null, icon: { kind: 'image', value: 'shared' }, order: 0 },
+      { id: 'gone-site', type: 'site', name: 'Deleted site', url: 'https://deleted.example/', groupId: 'group-home', parentId: 'gone-folder',
+        icon: { kind: 'letter', value: 'D' }, iconUrl: remote, order: 0 },
+    ] }] };
+  source.records.set('shared', { id: 'shared', blob: image() }); source.icons.set(remote, iconResource(remote));
+  const archive = await source.store.exportBackup(state), target = harness(), plan = await target.store.inspectBackup(archive);
+  assert.equal(plan.assets.size, 1); assert.equal(plan.icons.size, 1); assert.equal(target.writes, 0);
+  await assert.rejects(target.store.validateBackupPlan({ ...plan, assets: new Map() }), /图片不完整/);
+  const restored = await target.store.restoreBackup(plan, 0, { hydrateIcons: false });
+  assert.equal(restored.entries[0].icon.value, restored.trash.items[0].ownedEntries[0].icon.value);
+  assert.notEqual(restored.entries[0].icon.value, 'shared'); assert.equal(target.records.size, 1); assert(target.icons.has(remote));
+  assert.equal(restored.trash.items[0].ownedEntries[1].iconUrl, remote);
+});
+
+test('an owned-only custom icon is mandatory before a ZIP can be exported or a restored item can be published', async () => {
+  const subject = harness(), state = createEmptyState();
+  state.trash = { version: 1, items: [{ id: 'trash-owned', kind: 'site', deletedAt: Date.now(), origin: { desktopId: null, page: 0, parentId: null }, memberRefs: [],
+    ownedEntries: [{ id: 'gone', type: 'site', name: 'Gone', url: 'https://gone.example/', groupId: 'group-home', parentId: null, order: 0, icon: { kind: 'image', value: 'missing' } }] }] };
+  await assert.rejects(subject.store.exportBackup(state), { code: 'MISSING_ASSET' }); assert.equal(subject.writes, 0);
+  const restored = { ...state, entries: state.trash.items[0].ownedEntries, trash: { version: 1, items: [] } };
+  await assert.rejects(subject.store.validateNavigationResources(restored, { entryIds: ['gone'] }), { code: 'MISSING_ASSET' });
+  subject.records.set('missing', { id: 'missing', blob: image() });
+  await subject.store.validateNavigationResources(restored, { entryIds: ['gone'] }); assert.equal(subject.writes, 0);
+});
+
 test('old URL-only ZIP remains readable and hydration is an explicit restore action with revision and rollback guards', async () => {
   const source = harness(), archive = await source.store.exportBackup(withRemoteIcons());
   const legacy = await rewriteBackup(archive, (files) => {

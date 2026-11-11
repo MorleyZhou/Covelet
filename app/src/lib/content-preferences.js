@@ -297,6 +297,12 @@ export async function replaceContentPreferences(value, { expectedRevision } = {}
       privateKeys: current.presentation ? [...new Set([...current.privateKeys, ...checked.privateKeys])] : checked.privateKeys };
   });
 }
+export function prepareContentPreferencesRestore(current, incoming, { expectedRevision } = {}) {
+  const before = validate(current), checked = validate(incoming);
+  if (before.revision !== expectedRevision) throw Object.assign(Error(tr('恢复期间数据已更新，请重新预览。')), { code: 'REVISION_CONFLICT' });
+  return validate({ ...checked, revision: before.revision + 1, presentation: before.presentation,
+    privateKeys: before.presentation ? [...new Set([...before.privateKeys, ...checked.privateKeys])] : checked.privateKeys });
+}
 async function mutateContentPreferences(update, { expectedRevision } = {}) {
   return withPreferencesLock(async () => {
     const current = await loadContentPreferences();
@@ -320,9 +326,15 @@ async function withPreferencesLock(run) {
 export function withNavigationPrivacy(run) {
   return withPreferencesLock(async () => {
     const current = await loadContentPreferences();
-    return run(current, (addedKeys = [], { metadata = [], copies = [], expectedRevision, appendPreferences, savedView } = {}) => {
+    return run(current, (addedKeys = [], { metadata = [], copies = [], expectedRevision, appendPreferences, replacePreferences, expectedMetadata = [], savedView } = {}) => {
       if (expectedRevision !== undefined && current.revision !== expectedRevision) throw Object.assign(Error(tr('内容已在其他页面更新，请重新打开后重试。')), { code: 'REVISION_CONFLICT' });
-      let next = appendPreferences ? mergeContentPreferences(current, appendPreferences) : current;
+      for (const { key, ...baseline } of expectedMetadata) {
+        if (!metadataKey(key)) invalidLibrary();
+        checkExpectedMetadata(current, key, baseline);
+      }
+      if (appendPreferences && replacePreferences) invalidLibrary();
+      let next = replacePreferences ? prepareContentPreferencesRestore(current, replacePreferences, { expectedRevision: current.revision })
+        : appendPreferences ? mergeContentPreferences(current, appendPreferences) : current;
       for (const { from, to } of copies) {
         if (hiddenMetadata(current, from)) throw privacyError('请先输入密码解除隐藏。', 'PRIVACY_LOCKED');
         if (current.library?.items[from]) next = applyContentMetadata(next, to, current.library.items[from]);

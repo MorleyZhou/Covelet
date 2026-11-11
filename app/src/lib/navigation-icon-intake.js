@@ -2,12 +2,13 @@ import { normalizeIconAddress, siteIconAddress, faviconAddress } from './site-ic
 import { readCachedNavigationIcon, navigationIcon, cacheNavigationIconBlob } from './navigation-icon-cache.js';
 import { readBrowserFavicon } from './browser-favicon.js';
 import { getSyncedDataRevision } from './use-synced-data.js';
+import { navigationResourceEntries } from './navigation-resources.js';
 
 // This describes only declared artwork, never website HTML or speculative
 // icon candidates. The same URL shared by tiles/themes is acquired once.
-export function navigationIconSources(state) {
+export function navigationIconSources(state, { includeTrash = false } = {}) {
   const sources = new Map();
-  for (const entry of state?.entries || []) {
+  for (const entry of includeTrash ? navigationResourceEntries(state) : state?.entries || []) {
     if (entry.type !== 'site' || entry.icon?.kind === 'image') continue;
     for (const input of [siteIconAddress(entry), entry.iconVariants?.light?.url, entry.iconVariants?.dark?.url]) {
       let source;

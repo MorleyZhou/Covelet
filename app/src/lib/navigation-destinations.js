@@ -1,6 +1,6 @@
 import { tr } from '../i18n/index.js';
 import { migrateNavigationState } from './model.js';
-import { loadState, saveState, saveStateWithPrivacy } from './storage.js';
+import { saveStateWithTrash } from './storage.js';
 import { logicalDesktopPages } from './desktop-pages.js';
 import { privateContentKeys } from './presentation.js';
 
@@ -118,23 +118,6 @@ export function layoutTransferPreferences(preferences, copies) {
 
 export function saveLayoutTransfer(state, expectedRevision, copies) {
   const savedCopies = state.entries.filter((entry) => copies.has(entry.id));
-  if (!savedCopies.length) return saveState(state, expectedRevision);
-  return saveStateWithPrivacy(state, expectedRevision, async (current, commit) => {
-    const persisted = await loadState();
-    const entries = [...persisted.entries, ...state.entries], sources = new Map(savedCopies.map((entry) => [entry.id, originalCopySource(entry.id, copies)]));
-    const effectiveKeys = privateContentKeys({ entries }, current);
-    const inherited = layoutTransferPreferences({ ...current, privateKeys: [...effectiveKeys] }, copies);
-    const privateKeys = new Set(inherited.privateKeys);
-    const hidden = privateContentKeys(state, inherited);
-    for (const entry of savedCopies) {
-      const sourceId = sources.get(entry.id);
-      if (!entries.some((item) => item.id === sourceId && item.type === 'site')) throw destinationChanged();
-      if (current.presentation && (effectiveKeys.has(`site:${sourceId}`) || hidden.has(`site:${entry.id}`))) {
-        throw Object.assign(Error(tr('请先输入密码解除隐藏。')), { code: 'PRIVACY_LOCKED' });
-      }
-    }
-    const addedKeys = savedCopies.map((entry) => `site:${entry.id}`).filter((key) => privateKeys.has(key));
-    return commit(addedKeys, { metadata: savedCopies.map((entry) => ({ key: `site:${entry.id}`,
-      ...(current.library?.items[`site:${sources.get(entry.id)}`] || { description: '', tagIds: [] }) })) });
-  });
+  return saveStateWithTrash(state, expectedRevision, { cause: 'layout-delete',
+    copies: savedCopies.map((entry) => ({ from: `site:${originalCopySource(entry.id, copies)}`, to: `site:${entry.id}` })) });
 }

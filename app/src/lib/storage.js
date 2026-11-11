@@ -9,6 +9,9 @@ import { prepareImportedNavigationIcons } from './navigation-icon-intake.js';
 import { ICON_IMAGE_LIMIT } from './icon-image-format.js';
 import { withNavigationPrivacy } from './content-preferences.js';
 import { sameJson } from './json-equal.js';
+import { navigationResourceEntries, remapNavigationAssets } from './navigation-resources.js';
+import { prepareNavigationDeletion, removeTrashMetadata } from './navigation-trash-core.js';
+import { privateContentKeys } from './presentation.js';
 
 const STORE_KEY = 'owntab.local.v1';
 const LOCK_NAME = 'owntab.local.write.v1';
@@ -28,11 +31,11 @@ function checkedState(value) { return validateState(clone(value)); }
 function assetReferences(state) {
   const ids = new Set();
   if (state.settings.background.kind === 'image') ids.add(state.settings.background.value);
-  for (const entry of state.entries) if (entry.icon?.kind === 'image') ids.add(entry.icon.value);
+  for (const entry of navigationResourceEntries(state)) if (entry.icon?.kind === 'image') ids.add(entry.icon.value);
   return ids;
 }
 function iconReferences(state) {
-  return new Set(state.entries.filter((entry) => entry.type === 'site' && entry.icon?.kind !== 'image').flatMap((entry) => [
+  return new Set(navigationResourceEntries(state).filter((entry) => entry.type === 'site' && entry.icon?.kind !== 'image').flatMap((entry) => [
     siteIconAddress(entry), entry.iconVariants?.light?.url, entry.iconVariants?.dark?.url,
   ]).filter(Boolean).map(normalizeIconAddress));
 }
@@ -56,10 +59,7 @@ async function verifyIconResource(record, tools) {
 }
 
 function remapAssets(state, ids) {
-  const result = clone(state);
-  if (result.settings.background.kind === 'image') result.settings.background.value = ids.get(result.settings.background.value);
-  for (const entry of result.entries) if (entry.icon?.kind === 'image') entry.icon.value = ids.get(entry.icon.value);
-  return result;
+  return remapNavigationAssets(state, ids);
 }
 
 async function sha256(bytes) {
@@ -307,7 +307,7 @@ function parseJson(bytes) {
 }
 
 // Adapters make backup and transaction tests independent of a real browser database.
-export function createStorage({ configStore, assetStore, iconResources = { read: readNavigationIconResource, restore: restoreNavigationIconResource,
+export function createStorage({ configStore, assetStore, privacy = withNavigationPrivacy, iconResources = { read: readNavigationIconResource, restore: restoreNavigationIconResource,
   prepare: prepareImportedNavigationIcons, retain: retainNavigationIconResources }, locks, initialState = createEmptyState, imageTools = browserImages, uuid = () => crypto.randomUUID() } = {}) {
   let config;
   let assets;
@@ -355,8 +355,49 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
     async loadState() { return (await readEnvelope()).state; },
     saveState(next, expectedRevision) { return exclusive(() => writeState(next, expectedRevision)); },
     saveStateWithPrivacy(next, expectedRevision, action) {
-      return exclusive(() => withNavigationPrivacy((current, changes) =>
+      return exclusive(() => privacy((current, changes) =>
         action(current, (addedKeys = [], metadataOptions = {}) => writeState(next, expectedRevision, changes(addedKeys, metadataOptions)))));
+    },
+    saveStateWithTrash(next, expectedRevision, { cause = 'context-delete', expectedPreferencesRevision, metadata = [], expectedMetadata = [], addedPrivateKeys = [], copies = [] } = {}) {
+      return exclusive(() => privacy(async (current, changes) => {
+        const before = (await readEnvelope()).state;
+        if (before.revision !== expectedRevision) fail(tr('数据已在另一个标签页更新，请重新加载后再试。'), 'REVISION_CONFLICT');
+        const beforeHidden = privateContentKeys(before, current), afterHidden = privateContentKeys(next, current);
+        const withoutOrder = (entry) => { if (!entry) return null; const { order, ...value } = entry; return value; };
+        if (current.presentation && [...new Set([...before.entries.map((entry) => entry.id), ...next.entries.map((entry) => entry.id)])].some((id) => {
+          const previous = before.entries.find((entry) => entry.id === id), following = next.entries.find((entry) => entry.id === id), key = `${previous?.type || following?.type}:${id}`;
+          return (beforeHidden.has(key) || afterHidden.has(key)) && !sameJson(withoutOrder(previous), withoutOrder(following));
+        })) fail(tr('请先输入密码解除隐藏。'), 'PRIVACY_LOCKED');
+        const effective = privateContentKeys({ entries: [...before.entries, ...next.entries], trash: before.trash }, current);
+        const copyMetadata = [], keys = [...addedPrivateKeys];
+        for (const entry of before.entries) if (entry.type === 'site' && beforeHidden.has(`site:${entry.id}`) && !afterHidden.has(`site:${entry.id}`)) keys.push(`site:${entry.id}`);
+        const guarded = [...metadata.map((patch) => patch.key), ...expectedMetadata.map((baseline) => baseline.key)];
+        for (const item of copies) {
+          const source = before.entries.find((entry) => `site:${entry.id}` === item.from) || next.entries.find((entry) => `site:${entry.id}` === item.from);
+          const target = next.entries.find((entry) => `site:${entry.id}` === item.to);
+          if (!source || !target) fail(tr('目标位置已变化，请重新选择。'), 'TARGET_CHANGED');
+          guarded.push(item.from, item.to);
+          if (effective.has(item.from)) keys.push(item.to);
+          copyMetadata.push({ key: item.to, ...(current.library?.items[item.from] || { description: '', tagIds: [] }) });
+        }
+        if (current.presentation && guarded.some((key) => effective.has(key))) fail(tr('请先输入密码解除隐藏。'), 'PRIVACY_LOCKED');
+        const prepared = prepareNavigationDeletion(before, next, current, { cause });
+        keys.push(...prepared.addedPrivateKeys);
+        const cleaned = removeTrashMetadata(current, before, prepared.state, prepared.expiredTrashIds);
+        return writeState(prepared.state, expectedRevision, changes([...new Set(keys)], {
+          metadata: [...copyMetadata, ...metadata], expectedMetadata, expectedRevision: expectedPreferencesRevision,
+          ...(cleaned ? { replacePreferences: cleaned } : {}),
+        }));
+      }));
+    },
+    async validateNavigationResources(state, { entryIds } = {}) {
+      const selected = entryIds ? new Set(entryIds) : null;
+      const scope = selected ? { ...state, entries: state.entries.filter((entry) => selected.has(entry.id)), trash: undefined } : state;
+      for (const id of assetReferences(scope)) {
+        const asset = await getAssets().get(id);
+        if (!asset?.blob) fail(tr('回收内容的图片已丢失，当前数据未改变。'), 'MISSING_ASSET');
+        await verifyImage(asset.blob, imageTools);
+      }
     },
     subscribeState(callback) {
       return getConfig().subscribe((state) => {
@@ -511,11 +552,26 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
           staged.push(nextId);
           ids.set(id, nextId);
         }
-        return await api.saveState(remapAssets(state, ids), currentRevision);
+        const remapped = remapAssets(state, ids);
+        if (options.pairedPreferences) {
+          const { preferences, expectedPreferencesRevision } = options.pairedPreferences;
+          let committedPreferences;
+          const saved = await exclusive(() => privacy((_current, prepare) => {
+            const records = prepare([], { replacePreferences: preferences, expectedRevision: expectedPreferencesRevision });
+            committedPreferences = Object.values(records)[0];
+            return writeState(remapped, currentRevision, records);
+          }));
+          return { state: saved, preferences: committedPreferences };
+        }
+        return await api.saveState(remapped, currentRevision);
       } catch (error) {
         await Promise.allSettled(staged.map((id) => getAssets().delete(id)));
         throw error;
       } finally { releaseIcons?.(); }
+    },
+    restoreBackupWithPreferences(plan, { expectedNavigationRevision, expectedPreferencesRevision, preferences, ...options } = {}) {
+      const pair = { preferences, expectedPreferencesRevision };
+      return api.restoreBackup(plan, expectedNavigationRevision, { ...options, pairedPreferences: pair });
     },
     async restoreSnapshot(expectedRevision, options = {}) {
       const envelope = await readEnvelope();
@@ -548,5 +604,5 @@ export function createStorage({ configStore, assetStore, iconResources = { read:
 }
 
 const storage = createStorage({ initialState: createInitialState });
-export const { loadState, saveState, saveStateWithPrivacy, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, validateBackupPlan, restoreBackup, restoreSnapshot,
+export const { loadState, saveState, saveStateWithPrivacy, saveStateWithTrash, validateNavigationResources, restoreBackupWithPreferences, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, validateBackupPlan, restoreBackup, restoreSnapshot,
   getSyncStatus, subscribeSyncStatus, setSyncEnabled, syncNow, getSyncConflicts, restoreSyncConflict } = storage;

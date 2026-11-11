@@ -16537,5 +16537,491 @@
     "de": "Datei „{0}“: {1}",
     "fr": "Fichier « {0} » : {1}",
     "ru": "Файл «{0}»: {1}"
+  },
+  "合并后的备注或标签超出限制，请减少所选副本。": {
+    "en": "The merged description or tags exceed the limit. Select fewer copies.",
+    "zh-TW": "合併後的備註或標籤超出限制，請減少所選副本。",
+    "ja": "統合後のメモやタグが上限を超えています。選択するコピーを減らしてください。",
+    "ko": "병합한 설명이나 태그가 제한을 초과합니다. 선택한 사본 수를 줄여 주세요.",
+    "de": "Die zusammengeführte Beschreibung oder die Tags überschreiten das Limit. Wähle weniger Kopien aus.",
+    "fr": "La description ou les étiquettes fusionnées dépassent la limite. Sélectionnez moins de copies.",
+    "ru": "Объединённое описание или теги превышают ограничение. Выберите меньше копий."
+  },
+  "已将 {0} 个副本移入回收站。": {
+    "en": "Copies moved to Trash ({0}).",
+    "zh-TW": "已將 {0} 個副本移入回收站。",
+    "ja": "{0} 件のコピーをゴミ箱に移動しました。",
+    "ko": "사본 {0}개를 휴지통으로 이동했습니다.",
+    "de": "Kopien in den Papierkorb verschoben ({0}).",
+    "fr": "Copies déplacées dans la corbeille ({0}).",
+    "ru": "Перемещено копий в корзину ({0})."
+  },
+  "请选择要移入回收站的副本。": {
+    "en": "Select the copies to move to Trash.",
+    "zh-TW": "請選擇要移入回收站的副本。",
+    "ja": "ゴミ箱に移動するコピーを選択してください。",
+    "ko": "휴지통으로 이동할 사본을 선택해 주세요.",
+    "de": "Wähle die Kopien aus, die in den Papierkorb verschoben werden sollen.",
+    "fr": "Sélectionnez les copies à déplacer dans la corbeille.",
+    "ru": "Выберите копии для перемещения в корзину."
+  },
+  "重复链接审阅": {
+    "en": "Review duplicate links",
+    "zh-TW": "重複連結審閱",
+    "ja": "重複リンクの確認",
+    "ko": "중복 링크 검토",
+    "de": "Doppelte Links prüfen",
+    "fr": "Examiner les liens en double",
+    "ru": "Проверить повторяющиеся ссылки"
+  },
+  "按完整网址识别重复项。请先选择保留项，再勾选要移入回收站的副本。": {
+    "en": "Duplicates are identified by the full URL. Choose a copy to keep, then select the copies to move to Trash.",
+    "zh-TW": "依完整網址識別重複項。請先選擇保留項，再勾選要移入回收站的副本。",
+    "ja": "完全な URL で重複を判定します。残す項目を選んでから、ゴミ箱に移動するコピーを選択してください。",
+    "ko": "전체 URL로 중복 항목을 확인합니다. 보관할 항목을 고른 뒤 휴지통으로 이동할 사본을 선택해 주세요.",
+    "de": "Duplikate werden anhand der vollständigen URL erkannt. Wähle zuerst die zu behaltende Kopie und dann die Kopien für den Papierkorb aus.",
+    "fr": "Les doublons sont identifiés par l’URL complète. Choisissez la copie à conserver, puis celles à déplacer dans la corbeille.",
+    "ru": "Дубликаты определяются по полному URL. Сначала выберите копию для сохранения, затем копии для перемещения в корзину."
+  },
+  "重复链接分类": {
+    "en": "Duplicate link categories",
+    "zh-TW": "重複連結分類",
+    "ja": "重複リンクの分類",
+    "ko": "중복 링크 분류",
+    "de": "Kategorien doppelter Links",
+    "fr": "Catégories de liens en double",
+    "ru": "Категории повторяющихся ссылок"
+  },
+  "同位置重复": {
+    "en": "Duplicates in one location",
+    "zh-TW": "同位置重複",
+    "ja": "同じ場所の重複",
+    "ko": "같은 위치의 중복",
+    "de": "Duplikate am selben Ort",
+    "fr": "Doublons au même emplacement",
+    "ru": "Дубликаты в одном расположении"
+  },
+  "跨位置重复": {
+    "en": "Duplicates across locations",
+    "zh-TW": "跨位置重複",
+    "ja": "異なる場所の重複",
+    "ko": "여러 위치의 중복",
+    "de": "Duplikate an verschiedenen Orten",
+    "fr": "Doublons à différents emplacements",
+    "ru": "Дубликаты в разных расположениях"
+  },
+  "重复链接组": {
+    "en": "Duplicate link groups",
+    "zh-TW": "重複連結群組",
+    "ja": "重複リンクのグループ",
+    "ko": "중복 링크 그룹",
+    "de": "Gruppen doppelter Links",
+    "fr": "Groupes de liens en double",
+    "ru": "Группы повторяющихся ссылок"
+  },
+  "{0} 个副本": {
+    "en": "Copies ({0})",
+    "zh-TW": "{0} 個副本",
+    "ja": "{0} 件のコピー",
+    "ko": "사본 {0}개",
+    "de": "Kopien ({0})",
+    "fr": "Copies ({0})",
+    "ru": "Копий ({0})"
+  },
+  "没有找到重复链接": {
+    "en": "No duplicate links found",
+    "zh-TW": "未找到重複連結",
+    "ja": "重複リンクはありません",
+    "ko": "중복 링크가 없습니다",
+    "de": "Keine doppelten Links gefunden",
+    "fr": "Aucun lien en double trouvé",
+    "ru": "Повторяющиеся ссылки не найдены"
+  },
+  "选择一组重复链接开始审阅。": {
+    "en": "Select a group of duplicate links to review.",
+    "zh-TW": "選擇一組重複連結開始審閱。",
+    "ja": "確認する重複リンクのグループを選択してください。",
+    "ko": "검토할 중복 링크 그룹을 선택해 주세요.",
+    "de": "Wähle eine Gruppe doppelter Links zum Prüfen aus.",
+    "fr": "Sélectionnez un groupe de liens en double à examiner.",
+    "ru": "Выберите группу повторяющихся ссылок для проверки."
+  },
+  "隐藏内容": {
+    "en": "Hidden content",
+    "zh-TW": "隱藏內容",
+    "ja": "非表示のコンテンツ",
+    "ko": "숨긴 콘텐츠",
+    "de": "Ausgeblendeter Inhalt",
+    "fr": "Contenu masqué",
+    "ru": "Скрытое содержимое"
+  },
+  "保留“{0}”": {
+    "en": "Keep “{0}”",
+    "zh-TW": "保留「{0}」",
+    "ja": "「{0}」を残す",
+    "ko": "“{0}” 보관",
+    "de": "„{0}“ behalten",
+    "fr": "Conserver « {0} »",
+    "ru": "Оставить «{0}»"
+  },
+  "移除副本“{0}”": {
+    "en": "Remove copy “{0}”",
+    "zh-TW": "移除副本「{0}」",
+    "ja": "コピー「{0}」を削除",
+    "ko": "사본 “{0}” 제거",
+    "de": "Kopie „{0}“ entfernen",
+    "fr": "Retirer la copie « {0} »",
+    "ru": "Удалить копию «{0}»"
+  },
+  "移入回收站": {
+    "en": "Move to Trash",
+    "zh-TW": "移入回收站",
+    "ja": "ゴミ箱に移動",
+    "ko": "휴지통으로 이동",
+    "de": "In den Papierkorb",
+    "fr": "Déplacer dans la corbeille",
+    "ru": "Переместить в корзину"
+  },
+  "将所选副本的备注与标签合并到保留项": {
+    "en": "Merge descriptions and tags from selected copies into the kept item",
+    "zh-TW": "將所選副本的備註與標籤合併至保留項",
+    "ja": "選択したコピーのメモとタグを残す項目に統合",
+    "ko": "선택한 사본의 설명과 태그를 보관할 항목에 병합",
+    "de": "Beschreibungen und Tags der ausgewählten Kopien im behaltenen Eintrag zusammenführen",
+    "fr": "Fusionner les descriptions et étiquettes des copies sélectionnées dans l’élément conservé",
+    "ru": "Объединить описания и теги выбранных копий в сохраняемой записи"
+  },
+  "未合并的备注与标签会随副本保留在回收站。": {
+    "en": "Unmerged descriptions and tags stay with the copies in Trash.",
+    "zh-TW": "未合併的備註與標籤會隨副本保留在回收站。",
+    "ja": "統合しないメモとタグは、コピーと一緒にゴミ箱に保持されます。",
+    "ko": "병합하지 않은 설명과 태그는 사본과 함께 휴지통에 보관됩니다.",
+    "de": "Nicht zusammengeführte Beschreibungen und Tags bleiben bei den Kopien im Papierkorb.",
+    "fr": "Les descriptions et étiquettes non fusionnées restent avec les copies dans la corbeille.",
+    "ru": "Необъединённые описания и теги остаются вместе с копиями в корзине."
+  },
+  "内容已更新，请重新预览。": {
+    "en": "Content changed. Preview it again.",
+    "zh-TW": "內容已更新，請重新預覽。",
+    "ja": "内容が更新されました。プレビューし直してください。",
+    "ko": "내용이 변경되었습니다. 다시 미리보기해 주세요.",
+    "de": "Der Inhalt wurde geändert. Öffne die Vorschau erneut.",
+    "fr": "Le contenu a changé. Relancez l’aperçu.",
+    "ru": "Содержимое изменилось. Откройте предпросмотр заново."
+  },
+  "处理预览": {
+    "en": "Review changes",
+    "zh-TW": "處理預覽",
+    "ja": "変更内容の確認",
+    "ko": "처리 미리보기",
+    "de": "Änderungen prüfen",
+    "fr": "Aperçu des modifications",
+    "ru": "Предпросмотр изменений"
+  },
+  "将保留“{0}”，移入回收站 {1} 个副本。": {
+    "en": "“{0}” will be kept and {1} copies moved to Trash.",
+    "zh-TW": "將保留「{0}」，並將 {1} 個副本移入回收站。",
+    "ja": "「{0}」を残し、{1} 件のコピーをゴミ箱に移動します。",
+    "ko": "“{0}”을 보관하고 사본 {1}개를 휴지통으로 이동합니다.",
+    "de": "„{0}“ wird behalten und {1} Kopien werden in den Papierkorb verschoben.",
+    "fr": "« {0} » sera conservé et {1} copies seront déplacées dans la corbeille.",
+    "ru": "«{0}» будет сохранено, а {1} копий перемещено в корзину."
+  },
+  "合并后的备注与标签": {
+    "en": "Merged description and tags",
+    "zh-TW": "合併後的備註與標籤",
+    "ja": "統合後のメモとタグ",
+    "ko": "병합한 설명과 태그",
+    "de": "Zusammengeführte Beschreibung und Tags",
+    "fr": "Description et étiquettes fusionnées",
+    "ru": "Объединённые описание и теги"
+  },
+  "暂无备注": {
+    "en": "No description",
+    "zh-TW": "暫無備註",
+    "ja": "メモはありません",
+    "ko": "설명 없음",
+    "de": "Keine Beschreibung",
+    "fr": "Aucune description",
+    "ru": "Нет описания"
+  },
+  "标签已失效": {
+    "en": "Tag unavailable",
+    "zh-TW": "標籤已失效",
+    "ja": "タグが無効です",
+    "ko": "태그를 사용할 수 없음",
+    "de": "Tag nicht verfügbar",
+    "fr": "Étiquette indisponible",
+    "ru": "Тег недоступен"
+  },
+  "合并包含隐藏内容，保留项也将设为隐藏。": {
+    "en": "The merge includes hidden content. The kept item will also be marked as hidden.",
+    "zh-TW": "合併包含隱藏內容，保留項也將設為隱藏。",
+    "ja": "非表示の内容が含まれるため、残す項目も非表示に設定されます。",
+    "ko": "병합에 숨긴 콘텐츠가 포함되어 보관할 항목도 숨김으로 설정됩니다.",
+    "de": "Die Zusammenführung enthält ausgeblendeten Inhalt. Der behaltene Eintrag wird ebenfalls ausgeblendet.",
+    "fr": "La fusion inclut du contenu masqué. L’élément conservé sera également marqué comme masqué.",
+    "ru": "Объединение включает скрытое содержимое. Сохраняемая запись также будет отмечена как скрытая."
+  },
+  "请选择恢复位置": {
+    "en": "Choose a restore location",
+    "zh-TW": "請選擇還原位置",
+    "ja": "復元先を選択してください",
+    "ko": "복원 위치를 선택해 주세요",
+    "de": "Wähle einen Wiederherstellungsort",
+    "fr": "Choisissez un emplacement de restauration",
+    "ru": "Выберите расположение для восстановления"
+  },
+  "原位置已失效": {
+    "en": "Original location unavailable",
+    "zh-TW": "原位置已失效",
+    "ja": "元の場所が無効です",
+    "ko": "원래 위치를 사용할 수 없음",
+    "de": "Ursprünglicher Ort nicht verfügbar",
+    "fr": "Emplacement d’origine indisponible",
+    "ru": "Исходное расположение недоступно"
+  },
+  "原位置不可用": {
+    "en": "Original location unavailable",
+    "zh-TW": "原位置無法使用",
+    "ja": "元の場所は利用できません",
+    "ko": "원래 위치를 사용할 수 없음",
+    "de": "Ursprünglicher Ort nicht verfügbar",
+    "fr": "Emplacement d’origine indisponible",
+    "ru": "Исходное расположение недоступно"
+  },
+  "已恢复所选内容。": {
+    "en": "Selected content restored.",
+    "zh-TW": "已還原所選內容。",
+    "ja": "選択した内容を復元しました。",
+    "ko": "선택한 콘텐츠를 복원했습니다.",
+    "de": "Ausgewählter Inhalt wiederhergestellt.",
+    "fr": "Contenu sélectionné restauré.",
+    "ru": "Выбранное содержимое восстановлено."
+  },
+  "回收站内容已变化，请重新选择。": {
+    "en": "Trash content changed. Select it again.",
+    "zh-TW": "回收站內容已變更，請重新選擇。",
+    "ja": "ゴミ箱の内容が変更されました。選択し直してください。",
+    "ko": "휴지통 내용이 변경되었습니다. 다시 선택해 주세요.",
+    "de": "Der Papierkorbinhalt wurde geändert. Wähle erneut aus.",
+    "fr": "Le contenu de la corbeille a changé. Sélectionnez à nouveau les éléments.",
+    "ru": "Содержимое корзины изменилось. Выберите записи заново."
+  },
+  "已永久删除所选内容。": {
+    "en": "Selected content permanently deleted.",
+    "zh-TW": "已永久刪除所選內容。",
+    "ja": "選択した内容を完全に削除しました。",
+    "ko": "선택한 콘텐츠를 영구 삭제했습니다.",
+    "de": "Ausgewählter Inhalt endgültig gelöscht.",
+    "fr": "Contenu sélectionné supprimé définitivement.",
+    "ru": "Выбранное содержимое удалено безвозвратно."
+  },
+  "网站与文件夹回收站": {
+    "en": "Site and folder Trash",
+    "zh-TW": "網站與資料夾回收站",
+    "ja": "サイトとフォルダーのゴミ箱",
+    "ko": "사이트 및 폴더 휴지통",
+    "de": "Papierkorb für Websites und Ordner",
+    "fr": "Corbeille des sites et dossiers",
+    "ru": "Корзина сайтов и папок"
+  },
+  "清空当前可见记录": {
+    "en": "Clear visible records",
+    "zh-TW": "清空目前可見記錄",
+    "ja": "現在表示されている記録を削除",
+    "ko": "현재 보이는 기록 비우기",
+    "de": "Sichtbare Einträge leeren",
+    "fr": "Vider les éléments visibles",
+    "ru": "Удалить видимые записи"
+  },
+  "网站和文件夹保留 30 天。恢复前可核对位置和成员。": {
+    "en": "Sites and folders are kept for 30 days. Review their location and members before restoring.",
+    "zh-TW": "網站與資料夾保留 30 天。還原前可核對位置與成員。",
+    "ja": "サイトとフォルダーは 30 日間保持されます。復元前に場所とメンバーを確認できます。",
+    "ko": "사이트와 폴더는 30일간 보관됩니다. 복원 전에 위치와 구성 항목을 확인할 수 있습니다.",
+    "de": "Websites und Ordner bleiben 30 Tage erhalten. Prüfe vor der Wiederherstellung den Ort und die Mitglieder.",
+    "fr": "Les sites et dossiers sont conservés pendant 30 jours. Vérifiez leur emplacement et leurs membres avant la restauration.",
+    "ru": "Сайты и папки хранятся 30 дней. Перед восстановлением можно проверить расположение и состав."
+  },
+  "{0} 个网站，{1} 条成员记录": {
+    "en": "Sites ({0}), member records ({1})",
+    "zh-TW": "{0} 個網站，{1} 條成員記錄",
+    "ja": "サイト {0} 件、メンバー記録 {1} 件",
+    "ko": "사이트 {0}개, 구성 항목 기록 {1}개",
+    "de": "Websites ({0}), Mitgliedseinträge ({1})",
+    "fr": "Sites ({0}), membres enregistrés ({1})",
+    "ru": "Сайтов ({0}), записей участников ({1})"
+  },
+  "保留至 {0}": {
+    "en": "Kept until {0}",
+    "zh-TW": "保留至 {0}",
+    "ja": "保持期限 {0}",
+    "ko": "{0}까지 보관",
+    "de": "Aufbewahrt bis {0}",
+    "fr": "Conservé jusqu’au {0}",
+    "ru": "Хранится до {0}"
+  },
+  "恢复网站或文件夹": {
+    "en": "Restore a site or folder",
+    "zh-TW": "還原網站或資料夾",
+    "ja": "サイトまたはフォルダーを復元",
+    "ko": "사이트 또는 폴더 복원",
+    "de": "Website oder Ordner wiederherstellen",
+    "fr": "Restaurer un site ou un dossier",
+    "ru": "Восстановить сайт или папку"
+  },
+  "原位置不可用，请选择恢复位置。": {
+    "en": "The original location is unavailable. Choose a restore location.",
+    "zh-TW": "原位置無法使用，請選擇還原位置。",
+    "ja": "元の場所は利用できません。復元先を選択してください。",
+    "ko": "원래 위치를 사용할 수 없습니다. 복원 위치를 선택해 주세요.",
+    "de": "Der ursprüngliche Ort ist nicht verfügbar. Wähle einen Wiederherstellungsort.",
+    "fr": "L’emplacement d’origine est indisponible. Choisissez un emplacement de restauration.",
+    "ru": "Исходное расположение недоступно. Выберите место для восстановления."
+  },
+  "恢复内容存在冲突，请重新选择位置。": {
+    "en": "The restore has conflicts. Choose a location again.",
+    "zh-TW": "還原內容存在衝突，請重新選擇位置。",
+    "ja": "復元内容に競合があります。場所を選択し直してください。",
+    "ko": "복원할 콘텐츠에 충돌이 있습니다. 위치를 다시 선택해 주세요.",
+    "de": "Bei der Wiederherstellung gibt es Konflikte. Wähle den Ort erneut aus.",
+    "fr": "La restauration présente des conflits. Sélectionnez à nouveau un emplacement.",
+    "ru": "При восстановлении обнаружены конфликты. Выберите расположение заново."
+  },
+  "恢复到：{0}": {
+    "en": "Restore to: {0}",
+    "zh-TW": "還原至：{0}",
+    "ja": "復元先：{0}",
+    "ko": "복원 위치: {0}",
+    "de": "Wiederherstellen nach: {0}",
+    "fr": "Restaurer vers : {0}",
+    "ru": "Восстановить в: {0}"
+  },
+  "将恢复 {0} 项，重新挂回 {1} 个成员，跳过 {2} 个已变化的成员。": {
+    "en": "Restore {0} items, reattach {1} members and skip {2} changed members.",
+    "zh-TW": "將還原 {0} 項、重新掛回 {1} 個成員，並略過 {2} 個已變更的成員。",
+    "ja": "{0} 件を復元し、{1} 件のメンバーを戻し、変更された {2} 件をスキップします。",
+    "ko": "{0}개 항목을 복원하고 구성 항목 {1}개를 다시 연결하며 변경된 {2}개는 건너뜁니다.",
+    "de": "{0} Einträge wiederherstellen, {1} Mitglieder erneut zuordnen und {2} geänderte Mitglieder überspringen.",
+    "fr": "Restaurer {0} éléments, rattacher {1} membres et ignorer {2} membres modifiés.",
+    "ru": "Будет восстановлено {0} записей, возвращено {1} участников и пропущено {2} изменённых участников."
+  },
+  "永久删除当前选择的 {0} 条回收记录？此操作无法撤销。": {
+    "en": "Permanently delete the selected Trash records ({0})? This cannot be undone.",
+    "zh-TW": "永久刪除目前選取的 {0} 條回收記錄？此操作無法復原。",
+    "ja": "選択したゴミ箱の記録 {0} 件を完全に削除しますか？この操作は取り消せません。",
+    "ko": "선택한 휴지통 기록 {0}개를 영구 삭제할까요? 이 작업은 취소할 수 없습니다.",
+    "de": "Die ausgewählten Papierkorbeinträge ({0}) endgültig löschen? Das kann nicht rückgängig gemacht werden.",
+    "fr": "Supprimer définitivement les éléments sélectionnés de la corbeille ({0}) ? Cette action est irréversible.",
+    "ru": "Безвозвратно удалить выбранные записи корзины ({0})? Это действие нельзя отменить."
+  },
+  "导航回收站无效或超出大小限制。": {
+    "en": "The navigation Trash is invalid or exceeds size limits.",
+    "zh-TW": "導航回收站無效或超出大小限制。",
+    "ja": "ナビゲーションのゴミ箱が無効か、サイズ制限を超えています。",
+    "ko": "탐색 휴지통이 유효하지 않거나 크기 제한을 초과했습니다.",
+    "de": "Der Navigationspapierkorb ist ungültig oder überschreitet die Größenlimits.",
+    "fr": "La corbeille de navigation est invalide ou dépasse les limites de taille.",
+    "ru": "Корзина навигации недопустима или превышает ограничения размера."
+  },
+  "导航回收站": {
+    "en": "Navigation Trash",
+    "zh-TW": "導航回收站",
+    "ja": "ナビゲーションのゴミ箱",
+    "ko": "탐색 휴지통",
+    "de": "Navigationspapierkorb",
+    "fr": "Corbeille de navigation",
+    "ru": "Корзина навигации"
+  },
+  "回收记录": {
+    "en": "Trash record",
+    "zh-TW": "回收記錄",
+    "ja": "ゴミ箱の記録",
+    "ko": "휴지통 기록",
+    "de": "Papierkorbeintrag",
+    "fr": "Élément de la corbeille",
+    "ru": "Запись корзины"
+  },
+  "原位置": {
+    "en": "Original location",
+    "zh-TW": "原位置",
+    "ja": "元の場所",
+    "ko": "원래 위치",
+    "de": "Ursprünglicher Ort",
+    "fr": "Emplacement d’origine",
+    "ru": "Исходное расположение"
+  },
+  "原桌面": {
+    "en": "Original desktop",
+    "zh-TW": "原桌面",
+    "ja": "元のデスクトップ",
+    "ko": "원래 데스크톱",
+    "de": "Ursprünglicher Desktop",
+    "fr": "Bureau d’origine",
+    "ru": "Исходный рабочий стол"
+  },
+  "原成员": {
+    "en": "Original member",
+    "zh-TW": "原成員",
+    "ja": "元のメンバー",
+    "ko": "원래 구성 항목",
+    "de": "Ursprüngliches Mitglied",
+    "fr": "Membre d’origine",
+    "ru": "Исходный участник"
+  },
+  "成员位置": {
+    "en": "Member location",
+    "zh-TW": "成員位置",
+    "ja": "メンバーの場所",
+    "ko": "구성 항목 위치",
+    "de": "Mitgliedsort",
+    "fr": "Emplacement du membre",
+    "ru": "Расположение участника"
+  },
+  "成员桌面": {
+    "en": "Member desktop",
+    "zh-TW": "成員桌面",
+    "ja": "メンバーのデスクトップ",
+    "ko": "구성 항목 데스크톱",
+    "de": "Mitgliedsdesktop",
+    "fr": "Bureau du membre",
+    "ru": "Рабочий стол участника"
+  },
+  "成员顺序": {
+    "en": "Member order",
+    "zh-TW": "成員順序",
+    "ja": "メンバーの順序",
+    "ko": "구성 항목 순서",
+    "de": "Mitgliedsreihenfolge",
+    "fr": "Ordre du membre",
+    "ru": "Порядок участника"
+  },
+  "所在行": {
+    "en": "Row",
+    "zh-TW": "所在列",
+    "ja": "行",
+    "ko": "행",
+    "de": "Zeile",
+    "fr": "Ligne",
+    "ru": "Строка"
+  },
+  "所在列": {
+    "en": "Column",
+    "zh-TW": "所在欄",
+    "ja": "列",
+    "ko": "열",
+    "de": "Spalte",
+    "fr": "Colonne",
+    "ru": "Столбец"
+  },
+  "回收内容的图片已丢失，当前数据未改变。": {
+    "en": "Images for the trashed content are missing. Current data has not changed.",
+    "zh-TW": "回收內容的圖片已遺失，目前資料未變更。",
+    "ja": "ゴミ箱の内容の画像が見つかりません。現在のデータは変更されていません。",
+    "ko": "휴지통 콘텐츠의 이미지가 없습니다. 현재 데이터는 변경되지 않았습니다.",
+    "de": "Bilder des Papierkorbinhalts fehlen. Die aktuellen Daten wurden nicht geändert.",
+    "fr": "Des images du contenu de la corbeille sont introuvables. Les données actuelles n’ont pas été modifiées.",
+    "ru": "Изображения содержимого корзины отсутствуют. Текущие данные не изменены."
   }
 }

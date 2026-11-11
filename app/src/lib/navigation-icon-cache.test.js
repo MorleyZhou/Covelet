@@ -529,6 +529,22 @@ test('overlapping import leases protect old incoming resources before the naviga
   assert.equal(store.records.size, 4096, 'the retention lease must not permanently disable capacity cleanup');
 });
 
+test('stored owned trash and navigation snapshots pin cached icons until a committed purge releases every reference', async (t) => {
+  const retained = 'https://icons.example/owned-old.png';
+  const existing = [record(retained, { updatedAt: 1 }), ...Array.from({ length: 4095 }, (_, index) => record(`https://icons.example/pinned-${index}.png`, { updatedAt: 10000 - index }))];
+  const store = mockEncryptedStore(t, existing);
+  const owned = { id: 'gone', type: 'site', url: 'https://gone.example/', iconUrl: retained, icon: { kind: 'letter', value: 'G' } };
+  let envelope = { version: 1, state: { entries: [], trash: { version: 1, items: [{ deletedAt: 1, ownedEntries: [owned] }] } }, snapshots: [] };
+  localData.get = async (key) => ({ [key]: structuredClone(envelope) });
+  replaceGlobal(t, 'fetch', async () => new Response(PNG, { headers: { 'content-type': 'image/png' } }));
+  const { navigationIcon } = await isolatedCache();
+  assert(await navigationIcon('https://icons.example/new-owned-1.png', { force: true })); assert(store.records.has(retained));
+  envelope = { ...envelope, state: { entries: [], trash: { version: 1, items: [] } }, snapshots: [{ entries: [owned] }] };
+  assert(await navigationIcon('https://icons.example/new-owned-2.png', { force: true })); assert(store.records.has(retained));
+  envelope.snapshots = [];
+  assert(await navigationIcon('https://icons.example/new-owned-3.png', { force: true })); assert(!store.records.has(retained));
+});
+
 test('a cross-page icon replacement fences an older in-flight download and retains the newer encrypted bytes', async (t) => {
   const url = 'https://icons.example/cross-page-race.png', store = mockEncryptedStore(t, [record(url, { updatedAt: 1 })]);
   const channels = [];

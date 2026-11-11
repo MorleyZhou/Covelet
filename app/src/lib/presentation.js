@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo } from 'react';
+import { navigationResourceEntries } from './navigation-resources.js';
 
 export const PresentationContext = createContext({ active: false, hiddenKeys: new Set(), requestUnlock: () => {} });
 export function usePresentedTools(data) {
@@ -12,7 +13,7 @@ export function usePresentedTools(data) {
 
 export function privateContentKeys(navigation, preferences) {
   const keys = new Set(preferences.privateKeys || []);
-  for (const entry of navigation?.entries || []) {
+  for (const entry of navigationResourceEntries(navigation)) {
     if (entry.parentId && keys.has(`folder:${entry.parentId}`)) keys.add(`site:${entry.id}`);
   }
   return keys;
