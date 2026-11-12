@@ -20,6 +20,7 @@ const ownError = (message, code = 'CLOUD_INVALID_CONFIG') => {
 export const isCloudProviderError = (error) => safeErrors.has(error);
 const invalid = () => ownError(tr("云存储配置无效，请检查填写内容。"));
 const badResponse = () => ownError(tr("云存储返回的数据格式无效。"), 'CLOUD_INVALID_RESPONSE');
+const foreignDirectory = () => ownError(tr('同步目录包含其他文件，请先将它们移出同步目录后重试。'), 'CLOUD_DIRECTORY_NOT_DEDICATED');
 const capacityError = () => ownError(tr("云端快照数量或大小超出安全限制，请使用单独的存储目录。"), 'CLOUD_LIMIT');
 const conflictError = () => ownError(tr("云端存在同名但内容不同的快照，已停止写入并保留本地数据。"), 'CLOUD_CONFLICT');
 const encode = (value) => encodeURIComponent(value).replace(/[!'()*]/g, (letter) => `%${letter.charCodeAt(0).toString(16).toUpperCase()}`);
@@ -237,6 +238,22 @@ export function createCloudProvider(input, secrets, options = {}) {
     if (status === 409 || status === 412) return conflictError();
     if (status >= 500 && status <= 599) return ownError(tr('存储服务暂时无法完成请求。请稍后重试。'), 'CLOUD_REQUEST_FAILED');
     return ownError(tr('云存储请求未成功，请检查服务配置后重试。'), 'CLOUD_REQUEST_FAILED');
+  }
+
+  function graphqlError(errors, headers) {
+    if (!Array.isArray(errors) || !errors.length || errors.some(error => !error || typeof error !== 'object' || Array.isArray(error))) throw badResponse();
+    // GitHub reports rejected mutations with HTTP 200. These are service or
+    // permission failures, not invalid encrypted snapshot data. Never expose
+    // remote error messages: they may contain private repository details.
+    const types = new Set(errors.flatMap(error => [error.type, error.extensions?.code]));
+    if (headers?.get('x-ratelimit-remaining') === '0' || types.has('RATE_LIMITED')) return statusError(429, headers);
+    if (types.has('UNAUTHORIZED') || types.has('UNAUTHENTICATED')) return statusError(401, headers);
+    if (types.has('FORBIDDEN') || types.has('INSUFFICIENT_SCOPES')) return statusError(403, headers);
+    if (types.has('NOT_FOUND')) return statusError(404, headers);
+    if (types.has('INTERNAL') || types.has('INTERNAL_SERVER_ERROR') || types.has('SERVICE_UNAVAILABLE')) {
+      return ownError(tr('存储服务暂时无法完成请求。请稍后重试。'), 'CLOUD_NETWORK');
+    }
+    return statusError(422, headers);
   }
 
   async function digest(bytes) {
@@ -468,9 +485,15 @@ export function createCloudProvider(input, secrets, options = {}) {
       }
       const indexes = [], blobs = [];
       for (const item of (await gitTree(request, root.sha)).values()) {
-        if (item.path !== 'blobs') { indexes.push(fileRecord(item, 'index')); continue; }
+        if (item.path !== 'blobs') {
+          if (!parseCloudSnapshotName(item.path)) throw foreignDirectory();
+          indexes.push(fileRecord(item, 'index')); continue;
+        }
         if (!isTree(item)) throw badResponse();
-        for (const file of (await gitTree(request, item.sha)).values()) blobs.push(fileRecord(file, 'blob'));
+        for (const file of (await gitTree(request, item.sha)).values()) {
+          if (!parseCloudSnapshotName(file.path)) throw foreignDirectory();
+          blobs.push(fileRecord(file, 'blob'));
+        }
       }
       if (indexes.length + blobs.length > MAX_OBJECTS) throw capacityError();
       return { indexes, blobs };
@@ -555,11 +578,12 @@ export function createCloudProvider(input, secrets, options = {}) {
           if (result.response.status === 409 || result.response.status === 412) throw staleHead();
           const value = requireStatus(result, 200);
           if (value?.errors?.length) {
-            if (result.response.headers.get('x-ratelimit-remaining') === '0') throw statusError(429, result.response.headers);
+            const reason = graphqlError(value.errors, result.response.headers);
+            if (['CLOUD_AUTH', 'CLOUD_RATE_LIMIT', 'CLOUD_NOT_FOUND'].includes(reason.code)) throw reason;
             const current = await branch(request);
             if (current.head === candidate) return;
             if (current.head !== head) throw staleHead();
-            throw badResponse();
+            throw reason;
           }
           if (value?.data?.updateRefs?.clientMutationId !== candidate) throw badResponse();
         });
@@ -717,8 +741,7 @@ export function createCloudProvider(input, secrets, options = {}) {
           if (response.status !== 200) throw statusError(response.status, response.headers);
           const result = jsonBody(bytes);
           if (result?.errors?.length) {
-            if (response.headers.get('x-ratelimit-remaining') === '0') throw statusError(response.status, response.headers);
-            throw badResponse();
+            throw graphqlError(result.errors, response.headers);
           }
           if (githubSha(result?.data?.createCommitOnBranch?.commit?.oid) === head) throw badResponse();
         });

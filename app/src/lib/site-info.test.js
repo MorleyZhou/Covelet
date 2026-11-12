@@ -39,6 +39,31 @@ test('preview and denied permission cause no network request or implicit authori
   assert.equal(requests, 0);
 });
 
+test('related service origins are requested together immediately with exact deduplicated permissions', async () => {
+  const requests = [];
+  const api = grantedApi();
+  api.permissions.request = value => { requests.push(value); return Promise.resolve(false); };
+  const permission = requestSiteAccess([
+    'https://commons.wikimedia.org/w/api.php?query=private',
+    'https://upload.wikimedia.org/image.png',
+    'https://commons.wikimedia.org/another-page',
+  ], { api });
+  assert.deepEqual(requests, [{ origins: ['https://commons.wikimedia.org/*', 'https://upload.wikimedia.org/*'] }], 'Both grants must use the same click, without an intervening await.');
+  assert.equal(await permission, false);
+});
+
+test('invalid or unbounded service origin lists never request partial access', () => {
+  let requests = 0;
+  const api = grantedApi();
+  api.permissions.request = () => { requests++; return Promise.resolve(true); };
+  for (const input of [[], Array(17).fill('https://example.com'), Array(2),
+    ['https://example.com', 'https://username:password@example.com'],
+    ['https://example.com', 'https://*.wikimedia.org'], ['https://example.com', null]]) {
+    assert.throws(() => requestSiteAccess(input, { api }));
+  }
+  assert.equal(requests, 0);
+});
+
 test('site recognition only reads root and same-origin icon without cookies, referrer or scripts', async () => {
   const calls = [];
   const result = await readSiteInfo('https://example.com/profile?token=secret#details', {

@@ -405,6 +405,30 @@ test('GitHub reset verifies the detached restore before cleanup and reconciles a
   }
 });
 
+test('a cloud choice after a lost GitHub reset response adopts subsequent cloud edits instead of replaying the old reset', async () => {
+  const { git, a, b } = await githubConflict();
+  git.fault = 'lost';
+  assert.equal((await b.api.resolveFullDataConflicts('local')).phase, 'error');
+  const plan = b.store.value.metadata.gitReset;
+  assert.ok(plan);
+  assert.equal(git.live.epoch, plan.pending.name, 'the reset was published despite its lost response');
+  await saved(a);
+  a.edit(records => {
+    records.find(item => item.key === githubKey).value = 'subsequent cloud edit';
+    records.splice(records.findIndex(item => item.key === 'chosen-image'), 1);
+    records.push(record('subsequent-cloud-only', 'latest record'), githubImage('subsequent-cloud-image', 'latest image bytes'));
+  });
+  await saved(a);
+  const latest = a.records, head = git.head;
+  const result = await b.api.resolveFullDataConflicts('remote');
+  assert.equal(result.phase, 'saved', `${result.code}: ${result.message}`);
+  assert.deepEqual(orderedRecords(b.records), orderedRecords(latest));
+  assert.equal(await find(b, 'subsequent-cloud-image').value.blob.text(), 'latest image bytes');
+  assert.equal(find(b, 'chosen-image'), undefined);
+  assert.equal(b.store.value.metadata.gitReset, undefined);
+  assert.equal(git.head, head, 'adopting the latest cloud snapshot must not republish the old reset');
+});
+
 test('a second GitHub reset removes all previous v2 indexes and blob files', async () => {
   const { git, a, b } = await githubConflict();
   assert.equal((await b.api.resolveFullDataConflicts('local')).cleanup, 'files-cleaned');
@@ -458,6 +482,78 @@ test('a device crossing a GitHub reset still holds locally staged edits from an 
   assert.equal((await b.api.resolveFullDataConflicts('local')).cleanup, 'files-cleaned');
   await conflicted(c);
   assert.equal(find(c, githubKey).value, 'offline pending');
+});
+
+async function githubReplacedEpoch({ pending = false } = {}) {
+  const git = githubRemote();
+  const a = githubDevice(git.cloud, 'a', [record(githubKey, 'initial'), record('shared-record', 'untouched'), githubImage('initial-image', 'initial image bytes')]);
+  const b = githubDevice(git.cloud, 'b'), c = githubDevice(git.cloud, 'c');
+  await saved(a); await saved(b); await saved(c); await saved(a);
+  a.edit(records => { records.find(item => item.key === githubKey).value = 'old cloud'; records.push(githubImage('obsolete-image', 'obsolete bytes')); });
+  b.edit(records => {
+    records.find(item => item.key === githubKey).value = 'new cloud';
+    records.splice(records.findIndex(item => item.key === 'initial-image'), 1);
+    records.push(record('cloud-only', 'new cloud record'), githubImage('cloud-image', 'new cloud bytes'));
+  });
+  c.edit(records => {
+    records.find(item => item.key === githubKey).value = 'offline local';
+    records.push(record('offline-only', 'offline record'), githubImage('offline-image', 'offline bytes'));
+  });
+  if (pending) {
+    git.cloud.failWrites = true;
+    assert.equal((await c.api.syncFullDataNow()).phase, 'error');
+    assert.ok(c.store.value.metadata.pending);
+    git.cloud.failWrites = false;
+  }
+  await saved(a); await conflicted(b);
+  if (!pending) await conflicted(c);
+  const local = c.records;
+  assert.equal((await b.api.resolveFullDataConflicts('local')).phase, 'saved');
+  const cloud = b.records;
+  const previousEpoch = c.store.value.metadata.gitEpoch;
+  assert.notEqual(previousEpoch, git.live.epoch);
+  assert.equal(git.cloud.manifests.size + git.cloud.chunks.size, 0, 'the old epoch data is no longer available remotely');
+  return { git, a, b, c, local, cloud };
+}
+
+const orderedRecords = records => records.toSorted((a, b) => id(a).localeCompare(id(b)));
+for (const choice of ['local', 'remote']) for (const pending of [false, true]) test(`an explicit ${choice} choice replaces the complete snapshot across a GitHub reset with ${pending ? 'an interrupted upload' : 'unsynced edits'}`, async () => {
+  const { git, c, local, cloud } = await githubReplacedEpoch({ pending });
+  const result = await c.api.resolveFullDataConflicts(choice);
+  assert.equal(result.phase, 'saved', `${result.code}: ${result.message}`);
+  assert.equal(result.conflicts, 0);
+  const expected = choice === 'local' ? local : cloud;
+  assert.deepEqual(orderedRecords(c.records), orderedRecords(expected), 'the first explicit choice must apply without a second click');
+  assert.equal((await c.api.getFullDataConflicts()).length, 0);
+  const fresh = githubDevice(git.cloud, 'd'); await saved(fresh);
+  assert.deepEqual(orderedRecords(fresh.records), orderedRecords(expected), 'a fresh installation reads the same complete selected snapshot');
+  const imageKey = choice === 'local' ? 'offline-image' : 'cloud-image';
+  assert.equal(await find(fresh, imageKey).value.blob.text(), choice === 'local' ? 'offline bytes' : 'new cloud bytes');
+  assert.equal(find(fresh, choice === 'local' ? 'cloud-only' : 'offline-only'), undefined);
+});
+
+test('ordinary sync across a GitHub reset retains unsynced records and images until an explicit choice', async () => {
+  const { git, c, local } = await githubReplacedEpoch();
+  const before = git.head;
+  await conflicted(c);
+  assert.deepEqual(c.records, local);
+  assert.equal(await find(c, 'offline-image').value.blob.text(), 'offline bytes');
+  assert.equal(git.head, before, 'ordinary sync must not publish an implicit overwrite');
+  assert.ok((await c.api.getFullDataConflicts()).length > 0);
+});
+
+test('a stale local snapshot prevents a cross-epoch cloud choice from discarding local data or its sync checkpoint', async () => {
+  const { git, c, local, cloud } = await githubReplacedEpoch();
+  const checkpoint = c.store.value, head = git.head;
+  c.race = true;
+  const result = await c.api.resolveFullDataConflicts('remote');
+  assert.equal(result.phase, 'error');
+  assert.equal(result.code, 'REVISION_CONFLICT');
+  assert.deepEqual(c.store.value, checkpoint, 'the failed atomic apply retains the previous epoch checkpoint');
+  assert.deepEqual(orderedRecords(c.records), orderedRecords([...local, record('covelet.racing.v1', { retained: true })]));
+  assert.equal(git.head, head);
+  assert.equal((await c.api.resolveFullDataConflicts('remote')).phase, 'saved');
+  assert.deepEqual(orderedRecords(c.records), orderedRecords(cloud));
 });
 
 test('a restarted cloud choice resumes the same pending revision without replacing a subsequent local edit', async () => {

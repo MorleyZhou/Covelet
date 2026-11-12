@@ -2,9 +2,11 @@ import { tr } from '../i18n/index.js';
 import { createEncryptedStore, localData } from './local-data.js';
 import { subscribeSyncedData } from './use-synced-data.js';
 import { migrateLegacyIndexedDb } from './legacy-indexed-data.js';
+import { COMMONS_API_ORIGIN, commonsCatalogUrl, parseCommonsCatalog, validateCommonsMetadata } from './wallpaper-commons.js';
 // No request is made until this provider loads.
 export const BING_METADATA_URL = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN';
 const BING_RECENT_METADATA_URL = BING_METADATA_URL.replace('&n=1&', '&n=8&');
+const BING_ARCHIVE_METADATA_URL = BING_RECENT_METADATA_URL.replace('&idx=0&', '&idx=7&');
 const BING_ORIGIN = 'https://www.bing.com';
 const COMMONS_ORIGIN = 'https://upload.wikimedia.org';
 const COMMONS_HEADERS = { 'Api-User-Agent': 'Covelet Wallpaper (https://github.com/MorleyZhou/Covelet)' };
@@ -12,7 +14,8 @@ const SOURCE_KEY = 'covelet.wallpaper.source.v1';
 const INTERVAL_KEY = 'covelet.wallpaper.interval.v1';
 export const WALLPAPER_SOURCES = Object.freeze([
   Object.freeze({ id: 'bing', label: 'Bing', origin: BING_ORIGIN }),
-  Object.freeze({ id: 'commons', label: 'Wikimedia Commons', origin: COMMONS_ORIGIN }),
+  Object.freeze({ id: 'commons', label: 'Wikimedia Commons', origin: COMMONS_ORIGIN,
+    origins: Object.freeze([COMMONS_API_ORIGIN, COMMONS_ORIGIN]) }),
 ]);
 export const WALLPAPER_INTERVALS = Object.freeze([
   ...[5, 10, 15, 30].map(amount => [amount, 'minute']),
@@ -22,8 +25,8 @@ export const WALLPAPER_INTERVALS = Object.freeze([
 ].map(([amount, unit]) => Object.freeze({ id: `${amount}-${unit}`, amount, unit })));
 export const DEFAULT_WALLPAPER_INTERVAL = '1-day';
 const intervalsById = new Map(WALLPAPER_INTERVALS.map(interval => [interval.id, interval]));
-// Public-domain and CC0 landscape photos. Each file page lists the creator and license.
-const COMMONS_IMAGES = [
+// Keep the four pre-0.5.1 cached photos readable while new rotations use the API.
+const LEGACY_COMMONS_IMAGES = [
   ['2/29', 'Moraine_lake_in_Banff_national_park.jpg', 'Moraine Lake', 'Bruno.menetrier'],
   ['7/75', 'Lake_Mountain_Landscape.jpg', 'Lake Mountain Landscape', 'Bonnie Moreland'],
   ['f/f4', 'Desert_dunes.jpg', 'Desert Dunes', 'Wikigab'],
@@ -38,6 +41,7 @@ const MAX_METADATA = 64 * 1024;
 const MAX_IMAGE = 10 * 1024 * 1024;
 const MAX_PIXELS = 40_000_000;
 const RETRY_DELAY = 15 * 60 * 1000;
+const CATALOG_AGE = 24 * 60 * 60 * 1000, MAX_CATALOG = 64, MAX_HISTORY = 256;
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const DAY = /^\d{8}$/;
 const DEVELOPMENT = Boolean(import.meta.env?.DEV) && !globalThis.chrome?.runtime?.id;
@@ -161,17 +165,35 @@ function bingMetadata(image) {
   };
 }
 
-function metadataFrom(value, force, previous, random) {
+function bingImages(value) {
   if (!value || !Array.isArray(value.images) || value.images.length < 1 || value.images.length > 8) error(tr("Bing 每日图片数据无效。"));
-  if (!force) return bingMetadata(value.images[0]);
-  const alternatives = [];
+  const images = [];
   for (const image of value.images) {
     try {
       const metadata = bingMetadata(image);
-      if (metadata.imageUrl !== previous && !alternatives.some(({ imageUrl }) => imageUrl === metadata.imageUrl)) alternatives.push(metadata);
+      if (!images.some(item => imageIdentity(item) === imageIdentity(metadata))) images.push(metadata);
     } catch { /* Ignore invalid archive entries. */ }
   }
-  return alternatives[Math.floor(random() * alternatives.length)];
+  return images;
+}
+
+function imageIdentity(metadata) {
+  const url = new URL(metadata.imageUrl);
+  // Regional Bing ids can point to the same photograph with different digits.
+  return url.origin === BING_ORIGIN
+    ? url.searchParams.get('id').replace(/_[A-Z]{2}-[A-Z]{2}\d+(?=_1920x1080\.jpg$)/i, '')
+    : url.href;
+}
+
+function chooseImage(images, record, random) {
+  const current = record.metadata && imageIdentity(record.metadata);
+  const alternatives = images.filter(image => imageIdentity(image) !== current);
+  const history = new Set([...(record.history || []), ...(current ? [current] : [])]);
+  const unseen = alternatives.filter(image => !history.has(imageIdentity(image)));
+  const candidates = unseen.length ? unseen : alternatives;
+  if (!candidates.length) return null;
+  const index = Math.max(0, Math.min(candidates.length - 1, Math.floor(random() * candidates.length) || 0));
+  return { metadata: candidates[index], history: unseen.length ? [...history] : [] };
 }
 
 // Header validation bounds decoding work before an image is handed to the UI.
@@ -257,7 +279,7 @@ async function request(fetcher, url, limit, timeoutMs, expectedType) {
         const response = await fetcher(url, {
           method: 'GET', credentials: 'omit', referrerPolicy: 'no-referrer',
           redirect: 'error', cache: 'no-store', signal: controller.signal,
-          ...(new URL(url).origin === COMMONS_ORIGIN && { headers: COMMONS_HEADERS }),
+          ...([COMMONS_ORIGIN, COMMONS_API_ORIGIN].includes(new URL(url).origin) && { headers: COMMONS_HEADERS }),
         });
         if (!response.ok || response.redirected || !expectedResponseUrl(response.url, url)) error(tr("Bing 请求失败或发生重定向。"));
         const mime = (response.headers.get('content-type') ?? '').split(';', 1)[0].trim().toLowerCase();
@@ -281,16 +303,37 @@ function createCache() {
   };
 }
 
+function cachedMetadata(value, source) {
+  if (!value || !DAY.test(value.date)) return null;
+  const { date, imageUrl, copyright, title, copyrightUrl } = value;
+  if (source === 'bing') return bingMetadata({ startdate: date, enddate: date, url: imageUrl, copyright, title, copyrightlink: copyrightUrl });
+  const legacy = LEGACY_COMMONS_IMAGES.find(image => image.imageUrl === imageUrl);
+  return { ...(legacy || validateCommonsMetadata(value)), date };
+}
+
 async function validRecord(value, source) {
   if (!value || value.version !== 1 || !DAY.test(value.attemptDay) || !Number.isFinite(value.attemptAt)) return null;
   const result = { version: 1, attemptDay: value.attemptDay, attemptAt: value.attemptAt };
+  if (Array.isArray(value.history) && value.history.length <= MAX_HISTORY
+    && value.history.every(item => typeof item === 'string' && item.length > 0 && item.length <= 2048 && !/[\u0000-\u001f\u007f]/.test(item))) {
+    result.history = [...new Set(value.history)];
+  }
+  const catalog = value.catalog;
+  if (catalog && Number.isSafeInteger(catalog.fetchedAt) && catalog.fetchedAt >= 0 && catalog.fetchedAt <= value.attemptAt
+    && Array.isArray(catalog.images) && catalog.images.length <= MAX_CATALOG
+    && (catalog.nextOffset === null || Number.isSafeInteger(catalog.nextOffset) && catalog.nextOffset > 0 && catalog.nextOffset <= 10000)) {
+    const images = [];
+    for (const item of catalog.images) {
+      try {
+        const metadata = cachedMetadata(item, source);
+        if (metadata && !images.some(prior => imageIdentity(prior) === imageIdentity(metadata))) images.push(metadata);
+      } catch { /* A bad candidate must never become a network target. */ }
+    }
+    if (images.length) result.catalog = { fetchedAt: catalog.fetchedAt, images, nextOffset: catalog.nextOffset };
+  }
   if (value.blob instanceof Blob && value.blob.size > 0 && value.blob.size <= MAX_IMAGE && IMAGE_TYPES.has(value.blob.type) && DAY.test(value.fetchedDay) && value.metadata) {
     try {
-      const { date, imageUrl, copyright, title, copyrightUrl } = value.metadata;
-      const commonsImage = COMMONS_IMAGES.find((image) => image.imageUrl === imageUrl);
-      const metadata = source === 'bing'
-        ? bingMetadata({ startdate: date, enddate: date, url: imageUrl, copyright, title, copyrightlink: copyrightUrl })
-        : commonsImage && DAY.test(date) && { ...commonsImage, date };
+      const metadata = cachedMetadata(value.metadata, source);
       if (!metadata) return result;
       dimensions(new Uint8Array(await value.blob.arrayBuffer()), value.blob.type);
       const { fetchedAt, fetchedDay } = value;
@@ -323,14 +366,55 @@ export function createWallpaperProvider({
     if (stored && (!state.unpersisted || stored.attemptAt > state.record?.attemptAt)) state.record = stored;
     return state.record;
   }
-  async function write(record, source, state, started) {
+  async function write(record, source, state, started, requirePersistence = false) {
     if (started !== revision) return false;
+    const previous = state.record;
     state.record = record;
     try { await cache.write(record, { shouldWrite: () => started === revision }, source); state.unpersisted = false; }
-    catch { state.unpersisted = true; }
+    catch {
+      state.unpersisted = true;
+      if (requirePersistence) { state.record = previous; return false; }
+    }
     return started === revision;
   }
-  async function refresh({ id: source, origin }, state, started, force, interval) {
+  async function loadCatalog(source, record, timestamp) {
+    const prior = record.catalog;
+    const fresh = prior && prior.fetchedAt <= timestamp && timestamp - prior.fetchedAt < CATALOG_AGE
+      && (source !== 'bing' || dayAt(prior.fetchedAt) === dayAt(timestamp));
+    const seen = new Set([...(record.history || []), ...(record.metadata ? [imageIdentity(record.metadata)] : [])]);
+    if (fresh && (source === 'bing' || prior.images.some(image => !seen.has(imageIdentity(image))))) return prior;
+    if (source === 'bing') {
+      const getImages = async url => {
+        const response = await request(fetcher, url, MAX_METADATA, timeoutMs, mime => mime === 'application/json');
+        return bingImages(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(response.bytes)));
+      };
+      const images = await getImages(BING_RECENT_METADATA_URL);
+      try {
+        for (const image of await getImages(BING_ARCHIVE_METADATA_URL)) {
+          if (!images.some(prior => imageIdentity(prior) === imageIdentity(image))) images.push(image);
+        }
+      } catch { /* The current archive is still usable if its older page fails. */ }
+      return { images, fetchedAt: timestamp, nextOffset: null };
+    }
+    let offset = prior?.nextOffset ?? 0;
+    const images = [];
+    let nextOffset;
+    // The API can return ineligible sizes or licenses. Advance a bounded number
+    // of pages instead of silently falling back to the old four bundled links.
+    for (let page = 0; page < 3; page++) {
+      const response = await request(fetcher, commonsCatalogUrl(offset), 4 * MAX_METADATA, timeoutMs, mime => mime === 'application/json');
+      const parsed = parseCommonsCatalog(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(response.bytes)));
+      nextOffset = parsed.nextOffset;
+      for (const image of parsed.images) {
+        const metadata = { ...image, date: dayAt(timestamp) };
+        if (!images.some(prior => imageIdentity(prior) === imageIdentity(metadata))) images.push(metadata);
+      }
+      if (images.some(image => !seen.has(imageIdentity(image))) || nextOffset === null || nextOffset <= offset) break;
+      offset = nextOffset;
+    }
+    return { images: images.slice(-MAX_CATALOG), fetchedAt: timestamp, nextOffset };
+  }
+  async function refresh({ id: source, origin, origins = [origin] }, state, started, force, interval) {
     if (started !== revision) return {};
     const timestamp = Number(now());
     const today = dayAt(timestamp);
@@ -348,20 +432,21 @@ export function createWallpaperProvider({
     const unavailable = () => ({ record, status: record?.blob ? 'stale' : 'fallback', nextRefreshAt: timestamp + RETRY_DELAY,
       message: record?.blob ? tr("今日背景暂不可用，继续显示上次缓存。") : tr("今日背景暂不可用，已使用内置背景。") });
     try {
-      if (!await hasSourceAccess(origin)) return unavailable();
+      for (const required of origins) if (!await hasSourceAccess(required)) return unavailable();
       record = { ...record, version: 1, attemptDay: today, attemptAt: timestamp };
       if (!await write(record, source, state, started)) return {};
-      let metadata;
-      if (source === 'bing') {
-        const shuffle = force || Boolean(interval && record.blob);
-        const metadataResponse = await request(fetcher, shuffle ? BING_RECENT_METADATA_URL : BING_METADATA_URL, MAX_METADATA, timeoutMs, (mime) => mime === 'application/json');
+      let selection, catalog;
+      if (source === 'bing' && !force && !(interval && record.blob)) {
+        const metadataResponse = await request(fetcher, BING_METADATA_URL, MAX_METADATA, timeoutMs, mime => mime === 'application/json');
         const data = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(metadataResponse.bytes));
-        metadata = metadataFrom(data, shuffle, record.metadata?.imageUrl, random);
-        if (!metadata) return unavailable();
+        if (!Array.isArray(data?.images) || data.images.length < 1 || data.images.length > 8) return unavailable();
+        selection = { metadata: bingMetadata(data.images[0]), history: record.history || [] };
       } else {
-        const alternatives = COMMONS_IMAGES.filter(({ imageUrl }) => imageUrl !== record.metadata?.imageUrl);
-        metadata = { ...alternatives[Math.floor(random() * alternatives.length)], date: today };
+        catalog = await loadCatalog(source, record, timestamp);
+        selection = chooseImage(catalog.images, record, random);
+        if (!selection) return unavailable();
       }
+      const { metadata } = selection;
       if (started !== revision) return {};
       const imageResponse = await request(fetcher, metadata.imageUrl, MAX_IMAGE, timeoutMs, (mime) => IMAGE_TYPES.has(mime));
       if (started !== revision) return {};
@@ -373,8 +458,10 @@ export function createWallpaperProvider({
           if (!image.width || !image.height || image.width > 8192 || image.height > 8192 || image.width * image.height > MAX_PIXELS) error(tr("Bing 图片尺寸超出限制。"));
         } finally { image.close?.(); }
       }
-      record = { ...record, blob, metadata, fetchedDay: today, fetchedAt: timestamp };
-      if (!await write(record, source, state, started)) return {};
+      const nextRecord = { ...record, blob, metadata, fetchedDay: today, fetchedAt: timestamp,
+        ...(catalog && { catalog }), history: [...new Set([...selection.history, imageIdentity(metadata)])].slice(-MAX_HISTORY) };
+      if (!await write(nextRecord, source, state, started, true)) return started === revision ? unavailable() : {};
+      record = nextRecord;
       return { record, status: 'fresh', nextRefreshAt: interval ? nextRotation(timestamp, interval) : undefined, message: tr("今日壁纸已更新。") };
     } catch { return unavailable(); }
   }

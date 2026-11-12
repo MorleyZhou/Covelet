@@ -9,6 +9,23 @@ const metadata = () => ({ images: [{
   copyright: '威尼斯 (© Example Photo)', title: '水上通衢',
   copyrightlink: 'https://www.bing.com/search?q=Venice&form=hpcapt&mkt=zh-cn',
 }] });
+const COMMONS_API = 'https://commons.wikimedia.org';
+const COMMONS_UPLOAD = 'https://upload.wikimedia.org';
+const commonsPage = index => ({ ns: 6, title: `File:Fixture_Landscape_${index}.jpg`, imageinfo: [{
+  url: `${COMMONS_UPLOAD}/wikipedia/commons/a/ab/Fixture_Landscape_${index}.jpg`,
+  descriptionurl: `${COMMONS_API}/wiki/File:Fixture_Landscape_${index}.jpg`,
+  size: 2000000, width: 1920, height: 1080, mime: 'image/jpeg',
+  extmetadata: { Artist: { value: 'Fixture Author' }, LicenseShortName: { value: 'CC0' },
+    LicenseUrl: { value: 'https://creativecommons.org/publicdomain/zero/1.0/' },
+    AttributionRequired: { value: 'false' }, Copyrighted: { value: 'True' } },
+}] });
+const commonsCatalog = (offset = 0, count = 4, nextOffset = null) => ({
+  query: { pages: Array.from({ length: count }, (_, index) => commonsPage(offset + index)) },
+  ...(nextOffset !== null && { continue: { gsroffset: nextOffset, continue: 'gsroffset||' } }),
+});
+const bingPage = (names, region = 'ZH-CN') => ({ images: names.map(name => ({ ...metadata().images[0],
+  title: name, url: `/th?id=OHR.${name}_${region}12345_1920x1080.jpg`,
+})) });
 
 function harness(overrides = {}) {
   let stored = null;
@@ -19,11 +36,12 @@ function harness(overrides = {}) {
   const revoked = [];
   const options = {
     extension: true, now: () => timestamp,
-    cache: { read: async () => structuredClone(stored), write: async (value) => { stored = structuredClone(value); } },
+    cache: { read: async () => structuredClone(stored), write: async (value, { shouldWrite } = {}) => { if (!shouldWrite || shouldWrite()) stored = structuredClone(value); } },
     locks: { request(_name, _options, action) { const next = queue.then(action, action); queue = next.catch(() => {}); return next; } },
     fetcher: async (url, init) => {
       calls.push({ url, init });
-      return url === BING_METADATA_URL
+      if (new URL(url).origin === COMMONS_API) return Response.json(commonsCatalog());
+      return url.includes('/HPImageArchive.aspx')
         ? new Response(JSON.stringify(metadata()), { headers: { 'content-type': 'application/json; charset=utf-8' } })
         : new Response(PNG, { headers: { 'content-type': 'image/png' } });
     },
@@ -233,7 +251,7 @@ test('an explicit Bing shuffle selects a different validated image from the arch
     return Response.json({ images: [metadata().images[0], { ...alternative, url: 'https://evil.example/th' }, alternative] });
   } });
   const [daily, shuffled] = await Promise.all([provider.load(), provider.load({ force: true })]);
-  assert.equal(archiveRequests, 1);
+  assert.equal(archiveRequests, 2, 'the recent and older archive pages are both read once');
   assert.notEqual(shuffled.imageUrl, daily.imageUrl);
   assert.equal(shuffled.imageUrl, 'https://www.bing.com/th?id=OHR.Ocean_1920x1080.jpg');
   assert.equal(shuffled.status, 'fresh');
@@ -261,7 +279,7 @@ test('scheduled rotation reads an old cache and concurrent reopened tabs fetch o
   assert.equal(archiveRequests, 0);
   subject.advanceMinutes(1);
   const results = await Promise.all([firstTab.load(cadence), secondTab.load(cadence)]);
-  assert.equal(archiveRequests, 1);
+  assert.equal(archiveRequests, 2, 'concurrent tabs share both archive page requests');
   assert.equal(results[0].status, 'fresh');
   assert.equal(results[1].status, 'cached');
   for (const result of results) {
@@ -294,10 +312,10 @@ test('monthly rotation lands on the last day of a shorter calendar month', async
   assert.equal(first.nextRefreshAt, new Date(2026, 1, 28, 13).getTime());
   timestamp = first.nextRefreshAt - 1;
   assert.equal((await subject.provider.load(cadence)).imageUrl, first.imageUrl);
-  assert.equal(subject.calls.length, 1);
+  assert.equal(subject.calls.length, 2);
   timestamp++;
   assert.notEqual((await subject.provider.load(cadence)).imageUrl, first.imageUrl);
-  assert.equal(subject.calls.length, 2);
+  assert.equal(subject.calls.length, 4);
 });
 
 test('Wikimedia shuffles different licensed photos, uses an isolated cache and needs an origin grant to download', async () => {
@@ -313,7 +331,7 @@ test('Wikimedia shuffles different licensed photos, uses an isolated cache and n
     hasSourceAccess: async (origin) => { permissionsChecked.push(origin); return origin === 'https://www.bing.com' || permission; },
   });
   assert.equal((await subject.provider.load({ source: 'commons', force: true })).source, 'builtin');
-  assert.deepEqual(permissionsChecked, ['https://upload.wikimedia.org']);
+  assert.deepEqual(permissionsChecked, [COMMONS_API]);
   assert.equal(subject.calls.length, 0);
   assert.equal(records.size, 0);
 
@@ -321,17 +339,18 @@ test('Wikimedia shuffles different licensed photos, uses an isolated cache and n
   const first = await subject.provider.load({ source: 'commons' });
   assert.equal(first.source, 'commons');
   assert.equal(first.status, 'fresh');
-  assert.equal(first.title, 'Moraine Lake');
-  assert.equal(first.copyright, 'Bruno.menetrier');
+  assert.equal(first.title, 'Fixture Landscape 0');
+  assert.equal(first.copyright, 'Fixture Author · CC0');
   assert.match(first.copyrightUrl, /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
-  assert.equal(subject.calls[0].url, first.imageUrl);
+  assert.equal(new URL(subject.calls[0].url).origin, COMMONS_API);
+  assert.equal(subject.calls[1].url, first.imageUrl);
   assert.equal(subject.calls[0].init.credentials, 'omit');
   assert.equal(subject.calls[0].init.referrerPolicy, 'no-referrer');
 
   const shuffled = await subject.provider.load({ source: 'commons', force: true });
   assert.equal(shuffled.status, 'fresh');
   assert.notEqual(shuffled.imageUrl, first.imageUrl);
-  assert.equal(subject.calls.length, 2);
+  assert.equal(subject.calls.length, 3);
   assert.equal((await subject.provider.load()).source, 'bing');
   assert.deepEqual([...records.keys()], ['commons', 'bing']);
 
@@ -340,5 +359,115 @@ test('Wikimedia shuffles different licensed photos, uses an isolated cache and n
   const reopened = createWallpaperProvider(subject.options);
   assert.equal((await reopened.load({ source: 'commons', cachedOnly: true })).imageUrl, shuffled.imageUrl);
   assert.equal((await reopened.load({ source: 'commons' })).status, 'stale');
-  assert.equal(subject.calls.length, 4, 'a revoked origin cannot fetch but previously cached bytes still work');
+  assert.equal(subject.calls.length, 5, 'a revoked origin cannot fetch but previously cached bytes still work');
+});
+
+test('Bing rotation exhausts distinct recent and older photographs before repeating across reopened providers', async () => {
+  const subject = harness();
+  const pages = [];
+  const options = { ...subject.options, random: () => 0, fetcher: async (url, init) => {
+    if (!url.includes('/HPImageArchive.aspx')) return subject.options.fetcher(url, init);
+    const older = new URL(url).searchParams.get('idx') === '7';
+    pages.push(older ? 7 : 0);
+    return Response.json(older
+      ? bingPage(['Photo0', ...Array.from({ length: 7 }, (_, index) => `Photo${index + 8}`)], 'EN-US')
+      : bingPage(Array.from({ length: 8 }, (_, index) => `Photo${index}`)));
+  } };
+  const displayed = [];
+  for (let index = 0; index < 30; index++) {
+    subject.advanceMinutes(5);
+    const provider = createWallpaperProvider(options);
+    const result = await provider.load(index % 2 ? { interval: '5-minute' } : { force: true, interval: '5-minute' });
+    assert.equal(result.status, 'fresh');
+    displayed.push(result.title);
+    provider.dispose(result);
+  }
+  assert.equal(new Set(displayed.slice(0, 15)).size, 15, 'regional variants of one photograph must not consume two positions');
+  assert.ok(displayed.slice(0, 15).includes('Photo14'), 'the older archive page contributes additional pictures');
+  assert.equal(new Set(displayed.slice(15)).size, 15, 'the next pass must also show every photograph before repeating');
+  assert.ok(displayed.every((title, index) => !index || title !== displayed[index - 1]));
+  assert.deepEqual(pages, [0, 7], 'the validated archive catalog remains cached across tabs for 24 hours');
+});
+
+test('Commons advances beyond its first forty photographs and preserves the rotation history across providers', async () => {
+  const subject = harness();
+  const offsets = [];
+  const options = { ...subject.options, random: () => 0, hasSourceAccess: async () => true, fetcher: async (url, init) => {
+    if (new URL(url).origin !== COMMONS_API) return subject.options.fetcher(url, init);
+    const offset = Number(new URL(url).searchParams.get('gsroffset'));
+    offsets.push(offset);
+    return Response.json(commonsCatalog(offset, 40, offset + 40));
+  } };
+  const shown = [];
+  for (let index = 0; index < 45; index++) {
+    const provider = createWallpaperProvider(options);
+    const result = await provider.load({ source: 'commons', force: true });
+    assert.equal(result.status, 'fresh'); shown.push(result.imageUrl); provider.dispose(result);
+  }
+  assert.equal(new Set(shown).size, 45);
+  assert.deepEqual(offsets, [0, 40]);
+  assert.equal(subject.stored.history.length, 45);
+  assert.ok(subject.stored.catalog.images.every(image => image.license === 'CC0'));
+});
+
+test('failed downloads, image decoding and final persistence keep the old picture and do not consume its next candidate', async () => {
+  const subject = harness();
+  const fetcher = async (url, init) => url.includes('/HPImageArchive.aspx')
+    ? Response.json(bingPage(['First', 'Second', 'Third'])) : subject.options.fetcher(url, init);
+  const options = { ...subject.options, random: () => 0, fetcher };
+  const first = await createWallpaperProvider(options).load({ force: true });
+  const history = structuredClone(subject.stored.history);
+  const failures = [
+    { fetcher: async (url, init) => url.includes('/HPImageArchive.aspx') ? fetcher(url, init) : Promise.reject(Error('offline')) },
+    { decode: async () => { throw Error('decode failed'); } },
+    { cache: { ...subject.options.cache, write: async (value, guard) => {
+      if (value.metadata?.imageUrl !== first.imageUrl) throw Error('quota');
+      return subject.options.cache.write(value, guard);
+    } } },
+  ];
+  for (const failure of failures) {
+    const result = await createWallpaperProvider({ ...options, ...failure }).load({ force: true });
+    assert.equal(result.status, 'stale'); assert.equal(result.imageUrl, first.imageUrl);
+    assert.deepEqual(subject.stored.history, history);
+    assert.equal(subject.stored.metadata.imageUrl, first.imageUrl);
+  }
+  const retried = await createWallpaperProvider(options).load({ force: true });
+  assert.equal(retried.title, 'Second'); assert.equal(retried.status, 'fresh');
+});
+
+test('Commons cached-only reads need no requests and losing either exact origin blocks every new request', async () => {
+  const subject = harness({ random: () => 0, hasSourceAccess: async () => true });
+  const first = await subject.provider.load({ source: 'commons' });
+  assert.equal(first.status, 'fresh');
+  const count = subject.calls.length, history = structuredClone(subject.stored.history);
+  for (const denied of [COMMONS_API, COMMONS_UPLOAD]) {
+    const checks = [];
+    const provider = createWallpaperProvider({ ...subject.options, hasSourceAccess: async origin => { checks.push(origin); return origin !== denied; } });
+    assert.equal((await provider.load({ source: 'commons', cachedOnly: true })).imageUrl, first.imageUrl);
+    assert.deepEqual(checks, []);
+    const failed = await provider.load({ source: 'commons', force: true });
+    assert.equal(failed.status, 'stale'); assert.equal(failed.imageUrl, first.imageUrl);
+    assert.ok(checks.includes(denied)); assert.equal(subject.calls.length, count);
+    assert.deepEqual(subject.stored.history, history);
+  }
+});
+
+test('invalidating a wallpaper flight prevents stale pixels and rotation history from being committed', async () => {
+  const subject = harness();
+  const fetcher = async (url, init) => url.includes('/HPImageArchive.aspx')
+    ? Response.json(bingPage(['First', 'Second'])) : subject.options.fetcher(url, init);
+  const first = await createWallpaperProvider({ ...subject.options, random: () => 0, fetcher }).load({ force: true });
+  const history = structuredClone(subject.stored.history);
+  let releaseImage, beginImage;
+  const requested = new Promise(resolve => { beginImage = resolve; });
+  const image = new Promise(resolve => { releaseImage = resolve; });
+  const provider = createWallpaperProvider({ ...subject.options, random: () => 0, fetcher: async (url, init) => {
+    if (url.includes('/HPImageArchive.aspx')) return fetcher(url, init);
+    beginImage(); return image;
+  } });
+  const flight = provider.load({ force: true });
+  await requested; provider.invalidate(); releaseImage(new Response(PNG, { headers: { 'content-type': 'image/png' } }));
+  assert.equal((await flight).source, 'builtin');
+  assert.equal(subject.stored.metadata.imageUrl, first.imageUrl);
+  assert.deepEqual(subject.stored.history, history);
 });

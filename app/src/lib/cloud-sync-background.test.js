@@ -179,6 +179,37 @@ test('a transport timeout waits for the alarm and resumes the exact same job', a
   assert.deepEqual(worker.calls[1], worker.calls[0]);
 });
 
+for (const [previous, choice] of [[undefined, 'remote'], ['local', 'remote'], ['remote', 'local']]) {
+  test(`an explicit ${choice} choice replaces an interrupted ${previous || 'ordinary sync'} task`, async t => {
+    const nextId = 'c'.repeat(32), ids = [id, nextId];
+    let attempts = 0;
+    const timeout = { phase: 'error', code: 'CLOUD_NETWORK' };
+    const worker = fixture({ uuid: () => ids.shift(), result: () => attempts++ === 0 ? timeout : saved });
+    t.after(worker.stop);
+    assert.deepEqual(await worker.run(previous), timeout);
+    await setImmediate();
+    assert.deepEqual(await worker.store.read(), { ...pausedJob, choice: previous ?? null });
+    assert.deepEqual(await worker.run(choice), saved);
+    assert.deepEqual(worker.calls.map(call => [call.choice, call.options.taskId]), [[previous ?? null, id], [choice, nextId]]);
+    assert.deepEqual(worker.calls[1].job, { ...pausedJob, id: nextId, choice });
+    await waitFor(async () => !await worker.store.read());
+  });
+}
+
+test('a different choice cannot replace a task while its transfer is running', async t => {
+  const terminal = Promise.withResolvers();
+  const worker = fixture({ result: terminal.promise });
+  t.after(worker.stop);
+  const running = worker.run('local');
+  await waitFor(() => worker.calls.length === 1);
+  assert.deepEqual(await worker.run('remote'), { phase: 'error', code: 'DATA_SYNC_CONFLICT_STALE' });
+  assert.equal(worker.calls.length, 1);
+  assert.deepEqual(await worker.store.read(), { ...pausedJob, choice: 'local' });
+  terminal.resolve(saved);
+  assert.deepEqual(await running, saved);
+  await waitFor(async () => !await worker.store.read());
+});
+
 test('a queued choice does not immediately retry an interrupted sync', async t => {
   const sync = Promise.withResolvers();
   const worker = fixture({ result: sync.promise });

@@ -34,7 +34,11 @@ export async function canReadSite(input, { api = globalThis.chrome } = {}) {
 // gesture. The UI must call it directly from its explicit recognition button.
 export function requestSiteAccess(input, { api = globalThis.chrome } = {}) {
   if (!supportsSiteInfo(api)) return Promise.reject(Object.assign(new Error(tr("网页预览无法申请站点访问权限，请加载浏览器扩展后识别，或手动填写。")), { code: 'SITE_INFO_UNAVAILABLE' }));
-  return Promise.resolve(api.permissions.request({ origins: [hostPattern(input)] }));
+  const inputs = Array.isArray(input) ? input : [input];
+  if (!inputs.length || inputs.length > 16) fail(tr('网址格式无效'), 'SITE_ACCESS_INVALID');
+  const origins = new Set();
+  for (const value of inputs) origins.add(hostPattern(value));
+  return Promise.resolve(api.permissions.request({ origins: [...origins] }));
 }
 
 function decodeEntities(value) {

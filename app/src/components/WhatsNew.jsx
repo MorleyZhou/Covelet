@@ -3,6 +3,12 @@ import { Disclosure } from './ui/disclosure.jsx';
 
 export default function WhatsNew() {
   return <>
+    <Disclosure title={tr('{0} 更新内容', ['0.5.1'])}>
+      <ul>
+        <li>{tr('同步遇到冲突时，可选择用本地数据替换云端，或用云端数据替换本地。')}</li>
+        <li>{tr('随机壁纸增加更多图片，并减少近期重复。')}</li>
+      </ul>
+    </Disclosure>
     <Disclosure title={tr('{0} 更新内容', ['0.5.0'])}>
       <ul>
         <li>{tr('网站和稍后读支持备注，网站、便笺与稍后读共用标签。')}</li>

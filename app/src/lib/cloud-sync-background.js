@@ -97,7 +97,11 @@ export function startCloudSyncBackground(controller, { extension = globalThis.ch
         return { result: controller.getCloudSyncStatus() };
       }
       const autoSync = settings.autoSync && !controller.getCloudSyncStatus().conflicts;
-      if (!job && (requested || automatic && autoSync)) {
+      // With no active flight, a persisted job is an interrupted attempt. An
+      // explicit different choice starts a new task instead of replaying the
+      // previous direction while reporting the new choice as stale.
+      const replaceChoice = requested && choice !== undefined && job && job.choice !== choice;
+      if (replaceChoice || !job && (requested || automatic && autoSync)) {
         job = { version: 1, id: uuid().replaceAll('-', ''), target, choice: choice ?? null };
         if (!validJob(job)) throw Error('Invalid sync job');
         // Establish the wake-up before marking the job active. Once the marker

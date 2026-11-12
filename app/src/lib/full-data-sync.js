@@ -771,11 +771,13 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
   }
   async function resetGithubSnapshot(config, connection, run) {
     const m = config.metadata, git = connection.git;
-    if (!m || m.target !== connection.target || m.gitEpoch !== (git.epoch || undefined)) fail('DATA_SYNC_CONFLICT_STALE');
-    const incoming = await fetchDocuments(connection, makeReader(connection, git.pin.head));
-    checkOwnRevision(m, incoming);
-    const observed = combine(m.documents, incoming.documents, { [m.document.actor]: m.document });
-    if (!materialize(observed).conflicts.length) fail('DATA_SYNC_CONFLICT_STALE');
+    if (!m || m.target !== connection.target) fail('DATA_SYNC_CONFLICT_STALE');
+    if (m.gitEpoch === (git.epoch || undefined)) {
+      const incoming = await fetchDocuments(connection, makeReader(connection, git.pin.head));
+      checkOwnRevision(m, incoming);
+      const observed = combine(m.documents, incoming.documents, { [m.document.actor]: m.document });
+      if (!materialize(observed).conflicts.length) fail('DATA_SYNC_CONFLICT_STALE');
+    }
     const actual = await snapshotStore.snapshot();
     // Build a self-contained revision from local data so the new epoch has no
     // references to chunks or rejected values in the previous epoch.
@@ -787,7 +789,7 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
     await persist(config);
     return finishGithubReset(config, connection, run);
   }
-  async function adoptGithubEpoch(config, connection, run) {
+  async function adoptGithubEpoch(config, connection, run, discardLocal = false) {
     const m = config.metadata, git = connection.git;
     const actual = await snapshotStore.snapshot();
     const reader = makeReader(connection, git.pin.head);
@@ -801,8 +803,10 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
       publishedClock: document.clock, lastSync: m.lastSync, gitEpoch: git.epoch };
     const localDigests = new Map();
     for (const item of actual.records) localDigests.set(identity(item.namespace, item.key), { digest: await hash(await encodeValue(item.value)) });
-    const edited = new Set(difference(m.base, localDigests));
-    const unsent = Object.keys(m.document.records).filter(key => m.document.records[key].n > m.publishedClock);
+    // An explicit cloud choice discards this device's previous epoch, including
+    // unpublished edits. Only ordinary sync preserves those edits for a choice.
+    const edited = new Set(discardLocal ? [] : difference(m.base, localDigests));
+    const unsent = discardLocal ? [] : Object.keys(m.document.records).filter(key => m.document.records[key].n > m.publishedClock);
     for (const key of unsent) edited.add(key);
     for (const key of edited) if (localDigests.get(key)?.digest === view.values.get(key)?.digest) edited.delete(key);
     if (edited.size) {
@@ -863,14 +867,18 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
         run.after = run.before;
         await connection.check();
         let result;
-        if (choice === 'remote' && metadata?.gitReset && connection.git?.epoch !== metadata.gitReset.pending.name) {
+        if (choice === 'remote' && metadata?.gitReset) {
+          // A lost response may have committed that reset already. A new cloud
+          // choice must still read today's cloud snapshot, including later edits.
           delete metadata.gitReset;
           await persist(config);
         }
         if (metadata?.gitReset) result = await finishGithubReset(config, connection, run);
         else if (metadata?.gitEpoch && connection.git?.layout !== 'v2') fail('DATA_SYNC_CONFLICT_STALE');
         else if (metadata && connection.git?.layout === 'v2' && metadata.gitEpoch !== connection.git.epoch) {
-          result = await adoptGithubEpoch(config, connection, run);
+          result = choice === 'local'
+            ? await resetGithubSnapshot(config, connection, run)
+            : await adoptGithubEpoch(config, connection, run, choice === 'remote');
         } else if (choice === 'local' && connection.git) {
           if (metadata?.resolutionId === run.id && metadata.cleanupOutcome === 'files-cleaned') {
             run.cleanup = 'files-cleaned'; run.postPublishCleanup = true; result = 'replayed';

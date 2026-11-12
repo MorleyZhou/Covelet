@@ -4,6 +4,9 @@ import { createHash, createHmac } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { CLOUD_SNAPSHOT_MAX_BYTES, cloudOrigin, createCloudProvider, isCloudProviderError, parseCloudSnapshotName, validateCloudConfig } from './cloud-providers.js';
 import { createSyncWasm } from './sync-wasm.js';
+import { LANGUAGES, setLanguagePreference } from '../i18n/index.js';
+import catalog from '../i18n/catalog.json' with { type: 'json' };
+import { localData } from './local-data.js';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -270,7 +273,7 @@ test('GitHub cleanup leaves a changed branch intact when the exact-head mutation
   const queue = fakeQueue([Response.json({ data: { createCommitOnBranch: null }, errors: [{ message: 'Expected branch head has changed' }] })]);
   const indexes = provider(profile, queue);
   assert.throws(() => indexes.pruneIndexes(head, [`../${name}`]), codeIs('CLOUD_INVALID_NAME'));
-  await assert.rejects(indexes.pruneIndexes(head, [name]), codeIs('CLOUD_INVALID_RESPONSE'));
+  await assert.rejects(indexes.pruneIndexes(head, [name]), codeIs('CLOUD_REQUEST_FAILED'));
   assert.deepEqual(queue.calls.map(call => call.method), ['POST']);
   assert.equal(JSON.parse(decoder.decode(queue.calls[0].body)).variables.input.expectedHeadOid, head);
 });
@@ -370,6 +373,29 @@ test('GitHub refuses to seal a foreign v1 file or an incomplete tree without pre
   }
 });
 
+test('GitHub explains a directory containing unrelated files in every supported language without writing', async () => {
+  const key = '同步目录包含其他文件，请先将它们移出同步目录后重试。';
+  const write = localData.set; localData.set = async () => {};
+  try {
+    for (const { value: language } of LANGUAGES) {
+      await setLanguagePreference(language);
+      if (language !== 'zh-CN') assert.ok(catalog[key][language], language);
+      const root = gitSha('b'), prefixTree = gitSha('c'), v1 = gitSha('d');
+      const queue = fakeQueue([gitTree(root, [gitEntry('covelet', prefixTree)]), gitTree(prefixTree, [gitEntry('all-data-v1', v1)]),
+        gitTree(v1, [gitEntry('README.md', gitSha('e'), 'blob')])]);
+      const { githubStorage } = provider(storageProfile, queue);
+      await assert.rejects(githubStorage.prepare({ head: gitSha('a'), tree: root }, { seal: name }), reason => {
+        assert.equal(reason.code, 'CLOUD_DIRECTORY_NOT_DEDICATED');
+        assert.equal(reason.message, language === 'zh-CN' ? key : catalog[key][language]);
+        return true;
+      });
+      assert.deepEqual(queue.calls.map(call => call.method), ['GET', 'GET', 'GET']);
+    }
+  } finally {
+    await setLanguagePreference('zh-CN'); localData.set = write;
+  }
+});
+
 test('GitHub rejects changed exact heads and keeps a server outage retryable', async () => {
   const candidate = gitSha('c');
   const queue = fakeQueue([gitBranch(), gitRepo(), Response.json({ errors: [{ message: 'stale' }] }), gitBranch(gitSha('d')), response('', 503)]);
@@ -377,6 +403,35 @@ test('GitHub rejects changed exact heads and keeps a server outage retryable', a
   const pin = await githubStorage.pin();
   await assert.rejects(githubStorage.advance(pin, candidate), codeIs('CLOUD_STALE_HEAD'));
   await assert.rejects(githubStorage.advance(pin, candidate), codeIs('CLOUD_NETWORK'));
+});
+
+test('GitHub mutation rejections identify permissions, limits and service failures without reporting invalid data', async () => {
+  const candidate = gitSha('c');
+  for (const [error, code, recheck] of [
+    [{ type: 'FORBIDDEN' }, 'CLOUD_AUTH', false],
+    [{ type: 'UNAUTHORIZED' }, 'CLOUD_AUTH', false],
+    [{ extensions: { code: 'INSUFFICIENT_SCOPES' } }, 'CLOUD_AUTH', false],
+    [{ type: 'RATE_LIMITED' }, 'CLOUD_RATE_LIMIT', false],
+    [{ type: 'NOT_FOUND' }, 'CLOUD_NOT_FOUND', false],
+    [{ type: 'INTERNAL' }, 'CLOUD_NETWORK', true],
+    [{ type: 'UNPROCESSABLE' }, 'CLOUD_REQUEST_FAILED', true],
+  ]) {
+    const errors = [{ ...error, message: 'PRIVATE_REPOSITORY_AND_TOKEN' }];
+    const queue = fakeQueue([gitBranch(), gitRepo(), Response.json({ errors }), ...(recheck ? [gitBranch()] : [])]);
+    const { githubStorage } = provider(storageProfile, queue), pin = await githubStorage.pin();
+    await assert.rejects(githubStorage.advance(pin, candidate), reason => reason.code === code && !reason.message.includes('PRIVATE'));
+    assert.equal(queue.results.length, 0);
+    const cleanup = fakeQueue([Response.json({ errors })]);
+    await assert.rejects(provider(storageProfile, cleanup).pruneIndexes(pin.head, [name]), reason => reason.code === code && !reason.message.includes('PRIVATE'));
+  }
+});
+
+test('GitHub reconciles a rejected mutation after its candidate already became the branch head', async () => {
+  const candidate = gitSha('c');
+  const queue = fakeQueue([gitBranch(), gitRepo(), Response.json({ errors: [{ type: 'INTERNAL' }] }), gitBranch(candidate)]);
+  const { githubStorage } = provider(storageProfile, queue), pin = await githubStorage.pin();
+  await githubStorage.advance(pin, candidate);
+  assert.equal(queue.results.length, 0);
 });
 
 test('identical existing files are idempotent without PUT, but mismatched files are preserved', async () => {

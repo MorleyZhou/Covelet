@@ -22,7 +22,7 @@
   <main class="wrap policy" id="policy" tabindex="-1">
     <article aria-labelledby="zh-title">
       <h1 id="zh-title">隐私政策</h1>
-      <p class="policy-date">更新于 <time datetime="2026-11-10">2026 年 11 月 10 日</time> · 适用于 Covelet 0.3.1 和 0.4.0</p>
+      <p class="policy-date">更新于 <time datetime="2026-11-12">2026 年 11 月 12 日</time> · 适用于 Covelet 0.3.1 至 0.5.1</p>
       <p>发布者为 Morley。支持和隐私联系邮箱为 <a href="mailto:support@morley.work">support@morley.work</a>。</p>
 
       <h2>本机数据</h2>
@@ -37,7 +37,7 @@
       <h2>何时会联网</h2>
       <ul>
         <li>Covelet 内容搜索在本机运行。提交网页搜索时，查询会交给浏览器默认搜索服务或你选择的搜索引擎。打开网站或确认批量打开时，浏览器会访问所选链接。</li>
-        <li>启用随机壁纸后，Bing 来源连接 <code>www.bing.com</code>，Wikimedia Commons 来源连接按需授权的 <code>upload.wikimedia.org</code>。来源会收到连接信息。请求不带 Cookie 或 Referer，图片缓存在本机。关闭随机壁纸或改用颜色背景即可停止壁纸请求。</li>
+        <li>启用随机壁纸后，Bing 来源连接 <code>www.bing.com</code>；Wikimedia Commons 按需授权 <code>commons.wikimedia.org</code> 获取图片及许可信息，并授权 <code>upload.wikimedia.org</code> 下载图片。来源会收到连接信息。请求不带 Cookie 或 Referer，图片缓存在本机。关闭随机壁纸或改用颜色背景即可停止壁纸请求。</li>
         <li>添加或编辑网站时，主动获取网站信息或图片，以及确认导入或修复图片时，可能连接相关站点。Covelet 仅按需申请实际来源的访问权限，日常导航使用本机缓存。显示便笺中的远程图片时，也可能连接图片来源。</li>
         <li>配置并授权 GitHub 贡献组件后，组件可按需请求所选账号的公开贡献日历。GitHub 会收到用户名和连接信息。组件只读取公开贡献数据。</li>
       </ul>
@@ -47,14 +47,14 @@
         <li><code>storage</code> 用于迁移旧数据并保存会话连接信息。内容和设置使用加密 IndexedDB。</li>
         <li><code>search</code> 用于调用浏览器默认搜索服务。</li>
         <li><code>favicon</code> 用于主动添加或导入时读取浏览器已有图标。</li>
-        <li><code>activeTab</code> 和 <code>scripting</code> 用于点击工具栏后读取当前页的地址、标题和图标声明。保存前可修改或取消。</li>
+        <li><code>activeTab</code> 和 <code>scripting</code> 用于点击工具栏后读取当前页的地址、标题和图标声明。明确选择网页选文便笺或点击读取时，另读取主框架选中文字、标题和来源网址，不读取其他标签或框架全文。保存前可修改或取消。</li>
         <li><code>alarms</code> 用于接续后台同步及清理旧版时钟提醒。</li>
         <li><code>www.bing.com</code> 是固定壁纸来源。可选 HTTP(S) 权限仅用于逐来源授权，安装时不会授予所有网站的访问权限。</li>
       </ul>
       <p>扩展不请求浏览历史、书签库、地理位置或通知权限。</p>
 
       <h2>备份和数据控制</h2>
-      <p>用户选择的书签 HTML 和 Markdown 链接文件在本机解析。0.4.0 的书签 HTML 导出在本机生成，文件包含所选导航的名称、网址和分组，排除标记为隐藏的内容。完整备份和书签 HTML 均未加密。完整备份可能包含私密内容，登录凭据、同步连接和密码不进入完整备份。恢复前会校验文件并请你确认，同时在浏览器中保留一份恢复前副本。</p>
+      <p>用户选择的书签 HTML 和 Markdown 链接文件在本机解析。书签 HTML 导出在本机生成，文件包含所选导航的名称、网址和分组，排除标记为隐藏的内容。普通 JSON/ZIP 和书签 HTML 导出未加密；从 0.5.0 起，完整备份也可用独立密码导出为 <code>.covelet</code> 加密文件。完整备份可能包含私密内容，登录凭据、同步连接和密码不进入完整备份。备份密码不保存，丢失后无法恢复加密文件；加解密和校验均在本机进行。恢复前会校验文件并请你确认，同时在浏览器中保留一份恢复前副本。</p>
       <p>你可以编辑或删除内容、关闭同步、选择背景、撤销网站访问权限和导出备份。反馈由你主动发送，扩展不会自动附上日志、网址、图片或备份。</p>
 
       <h2>扩展与官网</h2>
@@ -64,7 +64,7 @@
 
     <article lang="en" aria-labelledby="english">
       <h2 class="policy-title" id="english">Privacy Policy</h2>
-      <p class="policy-date">Updated <time datetime="2026-11-10">November 10, 2026</time> · Applies to Covelet 0.3.1 and 0.4.0</p>
+      <p class="policy-date">Updated <time datetime="2026-11-12">November 12, 2026</time> · Applies to Covelet 0.3.1–0.5.1</p>
       <p>Morley publishes Covelet. For support or privacy inquiries, email <a href="mailto:support@morley.work">support@morley.work</a>.</p>
 
       <h3>Data on your device</h3>
@@ -79,7 +79,7 @@
       <h3>When Covelet connects to the internet</h3>
       <ul>
         <li>Search across Covelet content runs on your device. Submitting a web search sends the query to the browser's default search service or the search engine you choose. When you open sites individually or confirm opening a group, the browser visits the selected links.</li>
-        <li>When Random Wallpaper is on, the Bing source contacts <code>www.bing.com</code> and Wikimedia Commons contacts <code>upload.wikimedia.org</code> after you grant access. The selected host receives connection information. Requests omit cookies and referrers. Images are cached locally. Turn off Random Wallpaper or choose a color background to stop wallpaper requests.</li>
+        <li>When Random Wallpaper is on, the Bing source contacts <code>www.bing.com</code>. Wikimedia Commons requests optional access to <code>commons.wikimedia.org</code> for image and license metadata, and <code>upload.wikimedia.org</code> for image downloads. The selected hosts receive connection information. Requests omit cookies and referrers. Images are cached locally. Turn off Random Wallpaper or choose a color background to stop wallpaper requests.</li>
         <li>Adding or editing a site, requesting site information or images, or confirming image import or repair may contact the relevant origin. Covelet requests access for each origin as needed. Everyday navigation uses the local cache. Displaying a remote image in a note may contact that image's host.</li>
         <li>After authorization and configuration, the GitHub contributions widget can fetch the selected account's public contribution calendar. GitHub receives the username and connection information. The widget reads public contribution data only.</li>
       </ul>
@@ -89,14 +89,14 @@
         <li><code>storage</code> supports legacy data migration and session connection information. Content and settings use encrypted IndexedDB.</li>
         <li><code>search</code> calls the browser's default search service.</li>
         <li><code>favicon</code> reads existing browser icons during explicit add or import actions.</li>
-        <li><code>activeTab</code> and <code>scripting</code> read the current page's URL, title, and icon declarations after a toolbar click. You can edit the information or cancel before saving.</li>
+        <li><code>activeTab</code> and <code>scripting</code> read the current page's URL, title, and icon declarations after a toolbar click. Explicitly choosing a webpage selection note or clicking to read also reads selected text, the title, and source URL from the main frame, without reading other tabs or full frame content. You can edit the information or cancel before saving.</li>
         <li><code>alarms</code> resumes background sync and clears legacy clock reminders.</li>
         <li><code>www.bing.com</code> is a fixed wallpaper host. Optional HTTP(S) access is granted per origin and does not provide access to all sites at installation.</li>
       </ul>
       <p>The extension does not request browsing history, the browser bookmarks library, geolocation, or notifications.</p>
 
       <h3>Backups and data controls</h3>
-      <p>Bookmark HTML and Markdown link files that you choose are parsed locally. Covelet 0.4.0 creates bookmark HTML exports on your device. These exports include names, URLs, and groups for the selected shortcuts and exclude content marked as hidden. Complete backups and bookmark HTML exports are unencrypted. Complete backups can include private content and exclude login credentials, sync connections, and passwords. Restoration validates the file, asks for confirmation, and keeps a pre-restore copy in the browser.</p>
+      <p>Bookmark HTML and Markdown link files that you choose are parsed locally. Bookmark HTML exports are created on your device and include names, URLs, and groups for the selected shortcuts, excluding content marked as hidden. Ordinary JSON/ZIP and bookmark HTML exports are unencrypted. Starting with 0.5.0, complete backups can also be exported as encrypted <code>.covelet</code> files with a separate password. Complete backups can include private content and exclude login credentials, sync connections, and passwords. The backup password is not saved; losing it prevents recovery of the encrypted file. Encryption, decryption, and validation run locally. Restoration validates the file, asks for confirmation, and keeps a pre-restore copy in the browser.</p>
       <p>You can edit or delete content, turn off sync, change backgrounds, revoke site permissions, and export backups. Feedback is voluntary. Covelet does not automatically attach logs, URLs, images, or backups.</p>
 
       <h3>The extension and the website</h3>

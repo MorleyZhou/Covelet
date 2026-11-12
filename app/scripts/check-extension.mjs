@@ -203,7 +203,9 @@ assert.match(wallpaperSource, /url\.origin\s*!==\s*BING_ORIGIN/, "Wallpaper URL 
 const siteInfoBridge = path.join(appRoot, "src", "lib", "site-info.js");
 assert(existsSync(siteInfoBridge), "Missing optional site metadata provider.");
 const siteInfoSource = readFileSync(siteInfoBridge, "utf8");
-assert.match(siteInfoSource, /api\.permissions\.request\(\{ origins: \[hostPattern\(input\)\] \}\)/, "Site recognition must request only its selected origin.");
+assert.match(siteInfoSource, /if \(!inputs\.length \|\| inputs\.length > 16\)/, "Optional origin requests must be bounded and nonempty.");
+assert.match(siteInfoSource, /for \(const value of inputs\) origins\.add\(hostPattern\(value\)\)/, "Each selected origin must be validated before requesting access.");
+assert.match(siteInfoSource, /api\.permissions\.request\(\{ origins: \[\.\.\.origins\] \}\)/, "Only the validated selected origins may be requested together.");
 assert.match(siteInfoSource, /if \(!await canReadSite\(input, \{ api \}\)\)/, "Site metadata must check host access before network activity.");
 assert.match(siteInfoSource, /credentials:\s*'omit'/, "Site metadata requests must omit cookies.");
 assert.match(siteInfoSource, /referrerPolicy:\s*'no-referrer'/, "Site metadata requests must omit referrers.");

@@ -17302,5 +17302,32 @@
     "de": "Mit {0} suchen",
     "fr": "Rechercher avec {0}",
     "ru": "Поиск через {0}"
+  },
+  "同步遇到冲突时，可选择用本地数据替换云端，或用云端数据替换本地。": {
+    "en": "When sync conflicts, choose to replace cloud data with local data, or local data with cloud data.",
+    "zh-TW": "同步遇到衝突時，可選擇用本地資料取代雲端，或用雲端資料取代本地。",
+    "ja": "同期が競合した場合、ローカルデータでクラウドを置き換えるか、クラウドデータでローカルを置き換えられます。",
+    "ko": "동기화 충돌 시 로컬 데이터로 클라우드 데이터를 교체하거나 클라우드 데이터로 로컬 데이터를 교체할 수 있습니다.",
+    "de": "Bei einem Synchronisierungskonflikt können lokale Daten die Cloud-Daten ersetzen oder umgekehrt.",
+    "fr": "En cas de conflit de synchronisation, remplacez les données du cloud par les données locales, ou inversement.",
+    "ru": "При конфликте синхронизации можно заменить облачные данные локальными или локальные данные облачными."
+  },
+  "随机壁纸增加更多图片，并减少近期重复。": {
+    "en": "Random Wallpaper offers more images with fewer recent repeats.",
+    "zh-TW": "隨機桌布增加更多圖片，並減少近期重複。",
+    "ja": "ランダム壁紙の画像を増やし、最近表示した画像の繰り返しを減らしました。",
+    "ko": "무작위 배경화면의 이미지를 늘리고 최근 이미지의 반복을 줄였습니다.",
+    "de": "Zufällige Hintergrundbilder bieten mehr Bilder und weniger Wiederholungen zuletzt angezeigter Bilder.",
+    "fr": "Le fond d’écran aléatoire propose plus d’images et répète moins souvent les images récentes.",
+    "ru": "В случайных обоях стало больше изображений и меньше повторов недавно показанных."
+  },
+  "同步目录包含其他文件，请先将它们移出同步目录后重试。": {
+    "en": "The sync directory contains other files. Move them out of the sync directory, then try again.",
+    "zh-TW": "同步目錄包含其他檔案，請先將它們移出同步目錄後重試。",
+    "ja": "同期フォルダに他のファイルが含まれています。それらを同期フォルダから移動してから再試行してください。",
+    "ko": "동기화 폴더에 다른 파일이 있습니다. 해당 파일을 동기화 폴더 밖으로 옮긴 후 다시 시도하세요.",
+    "de": "Der Synchronisierungsordner enthält andere Dateien. Verschieben Sie diese aus dem Ordner und versuchen Sie es erneut.",
+    "fr": "Le dossier de synchronisation contient d’autres fichiers. Déplacez-les hors de ce dossier, puis réessayez.",
+    "ru": "Папка синхронизации содержит другие файлы. Переместите их из этой папки и повторите попытку."
   }
 }

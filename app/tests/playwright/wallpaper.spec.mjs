@@ -1,7 +1,7 @@
 import { test, expect } from './extension.fixture.mjs';
 import { makeImagePNG } from './backup-helpers.mjs';
 
-test.use({ pregrantedHosts: ['https://upload.wikimedia.org/*'] });
+test.use({ pregrantedHosts: ['https://commons.wikimedia.org/*', 'https://upload.wikimedia.org/*'] });
 
 async function mockBing(context, requests) {
   const bingImages = [1, 2].map(number => ({ startdate: '20261106', enddate: '20261107',
@@ -24,6 +24,18 @@ async function openWallpaper(page) {
 test('the Random Wallpaper extension applies and shuffles either source, then can be turned off', async ({ extension }) => {
   const requests = [];
   await mockBing(extension.context, requests);
+  await extension.context.route('https://commons.wikimedia.org/w/api.php?*', async route => {
+    requests.push(new URL(route.request().url()));
+    return route.fulfill({ json: { query: { pages: Array.from({ length: 12 }, (_, index) => ({
+      ns: 6, title: `File:Landscape_fixture_${index}.jpg`, imageinfo: [{
+        url: `https://upload.wikimedia.org/wikipedia/commons/a/ab/Landscape_fixture_${index}.jpg?utm_source=commons.wikimedia.org`,
+        descriptionurl: `https://commons.wikimedia.org/wiki/File:Landscape_fixture_${index}.jpg`,
+        size: 200000, width: 1920, height: 1080, mime: 'image/jpeg',
+        extmetadata: { Artist: { value: 'Covelet fixture artist' }, LicenseShortName: { value: 'CC0' },
+          LicenseUrl: { value: 'https://creativecommons.org/publicdomain/zero/1.0/' }, AttributionRequired: { value: 'false' } },
+      }],
+    })) } } });
+  });
   await extension.context.route('https://upload.wikimedia.org/**', async route => {
     requests.push(new URL(route.request().url()));
     return route.fulfill({ contentType: 'image/png', body: makeImagePNG([34, 197, 94, 255]) });
@@ -47,7 +59,13 @@ test('the Random Wallpaper extension applies and shuffles either source, then ca
   await expect(dialog.locator('figcaption a')).toHaveAttribute('href', /^https:\/\/commons\.wikimedia\.org\//);
   await dialog.getByRole('button', { name: '换一张', exact: true }).click();
   await expect(dialog.getByRole('status')).toHaveText('已更换壁纸。');
-  expect(new Set(requests.filter(url => url.hostname === 'upload.wikimedia.org').map(url => url.href)).size).toBe(2);
+  // Exercise more than the old four-file pool through the actual extension UI.
+  for (let index = 0; index < 7; index++) {
+    await dialog.getByRole('button', { name: '换一张', exact: true }).click();
+    await expect(dialog.getByRole('status')).toHaveText('已更换壁纸。');
+  }
+  expect(new Set(requests.filter(url => url.hostname === 'upload.wikimedia.org').map(url => url.href)).size).toBe(9);
+  expect(requests.filter(url => url.hostname === 'commons.wikimedia.org')).toHaveLength(1);
 
   const beforeReload = requests.length;
   await page.reload();
@@ -55,6 +73,9 @@ test('the Random Wallpaper extension applies and shuffles either source, then ca
   dialog = await openWallpaper(page);
   await expect(dialog.getByRole('combobox', { name: '壁纸源', exact: true })).toHaveText('Wikimedia Commons');
   expect(requests).toHaveLength(beforeReload);
+  await dialog.getByRole('button', { name: '换一张', exact: true }).click();
+  await expect(dialog.getByRole('status')).toHaveText('已更换壁纸。');
+  expect(new Set(requests.filter(url => url.hostname === 'upload.wikimedia.org').map(url => url.href)).size).toBe(10);
   await dialog.getByRole('button', { name: '关闭随机壁纸', exact: true }).click();
   await expect(dialog.getByRole('status')).toHaveText('已关闭随机壁纸。');
   await expect.poll(background).toContain('alpine-lake');
@@ -80,7 +101,7 @@ test('the saved wallpaper cadence changes the image at the deadline and stops af
   await expect(credit()).toContainText('Bing fixture');
   const first = await credit().textContent();
   await page.clock.fastForward('04:00');
-  expect(requests).toHaveLength(2);
+  expect(requests).toHaveLength(3);
   await page.clock.fastForward('01:00');
   await expect(credit()).not.toHaveText(first);
   expect(new Set(requests.filter(url => url.pathname === '/th').map(url => url.href)).size).toBe(2);

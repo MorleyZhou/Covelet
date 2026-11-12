@@ -20,7 +20,7 @@ export default function RandomWallpaperSettings({ source, interval, active, wall
 
   function apply() {
     const provider = WALLPAPER_SOURCES.find(item => item.id === selected);
-    const permission = provider.id === 'bing' ? Promise.resolve(true) : requestSiteAccess(provider.origin);
+    const permission = provider.id === 'bing' ? Promise.resolve(true) : requestSiteAccess(provider.origins || provider.origin);
     run(async () => {
       if (!await permission) throw Error(tr('未获得壁纸源的访问权限。'));
       await onApply(provider.id);
