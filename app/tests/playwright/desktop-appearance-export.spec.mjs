@@ -12,6 +12,7 @@ const exportTitle = '导出 Markdown 资料库';
 const search = page => page.getByRole('combobox', { name: '搜索或输入网址', exact: true });
 const background = page => page.locator('.wallpaper');
 const metadataDescription = 'First: "quoted" # label\n---\nurl: forged\u2028line';
+const collisionTitles = ['Report', 'report', '研究#(资料)', 'CON', 'con', 'ΟΣ', 'οσ', '.hidden'];
 const note = (id, title, body = '## Saved heading\n\n**Important** detail.', extra = {}) => ({ id, title, body, pinned: false, revision: 1,
   createdAt: Date.now() - 10_000, updatedAt: Date.now() - 5000, ...extra });
 
@@ -49,7 +50,7 @@ async function seed(page, { library = false, complex = true, collision = false }
     const rich = note('note-complex', 'Complex callout', 'Important', { document: { type: 'doc', content: [
       { type: 'callout', attrs: { tone: 'info' }, content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Important' }] }] },
     ] } });
-    data.tools.notes = collision ? ['Report', 'report', '研究#(资料)', 'CON', 'con'].map((name, index) => note(`note-name-${index}`, name))
+    data.tools.notes = collision ? collisionTitles.map((name, index) => note(`note-name-${index}`, name))
       : [plain, ...(complex ? [rich] : []), note('note-report', 'Report'), note('note-report-case', 'report'), note('note-private', 'Private note sentinel')];
     data.tools.reading = [{ id: 'reading-public', title: 'Read (later)#文档', url: 'https://example.com/a_(b)?x=%23#section', status: 'read', revisitOn: '2026-11-30',
       revision: 1, createdAt: Date.now() - 10_000, updatedAt: Date.now() - 5000 },
@@ -66,6 +67,51 @@ async function seed(page, { library = false, complex = true, collision = false }
 async function goDesktop(page, name) {
   await page.bringToFront(); await search(page).click(); await search(page).fill(`type:desktop ${name}`);
   await page.getByRole('option').click(); await expect(page.locator('.desktop-page-name')).toHaveText(name);
+  await expect(page.locator('.desktop-page-viewport')).toBeFocused();
+  await page.locator('.desktop-page-track').evaluate(async track => {
+    const finite = track.getAnimations().filter(animation => Number.isFinite(animation.effect?.getComputedTiming().endTime));
+    await Promise.all(finite.map(animation => animation.finished.catch(() => {})));
+  });
+}
+async function jumpThenOpenMenuBeforeQueuedFocus(page, name, testInfo) {
+  await page.bringToFront(); await search(page).click(); await search(page).fill(`type:desktop ${name}`);
+  await expect(page.getByRole('option')).toHaveCount(1);
+  // Hold a browser frame, not application state: DOM events and menu mounting
+  // remain real. This deterministically exercises fast keyboard input between
+  // desktop activation and its queued focus handoff, without arbitrary sleeps.
+  await page.evaluate(() => {
+    const raf = window.requestAnimationFrame, cancel = window.cancelAnimationFrame, queued = new Map(); let sequence = 0;
+    window.requestAnimationFrame = callback => { const id = --sequence; queued.set(id, callback); return id; };
+    window.cancelAnimationFrame = id => { if (id < 0) queued.delete(id); else cancel.call(window, id); };
+    window.__coveletFrameRace = {
+      release: () => {
+        const count = queued.size; window.requestAnimationFrame = raf;
+        return new Promise((resolve, reject) => raf.call(window, timestamp => {
+          try {
+            for (const [id, callback] of queued) { queued.delete(id); callback.call(window, timestamp); }
+          } catch (error) { reject(error); }
+          finally { window.cancelAnimationFrame = cancel; }
+          raf.call(window, () => resolve(count));
+        }));
+      },
+      restore: () => { queued.clear(); window.requestAnimationFrame = raf; window.cancelAnimationFrame = cancel; delete window.__coveletFrameRace; },
+    };
+  });
+  const menu = page.getByRole('menu', { name: '布局操作', exact: true });
+  try {
+    await page.getByRole('option').click(); await expect(page.locator('.desktop-page-name')).toHaveText(name);
+    await page.locator('.desktop-page-viewport').press('Shift+F10');
+    await expect(menu).toBeAttached(); await menu.press('ArrowDown');
+    await expect.poll(() => menu.evaluate(element => element.contains(document.activeElement))).toBe(true);
+    const callbacks = await page.evaluate(() => window.__coveletFrameRace.release());
+    expect(callbacks, 'desktop activation must have queued the deferred frame').toBeGreaterThan(0);
+    await expect(menu).toBeVisible();
+    await expect.poll(() => menu.evaluate(element => element.contains(document.activeElement)), {
+      message: 'the queued desktop focus handoff must preserve the newly opened menu',
+    }).toBe(true);
+    await testInfo.attach('desktop-jump-focus-race', { body: JSON.stringify({ deferredCallbacks: callbacks, menuOwnsFocusAfterFrame: true }), contentType: 'application/json' });
+  } finally { await page.evaluate(() => window.__coveletFrameRace?.restore()); }
+  return menu;
 }
 async function appearance(page, name, locale = 'zh-CN') {
   const settings = await openSettingsLocale(page, locale);
@@ -169,8 +215,9 @@ test('desktop appearance inherits each field, saves explicitly, follows identity
     if (index + 1 < parts) await page.getByRole('button', { name: '下一屏', exact: true }).click();
   }
   const narrow = await snapshot(page); expect(narrow.navigation.settings.desktopPages).toEqual(saved.navigation.settings.desktopPages);
-  await page.setViewportSize({ width: 1280, height: 900 }); await goDesktop(page, 'Work desk');
-  await page.locator('.desktop-page-viewport').press('Shift+F10'); await page.getByRole('menuitem', { name: '编辑布局', exact: true }).click();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const layoutMenu = await jumpThenOpenMenuBeforeQueuedFocus(page, 'Work desk', testInfo);
+  await layoutMenu.getByRole('menuitem', { name: '编辑布局', exact: true }).press('Enter');
   const toolbar = page.getByRole('toolbar', { name: '编辑布局', exact: true }); await toolbar.getByRole('button', { name: '屏幕管理', exact: true }).click();
   const manager = page.getByRole('dialog', { name: '屏幕管理', exact: true }); await manager.getByRole('button', { name: '前移 Work desk', exact: true }).click();
   await manager.getByRole('button', { name: '前往 Work desk', exact: true }).click(); await toolbar.getByRole('button', { name: '完成', exact: true }).click(); await expect(toolbar).toBeHidden();
@@ -239,12 +286,14 @@ test('portable Unicode and colliding filenames have valid encoded relative links
   const dialog = await openExport(page), types = dialog.getByRole('group', { name: '导出内容', exact: true });
   await types.getByRole('checkbox', { name: '网站', exact: true }).uncheck(); await expect(exportRow(dialog, 'site:site-public')).toHaveCount(0);
   await types.getByRole('checkbox', { name: '稍后读', exact: true }).uncheck(); await expect(exportRow(dialog, 'reading:reading-public')).toHaveCount(0);
-  const files = await exportZip(page, dialog), names = Object.keys(files).filter(name => name !== 'index.md'); expect(names).toHaveLength(5);
-  expect(new Set(names.map(name => name.normalize('NFKC').toLowerCase())).size).toBe(5);
+  const files = await exportZip(page, dialog), names = Object.keys(files).filter(name => name !== 'index.md'); expect(names).toHaveLength(collisionTitles.length);
+  expect(new Set(names.map(name => name.normalize('NFKC').toUpperCase().toLowerCase())).size).toBe(collisionTitles.length);
+  expect(names.map(name => properties(files[name]).title).sort()).toEqual([...collisionTitles].sort());
+  expect(names.every(name => !name.split('/').at(-1).startsWith('.'))).toBe(true);
   expect(names.every(name => !/^(?:.*\/)?(?:con|prn|aux|nul|com\d|lpt\d)(?:\.|$)/iu.test(name) && !name.includes('..') && !name.includes('\\'))).toBe(true);
   expect(names.every(name => !/[#;@&=+$,^%\[\]]/u.test(name))).toBe(true);
   expect(names.map(name => properties(files[name]).title)).toContain('研究#(资料)');
-  const destinations = [...files['index.md'].matchAll(/\]\(<([^>]+)>\)/gu)].map(match => match[1]); expect(destinations).toHaveLength(5);
+  const destinations = [...files['index.md'].matchAll(/\]\(<([^>]+)>\)/gu)].map(match => match[1]); expect(destinations).toHaveLength(collisionTitles.length);
   expect(files['index.md']).not.toContain('%23'); expect(files['index.md']).toContain('%28');
   for (const destination of destinations) { expect(files[decodeURIComponent(destination)]).toBeDefined(); expect(new URL(destination, 'https://library.example/index.md').hash).toBe(''); }
   // Render only standard index links into a tiny independent HTML reader. This

@@ -37,7 +37,9 @@ export const test = base.extend({
       });
       session.context = context;
       await network.install(context);
-      await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
+      const traceSnapshots = process.env.COVELET_QA_TRACE_SNAPSHOTS !== 'off';
+      await context.tracing.start({ screenshots: true, snapshots: traceSnapshots, sources: true });
+      if (!traceSnapshots) testInfo.annotations.push({ type: 'diagnostic-trace-snapshots', description: 'DOM snapshots disabled for an isolated performance diagnostic; normal validation retains snapshots.' });
       session.tracing = true;
       context.on('page', page => page.on('pageerror', error => {
         const detail = { url: page.url(), message: error.message, stack: error.stack };

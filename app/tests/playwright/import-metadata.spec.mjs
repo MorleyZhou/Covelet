@@ -30,16 +30,19 @@ async function restore(page, data) {
   await chooseBackupFile(page, recovery, Buffer.from(JSON.stringify(data)), 'import-targets.json');
   await restorePreview(recovery); await closeSettings(page);
 }
-async function seedDuplicates(page) {
+async function seedDuplicates(page, { paged = false } = {}) {
   const before = await snapshot(page), data = structuredClone(before.data), navigation = structuredClone(before.navigation);
   const groupId = navigation.groups[0].id, pageId = navigation.settings.pages[0];
   for (const [index, name] of ['Local primary', 'Local secondary'].entries()) navigation.entries.push({ id: `site-local-${index}`, type: 'site', name, url: shared,
     groupId, parentId: null, page: pageId, order: index, icon: { kind: 'letter', value: name.slice(0, 2) } });
+  if (paged) for (let index = 0; index < 23; index++) navigation.entries.push({ id: `site-paged-${index}`, type: 'site', name: `Paged local ${String(index).padStart(2, '0')}`,
+    url: `https://example.com/paged/${index}`, groupId, parentId: null, page: pageId, order: navigation.entries.length, icon: { kind: 'letter', value: 'Pa' } });
   data.navigation = Buffer.from(zipSync({ ...before.files, 'data.json': strToU8(JSON.stringify(navigation)) })).toString('base64');
   data.preferences = { ...data.preferences, library: { version: 1, tags: [{ id: 'tag-local', name: 'Local tag' }], items: {
     'site:site-local-0': { description: 'Primary local context', tagIds: ['tag-local'] },
     'site:site-local-1': { description: 'Secondary local context', tagIds: ['tag-local'] },
   } } };
+  if (paged) for (let index = 0; index < 23; index++) data.preferences.library.items[`site:site-paged-${index}`] = { description: `Local paging context ${index}`, tagIds: ['tag-local'] };
   await restore(page, data); return snapshot(page);
 }
 async function choose(scope, label, option) {
@@ -140,7 +143,7 @@ test('OneTab 2.25 text preserves Unicode and title pipes, separates blank-line g
 });
 
 test('duplicates retain local information by default and merge only explicitly selected sources into a chosen target or new copy', async ({ extension }, testInfo) => {
-  const page = await extension.newtab(), before = await seedDuplicates(page);
+  const page = await extension.newtab(), before = await seedDuplicates(page, { paged: true });
   const initial = await openImport(page);
   await pasteSource(initial, 'Raindrop HTML', raindrop([...sourceRows(), { url: 'https://example.com/unique', name: 'Unique article', tags: ['Unique tag'], description: 'Unique context' }]));
   await expect(mergeGroup(initial, shared).getByRole('combobox', { name: '合并目标', exact: true })).toHaveText('保留本地信息');
@@ -171,6 +174,31 @@ test('duplicates retain local information by default and merge only explicitly s
   expect(copySites).toHaveLength(2);
   for (const [index, name] of ['Source first', 'Source second'].entries()) { const site = copySites.find(item => item.name === name); expect(tagNames(copied, site.id)).toEqual([`Source ${index ? 'B' : 'A'}`]); }
   expect(metadata(copied, 'site-local-1')).toEqual(metadata(merged, 'site-local-1'));
+  const paged = await openImport(page);
+  await pasteSource(paged, 'Raindrop HTML', raindrop(Array.from({ length: 23 }, (_, index) => ({ url: `https://example.com/paged/${index}`,
+    name: `Paging source ${index}`, tags: [`Paging tag ${index}`], description: `Source paging context ${index}` }))));
+  const pager = paged.locator('.import-merge-pagination').first(), heading = paged.getByRole('heading', { name: '重复项信息合并', exact: true });
+  await expect(paged.locator('.import-merge-group')).toHaveCount(20);
+  const firstGroup = await merge(paged, 'https://example.com/paged/0', 'Paged local 00', [1]);
+  await expect(firstGroup.getByRole('checkbox', { name: '追加来源备注', exact: true })).toBeFocused();
+  await pager.getByRole('button', { name: '下一页', exact: true }).click();
+  await expect(paged.locator('.import-merge-group')).toHaveCount(3); await expect(heading).toBeFocused();
+  await merge(paged, 'https://example.com/paged/22', 'Paged local 22', [23]);
+  await pager.getByRole('button', { name: '上一页', exact: true }).click();
+  await expect(paged.locator('.import-merge-group')).toHaveCount(20); await expect(heading).toBeFocused();
+  await expect(firstGroup.getByRole('combobox', { name: '合并目标', exact: true })).toHaveText(/Paged local 00$/u);
+  for (const name of ['合并来源 1', '合并来源标签', '追加来源备注']) await expect(firstGroup.getByRole('checkbox', { name, exact: true })).toBeChecked();
+  await page.screenshot({ path: testInfo.outputPath('paged-merge-retains-decisions.png'), animations: 'disabled' });
+  await confirm(paged);
+  const pagedResult = await snapshot(page); expect(pagedResult.navigation.entries).toEqual(copied.navigation.entries);
+  for (let index = 0; index < 23; index++) {
+    const id = `site-paged-${index}`;
+    if (index === 0 || index === 22) {
+      expect(tagNames(pagedResult, id)).toEqual(['Local tag', `Paging tag ${index}`]);
+      expect(metadata(pagedResult, id).description).toContain(`Local paging context ${index}`);
+      expect(metadata(pagedResult, id).description).toContain(`Source paging context ${index}`);
+    } else expect(metadata(pagedResult, id)).toEqual(metadata(copied, id));
+  }
 });
 
 test('metadata limits leave deselection and metadata skipping available, and stale or canceled imports write nothing', async ({ extension }) => {

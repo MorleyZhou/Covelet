@@ -811,7 +811,12 @@ export function App() {
     clearTimeout(layoutPress.current?.timer); layoutPress.current = null;
   }
   function focusDesktop() {
-    requestAnimationFrame(() => document.querySelector('.desktop-page-viewport')?.focus({ preventScroll: true }));
+    requestAnimationFrame(() => {
+      // A menu/dialog opened after the jump owns focus; a delayed navigation
+      // callback must not dismiss it by returning focus to the desktop.
+      if (document.querySelector('[data-ui-modal][data-state="open"], [data-popover][data-state="open"]')) return;
+      document.querySelector('.desktop-page-viewport')?.focus({ preventScroll: true });
+    });
   }
   function showLayoutMenu(x, y, source) {
     if (layoutEditor.saving) return;

@@ -166,11 +166,11 @@ test('generated heading identifiers may be omitted only when no self-link depend
 
 test('safe unique paths resolve from standard Markdown across Unicode, case, reserved names and special punctuation', async (t) => {
   const f = fixture(t), titles = ['CON', 'ＣＯＮ', 'com¹', 'A', 'a', 'é', 'e\u0301', 'ＮＵＬ.md', '../#(中文)!\'*?[]', '😀'.repeat(100),
-    'Reserved;@&=+$,^[]%', 'Collision#', 'Collision_', '.hidden', '．hidden'];
+    'Reserved;@&=+$,^[]%', 'Collision#', 'Collision_', '.hidden', '．hidden', 'Σ', 'σ', 'ς', 'I', 'ı', 'ß', 'SS'];
   f.records[TOOLS].notes = titles.map((title, index) => note(`name-${index}`, title));
   const plan = await inspectMarkdownLibrary({ types: ['note'] }); assert.deepEqual(plan.issues, []);
   const archive = await files(await exportMarkdownLibrary(plan, { selectedKeys: selectedKeys(plan) })), paths = Object.keys(archive).filter((name) => name !== 'index.md');
-  assert.equal(new Set(paths.map((name) => name.normalize('NFKC').toLowerCase())).size, titles.length);
+  assert.equal(new Set(paths.map((name) => name.normalize('NFKC').toUpperCase().normalize('NFKC'))).size, titles.length);
   for (const path of paths) {
     assert(path.startsWith('notes/')); assert.equal(path.split('/').length, 2); assert(path.length < 240);
     assert(encoder.encode(path.split('/')[1]).length < 200); assert(!/[<>:"\\|?*#;@&=+$,%^\[\]\u0000-\u001f]/u.test(path));
@@ -183,6 +183,7 @@ test('safe unique paths resolve from standard Markdown across Unicode, case, res
   assert(relative.some((link) => /%28/u.test(link.href))); assert(!relative.some((link) => /%23/u.test(link.href)));
   assert(Object.hasOwn(archive, 'notes/Collision_.md')); assert(Object.hasOwn(archive, 'notes/Collision_ (2).md'));
   assert(Object.hasOwn(archive, 'notes/_.hidden.md')); assert(paths.every((path) => !path.split('/')[1].normalize('NFKC').startsWith('.')));
+  for (const path of ['notes/Σ.md', 'notes/σ (2).md', 'notes/ς (3).md', 'notes/I.md', 'notes/ı (2).md', 'notes/ß.md', 'notes/SS (2).md']) assert(Object.hasOwn(archive, path));
   const properties = paths.map((path) => document(archive[path]).properties.title); assert.deepEqual(properties, titles);
 });
 

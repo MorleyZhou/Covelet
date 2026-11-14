@@ -20,6 +20,13 @@ journey and actual 0.5.1 upgrade. Reports are isolated under
 `output/playwright/covelet/0.6.0-final/{chromium,chrome,edge}/`.
 Set `COVELET_NATIVE_BROWSER=chrome` or `edge` to test the installed Windows
 binary in a fresh test-owned profile; omit it for bundled Chromium.
+For bounded local runs, set `COVELET_QA_SHARD` to `1`, `2`, then `3` and run
+the same command for each. The config applies all three native Playwright
+shards and keeps each raw report under `shard-{1,2,3}/`. All shards must pass;
+check their combined unique test IDs against the unsharded `--list` output.
+`COVELET_QA_TRACE_SNAPSHOTS=off` is only a profiling diagnostic: normal runs
+retain snapshots, screenshots and sources. Near-cap metrics separate native
+textarea fill, preview generation and actual file-picker import.
 
 The upgrade spec requires the official `covelet-0.5.1.zip` at
 `output/0.6.0-upgrade/baseline/` and an unpacked 0.6.0 build. It checks the fixed
