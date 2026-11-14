@@ -13,6 +13,14 @@ npm run test:e2e
 `npm run test:e2e -- --headed` shows the test-owned browser; `--grep` selects cases.
 `npm run test:e2e:report` opens the saved report.
 
+For the 0.6 command palette and structured-search batch, run
+`npx playwright test --config tests/playwright-batch.config.mjs` after rebuilding
+the unpacked extension. These cases cover the real palette, query conditions,
+saved filters, privacy, editor/IME event ownership, explicit engine keywords and
+all eight languages at 390×540. Their isolated report and screenshots are written
+to `output/playwright/covelet/0.6-batches/` at the repository root. This configuration
+does not replace the complete regression suite.
+
 The fixture loads the existing `dist/extension/` directory using Playwright's
 official Chromium channel and a fresh persistent profile for each test. It checks
 the service worker's real runtime manifest and ID before opening the real

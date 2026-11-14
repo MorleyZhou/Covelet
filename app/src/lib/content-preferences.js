@@ -283,6 +283,7 @@ export function mergeContentPreferences(current, incoming, { replaceKeys = [], d
     for (const incomingView of source.library.views) {
       if (ids.has(incomingView.id)) continue;
       const view = { ...structuredClone(incomingView), tagIds: [...new Set(incomingView.tagIds.map((id) => mapping.get(id) || id))] };
+      if (incomingView.excludeTagIds?.length) view.excludeTagIds = [...new Set(incomingView.excludeTagIds.map((id) => mapping.get(id) || id))];
       if (view.scope.kind === 'desktop' && desktopIdMap.has(view.scope.desktopId)) view.scope.desktopId = desktopIdMap.get(view.scope.desktopId);
       library.views.push(view); ids.add(view.id);
     }

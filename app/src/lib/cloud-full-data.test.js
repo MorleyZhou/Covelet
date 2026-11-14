@@ -97,7 +97,7 @@ test('encrypted full-data sync preserves metadata and rejects invalid libraries 
     'site:a': { description: 'Deployment reference', tagIds: ['tag-release'] },
     'note:a': { description: '', tagIds: ['tag-release'] },
   }, views: [{ id: 'view-release', revision: 1, name: 'Release references', query: 'Deployment', type: 'all', scope: { kind: 'all' },
-    tagIds: ['tag-release'], domain: '', readingStatus: null, revisit: 'due' }] };
+    tagIds: [], excludeTagIds: ['tag-release'], domain: '', readingStatus: null, revisit: 'due' }] };
   const datedTools = { ...emptyTools(), reading: [{ id: 'reading-date', revision: 1, createdAt: 1, updatedAt: 2,
     title: 'Dated article', url: 'https://example.test/dated', status: 'read', revisitOn: '2026-11-11' }] };
   await a.localData.set({ [key]: { version: 1, revision: 1, aliases: {}, privateKeys: ['view:view-release'], presentation: false, library } });

@@ -32,6 +32,7 @@ export function preserveInvalidViewReferences(input, { sourceNavigation, targetN
     if (view.scope.kind === 'folder' && !folders.has(view.scope.folderId)) view.scope.folderId = isolate('folder', view.scope.folderId);
     if (view.scope.kind === 'desktop' && !desktops.has(view.scope.desktopId)) view.scope.desktopId = isolate('desktop', view.scope.desktopId);
     view.tagIds = view.tagIds.map((id) => tags.has(id) ? id : isolate('tag', id));
+    if (view.excludeTagIds?.length) view.excludeTagIds = view.excludeTagIds.map((id) => tags.has(id) ? id : isolate('tag', id));
   }
   return validateContentPreferences(result);
 }

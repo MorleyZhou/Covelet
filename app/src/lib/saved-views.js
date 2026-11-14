@@ -6,7 +6,7 @@ import { isDateKey, localDateKey, matchesReadingRevisit } from './reading-revisi
 
 export const SAVED_VIEW_LIMITS = Object.freeze({ views: 50, name: 80, query: 2000, tags: 20, domain: 253 });
 export const SAVED_CONTENT_TYPES = Object.freeze(['site', 'folder', 'note', 'reading', 'desktop']);
-const FILTER_KEYS = ['query', 'type', 'scope', 'tagIds', 'domain', 'readingStatus', 'revisit'];
+const FILTER_KEYS = ['query', 'type', 'scope', 'tagIds', 'excludeTagIds', 'domain', 'readingStatus', 'revisit'];
 const identity = (value) => typeof value === 'string' && /^[a-z\d-]{1,100}$/i.test(value);
 const scopeIdentity = (value) => typeof value === 'string' && value.length > 0 && value.length <= 200 && !/[\s\u0000-\u001f\u007f]/u.test(value) && !value.startsWith('@page:');
 const fields = (value, keys) => value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).every((key) => keys.includes(key));
@@ -23,9 +23,11 @@ function normalizedDomain(value) {
 export function validateSavedFilters(input, { allowDraftScopes = false } = {}) {
   if (!fields(input, FILTER_KEYS)) invalid();
   const value = { ...defaultSavedFilters(), ...input };
+  const excluded = Object.hasOwn(value, 'excludeTagIds') ? value.excludeTagIds : [];
   if (typeof value.query !== 'string' || value.query.length > SAVED_VIEW_LIMITS.query || value.query.includes('\0')
     || !['all', 'navigation', ...SAVED_CONTENT_TYPES].includes(value.type) || !Array.isArray(value.tagIds) || value.tagIds.length > SAVED_VIEW_LIMITS.tags
     || new Set(value.tagIds).size !== value.tagIds.length || value.tagIds.some((id) => !identity(id))
+    || !Array.isArray(excluded) || excluded.length > SAVED_VIEW_LIMITS.tags || new Set(excluded).size !== excluded.length || excluded.some((id) => !identity(id))
     || typeof value.domain !== 'string' || value.readingStatus !== null && !['unread', 'read', 'archived'].includes(value.readingStatus)
     || value.revisit !== null && !['due', 'scheduled', 'none'].includes(value.revisit)) invalid();
   const scope = value.scope;
@@ -38,7 +40,7 @@ export function validateSavedFilters(input, { allowDraftScopes = false } = {}) {
   } else if (scope.kind === 'folder') {
     if (Object.keys(scope).length !== 2 || !scopeIdentity(scope.folderId)) invalid();
   } else invalid();
-  return { query: value.query.trim(), type: value.type, scope: { ...scope }, tagIds: [...value.tagIds],
+  return { query: value.query.trim(), type: value.type, scope: { ...scope }, tagIds: [...value.tagIds], ...(excluded.length ? { excludeTagIds: [...excluded] } : {}),
     domain: normalizedDomain(value.domain.trim()), readingStatus: value.readingStatus, revisit: value.revisit };
 }
 export function viewFilters(view) { return Object.fromEntries(FILTER_KEYS.filter((key) => Object.hasOwn(view, key)).map((key) => [key, structuredClone(view[key])])); }
@@ -54,12 +56,13 @@ function filterContext(navigation, tools, preferences, input, { hiddenKeys = [],
   let filters; try { filters = validateSavedFilters(input, { allowDraftScopes }); } catch { return { status: 'invalid', reason: 'invalid-filters' }; }
   const hidden = preferences.presentation ? new Set([...privateContentKeys(navigation, preferences), ...hiddenKeys]) : new Set();
   const tags = new Set((preferences.library?.tags || []).map((tag) => tag.id));
-  if (preferences.presentation && filters.tagIds.length) {
+  const referencedTags = [...filters.tagIds, ...(filters.excludeTagIds || [])];
+  if (preferences.presentation && referencedTags.length) {
     const visible = new Set(visibleContentTagIds(navigation, tools, preferences.library, hidden));
-    if (filters.tagIds.some((id) => tags.has(id) && !visible.has(id))) return { status: 'hidden', reason: 'hidden-reference' };
+    if (referencedTags.some((id) => tags.has(id) && !visible.has(id))) return { status: 'hidden', reason: 'hidden-reference' };
   }
   if (filters.scope.kind === 'folder' && hidden.has(`folder:${filters.scope.folderId}`)) return { status: 'hidden', reason: 'hidden-reference' };
-  if (filters.tagIds.some((id) => !tags.has(id))) return { status: 'invalid', reason: 'missing-tag' };
+  if (referencedTags.some((id) => !tags.has(id))) return { status: 'invalid', reason: 'missing-tag' };
   if (filters.type !== 'all' && filters.type !== 'navigation' && !allowedTypes.includes(filters.type)) return { status: 'invalid', reason: 'unsupported-type' };
   let page = null;
   if (filters.scope.kind === 'desktop') {
@@ -83,6 +86,7 @@ export function filterSavedContent(navigation, tools, preferences, input, option
   const rows = collectCoveletContent(navigation, tools, filters.query, { aliases: preferences.aliases, hiddenKeys: hidden,
     desktops: navigation ? namedDesktopRecords(navigation.settings) : [], library: preferences.library, tagIds: filters.tagIds, allowEmptyQuery: true });
   return { status: 'ready', reason: null, rows: rows.filter((row) => {
+    if (filters.excludeTagIds?.some((id) => preferences.library?.items?.[row.key]?.tagIds?.includes(id))) return false;
     if (!allowedTypes.includes(row.type)) return false;
     if (filters.type === 'navigation' ? !['site', 'folder'].includes(row.type) : filters.type !== 'all' && row.type !== filters.type) return false;
     if (filters.scope.kind === 'folder' && (row.type !== 'site' || row.entry.parentId !== filters.scope.folderId)) return false;

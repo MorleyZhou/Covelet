@@ -81,7 +81,7 @@ test('password-encrypted full backup remains readonly until explicit restore and
   await source.nav.saveState(navigation, 0);
   const document = JSON.parse(JSON.stringify(fromMarkdown('## Kept\n\n[Source](https://source.test/)')));
   source.tools.change({ notes: [{ ...note(), document, body: noteDocumentText(document) }], reading: [{ id: 'dated-reading', revision: 1, createdAt: 1, updatedAt: 2, title: 'Dated', url: 'https://reading.test/', status: 'archived', revisitOn: '2026-12-01' }] });
-  source.preferences.change({ privateKeys: ['note:note-a'], aliases: { 'site:recycled-site': 'Trash alias' }, library: { version: 1, tags: [{ id: 'kept-tag', name: 'Kept tag' }], items: { 'site:recycled-site': { description: 'Owned metadata', tagIds: ['kept-tag'] }, 'note:note-a': { description: '', tagIds: ['kept-tag'] } }, views: [{ id: 'kept-view', revision: 1, name: 'Due', ...defaultSavedFilters(), type: 'reading', revisit: 'due' }] } });
+  source.preferences.change({ privateKeys: ['note:note-a'], aliases: { 'site:recycled-site': 'Trash alias' }, library: { version: 1, tags: [{ id: 'kept-tag', name: 'Kept tag' }], items: { 'site:recycled-site': { description: 'Owned metadata', tagIds: ['kept-tag'] }, 'note:note-a': { description: '', tagIds: ['kept-tag'] } }, views: [{ id: 'kept-view', revision: 1, name: 'Due', ...defaultSavedFilters(), type: 'reading', revisit: 'due', excludeTagIds: ['kept-tag'] }] } });
   source.templates.change({ templates: [{ id: 'kept-scheme', name: 'Mine', createdAt: 1, template: BUILTIN_DESKTOP_TEMPLATES[0] }] });
   const previousSource = clone({ tools: await source.tools.read(), preferences: await source.preferences.read(), templates: await source.templates.read(), state: await source.nav.loadState() }), sourceWrites = source.commits.length;
   const encrypted = await source.center.exportEncryptedBackup('Complete-backup-password'); assert.equal(await isEncryptedBackup(encrypted), true);
@@ -94,6 +94,7 @@ test('password-encrypted full backup remains readonly until explicit restore and
   assert.equal(target.assets.size, 1); assert.equal((await target.tools.read()).notes[0].body, noteDocumentText(document));
   assert.equal((await target.tools.read()).reading[0].revisitOn, '2026-12-01'); assert.equal((await target.tools.read()).reading[0].status, 'archived');
   assert.equal((await target.preferences.read()).library.views[0].revisit, 'due'); assert.equal((await target.preferences.read()).library.items['site:recycled-site'].description, 'Owned metadata');
+  assert.deepEqual((await target.preferences.read()).library.views[0].excludeTagIds, ['kept-tag']);
   assert.equal((await target.templates.read()).templates[0].id, 'kept-scheme'); assert.equal(target.pointWrites, 2);
 });
 
