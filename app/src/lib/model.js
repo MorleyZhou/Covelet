@@ -611,7 +611,8 @@ export function appendReferencedWidget(input, extensionId, config, { page = 0 } 
   return { state: finish(state), widgetId };
 }
 
-export function parseBookmarks(html) {
+export function parseBookmarks(html, { readMetadata = false } = {}) {
+  if (typeof readMetadata !== 'boolean') fail(tr('导入计划无效或条目过多'));
   if (typeof html !== 'string') fail(tr('请选择浏览器导出的书签 HTML 文件。'));
   if (new TextEncoder().encode(html).byteLength > 5 * 1024 * 1024) fail(tr('书签文件不能超过 5 MB'));
   if (!html.trim()) fail(tr('书签文件为空，请选择浏览器导出的 HTML 文件。'));
@@ -648,7 +649,24 @@ export function parseBookmarks(html) {
       const raw = node.getAttribute('href') ?? '';
       try {
         const url = normalizeUrl(raw);
-        plan.sites.push({ name: shortName(node.textContent, new URL(url).hostname), url, folder: parentName });
+        const site = { name: shortName(node.textContent, new URL(url).hostname), url, folder: parentName };
+        if (readMetadata) {
+          const metadata = {};
+          if (node.hasAttribute('tags')) {
+            const seen = new Set();
+            metadata.tagNames = (node.getAttribute('tags') || '').split(',').map((tag) => tag.trim()).filter((tag) => {
+              if (!tag) return false;
+              const identity = tag.normalize('NFKC').toLowerCase();
+              if (seen.has(identity)) return false;
+              seen.add(identity); return true;
+            });
+          }
+          // Raindrop exports descriptions in this attribute. DD may instead
+          // contain highlights, and remains excluded by the inert walker.
+          if (node.hasAttribute('description')) metadata.description = node.getAttribute('description');
+          if (Object.keys(metadata).length) site.metadata = metadata;
+        }
+        plan.sites.push(site);
         if (plan.folders.length + plan.sites.length > MAX_ENTRIES) fail(tr("导入条目不能超过 {0}", [MAX_ENTRIES]));
       } catch (error) {
         if (plan.folders.length + plan.sites.length > MAX_ENTRIES) throw error;

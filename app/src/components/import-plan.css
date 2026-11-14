@@ -34,6 +34,23 @@
 .bookmark-import-invalid ul { max-height: 150px; overflow: auto; padding-left: 20px; }
 .bookmark-import-invalid li { margin-top: 8px; overflow-wrap: anywhere; }
 .bookmark-import-invalid li small { display: block; opacity: .65; }
+.import-group-names, .import-merge-sources { min-width: 0; margin: 0; padding: 0; border: 0; }
+.import-group-names { display: grid; gap: 10px; }
+.import-group-names > legend, .import-merge-sources > legend { font-size: 13px; margin-bottom: 8px; }
+.import-group-names > label { display: grid; grid-template-columns: minmax(60px, auto) minmax(0, 1fr); align-items: center; gap: 10px; font-size: 13px; }
+.import-source-description, .import-source-tags { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+.import-merge-groups { display: flex; flex-direction: column; gap: 16px; }
+.import-merge-groups h3 { margin: 0; font-size: 14px; }
+.import-merge-group { display: flex; flex-direction: column; gap: 12px; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.import-merge-url { overflow-wrap: anywhere; font-size: 13px; }
+.import-merge-group .own-select-label { white-space: normal; overflow-wrap: anywhere; }
+.import-target-metadata { font-size: 12px; color: var(--muted); }
+.import-target-metadata p { margin: 5px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 100px; overflow-y: auto; }
+.import-merge-source { display: flex !important; flex-direction: row !important; align-items: flex-start; gap: 9px; padding: 8px 0; min-width: 0; cursor: pointer; }
+.import-merge-source > span { display: grid; gap: 5px; min-width: 0; }
+.import-merge-source strong { font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+.import-merge-source small { font-size: 12px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 90px; overflow-y: auto; }
+.import-metadata-issues { color: var(--danger, var(--text)); font-size: 13px; overflow-wrap: anywhere; }
 @media (max-width: 520px) {
   .bookmark-import-target { grid-template-columns: 1fr; }
   .bookmark-import-row { gap: 8px; }

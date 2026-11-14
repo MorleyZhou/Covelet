@@ -7,7 +7,7 @@ import { normalizeIconAddress, siteIconAddress } from './site-icons.js';
 import { readNavigationIconResource, restoreNavigationIconResource, retainNavigationIconResources } from './navigation-icon-cache.js';
 import { prepareImportedNavigationIcons } from './navigation-icon-intake.js';
 import { ICON_IMAGE_LIMIT } from './icon-image-format.js';
-import { withNavigationPrivacy } from './content-preferences.js';
+import { withNavigationPrivacy, validateContentPreferences } from './content-preferences.js';
 import { sameJson } from './json-equal.js';
 import { navigationResourceEntries, remapNavigationAssets } from './navigation-resources.js';
 import { prepareNavigationDeletion, removeTrashMetadata } from './navigation-trash-core.js';
@@ -379,6 +379,30 @@ export function createStorage({ configStore, assetStore, privacy = withNavigatio
       return exclusive(() => privacy((current, changes) =>
         action(current, (addedKeys = [], metadataOptions = {}) => writeState(next, expectedRevision, changes(addedKeys, metadataOptions)))));
     },
+    applyPreparedNavigationImport({ expectedNavigationRevision, expectedPreferencesRevision } = {}, factory) {
+      return exclusive(() => privacy(async (current, changes) => {
+        if (typeof factory !== 'function' || !Number.isSafeInteger(expectedNavigationRevision) || expectedNavigationRevision < 0
+          || !Number.isSafeInteger(expectedPreferencesRevision) || expectedPreferencesRevision < 0) fail(tr('内容已在其他页面更新，请重新打开后重试。'), 'REVISION_CONFLICT');
+        const before = (await readEnvelope()).state;
+        if (before.revision !== expectedNavigationRevision || current.revision !== expectedPreferencesRevision) fail(tr('内容已在其他页面更新，请重新打开后重试。'), 'REVISION_CONFLICT');
+        if (current.presentation) fail(tr('请先输入密码解除隐藏。'), 'PRIVACY_LOCKED');
+        const result = await factory(clone(before), clone(current));
+        if (!result || typeof result !== 'object' || Array.isArray(result) || !result.state
+          || typeof result.preferencesChanged !== 'boolean' || !Array.isArray(result.expectedMetadata) || !Array.isArray(result.issues)
+          || !Number.isSafeInteger(result.addedSites) || result.addedSites < 0 || !Number.isSafeInteger(result.updatedSites) || result.updatedSites < 0) fail(tr('导入计划无效或条目过多'), 'IMPORT_PLAN_INVALID');
+        if (result.issues.length) fail(typeof result.issues[0]?.message === 'string' ? result.issues[0].message : tr('导入计划无效或条目过多'), 'IMPORT_METADATA_INVALID');
+        if (result.sourceRevision !== before.revision || result.sourcePreferencesRevision !== current.revision) fail(tr('内容已在其他页面更新，请重新打开后重试。'), 'REVISION_CONFLICT');
+        if (!result.addedSites && !result.updatedSites) fail(tr('没有可应用的更改。'), 'IMPORT_NO_CHANGES');
+        if (!result.nextPreferences || typeof result.nextPreferences !== 'object' || Array.isArray(result.nextPreferences)) fail(tr('导入计划无效或条目过多'), 'IMPORT_PLAN_INVALID');
+        const nextPreferences = validateContentPreferences(result.nextPreferences);
+        const preferencesChanged = !sameJson(nextPreferences, current);
+        if (nextPreferences.revision !== current.revision || preferencesChanged !== result.preferencesChanged) fail(tr('导入计划无效或条目过多'), 'IMPORT_PLAN_INVALID');
+        const records = changes([], { expectedRevision: expectedPreferencesRevision, expectedMetadata: result.expectedMetadata,
+          ...(result.preferencesChanged ? { replacePreferences: nextPreferences } : {}) });
+        const saved = await writeState(result.state, expectedNavigationRevision, records);
+        return { ...result, state: saved, nextPreferences: clone(records['covelet.content.preferences.v1'] || current) };
+      }));
+    },
     saveStateWithTrash(next, expectedRevision, { cause = 'context-delete', expectedPreferencesRevision, metadata = [], expectedMetadata = [], addedPrivateKeys = [], copies = [] } = {}) {
       return exclusive(() => privacy(async (current, changes) => {
         const before = (await readEnvelope()).state;
@@ -632,5 +656,5 @@ export function createStorage({ configStore, assetStore, privacy = withNavigatio
 }
 
 const storage = createStorage({ initialState: createInitialState });
-export const { loadState, saveState, saveStateWithPrivacy, saveStateWithTrash, validateNavigationResources, restoreBackupWithPreferences, restoreContentWithPreferences, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, validateBackupPlan, restoreBackup, restoreSnapshot,
+export const { loadState, saveState, saveStateWithPrivacy, applyPreparedNavigationImport, saveStateWithTrash, validateNavigationResources, restoreBackupWithPreferences, restoreContentWithPreferences, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, validateBackupPlan, restoreBackup, restoreSnapshot,
   getSyncStatus, subscribeSyncStatus, setSyncEnabled, syncNow, getSyncConflicts, restoreSyncConflict } = storage;
