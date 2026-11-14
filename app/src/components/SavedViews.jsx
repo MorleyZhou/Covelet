@@ -145,6 +145,11 @@ export default function SavedViews({ navigation, tools, preferences, initialFilt
           </div>
           {missingTagIds.length > 0 && <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => patch({ tagIds: value.tagIds.filter((id) => !missingTagIds.includes(id)) })}>{tr('移除失效标签')}</Button>}
         </fieldset>
+        {Boolean(value.excludeTagIds?.length) && <fieldset className="saved-view-tags" disabled={busy}>
+          <legend>{tr('排除标签')}</legend>
+          <div className="saved-view-tag-options">{value.excludeTagIds.map((id) => <Button key={id} type="button" variant="secondary" size="sm"
+            onClick={() => patch({ excludeTagIds: value.excludeTagIds.filter((value) => value !== id) })}>{tags.find((tag) => tag.id === id)?.name || tr('移除失效标签')} ×</Button>)}</div>
+        </fieldset>}
         <label className="saved-view-private"><Checkbox checked={editor.private} disabled={busy} onCheckedChange={(checked) => setEditor((current) => ({ ...current, private: checked === true }))} />{tr('开启隐藏时锁定此清单')}</label>
         <p className={preview?.status === 'ready' && !scopeChanged ? 'hint' : 'form-error'} role="status">{scopeChanged
           ? tr('目标位置已变化，请重新选择。') : preview?.status === 'ready'

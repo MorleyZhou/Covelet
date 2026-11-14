@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { remapNavigationPreferences } from './navigation-recovery.js';
+import { remapNavigationPreferences, preserveInvalidViewReferences } from './navigation-recovery.js';
 import { defaultSavedFilters } from './saved-views.js';
 
 test('append remaps only imported navigation metadata and preserves other content domains', () => {
@@ -33,4 +33,15 @@ test('folder view references follow imported identities and missing references n
   });
   assert.deepEqual(result.library.views.map((entry) => entry.scope.folderId), ['fresh-owned', 'missing-source-folder', 'missing-folder-fresh', 'missing-folder-fresh']);
   assert.throws(() => remapNavigationPreferences(input, { preferenceKeyMap: new Map(), referenceIdMap: new Map(), makeId: () => '.' }), { code: 'REVISION_CONFLICT' });
+});
+
+test('missing imported exclusions remain invalid instead of binding a local same-ID tag', () => {
+  const input = { version: 1, revision: 0, presentation: false, aliases: {}, privateKeys: [], library: {
+    version: 1, tags: [], items: {}, views: [{ id: 'excluded-view', revision: 1, name: 'Exclude missing', ...defaultSavedFilters(), excludeTagIds: ['missing'] }],
+  } };
+  const before = structuredClone(input);
+  const mapped = preserveInvalidViewReferences(input, { sourceNavigation: null, targetNavigation: null,
+    targetPreferences: { library: { tags: [{ id: 'missing', name: 'Unrelated local tag' }] } }, makeId: () => 'isolated' });
+  assert.deepEqual(mapped.library.views[0].excludeTagIds, ['missing-tag-isolated']);
+  assert.deepEqual(input, before);
 });

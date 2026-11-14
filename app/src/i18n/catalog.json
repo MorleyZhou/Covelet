@@ -17329,5 +17329,77 @@
     "de": "Der Synchronisierungsordner enthält andere Dateien. Verschieben Sie diese aus dem Ordner und versuchen Sie es erneut.",
     "fr": "Le dossier de synchronisation contient d’autres fichiers. Déplacez-les hors de ce dossier, puis réessayez.",
     "ru": "Папка синхронизации содержит другие файлы. Переместите их из этой папки и повторите попытку."
+  },
+  "命令面板": {
+    "en": "Command palette",
+    "zh-TW": "命令面板",
+    "ja": "コマンドパレット",
+    "ko": "명령 팔레트",
+    "de": "Befehlspalette",
+    "fr": "Palette de commandes",
+    "ru": "Палитра команд"
+  },
+  "搜索内容或操作": {
+    "en": "Search content or actions",
+    "zh-TW": "搜尋內容或操作",
+    "ja": "コンテンツや操作を検索",
+    "ko": "콘텐츠 또는 작업 검색",
+    "de": "Inhalte oder Aktionen suchen",
+    "fr": "Rechercher du contenu ou des actions",
+    "ru": "Поиск содержимого или действий"
+  },
+  "搜索条件无效，请检查类型、标签或引号。": {
+    "en": "Invalid search conditions. Check the type, tags or quotation marks.",
+    "zh-TW": "搜尋條件無效，請檢查類型、標籤或引號。",
+    "ja": "検索条件が無効です。種類、タグ、引用符を確認してください。",
+    "ko": "검색 조건이 올바르지 않습니다. 유형, 태그 또는 따옴표를 확인하세요.",
+    "de": "Ungültige Suchbedingungen. Prüfen Sie Typ, Tags und Anführungszeichen.",
+    "fr": "Conditions de recherche invalides. Vérifiez le type, les étiquettes ou les guillemets.",
+    "ru": "Некорректные условия поиска. Проверьте тип, теги или кавычки."
+  },
+  "清除条件": {
+    "en": "Clear conditions",
+    "zh-TW": "清除條件",
+    "ja": "条件をクリア",
+    "ko": "조건 지우기",
+    "de": "Bedingungen löschen",
+    "fr": "Effacer les conditions",
+    "ru": "Очистить условия"
+  },
+  "搜索结果": {
+    "en": "Search results",
+    "zh-TW": "搜尋結果",
+    "ja": "検索結果",
+    "ko": "검색 결과",
+    "de": "Suchergebnisse",
+    "fr": "Résultats de recherche",
+    "ru": "Результаты поиска"
+  },
+  "在桌面中查看结果": {
+    "en": "Show results on the desktop",
+    "zh-TW": "在桌面中檢視結果",
+    "ja": "デスクトップで結果を表示",
+    "ko": "데스크톱에서 결과 보기",
+    "de": "Ergebnisse auf dem Desktop anzeigen",
+    "fr": "Afficher les résultats sur le bureau",
+    "ru": "Показать результаты на рабочем столе"
+  },
+  "移除条件": {
+    "en": "Remove condition",
+    "zh-TW": "移除條件",
+    "ja": "条件を削除",
+    "ko": "조건 제거",
+    "de": "Bedingung entfernen",
+    "fr": "Supprimer la condition",
+    "ru": "Удалить условие"
+  },
+  "排除标签": {
+    "en": "Exclude tags",
+    "zh-TW": "排除標籤",
+    "ja": "除外するタグ",
+    "ko": "제외할 태그",
+    "de": "Tags ausschließen",
+    "fr": "Exclure les étiquettes",
+    "ru": "Исключить теги"
   }
 }

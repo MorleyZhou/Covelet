@@ -1,0 +1,12 @@
+.command-palette-modal { width: min(640px, calc(100vw - 32px)); }
+.command-palette { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.command-results { max-height: min(52vh, 420px); overflow-y: auto; overscroll-behavior: contain; }
+.command-group { margin: 12px 8px 5px; font-size: 12px; opacity: .65; }
+.command-result { width: 100%; display: flex; flex-direction: column; gap: 3px; text-align: start; padding: 10px 12px; border-radius: 10px; }
+.command-result[aria-selected="true"] { background: var(--hover, #80808022); outline: 1px solid currentColor; outline-offset: -1px; }
+.command-result strong, .command-result small { max-width: 100%; overflow-wrap: anywhere; }
+.command-result small { opacity: .7; font-size: 12px; }
+.command-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; }
+.structured-conditions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; }
+.query-condition { padding: 4px 8px; border: 1px solid #80808055; border-radius: 8px; overflow-wrap: anywhere; max-width: 100%; }
+@media (forced-colors: active) { .command-result[aria-selected="true"] { outline: 2px solid Highlight; } }

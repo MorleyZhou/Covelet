@@ -111,7 +111,9 @@ import { exactDesktopMatches, visibleContentTagIds } from './lib/content-search.
 import { defaultDesktopPage, desktopPageName, logicalDesktopPages, withDesktopPageIdentity } from './lib/desktop-pages.js';
 import { localData } from './lib/local-data.js';
 import { DEFAULT_DESKTOP_KEY } from './lib/sync-data-rules.js';
-import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode, getContentMetadata } from './lib/content-preferences.js';
+import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode, getContentMetadata, getContentTags } from './lib/content-preferences.js';
+import { parseStructuredSearch, removeStructuredCondition } from './lib/structured-search.js';
+import CommandPalette, { StructuredConditions } from './components/CommandPalette.jsx';
 import { defaultSavedFilters, filterSavedContent, resolveSavedView, viewFilters } from './lib/saved-views.js';
 import { useLocalDateKey } from './lib/use-local-date.js';
 import { commitNavigationTransfer, commitNavigationTags } from './lib/navigation-library.js';
@@ -662,12 +664,18 @@ export function App() {
   const adaptive = visualEnabled && wallpaperAppearance.phase === "ready"
     ? createAdaptiveAppearance(wallpaperAppearance.palette, settings.shade) : null;
   const searchPage = Number(activeScreen.split(':')[0]);
-  const currentSearchFilters = useMemo(() => ({ ...defaultSavedFilters(), ...(searchContext ? {
+  const baseSearchFilters = useMemo(() => ({ ...defaultSavedFilters(), ...(searchContext ? {
     scope: searchContext.scope, domain: searchContext.domain, readingStatus: searchContext.readingStatus, revisit: searchContext.revisit ?? null,
-  } : {}), query,
+    ...(searchContext.excludeTagIds?.length ? { excludeTagIds: searchContext.excludeTagIds } : {}),
+  } : {}), query: '',
     type: searchFilter === 'current' ? 'navigation' : searchFilter,
     scope: searchFilter === 'current' ? { kind: 'desktop', desktopId: state?.settings.desktopPages?.[searchPage]?.id || `@page:${searchPage}` }
-      : searchContext?.scope || { kind: 'all' }, tagIds: searchTagIds }), [query, searchFilter, searchContext, searchTagIds, state, searchPage]);
+      : searchContext?.scope || { kind: 'all' }, tagIds: searchTagIds }), [searchFilter, searchContext, searchTagIds, state, searchPage]);
+  const parsedSearch = useMemo(() => parseStructuredSearch(query, {
+    tags: getContentTags(contentPreferences, { hiddenKeys: presentation ? hiddenKeys : [] }), baseFilters: baseSearchFilters,
+    parseOperators: !resolveProviderKeyword(query, state?.providers || []),
+  }), [query, contentPreferences, presentation, hiddenKeys, baseSearchFilters, state?.providers]);
+  const currentSearchFilters = parsedSearch.status === 'ready' ? parsedSearch.filters : baseSearchFilters;
   const availableSearchTagIds = useMemo(() => {
     if (!state) return [];
     return visibleContentTagIds(state, personalData, contentPreferences.library, presentation ? hiddenKeys : []);
@@ -680,10 +688,11 @@ export function App() {
     });
   }, [availableSearchTagIds, searchContext]);
   const searchResult = useMemo(() => {
+    if (parsedSearch.status !== 'ready') return { status: 'invalid', rows: [] };
     if (!state || (!query.trim() && !searchTagIds.length && !searchContext)) return { status: 'ready', rows: [] };
     return filterSavedContent(state, personalData, contentPreferences, currentSearchFilters,
       { hiddenKeys: presentation ? hiddenKeys : [], allowDraftScopes: true, today });
-  }, [state, personalData, contentPreferences, currentSearchFilters, presentation, hiddenKeys, query, searchTagIds, searchContext, today]);
+  }, [state, personalData, contentPreferences, currentSearchFilters, presentation, hiddenKeys, query, searchTagIds, searchContext, today, parsedSearch.status]);
   const searchShielded = presentation && Boolean(searchContext?.protectOnLock || searchContext?.viewId && contentPreferences.privateKeys.includes(`view:${searchContext.viewId}`)
     || searchResult.status === 'hidden');
   useEffect(() => {
@@ -708,9 +717,18 @@ export function App() {
   }, [candidate, focused, query, state?.revision, personalData?.revision]);
   const currentFolder = state?.entries.find((item) => item.id === folderId);
   const selectedProvider = state?.providers.find((item) => item.id === provider);
-  const keywordSearch = searchShielded ? null : resolveProviderKeyword(query, state?.providers || []);
+  const keywordSearch = searchShielded || parsedSearch.structured ? null : resolveProviderKeyword(query, state?.providers || []);
   const keywordHint = keywordSearch && candidate < 0
     && !exactDesktopMatches(searchResult.rows.filter((item) => item.type === 'desktop').map((item) => item.record), query).length ? keywordSearch : null;
+  useEffect(() => {
+    function shortcut(event) {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.key.toLowerCase() !== 'k' || event.isComposing || composingSearch.current) return;
+      if (!state || modal || privacyDialog || busy || layoutEditor.editing || event.target.closest?.('input, textarea, [contenteditable="true"]')) return;
+      event.preventDefault(); setContext(null); setFolder(null); setFocused(false); setModal({ kind: 'commands' });
+    }
+    document.addEventListener('keydown', shortcut);
+    return () => document.removeEventListener('keydown', shortcut);
+  }, [state, modal, privacyDialog, busy, layoutEditor.editing]);
   const items =
     desktopState?.entries
       .filter((item) => item.parentId === null && !item.detached)
@@ -852,12 +870,13 @@ export function App() {
   }
   async function submit(e) {
     e.preventDefault();
-    if (composingSearch.current || e.nativeEvent.isComposing || searchShielded) return;
+    if (composingSearch.current || e.nativeEvent.isComposing || searchShielded || parsedSearch.status !== 'ready') return;
     if (candidate >= 0 && candidates[candidate]) {
       openContent(candidates[candidate]);
       return;
     }
     if (!query.trim()) return;
+    if (parsedSearch.structured) { if (candidates.length === 1) openContent(candidates[0]); else setFocused(true); return; }
     try {
       if (
         /^https?:\/\//i.test(query) ||
@@ -1334,8 +1353,10 @@ export function App() {
         />
         <header className="page-header">
           <div className="header-actions" inert={layoutEditor.editing || undefined}>
+            <Button variant="unstyled" size="unstyled" className="header-icon" type="button" aria-label={tr('命令面板')} title={`${tr('命令面板')} · Ctrl/⌘+K`}
+              onClick={() => { setFocused(false); setModal({ kind: 'commands' }); }}><MagnifyingGlass size={23} /></Button>
             <Button variant="unstyled" size="unstyled" className="header-icon" type="button" aria-label={tr('动态清单')} title={tr('动态清单')}
-              onClick={() => setModal({ kind: 'saved-views', initialFilters: currentSearchFilters })}><BookmarkSimple size={23} /></Button>
+              onClick={() => setModal({ kind: 'saved-views', initialFilters: parsedSearch.status === 'ready' ? currentSearchFilters : undefined })}><BookmarkSimple size={23} /></Button>
             <Button variant="unstyled" size="unstyled" className="header-icon" type="button" aria-label={tr('整理链接')} title={tr('整理链接')}
               onClick={() => setModal({ kind: 'resource-library' })}><ListBullets size={24} /></Button>
             <Button variant="unstyled" size="unstyled" className="header-icon" type="button" aria-label={tr("添加网站")} title={tr("添加网站")} onClick={newEntry}><Plus size={25} /></Button>
@@ -1454,6 +1475,8 @@ export function App() {
             </Button>
           </form>
           {keywordHint && <p className="search-keyword-hint" role="status">{tr('使用 {0} 搜索', [providerName(keywordHint.provider)])}</p>}
+          {!searchShielded && <StructuredConditions parsed={parsedSearch} onClear={() => { setQuery(parsedSearch.status === 'ready' ? parsedSearch.textQuery : ''); setCandidate(-1); }}
+            onRemove={(condition) => { setQuery(removeStructuredCondition(query, condition)); setCandidate(-1); }} />}
           {searchContext && !searchShielded && <div className="saved-search-context"><span>{searchContext.name}</span>
             <Button type="button" variant="ghost" size="sm" aria-label={tr('重置筛选')} title={tr('重置筛选')} onClick={clearWorkingView}><X size={15} /></Button></div>}
           {searchResult.status === 'invalid' && <p className="content-search-error" role="status">{tr('筛选条件已失效，请重新选择。')}</p>}
@@ -1684,6 +1707,27 @@ export function App() {
           <CloudSyncSettings demo={demo} onBusyChange={setBusy} onNotice={notifySync} toastVisible={isSyncNotice}
             onLocalOnly={() => { setModal(null); notify(tr('已关闭同步，仅在本机保存数据。')); }} />
         </Modal>}
+        {modal?.kind === 'commands' && <CommandPalette Dialog={Modal} navigation={state} tools={personalData} preferences={contentPreferences}
+          hiddenKeys={presentation ? hiddenKeys : []} today={today} onClose={() => setModal(null)} onOpen={(item) => openContent(item)}
+          onSearch={(value) => { setQuery(value); setSearchContext(null); setSearchTagIds([]); setSearchFilter('all'); setFocused(true); requestAnimationFrame(() => inputRef.current?.focus()); }}
+          actions={[
+            { id: 'new-site', title: tr('添加网站'), run: newEntry },
+            { id: 'new-note', title: tr('新便笺'), run: () => setModal({ kind: 'personal-content', type: 'note' }) },
+            { id: 'reading', title: tr('稍后读'), run: () => setModal({ kind: 'personal-content', type: 'reading' }) },
+            { id: 'views', title: tr('动态清单'), run: () => setModal({ kind: 'saved-views', initialFilters: currentSearchFilters }) },
+            { id: 'library', title: tr('整理链接'), run: () => setModal({ kind: 'resource-library' }) },
+            { id: 'import', title: tr('导入网址与书签 HTML'), run: () => setModal({ kind: 'bookmarks' }) },
+            { id: 'export', title: tr('导出书签 HTML'), run: () => setModal({ kind: 'bookmark-export' }) },
+            { id: 'settings', title: tr('设置'), run: () => setModal({ kind: 'settings' }) },
+            ...[['appearance', tr('外观')], ['search', tr('搜索引擎')], ['time', tr('时间与日期')], ['about', tr('关于')]].map(([tab, title]) => ({ id: `settings:${tab}`, title,
+              run: () => setModal({ kind: 'settings', tab }) })),
+            { id: 'backup', title: tr('备份与恢复'), run: () => setModal({ kind: 'settings', tab: 'backup' }) },
+            { id: 'trash', title: tr('回收站'), run: () => setModal({ kind: 'settings', tab: 'trash' }) },
+            { id: 'sync', title: tr('自备存储同步'), run: () => setModal({ kind: 'sync-settings' }) },
+            { id: 'privacy', title: tr('内容与隐私'), run: () => setModal({ kind: 'content-preferences' }) },
+            ...getContentTags(contentPreferences, { hiddenKeys: presentation ? hiddenKeys : [] }).map((tag) => ({ id: `tag:${tag.id}`, title: `${tr('标签')} · ${tag.name}`,
+              run: () => { setSearchContext(null); setQuery(''); setSearchTagIds([tag.id]); setSearchFilter('all'); setFocused(true); requestAnimationFrame(() => inputRef.current?.focus()); } })),
+          ]} />}
         {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} Dialog={Modal} onClose={() => setModal(null)} />}
         {modal?.kind === 'saved-views' && <SavedViews navigation={state} tools={personalData} preferences={contentPreferences} initialFilters={modal.initialFilters}
           Dialog={Modal} onSaveView={saveWorkingView} onApply={applyWorkingView} onBusyChange={setBusy} onClose={() => setModal(null)} />}
@@ -1711,6 +1755,7 @@ export function App() {
         {modal?.kind === "settings" && (
           <Settings
             state={state}
+            initialTab={modal.tab}
             contentPreferences={contentPreferences}
             busy={busy}
             onBusyChange={setBusy}
@@ -1765,6 +1810,7 @@ export function App() {
 
 function Settings({
   state,
+  initialTab = 'appearance',
   contentPreferences,
   busy = false,
   onBusyChange,
@@ -1776,7 +1822,7 @@ function Settings({
   providerIconEpoch,
   onProviderIconReady,
 }) {
-  const [tab, setTab] = useState("appearance"),
+  const [tab, setTab] = useState(initialTab),
     [draft, setDraft] = useState(structuredClone(state.settings)),
     [providers, setProviderDraft] = useState(structuredClone(state.providers)),
     [newName, setNewName] = useState(""),

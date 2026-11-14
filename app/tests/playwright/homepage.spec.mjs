@@ -50,7 +50,8 @@ test('settings separate backup, trash, and about, and sync opens from Extensions
   const page = await extension.newtab();
   const settings = await openSettings(page, '关于');
   const version = await page.evaluate(() => chrome.runtime.getManifest().version);
-  await settings.getByRole('button', { name: `${version} 更新内容`, exact: true }).click();
+  await expect(settings.getByRole('button', { name: `${version} 更新内容`, exact: true })).toBeVisible();
+  await settings.getByRole('button', { name: '0.5.0 更新内容', exact: true }).click();
   await expect(settings).toContainText('网站和稍后读支持备注，网站、便笺与稍后读共用标签。');
   await settings.getByRole('button', { name: '0.4.0 更新内容', exact: true }).click();
   await expect(settings).toContainText('命名桌面、设置默认桌面并搜索跳转。');

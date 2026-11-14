@@ -304,13 +304,30 @@ test('the navigation transaction can prepare a stable view without persisting a 
 
 test('view append remaps only incoming tag and desktop references and keeps local same-ID definitions', () => {
   const empty = validateContentPreferences(null);
-  const local = { ...empty, library: { version: 1, tags: [{ id: 'tag-local', name: 'Work' }], items: {},
+  const local = { ...empty, library: { version: 1, tags: [{ id: 'tag-local', name: 'Work' }, { id: 'tag-local-done', name: 'Done' }], items: {},
     views: [{ id: 'view-local', revision: 4, name: 'Keep', ...defaultSavedFilters() }] } };
-  const incoming = { ...empty, library: { version: 1, tags: [{ id: 'tag-source', name: 'work' }], items: {}, views: [
+  const incoming = { ...empty, library: { version: 1, tags: [{ id: 'tag-source', name: 'work' }, { id: 'tag-source-done', name: 'done' }], items: {}, views: [
     { id: 'view-local', revision: 1, name: 'Old', ...defaultSavedFilters() },
-    { id: 'view-new', revision: 1, name: 'Imported', ...defaultSavedFilters(), scope: { kind: 'desktop', desktopId: 'source-desktop' }, tagIds: ['tag-source'] },
+    { id: 'view-new', revision: 1, name: 'Imported', ...defaultSavedFilters(), scope: { kind: 'desktop', desktopId: 'source-desktop' }, tagIds: ['tag-source'], excludeTagIds: ['tag-source-done'] },
   ] } };
   const merged = mergeContentPreferences(local, incoming, { desktopIdMap: new Map([['source-desktop', 'new-desktop']]) });
   assert.equal(merged.library.views[0].name, 'Keep'); assert.equal(merged.library.views[0].revision, 4);
   assert.deepEqual(merged.library.views[1].tagIds, ['tag-local']); assert.equal(merged.library.views[1].scope.desktopId, 'new-desktop');
+  assert.deepEqual(merged.library.views[1].excludeTagIds, ['tag-local-done']);
+});
+
+test('excluded view tag IDs survive rename and deletion and cannot be stripped by a stale hidden editor', async () => {
+  const tag = await createContentTag('Completed');
+  await saveContentMetadata('note:hidden', { tagIds: [tag.id] });
+  const view = await saveSavedView({ name: 'Unfinished', excludeTagIds: [tag.id] });
+  await renameContentTag(tag.id, 'Finished');
+  assert.deepEqual((await loadContentPreferences()).library.views[0].excludeTagIds, [tag.id]);
+  await saveContentSettings('note:hidden', { private: true });
+  await setPresentationMode(true, { setup: true, password: PASSWORD });
+  const before = structuredClone(records);
+  await assert.rejects(saveSavedView({ ...view, excludeTagIds: [] }, { expectedViewRevision: view.revision }), { code: 'PRIVACY_LOCKED' });
+  assert.deepEqual(records, before);
+  await setPresentationMode(false, { password: PASSWORD });
+  await deleteContentTag(tag.id);
+  assert.deepEqual((await loadContentPreferences()).library.views[0].excludeTagIds, [tag.id]);
 });
