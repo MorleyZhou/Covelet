@@ -35,5 +35,6 @@ body, #root { height: 100%; }
 .note-capture-source > span { flex-shrink: 0; color: var(--muted); }
 .note-capture-source > a { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .note-capture .content-tag-options { max-height: 120px; overflow-y: auto; }
+.note-capture-preview { max-height: 180px; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
 .quick-add .note-capture label.content-tag-option { display: inline-flex; flex-direction: row; }
 .quick-add .prompt-dialog { max-width: calc(100vw - 32px); }

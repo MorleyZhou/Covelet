@@ -13,13 +13,27 @@ npm run test:e2e
 `npm run test:e2e -- --headed` shows the test-owned browser; `--grep` selects cases.
 `npm run test:e2e:report` opens the saved report.
 
-For the 0.6 command palette and structured-search batch, run
+For the 0.6 command palette, structured search and note-workflow batches, run
 `npx playwright test --config tests/playwright-batch.config.mjs` after rebuilding
 the unpacked extension. These cases cover the real palette, query conditions,
 saved filters, privacy, editor/IME event ownership, explicit engine keywords and
-all eight languages at 390×540. Their isolated report and screenshots are written
-to `output/playwright/covelet/0.6-batches/` at the repository root. This configuration
+all eight languages at 390×540. The note cases compare exported records before
+and after transient search, verify far-down matches against every clipping
+ancestor, and cover append, cancellation, stale targets and size limits. Reports
+and screenshots go to `output/playwright/covelet/0.6-batches/` at the repository
+root; `COVELET_QA_BATCH=0.5.4` adds a separate batch subdirectory. This configuration
 does not replace the complete regression suite.
+
+The note-capture cases grant only `https://capture.example/*` in a temporary test
+copy and intercept that page and its exact icon probes. The actual browser
+selection is read by `chrome.scripting` while the popup runs in an inactive tab.
+This verifies the real capture path, not a native toolbar gesture or activeTab
+permission prompt. The production manifest remains unchanged.
+
+On Windows, `COVELET_NATIVE_BROWSER=chrome` or `edge` selects the installed native
+browser through isolated profiles and CDP extension loading. The default remains
+bundled Chromium. `COVELET_QA_BATCH=0.5.4-chrome` or `0.5.4-edge` keeps native reports
+separate; the actual browser version is recorded as a test annotation.
 
 The fixture loads the existing `dist/extension/` directory using Playwright's
 official Chromium channel and a fresh persistent profile for each test. It checks

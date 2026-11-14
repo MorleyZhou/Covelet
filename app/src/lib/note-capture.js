@@ -1,11 +1,38 @@
 import { tr } from '../i18n/index.js';
-import { noteDocumentText, validateNoteDocument } from './note-document.js';
+import { NOTE_LIMITS, noteDocumentText, validateNoteDocument } from './note-document.js';
+import { fromMarkdown } from '@futelab/folio/serialization';
 import { getContentTags } from './content-preferences.js';
 
 const TEXT_LIMIT = 60000;
 const changed = () => Object.assign(Error(tr('页面已变化，请重新读取选文。')), { code: 'CAPTURE_CHANGED' });
 const unavailable = () => Object.assign(Error(tr('无法读取页面选文，请手动输入。')), { code: 'CAPTURE_UNAVAILABLE' });
 const cancelled = () => new DOMException('Aborted', 'AbortError');
+
+function literalParagraph(body) {
+  const content = [];
+  body.split('\n').forEach((line, index) => {
+    if (index) content.push({ type: 'hardBreak' });
+    if (line) content.push({ type: 'text', text: line });
+  });
+  return { type: 'paragraph', ...(content.length ? { content } : {}) };
+}
+
+// Preserve existing rich blocks byte-for-byte. Legacy body-only notes use the
+// same Markdown interpretation and literal fallback as the existing editor.
+export function appendCapturedDocument(note, addition) {
+  validateNoteDocument(addition);
+  let original = note.document;
+  if (!original) {
+    try { original = fromMarkdown(note.body, { limits: NOTE_LIMITS }); }
+    catch { original = { type: 'doc', content: [{ type: 'paragraph', ...(note.body ? { content: [{ type: 'text', text: note.body }] } : {}) }] }; }
+  }
+  validateNoteDocument(original);
+  const document = { ...structuredClone(original), content: [...structuredClone(original.content || []), ...structuredClone(addition.content || [])] };
+  validateNoteDocument(document);
+  const body = noteDocumentText(document);
+  if (body.length > TEXT_LIMIT || body.includes('\0')) throw Error(tr('便笺文档无效或超出大小限制。'));
+  return document;
+}
 
 export function captureVisibleTags(preferences, tagIds, { locked = false, hiddenKeys } = {}) {
   const visible = new Set(getContentTags({ ...preferences, presentation: locked || preferences.presentation }, { hiddenKeys }).map((tag) => tag.id));
@@ -69,12 +96,7 @@ export function captureNoteDocument({ body, pageTitle = '', sourceUrl = '' }) {
   // Preserve every LF as a visible hard break, including leading/trailing or
   // consecutive blank lines. CR characters stay in their literal text nodes,
   // so a CRLF input also retains its exact plain-text projection.
-  const lines = body.split('\n'), bodyContent = [];
-  lines.forEach((line, index) => {
-    if (index) bodyContent.push({ type: 'hardBreak' });
-    if (line) bodyContent.push({ type: 'text', text: line });
-  });
-  content.push({ type: 'paragraph', content: bodyContent });
+  content.push(literalParagraph(body));
   if (pageTitle) content.push(paragraph(pageTitle));
   if (sourceUrl) {
     const url = captureSourceUrl(sourceUrl);

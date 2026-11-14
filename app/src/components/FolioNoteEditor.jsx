@@ -11,6 +11,7 @@ import { isFolioInitializationChange } from '../lib/folio-initialization.js';
 import { useDialogSurface } from './DialogSurface.jsx';
 import useFolioControlViewport from './use-folio-control-viewport.js';
 import './folio-note.css';
+import NoteSearchMatches from './NoteSearchMatches.jsx';
 
 // Translate only Folio's trusted interface labels, never document nodes.
 function translateLabels(value, key) {
@@ -35,7 +36,7 @@ function legacyDocument(body) {
   }
 }
 
-export default function FolioNoteEditor({ document, body, documentId, preview, disabled, onInitialize, onChange, onError }) {
+export default function FolioNoteEditor({ document, body, documentId, preview, disabled, onInitialize, onChange, onError, searchQuery, onCloseSearch }) {
   const surface = useDialogSurface(), locale = getLocale();
   const area = useRef(null), [portalHost, setPortalHost] = useState(null);
   useFolioControlViewport(area, portalHost);
@@ -45,6 +46,7 @@ export default function FolioNoteEditor({ document, body, documentId, preview, d
   const blockMenuLabels = useMemo(() => translateLabels(resolveBlockMenuLabels('zh-CN')), [locale]);
   useEffect(() => { if (!document) onInitialize(value); }, [document, value, onInitialize]);
   return <><div ref={area} className="folio-note-area" role="region" aria-label={tr('便笺内容')}>
+    {searchQuery !== null && searchQuery !== undefined && <NoteSearchMatches rootRef={area} query={searchQuery} active={!disabled} onClose={onCloseSearch} />}
     <div className="folio-note-edit-panel" hidden={preview}>
       <FolioEditor className="folio-note-editor" documentId={documentId} value={value} onChange={(next) => { if (!isFolioInitializationChange(value, next)) onChange(next); }}
         editable={!disabled && !preview} placeholder={tr('开始记录…')} locale={locale} translations={translations}

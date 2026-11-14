@@ -6,6 +6,7 @@ import { localData } from './local-data.js';
 import { withNavigationPrivacy, loadContentPreferences, validateContentPreferences, contentPreferencesForKeys } from './content-preferences.js';
 import { userErrorMessage } from './user-error.js';
 import { validateRevisitOn } from './reading-revisit.js';
+import { appendCapturedDocument } from './note-capture.js';
 
 const loadToolsCore = () => import('./tools-core.js').then((module) => module.loadToolsCore());
 
@@ -205,7 +206,7 @@ function saveContentRecord(kind, update, { metadata, expectedPreferencesRevision
   return withNavigationPrivacy((preferences, prepare) => {
     checkPreferencesRevision(preferences, expectedPreferencesRevision);
     return mutate((data) => {
-      const record = update(data);
+      const record = update(data, preferences);
       checkContentVisible(preferences, kind, record.id);
       return record;
     }, { expectedRevision,
@@ -226,6 +227,20 @@ export async function saveNote({ id, revision, title: name, body, document, pinn
     if (!id) data.notes.push(note);
     return note;
   }, options);
+}
+export async function appendNoteCapture({ id, revision, document }, { expectedPreferencesRevision } = {}) {
+  if (!Number.isSafeInteger(revision) || revision < 1 || !Number.isSafeInteger(expectedPreferencesRevision) || expectedPreferencesRevision < 0) throw revisionConflict();
+  const addition = copy(validateNoteDocument(document));
+  if (!noteDocumentText(addition).trim()) fail(tr('请填写便笺内容。'));
+  return saveContentRecord('note', (data, preferences) => {
+    checkContentVisible(preferences, 'note', id);
+    const note = data.notes.find((record) => record.id === id);
+    if (!note || note.revision !== revision) throw revisionConflict();
+    const combined = appendCapturedDocument(note, addition);
+    Object.assign(note, { document: combined, body: text(noteDocumentText(combined), 60000, tr('便笺')),
+      updatedAt: Math.max(Date.now(), note.updatedAt), revision: note.revision + 1 });
+    return note;
+  }, { expectedPreferencesRevision });
 }
 export function deletePersonalRecord(kind, id, revision, { expectedPreferencesRevision, expectedRevision } = {}) {
   if (!activeKinds.includes(kind)) fail(tr("记录类型无效。"));
