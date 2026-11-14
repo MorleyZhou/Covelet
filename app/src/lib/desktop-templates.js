@@ -1,9 +1,10 @@
 import { tr } from '../i18n/index.js';
 import { localData } from './local-data.js';
-import { createEmptyState, letterIcon, migrateNavigationState, validateState } from './model.js';
+import { createEmptyState, letterIcon, migrateNavigationState, validateDesktopAppearance, validateState } from './model.js';
 import { DESKTOP_ROWS, MAX_DESKTOP_PAGE, freezeDesktopPositions, nextDesktopPage } from './desktop-layout.js';
 import { CLOCK_WIDGET_ID, NOTES_WIDGET_ID, READING_WIDGET_ID, SAVED_VIEW_WIDGET_ID, WIDGET_NAMES, validateWidgetConfig, widgetContentReference } from './widget-model.js';
 import { prepareImport } from './import-plan.js';
+import { withDesktopPageIdentity } from './desktop-pages.js';
 
 export const DESKTOP_TEMPLATE_MAX_BYTES = 256 * 1024;
 export const DESKTOP_TEMPLATE_MAX_SAVED = 20;
@@ -60,7 +61,7 @@ export function inspectDesktopTemplate(input) {
     try { raw = JSON.parse(raw); } catch { fail(tr('无法读取这份桌面方案，请重新选择文件。')); }
   }
   encoded(raw);
-  fields(raw, ['format', 'version', 'name', 'appearance', 'widgets', 'sites']);
+  fields(raw, ['format', 'version', 'name', 'appearance', 'widgets', 'sites', 'desktopAppearances']);
   if (raw.format !== FORMAT || raw.version !== 1 || !Array.isArray(raw.widgets) || !Array.isArray(raw.sites)
     || raw.widgets.length > 50 || raw.widgets.length + raw.sites.length > 2000) fail(tr('桌面方案格式或版本不受支持。'));
   fields(raw.appearance, APPEARANCE_KEYS);
@@ -87,17 +88,34 @@ export function inspectDesktopTemplate(input) {
   const checked = validateState(sample);
   const template = { format: FORMAT, version: 1, name: templateName(raw.name), appearance: appearanceOf(checked.settings), widgets,
     sites: checked.entries.filter((entry) => entry.type === 'site').map((entry) => ({ name: entry.name, url: entry.url, page: entry.page, ...(entry.position ? { position: entry.position } : {}) })) };
+  if (Object.hasOwn(raw, 'desktopAppearances')) {
+    if (!Array.isArray(raw.desktopAppearances) || raw.desktopAppearances.length > MAX_DESKTOP_PAGE + 1) fail(tr('方案中的主屏幕无效。'));
+    const pages = new Set();
+    const appearances = raw.desktopAppearances.map((item) => {
+      fields(item, ['page', 'appearance']);
+      const page = checkedPage(item.page), appearance = validateDesktopAppearance(item.appearance);
+      if (pages.has(page) || !Object.keys(appearance).length) fail(tr('方案中的主屏幕无效。'));
+      pages.add(page); return { page, appearance };
+    });
+    if (appearances.length) template.desktopAppearances = appearances;
+  }
   encoded(template);
   return template;
 }
 
-export function createDesktopTemplate(input, { name = tr('我的桌面方案'), publicSiteIds = [], privateEntryIds = [] } = {}) {
+export function createDesktopTemplate(input, { name = tr('我的桌面方案'), publicSiteIds = [], privateEntryIds = [], includeDesktopAppearances = false } = {}) {
+  if (typeof includeDesktopAppearances !== 'boolean') fail(tr('方案应用选项无效。'));
   const state = migrateNavigationState(input), privateIds = new Set(privateEntryIds), selected = new Set(publicSiteIds);
   const widgets = state.entries.filter((entry) => entry.type === 'widget' && entry.extensionId !== CLOCK_WIDGET_ID && !entry.detached && SAFE_WIDGETS.has(entry.extensionId) && !privateIds.has(entry.id));
   const sites = state.entries.filter((entry) => entry.type === 'site' && selected.has(entry.id) && !privateIds.has(entry.id) && !privateIds.has(entry.parentId));
   const pages = [...new Set([...widgets, ...sites].map((entry) => entry.page ?? 0))].sort((a, b) => a - b);
   const pageMap = new Map(pages.map((page, index) => [page, index]));
+  // Engine-only, explicit opt-in. The current app has no template sharing UI.
+  // Only public represented pages enter this anonymous relative page map.
+  const desktopAppearances = includeDesktopAppearances ? pages.filter((page) => state.settings.desktopPages?.[page]?.appearance)
+    .map((page) => ({ page: pageMap.get(page), appearance: copy(state.settings.desktopPages[page].appearance) })) : [];
   return inspectDesktopTemplate({ format: FORMAT, version: 1, name, appearance: appearanceOf(state.settings),
+    ...(desktopAppearances.length ? { desktopAppearances } : {}),
     widgets: widgets.map((entry) => ({ extensionId: entry.extensionId, config: publicWidgetConfig(entry.extensionId, entry.config), page: pageMap.get(entry.page ?? 0), ...(entry.position ? { position: copy(entry.position) } : {}) })),
     sites: sites.map((entry) => ({ name: entry.name, url: entry.url, page: pageMap.get(entry.page ?? 0), ...(entry.parentId === null && entry.position ? { position: copy(entry.position) } : {}) })) });
 }
@@ -109,11 +127,19 @@ export function applyDesktopTemplate(input, value, { appearance = true, widgets 
   const originalPages = new Set(state.settings.pages);
   if (appearance) state.settings = { ...state.settings, ...copy(template.appearance) };
   const selectedWidgets = widgets ? activeTemplateWidgets(template) : [], selectedSites = sites ? template.sites : [];
-  const sourcePages = [...new Set([...selectedWidgets, ...selectedSites].map((entry) => entry.page))].sort((a, b) => a - b);
+  const selectedAppearances = appearance ? template.desktopAppearances || [] : [];
+  const sourcePages = [...new Set([...selectedWidgets, ...selectedSites, ...selectedAppearances].map((entry) => entry.page))].sort((a, b) => a - b);
   const firstPage = sourcePages.length ? nextDesktopPage(state.entries, state.settings.pages) : null;
   if (sourcePages.length && (firstPage === null || firstPage + sourcePages.length - 1 > MAX_DESKTOP_PAGE)) fail(tr('主屏幕数量已达上限。'));
   const pageMap = new Map(sourcePages.map((page, index) => [page, firstPage + index]));
   state.settings.pages = [...new Set([...state.settings.pages, ...pageMap.values()])].sort((a, b) => a - b);
+  const styledPages = new Set();
+  for (const item of selectedAppearances) {
+    const page = pageMap.get(item.page);
+    state.settings = withDesktopPageIdentity(state.settings, page);
+    state.settings.desktopPages[page].appearance = copy(item.appearance);
+    styledPages.add(page);
+  }
   const affected = new Set(), usedWidgets = new Set();
   let movedWidgets = 0, addedWidgets = 0, addedSites = 0, skippedDuplicates = 0, revealId = null;
   for (const widget of selectedWidgets) {
@@ -154,8 +180,9 @@ export function applyDesktopTemplate(input, value, { appearance = true, widgets 
     state.settings.pages = [...new Set([...state.settings.pages, ...frozen.pageMap.values()])].sort((a, b) => a - b);
   }
   const occupiedPages = new Set(state.entries.filter((entry) => affected.has(entry.id)).map((entry) => entry.page));
-  state.settings.pages = state.settings.pages.filter((page) => originalPages.has(page) || occupiedPages.has(page));
-  return { state: validateState(state), sourceRevision: input.revision, revealId, addedSites, addedWidgets, movedWidgets, skippedDuplicates, page: firstPage };
+  state.settings.pages = state.settings.pages.filter((page) => originalPages.has(page) || occupiedPages.has(page) || styledPages.has(page));
+  return { state: validateState(state), sourceRevision: input.revision, revealId, addedSites, addedWidgets, movedWidgets, skippedDuplicates,
+    addedDesktopAppearances: styledPages.size, page: firstPage };
 }
 
 const builtin = (name, appearance, widgets) => inspectDesktopTemplate({ format: FORMAT, version: 1, name,

@@ -31,7 +31,7 @@ test('historical Raindrop attributes preserve known and unknown fields while ord
 });
 
 test('OneTab plain serializer keeps URL pipes, title pipes, order, groups and line numbers', async () => {
-  const plan = parseOneTabLinks(`\uFEFF${(await fixture('onetab-2.25.txt')).replaceAll('\n', '\r\n')}\r\nhttps://example.edu/\r\n`);
+  const plan = parseOneTabLinks(`\uFEFF${(await fixture('onetab-2.25.txt')).replace(/\r\n?/gu, '\n').replaceAll('\n', '\r\n')}\r\nhttps://example.edu/\r\n`);
   assert.deepEqual(plan.source, { format: 'onetab-text', supportedVersion: '2.25' });
   assert.deepEqual(plan.sites.map(({ url, name, line }) => [url, name, line]), [
     ['https://example.com/one?x=a|b#part', 'Example one', 1], ['https://example.org/two', 'Example | second title', 2],

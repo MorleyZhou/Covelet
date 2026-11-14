@@ -345,11 +345,11 @@ test('complete backups and recovery points retain metadata while append remaps i
   assert.deepEqual(merged.items['reading:fresh'], { description: 'new reference', tagIds: ['tag-current'] });
 });
 
-test('complete restore retains saved views and append maps imported desktop identities instead of pointing at the existing desktop', async () => {
+test('complete restore retains saved views/appearance and append maps imported desktop identities instead of pointing at the existing desktop', async () => {
   const source = harness(), target = harness(), original = createEmptyState(), current = createEmptyState();
-  original.settings.desktopPages = { 0: { id: 'shared-desktop', name: 'Imported desktop' } };
+  original.settings.desktopPages = { 0: { id: 'shared-desktop', name: 'Imported desktop', appearance: { background: { kind: 'color', value: '#123456' }, shade: 0 } } };
   original.entries = [site('incoming-site', 'https://incoming.example/', '', 0)];
-  current.settings.desktopPages = { 0: { id: 'shared-desktop', name: 'Current desktop' } };
+  current.settings.desktopPages = { 0: { id: 'shared-desktop', name: 'Current desktop', appearance: { blur: 10 } } };
   current.entries = [site('current-site', 'https://current.example/', '', 0)];
   delete original.entries[0].iconUrl; delete current.entries[0].iconUrl;
   await source.nav.saveState(original, 0); await target.nav.saveState(current, 0);
@@ -366,12 +366,15 @@ test('complete restore retains saved views and append maps imported desktop iden
   assert.notEqual(imported.scope.desktopId, 'shared-desktop');
   const importedPage = state.entries.find((entry) => entry.id === 'incoming-site').page;
   assert.equal(state.settings.desktopPages[importedPage].id, imported.scope.desktopId);
+  assert.deepEqual(state.settings.desktopPages[importedPage].appearance, original.settings.desktopPages[0].appearance);
+  assert.deepEqual(state.settings.desktopPages[0].appearance, current.settings.desktopPages[0].appearance);
   assert.equal(restored.library.views.find((view) => view.id === 'current-view').scope.desktopId, 'shared-desktop');
   assert(restored.privateKeys.includes('view:incoming-view'));
   const point = await target.center.previewRecoveryPoint();
   assert.equal(point.preferences.library.views[0].id, 'current-view');
   await target.center.restore(await target.center.preview(file));
   assert.deepEqual((await target.preferences.read()).library.views, (await source.preferences.read()).library.views);
+  assert.deepEqual((await target.nav.loadState()).settings.desktopPages, original.settings.desktopPages);
 });
 
 test('append keeps a view invalid when deduplication omits its colliding source desktop', async () => {

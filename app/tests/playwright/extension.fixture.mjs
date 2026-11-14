@@ -10,7 +10,7 @@ if (process.env.COVELET_NATIVE_BROWSER && !['chrome', 'edge'].includes(process.e
 export const test = base.extend({
   pregrantedHosts: [[], { option: true }],
   network: async ({}, use) => { await use(createNetworkFixture()); },
-  extension: async ({ headless, viewport, locale, timezoneId, network, pregrantedHosts }, use, testInfo) => {
+  extension: async ({ headless, viewport, locale, timezoneId, hasTouch, network, pregrantedHosts }, use, testInfo) => {
     const manifest = JSON.parse(await readFile(join(extensionPath, 'manifest.json'), 'utf8'));
     expect(manifest.name).toBe('Covelet');
     expect(manifest.chrome_url_overrides?.newtab).toBe('newtab.html');
@@ -32,7 +32,7 @@ export const test = base.extend({
         ...(process.env.COVELET_NATIVE_BROWSER ? {
           executablePath: ({ chrome: 'C:/Program Files/Google/Chrome/Application/chrome.exe', edge: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe' })[process.env.COVELET_NATIVE_BROWSER],
           ignoreDefaultArgs: ['--disable-extensions'],
-        } : { channel: 'chromium' }), headless, viewport, locale, timezoneId,
+        } : { channel: 'chromium' }), headless, viewport, locale, timezoneId, hasTouch,
         args: [...(process.env.COVELET_NATIVE_BROWSER ? ['--enable-unsafe-extension-debugging'] : [`--disable-extensions-except=${path}`, `--load-extension=${path}`]), '--lang=zh-CN', '--no-first-run', '--disable-background-networking'],
       });
       session.context = context;

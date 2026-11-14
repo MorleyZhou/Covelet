@@ -2885,6 +2885,321 @@
     "fr": "Lecture du document",
     "ru": "Просмотр документа"
   },
+  "桌面背景": {
+    "en": "Desktop background",
+    "zh-TW": "桌面背景",
+    "ja": "デスクトップの背景",
+    "ko": "바탕 화면 배경",
+    "de": "Desktop-Hintergrund",
+    "fr": "Arrière-plan du bureau",
+    "ru": "Фон рабочего стола"
+  },
+  "继承全局背景": {
+    "en": "Inherit global background",
+    "zh-TW": "繼承全域背景",
+    "ja": "全体設定の背景を継承",
+    "ko": "전체 배경 설정 사용",
+    "de": "Globalen Hintergrund übernehmen",
+    "fr": "Hériter de l’arrière-plan global",
+    "ru": "Использовать общий фон"
+  },
+  "随机背景共享本机的照片、来源和轮换周期。": {
+    "en": "Random backgrounds share this device’s photo, source and rotation interval.",
+    "zh-TW": "隨機背景共用本機的照片、來源與輪換週期。",
+    "ja": "ランダム背景は、この端末の写真、ソース、切り替え間隔を共有します。",
+    "ko": "무작위 배경은 이 기기의 사진, 출처 및 변경 주기를 공유합니다.",
+    "de": "Zufällige Hintergründe teilen Foto, Quelle und Wechselintervall dieses Geräts.",
+    "fr": "Les arrière-plans aléatoires partagent la photo, la source et l’intervalle de cet appareil.",
+    "ru": "Случайные фоны используют общие для устройства фотографию, источник и интервал смены."
+  },
+  "继承全局遮罩": {
+    "en": "Inherit global shading",
+    "zh-TW": "繼承全域遮罩",
+    "ja": "全体設定の暗さを継承",
+    "ko": "전체 어둡기 설정 사용",
+    "de": "Globale Abdunklung übernehmen",
+    "fr": "Hériter de l’assombrissement global",
+    "ru": "Использовать общее затемнение"
+  },
+  "继承全局模糊": {
+    "en": "Inherit global blur",
+    "zh-TW": "繼承全域模糊",
+    "ja": "全体設定のぼかしを継承",
+    "ko": "전체 흐림 설정 사용",
+    "de": "Globale Unschärfe übernehmen",
+    "fr": "Hériter du flou global",
+    "ru": "Использовать общее размытие"
+  },
+  "桌面已变化，请重新载入外观后再保存。": {
+    "en": "The desktop changed. Reload its appearance before saving.",
+    "zh-TW": "桌面已變更，請重新載入外觀後再儲存。",
+    "ja": "デスクトップが変更されました。外観を再読み込みしてから保存してください。",
+    "ko": "바탕 화면이 변경되었습니다. 외관을 다시 불러온 후 저장하세요.",
+    "de": "Der Desktop wurde geändert. Vor dem Speichern die Darstellung neu laden.",
+    "fr": "Le bureau a changé. Rechargez son apparence avant d’enregistrer.",
+    "ru": "Рабочий стол изменён. Перед сохранением загрузите настройки оформления заново."
+  },
+  "全部继承全局": {
+    "en": "Inherit all global values",
+    "zh-TW": "全部繼承全域",
+    "ja": "すべて全体設定を継承",
+    "ko": "모두 전체 설정 사용",
+    "de": "Alle globalen Werte übernehmen",
+    "fr": "Hériter de tous les réglages globaux",
+    "ru": "Использовать все общие настройки"
+  },
+  "保存桌面外观": {
+    "en": "Save desktop appearance",
+    "zh-TW": "儲存桌面外觀",
+    "ja": "デスクトップの外観を保存",
+    "ko": "바탕 화면 외관 저장",
+    "de": "Desktop-Darstellung speichern",
+    "fr": "Enregistrer l’apparence du bureau",
+    "ru": "Сохранить оформление рабочего стола"
+  },
+  "导出内容": {
+    "en": "Content to export",
+    "zh-TW": "匯出內容",
+    "ja": "エクスポートする内容",
+    "ko": "내보낼 내용",
+    "de": "Zu exportierende Inhalte",
+    "fr": "Contenu à exporter",
+    "ru": "Содержимое для экспорта"
+  },
+  "导出为未加密的 Markdown ZIP；已标记隐藏的内容始终排除。": {
+    "en": "Export an unencrypted Markdown ZIP. Content marked as hidden is always excluded.",
+    "zh-TW": "匯出為未加密的 Markdown ZIP；標記為隱藏的內容一律排除。",
+    "ja": "暗号化されていない Markdown ZIP を出力します。非表示に指定した内容は常に除外されます。",
+    "ko": "암호화되지 않은 Markdown ZIP으로 내보냅니다. 숨김으로 표시된 내용은 항상 제외됩니다.",
+    "de": "Export als unverschlüsselte Markdown-ZIP. Als ausgeblendet markierte Inhalte sind immer ausgeschlossen.",
+    "fr": "Export en ZIP Markdown non chiffré. Le contenu marqué comme masqué est toujours exclu.",
+    "ru": "Экспорт в незашифрованный ZIP с Markdown. Содержимое, отмеченное как скрытое, всегда исключается."
+  },
+  "所有标签原名保留为属性；符合规则的标签同时写入原生标签。": {
+    "en": "All original tag names are kept as properties. Compatible tags are also included as native tags.",
+    "zh-TW": "所有標籤原名保留為屬性；符合規則的標籤也會寫入原生標籤。",
+    "ja": "すべてのタグ名をプロパティに保持し、対応するタグは通常のタグにも出力します。",
+    "ko": "모든 원래 태그 이름은 속성으로 유지하며, 규칙에 맞는 태그는 기본 태그에도 포함합니다.",
+    "de": "Alle ursprünglichen Tag-Namen bleiben als Eigenschaften erhalten. Geeignete Tags werden zusätzlich als native Tags ausgegeben.",
+    "fr": "Tous les noms d’étiquettes d’origine restent dans les propriétés. Les étiquettes compatibles figurent aussi comme étiquettes natives.",
+    "ru": "Исходные имена всех меток сохраняются в свойствах. Совместимые метки также добавляются как обычные метки."
+  },
+  "排除不支持的项目": {
+    "en": "Exclude unsupported items",
+    "zh-TW": "排除不支援的項目",
+    "ja": "未対応の項目を除外",
+    "ko": "지원되지 않는 항목 제외",
+    "de": "Nicht unterstützte Einträge ausschließen",
+    "fr": "Exclure les éléments non pris en charge",
+    "ru": "Исключить неподдерживаемые записи"
+  },
+  "仅作为属性保留的标签：{0}": {
+    "en": "Tags kept only as properties: {0}",
+    "zh-TW": "僅保留為屬性的標籤：{0}",
+    "ja": "プロパティにのみ保持するタグ: {0}",
+    "ko": "속성으로만 유지되는 태그: {0}",
+    "de": "Nur als Eigenschaften erhaltene Tags: {0}",
+    "fr": "Étiquettes conservées uniquement dans les propriétés : {0}",
+    "ru": "Метки, сохраняемые только в свойствах: {0}"
+  },
+  "没有可导出的内容。": {
+    "en": "There is no content to export.",
+    "zh-TW": "沒有可匯出的內容。",
+    "ja": "エクスポートする内容はありません。",
+    "ko": "내보낼 내용이 없습니다.",
+    "de": "Keine Inhalte zum Exportieren.",
+    "fr": "Aucun contenu à exporter.",
+    "ru": "Нет содержимого для экспорта."
+  },
+  "请取消选择无法完整导出的项目，或使用完整备份。": {
+    "en": "Deselect items that cannot be fully exported, or use a complete backup.",
+    "zh-TW": "請取消選取無法完整匯出的項目，或使用完整備份。",
+    "ja": "完全に出力できない項目の選択を解除するか、完全バックアップを使用してください。",
+    "ko": "완전히 내보낼 수 없는 항목의 선택을 해제하거나 전체 백업을 사용하세요.",
+    "de": "Nicht vollständig exportierbare Einträge abwählen oder ein vollständiges Backup verwenden.",
+    "fr": "Désélectionnez les éléments qui ne peuvent pas être exportés intégralement, ou utilisez une sauvegarde complète.",
+    "ru": "Снимите выбор с записей, которые нельзя экспортировать полностью, или используйте полную резервную копию."
+  },
+  "正在导出…": {
+    "en": "Exporting…",
+    "zh-TW": "正在匯出…",
+    "ja": "エクスポート中…",
+    "ko": "내보내는 중…",
+    "de": "Wird exportiert…",
+    "fr": "Export en cours…",
+    "ru": "Экспорт…"
+  },
+  "导出内容超过限制，请减少选择后重试。": {
+    "en": "The export exceeds the limits. Select fewer items and try again.",
+    "zh-TW": "匯出內容超過限制，請減少選取後重試。",
+    "ja": "エクスポートの上限を超えています。選択を減らして再試行してください。",
+    "ko": "내보내기 한도를 초과했습니다. 선택 항목을 줄이고 다시 시도하세요.",
+    "de": "Der Export überschreitet die Grenzen. Weniger Einträge auswählen und erneut versuchen.",
+    "fr": "L’export dépasse les limites. Réduisez la sélection et réessayez.",
+    "ru": "Экспорт превышает ограничения. Выберите меньше записей и повторите попытку."
+  },
+  "部分内容无法导出为 Markdown，请取消选择或使用完整备份。": {
+    "en": "Some content cannot be exported as Markdown. Deselect it or use a complete backup.",
+    "zh-TW": "部分內容無法匯出為 Markdown，請取消選取或使用完整備份。",
+    "ja": "一部の内容は Markdown に出力できません。選択を解除するか、完全バックアップを使用してください。",
+    "ko": "일부 내용은 Markdown으로 내보낼 수 없습니다. 선택을 해제하거나 전체 백업을 사용하세요.",
+    "de": "Einige Inhalte lassen sich nicht als Markdown exportieren. Abwählen oder ein vollständiges Backup verwenden.",
+    "fr": "Certains contenus ne peuvent pas être exportés en Markdown. Désélectionnez-les ou utilisez une sauvegarde complète.",
+    "ru": "Часть содержимого нельзя экспортировать в Markdown. Снимите выбор или используйте полную резервную копию."
+  },
+  "Covelet 资料库": {
+    "en": "Covelet library",
+    "zh-TW": "Covelet 資料庫",
+    "ja": "Covelet ライブラリ",
+    "ko": "Covelet 자료실",
+    "de": "Covelet-Bibliothek",
+    "fr": "Bibliothèque Covelet",
+    "ru": "Библиотека Covelet"
+  },
+  "这是未加密的 Markdown 交换文件，不包含隐藏内容或附件。": {
+    "en": "This is an unencrypted Markdown exchange file. It excludes hidden content and attachments.",
+    "zh-TW": "這是未加密的 Markdown 交換檔案，不包含隱藏內容或附件。",
+    "ja": "これは暗号化されていない Markdown 交換ファイルです。非表示の内容と添付ファイルは含まれません。",
+    "ko": "암호화되지 않은 Markdown 교환 파일입니다. 숨긴 내용과 첨부 파일은 포함되지 않습니다.",
+    "de": "Dies ist eine unverschlüsselte Markdown-Austauschdatei ohne ausgeblendete Inhalte und Anhänge.",
+    "fr": "Ce fichier d’échange Markdown n’est pas chiffré. Il ne contient ni contenu masqué ni pièces jointes.",
+    "ru": "Это незашифрованный файл обмена Markdown. Скрытое содержимое и вложения в него не входят."
+  },
+  "以下标签仅保留在 covelet_tags 属性中。": {
+    "en": "These tags are kept only in the covelet_tags property.",
+    "zh-TW": "以下標籤僅保留在 covelet_tags 屬性中。",
+    "ja": "以下のタグは covelet_tags プロパティにのみ保持されます。",
+    "ko": "다음 태그는 covelet_tags 속성에만 유지됩니다.",
+    "de": "Diese Tags bleiben nur in der Eigenschaft covelet_tags erhalten.",
+    "fr": "Ces étiquettes sont conservées uniquement dans la propriété covelet_tags.",
+    "ru": "Эти метки сохраняются только в свойстве covelet_tags."
+  },
+  "导出 Markdown 资料库": {
+    "en": "Export Markdown library",
+    "zh-TW": "匯出 Markdown 資料庫",
+    "ja": "Markdown ライブラリをエクスポート",
+    "ko": "Markdown 자료실 내보내기",
+    "de": "Markdown-Bibliothek exportieren",
+    "fr": "Exporter la bibliothèque Markdown",
+    "ru": "Экспортировать библиотеку Markdown"
+  },
+  "已导入 {0} 个网址，更新 {1} 个已有网址的信息。": {
+    "en": "Imported {0} links and updated information for {1} existing links.",
+    "zh-TW": "已匯入 {0} 個網址，更新 {1} 個現有網址的資訊。",
+    "ja": "リンク {0} 件をインポートし、既存のリンク {1} 件の情報を更新しました。",
+    "ko": "링크 {0}개를 가져오고 기존 링크 {1}개의 정보를 업데이트했습니다.",
+    "de": "{0} Links importiert und Informationen von {1} vorhandenen Links aktualisiert.",
+    "fr": "{0} liens importés et informations de {1} liens existants mises à jour.",
+    "ru": "Импортировано ссылок: {0}. Обновлены сведения существующих ссылок: {1}."
+  },
+  "缓存壁纸": {
+    "en": "Cached wallpaper",
+    "zh-TW": "快取桌布",
+    "ja": "キャッシュ済みの壁紙",
+    "ko": "캐시된 배경화면",
+    "de": "Gespeichertes Hintergrundbild",
+    "fr": "Fond d’écran en cache",
+    "ru": "Сохранённые обои"
+  },
+  "外观范围": {
+    "en": "Appearance scope",
+    "zh-TW": "外觀範圍",
+    "ja": "外観の適用範囲",
+    "ko": "외관 적용 범위",
+    "de": "Geltungsbereich der Darstellung",
+    "fr": "Portée de l’apparence",
+    "ru": "Область оформления"
+  },
+  "全局外观": {
+    "en": "Global appearance",
+    "zh-TW": "全域外觀",
+    "ja": "全体の外観",
+    "ko": "전체 외관",
+    "de": "Globale Darstellung",
+    "fr": "Apparence globale",
+    "ru": "Общее оформление"
+  },
+  "资料库预览已失效，请重新生成。": {
+    "en": "The library preview expired. Generate it again.",
+    "zh-TW": "資料庫預覽已失效，請重新產生。",
+    "ja": "ライブラリのプレビューは無効です。再生成してください。",
+    "ko": "자료실 미리 보기가 만료되었습니다. 다시 생성하세요.",
+    "de": "Die Bibliotheksvorschau ist abgelaufen. Erneut erstellen.",
+    "fr": "L’aperçu de la bibliothèque a expiré. Générez-le à nouveau.",
+    "ru": "Предпросмотр библиотеки устарел. Создайте его заново."
+  },
+  "请选择有效的导出条目。": {
+    "en": "Select valid items to export.",
+    "zh-TW": "請選取有效的匯出項目。",
+    "ja": "有効なエクスポート項目を選択してください。",
+    "ko": "내보낼 유효한 항목을 선택하세요.",
+    "de": "Gültige Einträge für den Export auswählen.",
+    "fr": "Sélectionnez des éléments valides à exporter.",
+    "ru": "Выберите допустимые записи для экспорта."
+  },
+  "资料已更新，请重新生成导出预览。": {
+    "en": "Content changed. Generate the export preview again.",
+    "zh-TW": "資料已更新，請重新產生匯出預覽。",
+    "ja": "内容が更新されました。エクスポートのプレビューを再生成してください。",
+    "ko": "자료가 변경되었습니다. 내보내기 미리 보기를 다시 생성하세요.",
+    "de": "Inhalte wurden geändert. Die Exportvorschau erneut erstellen.",
+    "fr": "Le contenu a changé. Générez à nouveau l’aperçu d’export.",
+    "ru": "Данные изменились. Создайте предпросмотр экспорта заново."
+  },
+  "浏览器无法锁定本机内容，请重试。": {
+    "en": "The browser could not lock local content. Try again.",
+    "zh-TW": "瀏覽器無法鎖定本機內容，請重試。",
+    "ja": "ブラウザでローカルの内容をロックできません。再試行してください。",
+    "ko": "브라우저가 로컬 내용을 잠그지 못했습니다. 다시 시도하세요.",
+    "de": "Der Browser konnte lokale Inhalte nicht sperren. Erneut versuchen.",
+    "fr": "Le navigateur n’a pas pu verrouiller le contenu local. Réessayez.",
+    "ru": "Браузеру не удалось заблокировать локальные данные. Повторите попытку."
+  },
+  "命令面板与结构化查询统一查找内容，搜索结果可定位便笺段落。": {
+    "en": "Find content through the command palette and structured queries, then jump from results to matching note passages.",
+    "zh-TW": "透過命令面板與結構化查詢統一尋找內容，搜尋結果可定位便笺段落。",
+    "ja": "コマンドパレットと構造化クエリで内容を検索し、結果から便箋の該当箇所に移動できます。",
+    "ko": "명령 팔레트와 구조화된 검색으로 내용을 찾고, 결과에서 메모의 해당 문단으로 이동할 수 있습니다.",
+    "de": "Inhalte über Befehlspalette und strukturierte Abfragen finden und aus den Ergebnissen zu passenden Notizstellen springen.",
+    "fr": "Recherchez dans la palette de commandes et avec des requêtes structurées, puis accédez aux passages correspondants des notes.",
+    "ru": "Находите содержимое через палитру команд и структурированные запросы и переходите из результатов к нужным фрагментам заметок."
+  },
+  "把指定便笺和动态清单固定到桌面，网页摘录可追加到已有便笺。": {
+    "en": "Pin specific notes and smart lists to a desktop, and append web excerpts to existing notes.",
+    "zh-TW": "將指定便笺與動態清單固定到桌面，網頁摘錄可附加至現有便笺。",
+    "ja": "指定の便箋とスマートリストをデスクトップに固定し、ウェブの抜粋を既存の便箋に追記できます。",
+    "ko": "특정 메모와 스마트 목록을 바탕 화면에 고정하고 웹 발췌문을 기존 메모에 덧붙일 수 있습니다.",
+    "de": "Bestimmte Notizen und intelligente Listen auf dem Desktop anheften und Webauszüge an bestehende Notizen anhängen.",
+    "fr": "Épinglez des notes et des listes intelligentes sur un bureau, et ajoutez des extraits web aux notes existantes.",
+    "ru": "Закрепляйте заметки и умные списки на рабочем столе и дополняйте существующие заметки выдержками из веб-страниц."
+  },
+  "稍后读可批量整理标签和日期，动态清单支持任一与排除条件。": {
+    "en": "Organize Read Later tags and dates in bulk, and use any-tag and exclusion conditions in smart lists.",
+    "zh-TW": "稍後讀可批次整理標籤與日期，動態清單支援任一標籤與排除條件。",
+    "ja": "あとで読むのタグと日付を一括編集し、スマートリストでタグのいずれか一致や除外条件を使用できます。",
+    "ko": "나중에 읽기의 태그와 날짜를 일괄 정리하고 스마트 목록에 하나 이상 일치 및 제외 조건을 사용할 수 있습니다.",
+    "de": "Tags und Termine für Später lesen gesammelt bearbeiten und beliebige Tags sowie Ausschlussbedingungen in intelligenten Listen nutzen.",
+    "fr": "Organisez les étiquettes et dates de lecture en lot, et filtrez les listes intelligentes par une étiquette quelconque ou par exclusion.",
+    "ru": "Изменяйте метки и даты списка «Прочитать позже» группами и задавайте в умных списках совпадение любой метки и исключения."
+  },
+  "从 Raindrop 和 OneTab 文件迁入，明确选择重复项的标签与备注合并。": {
+    "en": "Import Raindrop and OneTab files, explicitly choosing which duplicate tags and notes to merge.",
+    "zh-TW": "從 Raindrop 與 OneTab 檔案匯入，明確選擇重複項目的標籤與備註合併方式。",
+    "ja": "Raindrop と OneTab のファイルを取り込み、重複項目のタグとメモの統合内容を明示的に選択できます。",
+    "ko": "Raindrop 및 OneTab 파일을 가져오고 중복 항목에서 병합할 태그와 메모를 직접 선택할 수 있습니다.",
+    "de": "Raindrop- und OneTab-Dateien importieren und gezielt auswählen, welche Tags und Notizen aus Duplikaten zusammengeführt werden.",
+    "fr": "Importez des fichiers Raindrop et OneTab et choisissez explicitement les étiquettes et notes des doublons à fusionner.",
+    "ru": "Импортируйте файлы Raindrop и OneTab и явно выбирайте метки и заметки дубликатов для объединения."
+  },
+  "每个桌面可设置独立外观，网站、稍后读和便笺可导出为 Markdown 资料库。": {
+    "en": "Set each desktop’s appearance separately and export sites, Read Later items and notes as a Markdown library.",
+    "zh-TW": "每個桌面可設定獨立外觀，網站、稍後讀與便笺可匯出為 Markdown 資料庫。",
+    "ja": "デスクトップごとに外観を設定し、サイト、あとで読む、便箋を Markdown ライブラリにエクスポートできます。",
+    "ko": "바탕 화면마다 외관을 개별 설정하고 웹사이트, 나중에 읽기 및 메모를 Markdown 자료실로 내보낼 수 있습니다.",
+    "de": "Die Darstellung je Desktop anpassen und Websites, Später-lesen-Einträge und Notizen als Markdown-Bibliothek exportieren.",
+    "fr": "Personnalisez l’apparence de chaque bureau et exportez sites, lectures et notes dans une bibliothèque Markdown.",
+    "ru": "Настраивайте оформление каждого рабочего стола отдельно и экспортируйте сайты, список чтения и заметки в библиотеку Markdown."
+  },
   "没有可应用的更改。": {
     "en": "There are no changes to apply.",
     "zh-TW": "沒有可套用的變更。",

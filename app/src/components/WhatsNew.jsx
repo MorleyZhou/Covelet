@@ -3,6 +3,15 @@ import { Disclosure } from './ui/disclosure.jsx';
 
 export default function WhatsNew() {
   return <>
+    <Disclosure title={tr('{0} 更新内容', ['0.6.0'])}>
+      <ul>
+        <li>{tr('命令面板与结构化查询统一查找内容，搜索结果可定位便笺段落。')}</li>
+        <li>{tr('把指定便笺和动态清单固定到桌面，网页摘录可追加到已有便笺。')}</li>
+        <li>{tr('稍后读可批量整理标签和日期，动态清单支持任一与排除条件。')}</li>
+        <li>{tr('从 Raindrop 和 OneTab 文件迁入，明确选择重复项的标签与备注合并。')}</li>
+        <li>{tr('每个桌面可设置独立外观，网站、稍后读和便笺可导出为 Markdown 资料库。')}</li>
+      </ul>
+    </Disclosure>
     <Disclosure title={tr('{0} 更新内容', ['0.5.1'])}>
       <ul>
         <li>{tr('同步遇到冲突时，可选择用本地数据替换云端，或用云端数据替换本地。')}</li>
