@@ -41,6 +41,8 @@
 .import-source-description, .import-source-tags { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
 .import-merge-groups { display: flex; flex-direction: column; gap: 16px; }
 .import-merge-groups h3 { margin: 0; font-size: 14px; }
+.import-merge-pagination, .import-source-pagination { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 12px; }
+.import-merge-pagination > span:first-child, .import-source-pagination > span:first-child { margin-inline-end: auto; }
 .import-merge-group { display: flex; flex-direction: column; gap: 12px; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
 .import-merge-url { overflow-wrap: anywhere; font-size: 13px; }
 .import-merge-group .own-select-label { white-space: normal; overflow-wrap: anywhere; }

@@ -77,7 +77,10 @@ function exportName(title, used) {
   if (base.normalize('NFKC').startsWith('.')) base = `_${base}`;
   if (/^(?:con|prn|aux|nul|clock\$|conin\$|conout\$|com\d|lpt\d)(?:[. ]|$)/iu.test(base.normalize('NFKC'))) base = `_${base}`;
   base = utf8Prefix(base, 180).replace(/[. ]+$/u, '') || 'Untitled';
-  const identity = (name) => name.normalize('NFKC').toLowerCase();
+  // Windows case-insensitive paths also equate final sigma and dotless i
+  // with their uppercase forms. Fold conservatively before reserving a name;
+  // exact titles remain untouched in the Markdown/front matter.
+  const identity = (name) => name.normalize('NFKC').toUpperCase().normalize('NFKC');
   let filename = `${base}.md`, count = 2;
   while (used.has(identity(filename))) filename = `${base} (${count++}).md`;
   used.add(identity(filename)); return filename;

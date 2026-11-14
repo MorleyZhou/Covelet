@@ -184,6 +184,10 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
     const record = data.notes.find((item) => item.id === initialRecordId);
     if (record) { select(record); setNoteSearch(searchQuery ?? null); } else action.setError(tr('这条记录已被移除。'));
   }, [initialRecordId, data, contentPreferences.ready]);
+  // A bound note is selected only after both encrypted stores are ready. Keep
+  // its provisional draft read-only so early keystrokes cannot be replaced by
+  // that initial selection. Manual new-note/record changes remain available.
+  const editorLoading = !data || !core || !contentPreferences.ready || Boolean(initialRecordId && selectedInitial.current !== initialRecordId);
   const choose = (note) => dirty ? setPending({ note }) : select(note);
   const reopen = () => { if (dirty) setPending({ note: latest || null }); else select(latest || null); };
   const patch = (value) => { setDraft((current) => ({ ...current, ...value })); setNoteSearch(null); setDirty(true); };
@@ -294,7 +298,7 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
         setDraft(saved); setOriginalMetadata(metadata); setDirty(false);
       });
     }}>
-      <fieldset className="note-editor-fieldset" disabled={selectionMode}>
+      <fieldset className="note-editor-fieldset" disabled={selectionMode || editorLoading} aria-busy={editorLoading || undefined}>
       <div className="note-editor-scroll">
       <label className="visually-hidden" htmlFor="note-title">{tr("便笺名称")}</label><Input unstyled id="note-title" className="note-title-input" value={draft.title} placeholder={tr("未命名便笺")} maxLength={200} disabled={busy} onChange={(event) => patch({ title: event.target.value })} />
       <div className="note-editor-actions"><Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={draft.pinned} onClick={() => patch({ pinned: !draft.pinned })}><PushPin size={16} weight={draft.pinned ? 'fill' : 'regular'} />{tr("置顶")}</Button>
@@ -303,10 +307,10 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
         <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={preview} onClick={() => setPreview(!preview)}>{preview ? tr("编辑") : tr("预览")}</Button>
         <Button variant="ghost" type="button" className="button quiet" disabled={!draft.body || busy} onClick={() => action.run(async () => { try { await navigator.clipboard.writeText(draft.document ? noteDocumentText(draft.document) : draft.body); } catch { throw Error(tr("无法复制，请手动选择文字。")); } })} aria-label={tr("复制便笺")}><Copy size={16} /></Button></div>
       <ContentMetadataEditor preferences={preferences} contentKey={draft.id ? `note:${draft.id}` : undefined} value={metadata}
-        onChange={(value) => { setMetadata(value); setDirty(true); }} disabled={action.busy || unlocking || draftHidden || selectionMode || !contentPreferences.ready} allowDescription={false} onBusyChange={setMetadataBusy} />
-      <FolioNoteEditor key={editorKey} documentId={editorKey} document={draft.document} body={draft.body} preview={preview} disabled={busy || draftHidden || selectionMode}
+        onChange={(value) => { setMetadata(value); setDirty(true); }} disabled={action.busy || unlocking || draftHidden || selectionMode || editorLoading} allowDescription={false} onBusyChange={setMetadataBusy} />
+      <FolioNoteEditor key={editorKey} documentId={editorKey} document={draft.document} body={draft.body} preview={preview} disabled={busy || draftHidden || selectionMode || editorLoading}
         searchQuery={draft.id === initialRecordId && !draftHidden ? noteSearch : null} onCloseSearch={() => setNoteSearch(null)}
-        onInitialize={(document) => setDraft((current) => current.document ? current : { ...current, document, body: noteDocumentText(document) })}
+        onInitialize={(document) => { if (!editorLoading) setDraft((current) => current.document ? current : { ...current, document, body: noteDocumentText(document) }); }}
         onChange={(document) => patch({ document, body: noteDocumentText(document) })} onError={(reason) => action.setError(userErrorMessage(reason, tr('便笺未能保存，请重试。')))} />
       {deleting && !draftHidden && <Confirm busy={busy} onCancel={() => setDeleting(false)} onConfirm={() => action.run(async () => { await deletePersonalRecord('notes', draft.id, draft.revision); select(null); })}>{tr("删除“{0}”？", [draft.title])}</Confirm>}
       </div>

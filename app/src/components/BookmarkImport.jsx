@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { FileArrowUp, Folder, Link, MagnifyingGlass } from '@phosphor-icons/react';
 import { tr, formatNumber } from '../i18n/index.js';
 import { readBookmarkFile } from '../lib/bookmark-file.js';
@@ -14,6 +14,9 @@ import Select from './Select.jsx';
 import { Disclosure } from './ui/disclosure.jsx';
 import './import-plan.css';
 
+const MERGE_PAGE_SIZE = 20;
+const SOURCE_PAGE_SIZE = 100;
+
 export default function BookmarkImport({ state, preferences, initialPlan = null, initialPage = 0, columns = 8, pageLabel, onApply, onClose, onBusyChange }) {
   const presentation = useContext(PresentationContext);
   const [plan, setPlan] = useState(initialPlan), [text, setText] = useState(''), [query, setQuery] = useState('');
@@ -22,12 +25,16 @@ export default function BookmarkImport({ state, preferences, initialPlan = null,
   const [skipDuplicates, setSkipDuplicates] = useState(true), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [pasteFormat, setPasteFormat] = useState('links'), [includeMetadata, setIncludeMetadata] = useState(true), [metadataChoices, setMetadataChoices] = useState({});
   const [groupNames, setGroupNames] = useState({});
+  const [mergePage, setMergePage] = useState(0);
+  const mergeHeading = useRef(null), pagingRequested = useRef(false);
+  const [sourcePage, setSourcePage] = useState(0);
+  const sourceList = useRef(null), sourcePagingRequested = useRef(false);
   const [, setReviewEpoch] = useState(0);
   const fileFormat = useRef('auto'), openedPreferencesRevision = useRef(preferences.revision);
   const fileInput = useRef(null), gate = useRef(false), active = useRef(true), openedRevision = useRef(state.revision);
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   useEffect(() => {
-    setPlan(initialPlan); setSelected(new Set(initialPlan?.sites.map((_, index) => index) ?? [])); setQuery(''); setError('');
+    setPlan(initialPlan); setSelected(new Set(initialPlan?.sites.map((_, index) => index) ?? [])); setQuery(''); setError(''); setMergePage(0); setSourcePage(0);
   }, [initialPlan]);
   const enhanced = ['raindrop-html', 'onetab-text'].includes(plan?.source?.format);
   const effectivePlan = useMemo(() => !plan || plan.source?.format !== 'onetab-text' ? plan : ({ ...plan,
@@ -45,6 +52,16 @@ export default function BookmarkImport({ state, preferences, initialPlan = null,
     try { return enhanced ? prepareImportWithMetadata(state, preferences, effectivePlan, options) : prepareImport(state, effectivePlan, options); }
     catch (reason) { return { error: userErrorMessage(reason) }; }
   }, [state, preferences, plan, effectivePlan, selected, page, columns, skipDuplicates, targetFolderId, enhanced, guarded, includeMetadata, metadataChoices]);
+  const duplicateGroups = prepared?.duplicateGroups || [];
+  const mergePageCount = Math.max(1, Math.ceil(duplicateGroups.length / MERGE_PAGE_SIZE));
+  const currentMergePage = Math.min(mergePage, mergePageCount - 1), mergeStart = currentMergePage * MERGE_PAGE_SIZE;
+  const visibleMergeGroups = duplicateGroups.slice(mergeStart, mergeStart + MERGE_PAGE_SIZE);
+  useLayoutEffect(() => {
+    if (!pagingRequested.current) return;
+    pagingRequested.current = false;
+    mergeHeading.current?.scrollIntoView({ block: 'nearest' });
+    mergeHeading.current?.focus({ preventScroll: true });
+  }, [currentMergePage]);
   const hiddenDestination = useMemo(() => {
     if (!presentation.active) return false;
     if (targetHidden) return true;
@@ -68,8 +85,23 @@ export default function BookmarkImport({ state, preferences, initialPlan = null,
   }, [state, plan, selected, skipDuplicates, guarded]);
   const search = query.trim().toLocaleLowerCase();
   const visibleRows = (prepared?.rows ?? fallbackRows).filter((row) => !search || `${row.name} ${row.url} ${row.originalFolder}`.toLocaleLowerCase().includes(search));
-  const groups = new Map();
+  const sourcePageCount = Math.max(1, Math.ceil(visibleRows.length / SOURCE_PAGE_SIZE));
+  const currentSourcePage = Math.min(sourcePage, sourcePageCount - 1), sourceStart = currentSourcePage * SOURCE_PAGE_SIZE;
+  useLayoutEffect(() => {
+    if (!sourcePagingRequested.current) return;
+    sourcePagingRequested.current = false;
+    if (!sourceList.current) return;
+    sourceList.current.scrollTop = 0;
+    sourceList.current.scrollIntoView({ block: 'nearest' });
+    sourceList.current.focus({ preventScroll: true });
+  }, [currentSourcePage]);
+  const allGroups = new Map(), groups = new Map();
   for (const row of visibleRows) {
+    const key = row.folder ?? '';
+    if (!allGroups.has(key)) allGroups.set(key, []);
+    allGroups.get(key).push(row);
+  }
+  for (const row of visibleRows.slice(sourceStart, sourceStart + SOURCE_PAGE_SIZE)) {
     const key = row.folder ?? '';
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(row);
@@ -79,12 +111,13 @@ export default function BookmarkImport({ state, preferences, initialPlan = null,
     const next = new Set(selected);
     for (const row of rows) if (value === true) next.add(row.index); else next.delete(row.index);
     setSelected(next);
+    setMergePage(0);
     setMetadataChoices((current) => Object.fromEntries(Object.entries(current).map(([url, choice]) => [url,
       { ...choice, sourceIndices: choice.sourceIndices.filter((index) => next.has(index)) }]).filter(([, choice]) => choice.sourceIndices.length)));
   };
   const usePlan = (value) => {
     openedPreferencesRevision.current = preferences.revision;
-    setPlan(value); setSelected(new Set(value.sites.map((_, index) => index))); setQuery(''); setMetadataChoices({}); setIncludeMetadata(true); setGroupNames({});
+    setPlan(value); setSelected(new Set(value.sites.map((_, index) => index))); setQuery(''); setMetadataChoices({}); setIncludeMetadata(true); setGroupNames({}); setMergePage(0); setSourcePage(0);
   };
   function patchChoice(url, patch) {
     setMetadataChoices((current) => {
@@ -114,6 +147,24 @@ export default function BookmarkImport({ state, preferences, initialPlan = null,
     fileFormat.current = format;
     fileInput.current.accept = accept;
     fileInput.current.click();
+  }
+  function mergePagination() {
+    return <nav className="import-merge-pagination" aria-label={tr('重复项信息合并')}>
+      <span role="status">{formatNumber(mergeStart + 1)}–{formatNumber(Math.min(mergeStart + MERGE_PAGE_SIZE, duplicateGroups.length))} / {formatNumber(duplicateGroups.length)}</span>
+      {mergePageCount > 1 && <>
+        <Button type="button" variant="ghost" size="sm" disabled={busy || currentMergePage === 0} onClick={() => { pagingRequested.current = true; setMergePage(currentMergePage - 1); }}>{tr('上一页')}</Button>
+        <span>{tr('第 {0} 页，共 {1} 页', [formatNumber(currentMergePage + 1), formatNumber(mergePageCount)])}</span>
+        <Button type="button" variant="ghost" size="sm" disabled={busy || currentMergePage >= mergePageCount - 1} onClick={() => { pagingRequested.current = true; setMergePage(currentMergePage + 1); }}>{tr('下一页')}</Button>
+      </>}
+    </nav>;
+  }
+  function sourcePagination() {
+    return <nav className="import-source-pagination" aria-label={tr('导入预览')}>
+      <span role="status">{formatNumber(sourceStart + 1)}–{formatNumber(Math.min(sourceStart + SOURCE_PAGE_SIZE, visibleRows.length))} / {formatNumber(visibleRows.length)}</span>
+      <Button type="button" variant="ghost" size="sm" disabled={busy || currentSourcePage === 0} onClick={() => { sourcePagingRequested.current = true; setSourcePage(currentSourcePage - 1); }}>{tr('上一页')}</Button>
+      <span>{tr('第 {0} 页，共 {1} 页', [formatNumber(currentSourcePage + 1), formatNumber(sourcePageCount)])}</span>
+      <Button type="button" variant="ghost" size="sm" disabled={busy || currentSourcePage >= sourcePageCount - 1} onClick={() => { sourcePagingRequested.current = true; setSourcePage(currentSourcePage + 1); }}>{tr('下一页')}</Button>
+    </nav>;
   }
   return <div className="bookmark-import form-stack">
     <div className="bookmark-import-scroll form-stack">
@@ -163,11 +214,12 @@ export default function BookmarkImport({ state, preferences, initialPlan = null,
         {plan.invalid?.length > 0 && <details className="bookmark-import-invalid"><summary>{tr('已跳过 {0} 项无效地址。', [formatNumber(plan.invalid.length)])}</summary>
           <ul>{plan.invalid.map((item, index) => <li key={index}><span>{item.url || item.name}</span><small>{item.line ? tr('第 {0} 行：{1}', [formatNumber(item.line), item.reason]) : item.reason}</small></li>)}</ul>
         </details>}
-        <label className="bookmark-import-filter"><MagnifyingGlass size={16} aria-hidden="true" /><Input value={query} disabled={busy} aria-label={tr('筛选导入条目')} placeholder={tr('按名称、网址或文件夹筛选')} onChange={(event) => setQuery(event.target.value)} /></label>
+        <label className="bookmark-import-filter"><MagnifyingGlass size={16} aria-hidden="true" /><Input value={query} disabled={busy} aria-label={tr('筛选导入条目')} placeholder={tr('按名称、网址或文件夹筛选')} onChange={(event) => { setQuery(event.target.value); setSourcePage(0); }} /></label>
         <label className="bookmark-import-check"><Checkbox checked={checkedState(visibleRows)} disabled={busy || !visibleRows.length} onCheckedChange={(value) => selectRows(visibleRows, value)} />{search ? tr('选择全部筛选结果') : tr('选择全部网址')}</label>
-        <div className="bookmark-import-list" aria-label={tr('导入预览')}>
+        {sourcePageCount > 1 && sourcePagination()}
+        <div ref={sourceList} className="bookmark-import-list" role="region" aria-label={tr('导入预览')} tabIndex={-1}>
           {[...groups].map(([folder, rows]) => <section className="bookmark-import-group" key={folder || 'root'}>
-            <label className="bookmark-import-group-heading"><Checkbox checked={checkedState(rows)} disabled={busy} onCheckedChange={(value) => selectRows(rows, value)} /><Folder size={16} aria-hidden="true" /><strong>{rows[0].originalFolder || tr('桌面')}</strong><small>{formatNumber(rows.length)}</small></label>
+            <label className="bookmark-import-group-heading"><Checkbox checked={checkedState(allGroups.get(folder))} disabled={busy} onCheckedChange={(value) => selectRows(allGroups.get(folder), value)} /><Folder size={16} aria-hidden="true" /><strong>{rows[0].originalFolder || tr('桌面')}</strong><small>{formatNumber(allGroups.get(folder).length)}</small></label>
             {rows.map((row) => <label className={`bookmark-import-row${row.selected && !row.willAdd ? ' is-skipped' : ''}`} key={row.index}>
               <Checkbox checked={selected.has(row.index)} disabled={busy} onCheckedChange={(value) => selectRows([row], value)} aria-label={tr('选择 {0}', [row.name])} />
               <span><strong>{row.name}</strong><small>{row.url}</small>
@@ -179,9 +231,11 @@ export default function BookmarkImport({ state, preferences, initialPlan = null,
           </section>)}
           {!visibleRows.length && <p className="bookmark-import-empty">{plan.sites.length ? tr('没有匹配的导入条目') : tr('没有可导入的网址')}</p>}
         </div>
-        {enhanced && includeMetadata && skipDuplicates && prepared?.duplicateGroups?.length > 0 && <div className="import-merge-groups">
-          <h3>{tr('重复项信息合并')}</h3>
-          {prepared.duplicateGroups.map((group) => {
+        {sourcePageCount > 1 && sourcePagination()}
+        {enhanced && includeMetadata && skipDuplicates && duplicateGroups.length > 0 && <div className="import-merge-groups">
+          <h3 ref={mergeHeading} tabIndex={-1}>{tr('重复项信息合并')}</h3>
+          {mergePagination()}
+          {visibleMergeGroups.map((group) => {
             const choice = metadataChoices[group.url], target = group.targets.find((item) => item.targetKey === choice?.targetKey);
             return <section className="import-merge-group" key={group.url} data-merge-url={group.url}>
               <strong className="import-merge-url">{group.url}</strong>
@@ -210,6 +264,7 @@ export default function BookmarkImport({ state, preferences, initialPlan = null,
               </>}
             </section>;
           })}
+          {mergePageCount > 1 && mergePagination()}
         </div>}
         {prepared?.issues?.length > 0 && <div className="import-metadata-issues" role="alert">{prepared.issues.map((issue, index) => <p key={index}>
           {issue.sourceIndex !== undefined ? `${tr('第 {0} 项', [formatNumber(issue.sourceIndex + 1)])} · ` : ''}{issue.message}</p>)}</div>}

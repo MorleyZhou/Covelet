@@ -26,9 +26,105 @@ async function measure(timings, name, action) {
   const start = performance.now(), result = await action();
   timings[name] = Math.round((performance.now() - start) * 100) / 100; return result;
 }
+async function observeRendererLongTasks(page, timings) {
+  const supported = await page.evaluate(() => {
+    if (!PerformanceObserver.supportedEntryTypes.includes('longtask')) return false;
+    const state = { entries: [], truncated: false };
+    const append = entries => {
+      for (const entry of entries) {
+        if (state.entries.length >= 5000) { state.truncated = true; break; }
+        state.entries.push({ startTime: entry.startTime, duration: entry.duration, name: entry.name,
+          attribution: entry.attribution.map(item => ({ name: item.name, containerType: item.containerType, containerSrc: item.containerSrc })) });
+      }
+    };
+    state.observer = new PerformanceObserver(list => append(list.getEntries()));
+    state.flush = () => append(state.observer.takeRecords());
+    state.observer.observe({ type: 'longtask', buffered: true });
+    window.__coveletObservedLongTasks = state; return true;
+  });
+  expect(supported, 'the focused Chromium benchmark must expose real renderer long-task entries').toBe(true);
+  const phases = [], observationErrors = [];
+  return {
+    async measure(name, action) {
+      const startTime = await page.evaluate(() => performance.now()); let completed = false;
+      try { const result = await measure(timings, name, action); completed = true; return result; }
+      finally {
+        // Let completed DOM work paint and deliver observer callbacks. This
+        // paint/observation wait is outside the reported action wall time.
+        try {
+          await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+          phases.push(await page.evaluate(({ name, startTime, completed }) => ({ name, startTime, endTime: performance.now(), completed,
+            domElementCount: document.querySelectorAll('*').length, sourceRowCount: document.querySelectorAll('.bookmark-import-row').length,
+            mergeGroupCount: document.querySelectorAll('.import-merge-group').length,
+            mergeTargetComboboxCount: document.querySelectorAll('.import-merge-groups [role="combobox"]').length,
+            exportRowCount: document.querySelectorAll('[data-export-key]').length }), { name, startTime, completed }));
+        } catch (error) { observationErrors.push({ name, message: error.message }); }
+      }
+    },
+    async finish() {
+      const observed = await page.evaluate(() => {
+        const state = window.__coveletObservedLongTasks; state.flush(); state.observer.disconnect();
+        return { entries: state.entries, truncated: state.truncated };
+      });
+      const round = value => Math.round(value * 100) / 100;
+      return { method: 'Browser PerformanceObserver longtask entries (>50ms), independent of Playwright action/assertion wall time. Phase bounds include two paint frames after the assertion.',
+        supported, truncated: observed.truncated, observationErrors,
+        phases: phases.map(phase => {
+          const tasks = observed.entries.filter(entry => entry.startTime < phase.endTime && entry.startTime + entry.duration > phase.startTime);
+          return { ...phase, rendererPhaseMs: round(phase.endTime - phase.startTime), longTaskCount: tasks.length,
+            totalLongTaskMs: round(tasks.reduce((sum, entry) => sum + entry.duration, 0)), maxLongTaskMs: round(Math.max(0, ...tasks.map(entry => entry.duration))),
+            excessOver50Ms: round(tasks.reduce((sum, entry) => sum + Math.max(0, entry.duration - 50), 0)), tasks };
+        }) };
+    },
+  };
+}
 async function report(testInfo, filename, value) {
   const path = testInfo.outputPath(filename); await writeFile(path, JSON.stringify(value, null, 2));
   await testInfo.attach(filename, { path, contentType: 'application/json' });
+}
+async function importCPUProbe(context, page, testInfo) {
+  if (process.env.COVELET_QA_PROFILE_IMPORT !== 'on') return null;
+  const client = await context.newCDPSession(page), phases = [];
+  await client.send('Performance.enable'); await client.send('Profiler.enable');
+  await client.send('Profiler.setSamplingInterval', { interval: 1000 }); await client.send('Profiler.start');
+  const metrics = async () => Object.fromEntries((await client.send('Performance.getMetrics')).metrics.map(item => [item.name, item.value]));
+  return {
+    async measure(name, action) {
+      const before = await metrics(); let completed = false;
+      try { const result = await action(); completed = true; return result; }
+      finally {
+        const after = await metrics();
+        phases.push({ name, completed, startTimeUs: before.Timestamp * 1e6, endTimeUs: after.Timestamp * 1e6,
+          durationsMs: Object.fromEntries(['ScriptDuration', 'LayoutDuration', 'RecalcStyleDuration', 'TaskDuration'].map(key => [key, Math.round((after[key] - before[key]) * 100000) / 100])),
+          wallFromMetricsMs: (after.Timestamp - before.Timestamp) * 1000,
+          nodesDelta: after.Nodes - before.Nodes, layoutsDelta: after.LayoutCount - before.LayoutCount,
+          styleRecalculationsDelta: after.RecalcStyleCount - before.RecalcStyleCount });
+      }
+    },
+    async finish() {
+      const { profile } = await client.send('Profiler.stop');
+      const profilePath = testInfo.outputPath('import-renderer.cpuprofile');
+      await writeFile(profilePath, JSON.stringify(profile)); await testInfo.attach('import-renderer-cpu-profile', { path: profilePath, contentType: 'application/json' });
+      const nodes = new Map(profile.nodes.map(node => [node.id, node])), parents = new Map();
+      for (const node of profile.nodes) for (const child of node.children || []) parents.set(child, node.id);
+      function summarize(start, end) {
+        const exclusive = new Map(), inclusive = new Map(); let cursor = profile.startTime, sampledUs = 0;
+        for (let index = 0; index < (profile.samples || []).length; index++) {
+          const next = cursor + profile.timeDeltas[index], duration = Math.max(0, Math.min(next, end) - Math.max(cursor, start)); cursor = next;
+          if (!duration) continue;
+          const id = profile.samples[index]; sampledUs += duration; exclusive.set(id, (exclusive.get(id) || 0) + duration);
+          for (let current = id; current !== undefined; current = parents.get(current)) inclusive.set(current, (inclusive.get(current) || 0) + duration);
+        }
+        const top = values => [...values].sort((a, b) => b[1] - a[1]).slice(0, 25).map(([id, duration]) => ({ nodeId: id, milliseconds: Math.round(duration / 10) / 100,
+          functionName: nodes.get(id).callFrame.functionName || '<anonymous>', url: nodes.get(id).callFrame.url, lineNumber: nodes.get(id).callFrame.lineNumber + 1, columnNumber: nodes.get(id).callFrame.columnNumber + 1 }));
+        return { sampledMs: sampledUs / 1000, topExclusive: top(exclusive), topInclusive: top(inclusive) };
+      }
+      await report(testInfo, 'import-cpu-diagnostic.json', { snapshots: process.env.COVELET_QA_TRACE_SNAPSHOTS || 'normal', samplingIntervalUs: 1000,
+        profileStartTimeUs: profile.startTime, profileEndTimeUs: profile.endTime, profilePath,
+        overall: summarize(profile.startTime, profile.endTime), phases: phases.map(phase => ({ ...phase, cpu: summarize(phase.startTimeUs, phase.endTimeUs) })) });
+      await client.send('Profiler.disable'); await client.send('Performance.disable'); await client.detach();
+    },
+  };
 }
 async function close(page, title) {
   const dialog = page.getByRole('dialog', { name: title, exact: true });
@@ -113,25 +209,27 @@ function nearCapacityData(before) {
 test('near-capacity library records real input-to-result UI timings with zero ordinary HTTP', async ({ extension }, testInfo) => {
   test.setTimeout(240_000);
   const trace = observeHTTP(extension.context), timings = {}, page = await extension.newtab(), before = await snapshot(page);
+  const renderer = await observeRendererLongTasks(page, timings);
+  try {
   const { data, sizes } = nearCapacityData(before); trace.phase = 'supported-backup-restore';
-  await measure(timings, 'supportedRestoreToVisibleMs', async () => {
+  await renderer.measure('supportedRestoreToVisibleMs', async () => {
     await restoreDataset(page, before, data, 'near-capacity-project.json');
     await expect(page.locator('[data-entry-id="bench-site-0000"]')).toBeVisible();
   });
   trace.phase = 'ordinary-ui';
-  await measure(timings, 'commandOpenToFocusedOptionsMs', async () => {
+  await renderer.measure('commandOpenToFocusedOptionsMs', async () => {
     await page.getByRole('button', { name: '命令面板', exact: true }).click();
     const commands = page.getByRole('dialog', { name: '命令面板', exact: true });
     await expect(commands.getByRole('combobox')).toBeFocused();
     await expect(commands.getByRole('option', { name: '新便笺', exact: true })).toBeVisible();
   });
   const commands = page.getByRole('dialog', { name: '命令面板', exact: true });
-  await measure(timings, 'commandBodyQueryToResultMs', async () => {
+  await renderer.measure('commandBodyQueryToResultMs', async () => {
     await commands.getByRole('combobox').fill('benchneedle0199 type:note');
     await expect(commands.getByRole('option')).toHaveCount(1); await expect(commands.getByRole('option')).toContainText('Bench note 0199');
   });
   await page.keyboard.press('Escape'); await expect(commands).toBeHidden();
-  await measure(timings, 'mainBodyQueryToResultMs', async () => {
+  await renderer.measure('mainBodyQueryToResultMs', async () => {
     await search(page).fill('benchneedle0000 type:note');
     await expect(page.getByRole('option')).toHaveCount(1); await expect(page.getByRole('option')).toContainText('Bench note 0000');
   });
@@ -143,9 +241,17 @@ test('near-capacity library records real input-to-result UI timings with zero or
   expect(widget).toBeTruthy();
   const card = page.locator(`[data-entry-id="${widget.id}"]`); await revealDesktopItem(page, card);
   await card.locator('[data-widget-launcher]').click(); notes = page.getByRole('dialog', { name: '便笺', exact: true });
-  await expect(editor(notes)).toBeVisible(); await editor(notes).fill('Updated benchneedle0000 evidence visible in the pinned note.');
+  // A mounted editor is provisional until the requested record and its legacy
+  // document have loaded. Measure edits to the actual bound note, not its
+  // temporary empty draft, without an arbitrary initialization sleep.
+  await expect(notes.getByLabel('便笺名称', { exact: true })).toHaveValue('Bench note 0000');
+  await expect(editor(notes)).toContainText('Initial project evidence benchneedle0000.');
+  await expect(editor(notes)).toContainText('Local context for synthetic benchmark 0.');
+  await expect(editor(notes)).toBeEditable();
+  await editor(notes).fill('Updated benchneedle0000 evidence visible in the pinned note.');
+  await expect(editor(notes)).toContainText('Updated benchneedle0000 evidence visible in the pinned note.');
   await expect(notes.getByRole('button', { name: '保存', exact: true })).toBeEnabled();
-  await measure(timings, 'noteSaveToVisibleWidgetUpdateMs', async () => {
+  await renderer.measure('noteSaveToVisibleWidgetUpdateMs', async () => {
     await notes.getByRole('button', { name: '保存', exact: true }).click(); await expect(notes.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
     await close(page, '便笺'); await expect(card).toBeVisible(); await expect(card).toContainText('Updated benchneedle0000 evidence');
   });
@@ -154,15 +260,67 @@ test('near-capacity library records real input-to-result UI timings with zero or
   await importing.getByRole('combobox', { name: '粘贴格式', exact: true }).click();
   await importing.getByRole('option', { name: 'OneTab 文本', exact: true }).click();
   const source = Array.from({ length: 1900 }, (_, index) => `${siteURL(index)} | Source ${pad(index)}`).join('\n');
-  await measure(timings, 'paste1900RowsToImportPreviewMs', async () => {
-    await importing.getByLabel('粘贴网址', { exact: true }).fill(source); await importing.getByRole('button', { name: '预览网址', exact: true }).click();
-    await expect(importing.locator('.bookmark-import-row')).toHaveCount(1900, { timeout: 30_000 });
+  const cpu = await importCPUProbe(extension.context, page, testInfo);
+  try {
+  await renderer.measure('paste1900RowsToImportPreviewMs', async () => {
+    const fill = () => importing.getByLabel('粘贴网址', { exact: true }).fill(source);
+    const fillPhase = () => renderer.measure('textareaFillOnlyMs', fill);
+    if (cpu) await cpu.measure('textareaFill', fillPhase); else await fillPhase();
+    const preview = async () => {
+    await importing.getByRole('button', { name: '预览网址', exact: true }).click();
+    await expect(importing.locator('.bookmark-import-row')).toHaveCount(100, { timeout: 30_000 });
+    await expect(importing.locator('.import-source-pagination').first().getByRole('status')).toHaveText('1–100 / 1,900');
+    await expect(importing.locator('.import-merge-group')).toHaveCount(20);
+    await expect(importing.locator('.import-merge-groups [role="combobox"]')).toHaveCount(20);
+    await expect(importing.locator('.import-merge-pagination').first().getByRole('status')).toHaveText('1–20 / 1,900');
+    await expect(importing.locator('.bookmark-import-summary')).toContainText('已选 1,900 项');
     await expect(importing.locator('.bookmark-import-summary')).toContainText('将添加 0 个网址');
+    await expect(importing.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled();
+    };
+    const previewPhase = () => renderer.measure('previewClickAndRenderOnlyMs', preview);
+    if (cpu) await cpu.measure('previewClickAndRender', previewPhase); else await previewPhase();
+  });
+  } finally { await cpu?.finish(); }
+  await renderer.measure('sourcePagingAndFullSelectionChecksMs', async () => {
+    const pager = importing.locator('.import-source-pagination').first(), summary = importing.locator('.bookmark-import-summary');
+    const all = importing.getByRole('checkbox', { name: '选择全部网址', exact: true });
+    await pager.getByRole('button', { name: '下一页', exact: true }).click();
+    await expect(pager.getByRole('status')).toHaveText('101–200 / 1,900');
+    const source100 = importing.getByRole('checkbox', { name: '选择 Source 0100', exact: true });
+    await expect(source100).toBeChecked(); await source100.uncheck();
+    await expect(summary).toContainText('已选 1,899 项');
+    await all.check(); await expect(summary).toContainText('已选 1,900 项'); await expect(source100).toBeChecked();
+    await expect(pager.getByRole('status')).toHaveText('101–200 / 1,900');
+    const folder = importing.locator('.bookmark-import-group-heading');
+    await expect(folder).toHaveCount(1); await expect(folder.locator('small')).toHaveText('1,900');
+    await folder.getByRole('checkbox').uncheck();
+    await expect(summary).toContainText('已选 0 项'); await expect(all).not.toBeChecked(); await expect(source100).not.toBeChecked();
+    await expect(pager.getByRole('status')).toHaveText('101–200 / 1,900');
+    await all.check(); await expect(summary).toContainText('已选 1,900 项'); await expect(source100).toBeChecked();
+    await expect(importing.locator('.bookmark-import-row')).toHaveCount(100);
+    await expect(importing.locator('.import-merge-group')).toHaveCount(20);
     await expect(importing.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled();
   });
   await importing.getByRole('button', { name: '取消', exact: true }).click(); await expect(importing).toBeHidden();
-  const exporting = await measure(timings, 'all2600RecordsToExportPreviewMs', () => openLibrary(page, 2600));
-  const downloaded = await measure(timings, 'exportClickToDecoded2601FileZipMs', () => downloadLibrary(page, exporting));
+  // Exercise the supported local-file path too. This avoids conflating
+  // Chromium's synthetic multi-line text insertion with parser/render latency.
+  const fileImport = await command(page, '导入网址与书签 HTML'), choosingFile = page.waitForEvent('filechooser');
+  await fileImport.getByRole('button', { name: '导入 OneTab 文本文件', exact: true }).click();
+  const chooser = await choosingFile;
+  await renderer.measure('oneTabFile1900RowsToImportPreviewMs', async () => {
+    await chooser.setFiles({ name: 'near-capacity-onetab.txt', mimeType: 'text/plain', buffer: Buffer.from(source) });
+    await expect(fileImport.locator('.bookmark-import-row')).toHaveCount(100, { timeout: 30_000 });
+    await expect(fileImport.locator('.import-source-pagination').first().getByRole('status')).toHaveText('1–100 / 1,900');
+    await expect(fileImport.locator('.import-merge-group')).toHaveCount(20);
+    await expect(fileImport.locator('.import-merge-groups [role="combobox"]')).toHaveCount(20);
+    await expect(fileImport.locator('.import-merge-pagination').first().getByRole('status')).toHaveText('1–20 / 1,900');
+    await expect(fileImport.locator('.bookmark-import-summary')).toContainText('已选 1,900 项');
+    await expect(fileImport.locator('.bookmark-import-summary')).toContainText('将添加 0 个网址');
+    await expect(fileImport.getByRole('button', { name: '确认导入', exact: true })).toBeDisabled();
+  });
+  await fileImport.getByRole('button', { name: '取消', exact: true }).click(); await expect(fileImport).toBeHidden();
+  const exporting = await renderer.measure('all2600RecordsToExportPreviewMs', () => openLibrary(page, 2600));
+  const downloaded = await renderer.measure('exportClickToDecoded2601FileZipMs', () => downloadLibrary(page, exporting));
   expect(Object.keys(downloaded.files)).toHaveLength(2601); expect(Object.keys(downloaded.files).filter(name => name.startsWith('sites/'))).toHaveLength(1900);
   expect(Object.keys(downloaded.files).filter(name => name.startsWith('reading/'))).toHaveLength(500); expect(Object.keys(downloaded.files).filter(name => name.startsWith('notes/'))).toHaveLength(200);
   const after = await snapshot(page);
@@ -171,8 +329,11 @@ test('near-capacity library records real input-to-result UI timings with zero or
   expect(trace.requests, 'packaged background, local queries, pins, preview and export must issue no HTTP').toEqual([]);
   await report(testInfo, 'performance-metrics.json', { recordedAt: new Date().toISOString(), browser: await page.evaluate(() => navigator.userAgent),
     timingMethod: 'Milliseconds from real Playwright input/action through asserted visible result; includes automation transport and polling.',
+    combinedPasteNote: 'Combined paste timing also contains nested phase observation/paint boundaries; use textareaFillOnlyMs and previewClickAndRenderOnlyMs to distinguish native input from preview work.',
+    traceSnapshots: process.env.COVELET_QA_TRACE_SNAPSHOTS === 'off' ? 'off (isolated diagnostic)' : 'on (normal validation)',
     dataset: { initialSites: 1900, reading: 500, notes: 200, desktops: 50, finalNavigationEntries: 1901, exportedFiles: 2601, ...sizes }, timings,
     outputZipBytes: downloaded.bytes.length, network: trace.requests });
+  } finally { await report(testInfo, 'renderer-longtasks.json', await renderer.finish()); }
 });
 
 test.describe('project migration-to-export journey', () => {

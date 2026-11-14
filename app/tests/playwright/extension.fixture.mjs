@@ -14,7 +14,7 @@ export const test = base.extend({
     const manifest = JSON.parse(await readFile(join(extensionPath, 'manifest.json'), 'utf8'));
     expect(manifest.name).toBe('Covelet');
     expect(manifest.chrome_url_overrides?.newtab).toBe('newtab.html');
-    const sessions = [], errors = [];
+    const sessions = [], errors = [], externalErrors = [];
     async function launch(previous) {
       const profile = previous?.profile || await mkdtemp(join(tmpdir(), 'covelet-playwright-'));
       const session = previous || { profile };
@@ -37,9 +37,15 @@ export const test = base.extend({
       });
       session.context = context;
       await network.install(context);
-      await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
+      const traceSnapshots = process.env.COVELET_QA_TRACE_SNAPSHOTS !== 'off';
+      await context.tracing.start({ screenshots: true, snapshots: traceSnapshots, sources: true });
+      if (!traceSnapshots) testInfo.annotations.push({ type: 'diagnostic-trace-snapshots', description: 'DOM snapshots disabled for an isolated performance diagnostic; normal validation retains snapshots.' });
       session.tracing = true;
-      context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
+      context.on('page', page => page.on('pageerror', error => {
+        const detail = { url: page.url(), message: error.message, stack: error.stack };
+        if (page.url().startsWith('chrome-extension://') || /chrome-extension:\/\//u.test(error.stack || '')) errors.push(error.message);
+        else externalErrors.push(detail);
+      }));
       if (process.env.COVELET_NATIVE_BROWSER) {
         const cdp = await context.browser().newBrowserCDPSession();
         const actualBrowser = await cdp.send('Browser.getVersion');
@@ -110,7 +116,7 @@ export const test = base.extend({
         await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
         }
       }
-      await testInfo.attach('network-and-errors', { body: JSON.stringify({ requests: network.requests, unexpected: network.unexpected, errors }, null, 2), contentType: 'application/json' });
+      await testInfo.attach('network-and-errors', { body: JSON.stringify({ requests: network.requests, unexpected: network.unexpected, errors, externalErrors }, null, 2), contentType: 'application/json' });
     }
     if (failure) throw failure;
   },
