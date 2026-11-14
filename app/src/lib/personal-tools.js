@@ -1,12 +1,13 @@
 import { tr } from "../i18n/index.js";
-import { normalizeUrl } from './model.js';
+import { migrateNavigationState, normalizeUrl } from './model.js';
 import { validateNoteDocument, noteDocumentText } from './note-document.js';
 import { sameJson } from './json-equal.js';
 import { localData } from './local-data.js';
-import { withNavigationPrivacy, loadContentPreferences, validateContentPreferences, contentPreferencesForKeys } from './content-preferences.js';
+import { withNavigationPrivacy, loadContentPreferences, validateContentPreferences, contentPreferencesForKeys, getContentTags } from './content-preferences.js';
 import { userErrorMessage } from './user-error.js';
 import { validateRevisitOn } from './reading-revisit.js';
 import { appendCapturedDocument } from './note-capture.js';
+import { privateContentKeys } from './presentation.js';
 
 const loadToolsCore = () => import('./tools-core.js').then((module) => module.loadToolsCore());
 
@@ -309,29 +310,71 @@ export async function saveReadingItem({ id, revision, url, title: name, status =
   }, options);
 }
 
-export async function bulkReadingItems(ids, action, { expectedRevision, expectedRecordRevisions, expectedPreferencesRevision } = {}) {
+export async function bulkReadingItems(inputIds, action, options = {}) {
+  // The caller can keep editing its selection while this operation waits for
+  // another tab. Its IDs, revisions and metadata baselines must stay paired.
+  let ids, snapshot;
+  try { ({ ids, options: snapshot } = copy({ ids: inputIds, options })); }
+  catch { throw revisionConflict(); }
+  const { expectedRevision, expectedRecordRevisions, expectedPreferencesRevision, operation, tagIds, expectedMetadata, revisitOn } = snapshot || {};
   if (!Array.isArray(ids) || !ids.length || ids.length > 500 || new Set(ids).size !== ids.length
     || ids.some((id) => typeof id !== 'string' || !/^[a-z\d-]{1,100}$/iu.test(id))
-    || !['read', 'unread', 'archived', 'delete'].includes(action)
+    || !['read', 'unread', 'archived', 'delete', 'tags', 'revisit'].includes(action)
     || !Number.isSafeInteger(expectedRevision) || expectedRevision < 0
     || !expectedRecordRevisions || typeof expectedRecordRevisions !== 'object' || Array.isArray(expectedRecordRevisions)
     || Object.keys(expectedRecordRevisions).length !== ids.length
     || ids.some((id) => !Object.hasOwn(expectedRecordRevisions, id) || !Number.isSafeInteger(expectedRecordRevisions[id]) || expectedRecordRevisions[id] < 1)) throw revisionConflict();
-  return withNavigationPrivacy((preferences) => {
-    checkPreferencesRevision(preferences, expectedPreferencesRevision);
-    return mutate((data) => {
-      const records = ids.map((id) => data.reading.find((record) => record.id === id));
-      if (records.some((record, index) => !record || record.revision !== expectedRecordRevisions[ids[index]])) throw revisionConflict();
-      for (const id of ids) checkContentVisible(preferences, 'reading', id);
-      const changed = records.filter((record) => action === 'delete' || record.status !== action);
-      if (action === 'delete') {
-        for (const record of changed) moveToTrash(data, 'reading', record);
-        const removing = new Set(ids); data.reading = data.reading.filter((record) => !removing.has(record.id));
-      } else for (const record of changed) {
-        record.status = action; record.revision++; record.updatedAt = Math.max(Date.now(), record.updatedAt);
-      }
-      return { count: changed.length, ids: changed.map((record) => record.id) };
-    }, { expectedRevision, shouldWrite: (result) => result.count > 0 });
+  if (['tags', 'revisit'].includes(action) && (!Number.isSafeInteger(expectedPreferencesRevision) || expectedPreferencesRevision < 0)) throw revisionConflict();
+  if (action === 'tags' && (!['add', 'remove'].includes(operation) || !Array.isArray(tagIds) || !tagIds.length || tagIds.length > 20
+    || new Set(tagIds).size !== tagIds.length || tagIds.some((id) => typeof id !== 'string' || !/^[a-z\d-]{1,100}$/iu.test(id))
+    || !expectedMetadata || typeof expectedMetadata !== 'object' || Array.isArray(expectedMetadata) || Object.keys(expectedMetadata).length !== ids.length
+    || ids.some((id) => !Object.hasOwn(expectedMetadata, `reading:${id}`)))) throw revisionConflict();
+  if (action === 'revisit' && revisitOn !== null) validateRevisitOn(revisitOn);
+  if (!globalThis.navigator?.locks?.request) throw Error(tr('内容未能保存，请重试。'));
+  // A site's move into a hidden folder can change tag visibility without a
+  // preference revision. Read navigation only while holding the same outer
+  // lock as navigation writers, then preferences and tools in sync order.
+  return navigator.locks.request('owntab.local.write.v1', async () => {
+    const envelope = (await localData.get('owntab.local.v1'))['owntab.local.v1'];
+    const navigation = envelope?.state ? migrateNavigationState(envelope.state) : null;
+    return withNavigationPrivacy((preferences, prepare) => {
+      checkPreferencesRevision(preferences, expectedPreferencesRevision);
+      let metadataRecords = {};
+      return mutate((data) => {
+        const records = ids.map((id) => data.reading.find((record) => record.id === id));
+        if (records.some((record, index) => !record || record.revision !== expectedRecordRevisions[ids[index]])) throw revisionConflict();
+        for (const id of ids) checkContentVisible(preferences, 'reading', id);
+        let changed;
+        if (action === 'tags') {
+          const available = new Set(getContentTags(preferences, { hiddenKeys: privateContentKeys(navigation, preferences) }).map((tag) => tag.id));
+          if (tagIds.some((id) => !available.has(id))) throw revisionConflict();
+          const patches = [];
+          changed = records.filter((record) => {
+            const key = `reading:${record.id}`, previous = preferences.library?.items[key] || { description: '', tagIds: [] };
+            const nextTags = operation === 'add' ? [...new Set([...previous.tagIds, ...tagIds])] : previous.tagIds.filter((id) => !tagIds.includes(id));
+            if (sameJson(previous.tagIds, nextTags)) return false;
+            patches.push({ key, description: previous.description, tagIds: nextTags });
+            return true;
+          });
+          // Validate even an otherwise empty batch: stale metadata must never
+          // be accepted just because the requested tags already happen to match.
+          metadataRecords = prepare([], { metadata: patches, expectedRevision: expectedPreferencesRevision,
+            expectedMetadata: ids.map((id) => ({ ...expectedMetadata[`reading:${id}`], key: `reading:${id}` })) });
+        } else changed = records.filter((record) => action === 'delete' || (action === 'revisit'
+          ? (record.revisitOn ?? null) !== revisitOn : record.status !== action));
+        if (action === 'delete') {
+          for (const record of changed) moveToTrash(data, 'reading', record);
+          const removing = new Set(ids); data.reading = data.reading.filter((record) => !removing.has(record.id));
+        } else for (const record of changed) {
+          if (action === 'revisit') {
+            if (revisitOn === null) delete record.revisitOn;
+            else record.revisitOn = revisitOn;
+          } else if (action !== 'tags') record.status = action;
+          record.revision++; record.updatedAt = Math.max(Date.now(), record.updatedAt);
+        }
+        return { count: changed.length, ids: changed.map((record) => record.id) };
+      }, { expectedRevision, shouldWrite: (result) => result.count > 0, extraRecords: () => metadataRecords });
+    });
   });
 }
 

@@ -14,7 +14,7 @@ import './content-metadata.css';
 
 const emptyMetadata = { description: '', tagIds: [] };
 
-export function ContentTagFilter({ preferences, selectedTagIds = [], onChange, availableTagIds, disabled = false, onReturnFocus, preserveInvalid = false }) {
+export function ContentTagFilter({ preferences, selectedTagIds = [], onChange, availableTagIds, disabled = false, onReturnFocus, preserveInvalid = false, tagMode = 'all' }) {
   const presentation = useContext(PresentationContext), container = useFloatingContainer(), [open, setOpen] = useState(false);
   const locked = presentation.active || preferences.presentation;
   const tags = getContentTags({ ...preferences, presentation: locked }, { hiddenKeys: locked ? presentation.hiddenKeys : undefined })
@@ -36,7 +36,7 @@ export function ContentTagFilter({ preferences, selectedTagIds = [], onChange, a
       onEscapeKeyDown={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
       <fieldset className="content-tag-filter" disabled={disabled}>
         <legend>{tr('标签')}</legend>
-        <p className="hint">{tr('同时包含所选标签')}</p>
+        <p className="hint">{tagMode === 'any' ? tr('包含任一所选标签') : tr('同时包含所选标签')}</p>
         <div className="content-tag-options">
           {tags.map((tag) => <label className="content-tag-option" key={tag.id}>
             <Checkbox checked={selectedTagIds.includes(tag.id)} onCheckedChange={(checked) => onChange(checked === true

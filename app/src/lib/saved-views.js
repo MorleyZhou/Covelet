@@ -6,7 +6,7 @@ import { isDateKey, localDateKey, matchesReadingRevisit } from './reading-revisi
 
 export const SAVED_VIEW_LIMITS = Object.freeze({ views: 50, name: 80, query: 2000, tags: 20, domain: 253 });
 export const SAVED_CONTENT_TYPES = Object.freeze(['site', 'folder', 'note', 'reading', 'desktop']);
-const FILTER_KEYS = ['query', 'type', 'scope', 'tagIds', 'excludeTagIds', 'domain', 'readingStatus', 'revisit'];
+const FILTER_KEYS = ['query', 'type', 'scope', 'tagIds', 'tagMode', 'excludeTagIds', 'domain', 'readingStatus', 'revisit'];
 const identity = (value) => typeof value === 'string' && /^[a-z\d-]{1,100}$/i.test(value);
 const scopeIdentity = (value) => typeof value === 'string' && value.length > 0 && value.length <= 200 && !/[\s\u0000-\u001f\u007f]/u.test(value) && !value.startsWith('@page:');
 const fields = (value, keys) => value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).every((key) => keys.includes(key));
@@ -24,12 +24,14 @@ export function validateSavedFilters(input, { allowDraftScopes = false } = {}) {
   if (!fields(input, FILTER_KEYS)) invalid();
   const value = { ...defaultSavedFilters(), ...input };
   const excluded = Object.hasOwn(value, 'excludeTagIds') ? value.excludeTagIds : [];
+  const tagMode = Object.hasOwn(value, 'tagMode') ? value.tagMode : 'all';
   if (typeof value.query !== 'string' || value.query.length > SAVED_VIEW_LIMITS.query || value.query.includes('\0')
     || !['all', 'navigation', ...SAVED_CONTENT_TYPES].includes(value.type) || !Array.isArray(value.tagIds) || value.tagIds.length > SAVED_VIEW_LIMITS.tags
     || new Set(value.tagIds).size !== value.tagIds.length || value.tagIds.some((id) => !identity(id))
     || !Array.isArray(excluded) || excluded.length > SAVED_VIEW_LIMITS.tags || new Set(excluded).size !== excluded.length || excluded.some((id) => !identity(id))
+    || !['all', 'any'].includes(tagMode)
     || typeof value.domain !== 'string' || value.readingStatus !== null && !['unread', 'read', 'archived'].includes(value.readingStatus)
-    || value.revisit !== null && !['due', 'scheduled', 'none'].includes(value.revisit)) invalid();
+    || value.revisit !== null && !['due', 'scheduled', 'none', 'today', 'next7d'].includes(value.revisit)) invalid();
   const scope = value.scope;
   if (!fields(scope, ['kind', 'desktopId', 'folderId'])) invalid();
   if (scope.kind === 'all') {
@@ -40,7 +42,7 @@ export function validateSavedFilters(input, { allowDraftScopes = false } = {}) {
   } else if (scope.kind === 'folder') {
     if (Object.keys(scope).length !== 2 || !scopeIdentity(scope.folderId)) invalid();
   } else invalid();
-  return { query: value.query.trim(), type: value.type, scope: { ...scope }, tagIds: [...value.tagIds], ...(excluded.length ? { excludeTagIds: [...excluded] } : {}),
+  return { query: value.query.trim(), type: value.type, scope: { ...scope }, tagIds: [...value.tagIds], ...(tagMode === 'any' ? { tagMode } : {}), ...(excluded.length ? { excludeTagIds: [...excluded] } : {}),
     domain: normalizedDomain(value.domain.trim()), readingStatus: value.readingStatus, revisit: value.revisit };
 }
 export function viewFilters(view) { return Object.fromEntries(FILTER_KEYS.filter((key) => Object.hasOwn(view, key)).map((key) => [key, structuredClone(view[key])])); }
@@ -81,11 +83,12 @@ export function filterSavedContent(navigation, tools, preferences, input, option
   if (context.status !== 'ready') return { status: context.status, reason: context.reason, rows: [] };
   const { filters, hidden, page, allowedTypes } = context;
   const today = options.today ?? localDateKey();
-  if (filters.revisit === 'due' && !isDateKey(today)) return { status: 'invalid', reason: 'invalid-filters', rows: [] };
+  if (['due', 'today', 'next7d'].includes(filters.revisit) && !isDateKey(today)) return { status: 'invalid', reason: 'invalid-filters', rows: [] };
   const folders = new Map((navigation?.entries || []).filter((entry) => entry.type === 'folder').map((entry) => [entry.id, entry]));
   const rows = collectCoveletContent(navigation, tools, filters.query, { aliases: preferences.aliases, hiddenKeys: hidden,
-    desktops: navigation ? namedDesktopRecords(navigation.settings) : [], library: preferences.library, tagIds: filters.tagIds, allowEmptyQuery: true });
+    desktops: navigation ? namedDesktopRecords(navigation.settings) : [], library: preferences.library, tagIds: filters.tagMode === 'any' ? [] : filters.tagIds, allowEmptyQuery: true });
   return { status: 'ready', reason: null, rows: rows.filter((row) => {
+    if (filters.tagMode === 'any' && filters.tagIds.length && !filters.tagIds.some((id) => preferences.library?.items?.[row.key]?.tagIds?.includes(id))) return false;
     if (filters.excludeTagIds?.some((id) => preferences.library?.items?.[row.key]?.tagIds?.includes(id))) return false;
     if (!allowedTypes.includes(row.type)) return false;
     if (filters.type === 'navigation' ? !['site', 'folder'].includes(row.type) : filters.type !== 'all' && row.type !== filters.type) return false;

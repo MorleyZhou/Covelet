@@ -7,7 +7,7 @@ if (batch && !/^\d+\.\d+\.\d+(?:-(?:chromium|chrome|edge))?$/u.test(batch)) thro
 const output = fileURLToPath(new URL(`../../output/playwright/covelet/0.6-batches/${batch ? `${batch}/` : ''}`, import.meta.url));
 export default defineConfig(base, {
   testDir: './playwright',
-  testMatch: /(?:command-query|note-workflows|widget-pins)\.spec\.mjs$/,
+  testMatch: /(?:command-query|note-workflows|widget-pins|reading-filters)\.spec\.mjs$/,
   outputDir: `${output}/test-results`,
   timeout: 120_000,
   reporter: [

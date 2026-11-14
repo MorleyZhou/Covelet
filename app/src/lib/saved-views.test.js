@@ -127,7 +127,54 @@ test('saved revisit conditions are optional, bounded and omitted when unset with
   assert.deepEqual(validateSavedView(legacy), legacy);
   assert.deepEqual(validateSavedView(view({ revisit: null })), legacy);
   assert.equal(validateSavedView(view({ revisit: 'due' })).revisit, 'due');
-  for (const revisit of ['', 'today', false, {}, 1]) assert.throws(() => validateSavedFilters({ revisit }));
+  for (const revisit of ['', 'tomorrow', false, {}, 1]) assert.throws(() => validateSavedFilters({ revisit }));
+});
+
+test('ANY tags select a union before exclusions while the legacy ALL default stays unchanged', () => {
+  const { navigation, tools, preferences } = context(), before = structuredClone({ navigation, tools, preferences });
+  const rows = (filters) => filterSavedContent(navigation, tools, preferences, filters).rows.map((row) => row.key);
+  assert.deepEqual(rows({ tagIds: ['work', 'secret'], tagMode: 'any' }), ['site:a', 'site:child', 'note:note-a', 'reading:reading-a']);
+  assert.deepEqual(rows({ tagIds: ['work', 'secret'] }), []);
+  assert.deepEqual(rows({ tagIds: ['work', 'secret'], tagMode: 'any', excludeTagIds: ['work'] }), ['site:child']);
+  assert.deepEqual(rows({ tagIds: ['work'], tagMode: 'any', excludeTagIds: ['work'] }), []);
+  assert.deepEqual(rows({ tagMode: 'any', excludeTagIds: ['work'] }), rows({ excludeTagIds: ['work'] }));
+  assert.deepEqual(rows({ query: 'Alpha', tagIds: ['keep', 'secret'], tagMode: 'any', type: 'site' }), ['site:a', 'site:child']);
+  assert.deepEqual({ navigation, tools, preferences }, before);
+});
+
+test('tag mode canonicalizes ALL to the old view shape and refuses unknown modes or missing ANY references', () => {
+  const legacy = view(); delete legacy.revisit;
+  assert.deepEqual(validateSavedView({ ...legacy, tagMode: 'all' }), legacy);
+  assert.equal(validateSavedView({ ...legacy, tagMode: 'any' }).tagMode, 'any');
+  for (const tagMode of [undefined, null, '', 'some', false, [], {}]) assert.throws(() => validateSavedFilters({ tagMode }));
+  const { navigation, tools, preferences } = context();
+  for (const filters of [{ tagIds: ['work', 'missing'], tagMode: 'any' }, { tagIds: ['work'], tagMode: 'any', excludeTagIds: ['missing'] }]) {
+    const result = filterSavedContent(navigation, tools, preferences, filters);
+    assert.equal(result.reason, 'missing-tag'); assert.deepEqual(result.rows, []);
+  }
+});
+
+test('ANY mode still shields every positive and excluded hidden-only tag reference', () => {
+  const { navigation, tools, preferences } = context();
+  preferences.presentation = true; preferences.privateKeys = ['folder:folder-a'];
+  for (const filters of [{ tagIds: ['work', 'secret'], tagMode: 'any' }, { tagIds: ['work'], tagMode: 'any', excludeTagIds: ['secret'] }]) {
+    const result = filterSavedContent(navigation, tools, preferences, filters);
+    assert.equal(result.status, 'hidden'); assert.deepEqual(result.rows, []);
+  }
+});
+
+test('today and next7d filters apply only to dated reading rows with inclusive local-day bounds', () => {
+  const { navigation, tools, preferences } = context(), today = '2026-11-14';
+  tools.reading = ['2026-11-13', today, '2026-11-20', '2026-11-21'].map((date, index) => ({ id: `date-${index}`, title: date, url: `https://example.com/${date}`, status: index === 2 ? 'archived' : 'unread', revisitOn: date }));
+  const ids = (filters) => filterSavedContent(navigation, tools, preferences, filters, { today }).rows.map((row) => row.id);
+  assert.deepEqual(ids({ revisit: 'today' }), ['date-1']);
+  assert.deepEqual(ids({ revisit: 'next7d' }), ['date-1', 'date-2']);
+  assert.deepEqual(ids({ revisit: 'next7d', readingStatus: 'archived' }), ['date-2']);
+  assert.deepEqual(ids({ revisit: 'next7d', type: 'site' }), []);
+  for (const revisit of ['today', 'next7d']) {
+    assert.equal(filterSavedContent(navigation, tools, preferences, { revisit }, { today: 'invalid' }).status, 'invalid');
+    assert.equal(validateSavedView(view({ revisit })).revisit, revisit);
+  }
 });
 
 test('private views and inherited hidden references do not expose names, results or saved conditions', () => {

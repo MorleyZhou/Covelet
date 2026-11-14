@@ -75,7 +75,7 @@ export function parseStructuredSearch(raw, { tags = [], baseFilters = {}, parseO
       conditions.push({ key: `${operator}:${identity}:${start}`, operator, value, label: `${operator}:${value}`, start, end: cursor });
     }
     if (selected.size > SAVED_VIEW_LIMITS.tags || excluded.size > SAVED_VIEW_LIMITS.tags) throw invalid('too-many-tags');
-    if ([...selected].some((id) => excluded.has(id))) throw invalid('conflicting-condition', 'tag');
+    if (filters.tagMode !== 'any' && [...selected].some((id) => excluded.has(id))) throw invalid('conflicting-condition', 'tag');
     if (scalars.has('type')) filters.type = scalars.get('type');
     if (scalars.has('is')) {
       if (!['all', 'reading'].includes(filters.type)) throw invalid('conflicting-condition', 'is');

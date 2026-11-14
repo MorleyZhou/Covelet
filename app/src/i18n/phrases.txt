@@ -1,4 +1,17 @@
 # source | English | Traditional Chinese | Japanese | Korean | German | French | Russian
+添加所选标签|Add selected tags|新增所選標籤|選択したタグを追加|선택한 태그 추가|Ausgewählte Tags hinzufügen|Ajouter les étiquettes sélectionnées|Добавить выбранные метки
+移除所选标签|Remove selected tags|移除所選標籤|選択したタグを削除|선택한 태그 제거|Ausgewählte Tags entfernen|Retirer les étiquettes sélectionnées|Удалить выбранные метки
+设置再看日期|Set revisit date|設定再看日期|再読日を設定|다시 볼 날짜 설정|Wiedervorlagedatum festlegen|Définir la date de relecture|Назначить дату повторного чтения
+清除再看日期|Clear revisit date|清除再看日期|再読日を解除|다시 볼 날짜 지우기|Wiedervorlagedatum löschen|Effacer la date de relecture|Убрать дату повторного чтения
+批量标签|Bulk tags|批次標籤|一括編集するタグ|일괄 편집할 태그|Tags für die Sammelbearbeitung|Étiquettes à modifier en lot|Метки для группового изменения
+统一再看日期|Revisit date for selected items|統一再看日期|選択項目の再読日|선택한 항목의 다시 볼 날짜|Wiedervorlagedatum für die Auswahl|Date de relecture de la sélection|Дата повторного чтения выбранных записей
+标签匹配|Tag matching|標籤比對|タグの一致条件|태그 일치 조건|Tag-Verknüpfung|Correspondance des étiquettes|Условия совпадения меток
+包含全部所选标签|Include all selected tags|包含全部所選標籤|選択したすべてのタグを含む|선택한 모든 태그 포함|Alle ausgewählten Tags enthalten|Contenir toutes les étiquettes sélectionnées|Содержат все выбранные метки
+包含任一所选标签|Include any selected tag|包含任一所選標籤|選択したいずれかのタグを含む|선택한 태그 중 하나 이상 포함|Mindestens einen ausgewählten Tag enthalten|Contenir au moins une étiquette sélectionnée|Содержат любую выбранную метку
+今天|Today|今天|今日|오늘|Heute|Aujourd’hui|Сегодня
+未来七天|Next seven days|未來七天|今後7日間|앞으로 7일|Nächste sieben Tage|Les sept prochains jours|Ближайшие семь дней
+暂无可用标签|No tags available|暫無可用標籤|使用できるタグがありません|사용 가능한 태그가 없습니다|Keine Tags verfügbar|Aucune étiquette disponible|Нет доступных меток
+清除所选标签|Clear selected tags|清除所選標籤|選択したタグを解除|선택한 태그 지우기|Tag-Auswahl löschen|Effacer les étiquettes sélectionnées|Сбросить выбранные метки
 清理旧版时钟留下的提醒。|Clear reminders left by older clock widgets.|清理舊版時鐘留下的提醒。|旧時計ウィジェットのリマインダーを削除します。|이전 시계 위젯이 남긴 알림을 지웁니다.|Erinnerungen alter Uhr-Widgets entfernen.|Supprimer les rappels laissés par les anciens widgets d’horloge.|Удалять напоминания, оставшиеся от старых виджетов часов.
 旧版提醒清理|Clear older reminders|舊版提醒清理|旧リマインダーの削除|이전 알림 정리|Alte Erinnerungen entfernen|Supprimer les anciens rappels|Удаление старых напоминаний
 旧版时钟使用的通知权限，当前版本不再发送通知。|Older clock widgets used this notification permission. This version no longer sends notifications.|舊版時鐘使用的通知權限，目前版本不再傳送通知。|旧時計ウィジェットで使用した通知権限です。現在のバージョンは通知を送信しません。|이전 시계 위젯에서 사용한 알림 권한입니다. 현재 버전은 알림을 보내지 않습니다.|Diese Benachrichtigungsberechtigung wurde von alten Uhr-Widgets verwendet. Diese Version sendet keine Benachrichtigungen mehr.|Cette autorisation de notification servait aux anciens widgets d’horloge. Cette version n’envoie plus de notifications.|Это разрешение использовалось старыми виджетами часов. Текущая версия больше не отправляет уведомления.

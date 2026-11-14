@@ -553,7 +553,8 @@ export function App() {
     }
     return { hiddenKeys: keys, referenceStates: references };
   }, [desktopState, contentPreferences, personalData, today]);
-  const privacyKey = presentation ? `hidden:${[...hiddenKeys].sort().join('\n')}` : 'public';
+  const privacyKey = presentation ? `hidden:${JSON.stringify([[...hiddenKeys].sort(),
+    getContentTags(contentPreferences, { hiddenKeys }).map(({ id, name }) => [id, name])])}` : 'public';
   const requestPrivacyUnlock = useCallback(() => setPrivacyDialog('unlock'), []);
   const presentationContext = useMemo(() => ({ active: presentation, hiddenKeys, requestUnlock: requestPrivacyUnlock }), [presentation, hiddenKeys, requestPrivacyUnlock]);
   const privateEntryIds = useMemo(() => (desktopState?.entries || []).filter((item) => hiddenKeys.has(`${item.type}:${item.id}`)).map((item) => item.id), [desktopState, hiddenKeys]);
@@ -686,6 +687,7 @@ export function App() {
   const searchPage = Number(activeScreen.split(':')[0]);
   const baseSearchFilters = useMemo(() => ({ ...defaultSavedFilters(), ...(searchContext ? {
     scope: searchContext.scope, domain: searchContext.domain, readingStatus: searchContext.readingStatus, revisit: searchContext.revisit ?? null,
+    ...(searchContext.tagMode === 'any' ? { tagMode: 'any' } : {}),
     ...(searchContext.excludeTagIds?.length ? { excludeTagIds: searchContext.excludeTagIds } : {}),
   } : {}), query: '',
     type: searchFilter === 'current' ? 'navigation' : searchFilter,
@@ -1498,7 +1500,7 @@ export function App() {
               }}
             />
             <ContentTagFilter preferences={contentPreferences} selectedTagIds={searchTagIds} availableTagIds={availableSearchTagIds}
-              preserveInvalid={Boolean(searchContext)} disabled={searchShielded}
+              preserveInvalid={Boolean(searchContext)} disabled={searchShielded} tagMode={currentSearchFilters.tagMode}
               onChange={(ids) => { setSearchTagIds(ids); setCandidate(-1); }}
               onReturnFocus={() => { setFocused(true); inputRef.current?.focus(); }} />
             <SearchFilters value={searchFilter} onChange={(value) => { setSearchFilter(value); setCandidate(-1); }} onReturnFocus={() => inputRef.current?.focus()} />

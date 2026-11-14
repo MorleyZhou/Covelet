@@ -31,6 +31,12 @@ explicit note-ID collision through supported backup pickers and watches the
 referenced card for transient exposure of the unrelated record. Template
 reference redaction remains unit-tested; there is no active template-sharing UI.
 
+`reading-filters.spec.mjs` imports synthetic reading/tag combinations through the
+complete-backup picker, then checks real bulk tag/date actions, stale cross-tab
+selections, all/any/excluded tag matching, complete-backup round trips, local
+midnight date changes, pinned-list updates and already-locked tag visibility.
+The bulk and saved-view controls are exercised in all eight languages at 390×540.
+
 The note-capture cases grant only `https://capture.example/*` in a temporary test
 copy and intercept that page and its exact icon probes. The actual browser
 selection is read by `chrome.scripting` while the popup runs in an inactive tab.
@@ -68,8 +74,9 @@ runs this suite on pull requests; it does not deploy, release or submit stores.
 
 This is a simulated-network integration test, **not** a true-cloud pass. It does
 not establish real WebDAV TLS behavior, a storage provider's quota/rate limits,
-browser permission-prompt acceptance, native Chrome/Edge differences, or an OS
-IME candidate window. The composition cases check the actual extension input
+browser permission-prompt acceptance or an OS IME candidate window. Bundled
+Chromium runs alone do not establish native Chrome/Edge behavior; the optional
+native runs above record that separately. The composition cases check the actual extension input
 with composition events and real keyboard Enter. Real service credentials and
 permission dialogs require separate acceptance testing.
 
