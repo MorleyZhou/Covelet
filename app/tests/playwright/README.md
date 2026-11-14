@@ -24,6 +24,13 @@ and screenshots go to `output/playwright/covelet/0.6-batches/` at the repository
 root; `COVELET_QA_BATCH=0.5.4` adds a separate batch subdirectory. This configuration
 does not replace the complete regression suite.
 
+`widget-pins.spec.mjs` covers independent pins on different desktops, live note
+and smart-list changes, missing targets, deletion/restoration, unconfigured list
+selection and privacy changes from another tab. Its recovery fixture creates an
+explicit note-ID collision through supported backup pickers and watches the
+referenced card for transient exposure of the unrelated record. Template
+reference redaction remains unit-tested; there is no active template-sharing UI.
+
 The note-capture cases grant only `https://capture.example/*` in a temporary test
 copy and intercept that page and its exact icon probes. The actual browser
 selection is read by `chrome.scripting` while the popup runs in an inactive tab.

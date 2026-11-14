@@ -1,5 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
-import { GITHUB_WIDGET_ID, WIDGET_NAMES, validateWidgetConfig, isRetiredClockWidget } from './widget-model.js';
+import { GITHUB_WIDGET_ID, NOTES_WIDGET_ID, SAVED_VIEW_WIDGET_ID, WIDGET_NAMES, validateWidgetConfig, isRetiredClockWidget, widgetContentReference } from './widget-model.js';
 import { DESKTOP_ROWS, MAX_DESKTOP_PAGE } from './desktop-layout.js';
 import { validateGradient, gradientCss } from './background-colors.js';
 import { normalizeIconAddress, normalizeIconVariants } from './site-icons.js';
@@ -585,8 +585,9 @@ export function configureGitHubWidget(input, config, id, { page = 0 } = {}) {
 export function configureWidget(input, extensionId, config, id, { page = 0 } = {}) {
   const state = migrateNavigationState(input);
   const checked = validateWidgetConfig(extensionId, config);
+  const targeted = widgetContentReference({ type: 'widget', extensionId, config: checked });
   const existing = id ? state.entries.find((entry) => entry.id === id)
-    : state.entries.find((entry) => entry.type === 'widget' && entry.extensionId === extensionId);
+    : targeted ? null : state.entries.find((entry) => entry.type === 'widget' && entry.extensionId === extensionId && !widgetContentReference(entry));
   if (id && (!existing || existing.type !== 'widget' || existing.extensionId !== extensionId)) fail(tr("组件已在其他页面移除，请重新打开扩展"));
   if (existing) {
     existing.config = checked;
@@ -595,6 +596,19 @@ export function configureWidget(input, extensionId, config, id, { page = 0 } = {
   else state.entries.push({ id: newId('widget'), type: 'widget', name: WIDGET_NAMES[extensionId], groupId: 'group-home', parentId: null, page,
     icon: letterIcon(WIDGET_NAMES[extensionId]), order: state.entries.filter((entry) => entry.parentId === null).length, extensionId, config: checked });
   return finish(state);
+}
+
+// Explicit pins are independent placements, including multiple copies of one
+// target. The caller validates target visibility/revisions in its transaction.
+export function appendReferencedWidget(input, extensionId, config, { page = 0 } = {}) {
+  if (![NOTES_WIDGET_ID, SAVED_VIEW_WIDGET_ID].includes(extensionId)) fail(tr('不支持此组件。'));
+  const state = migrateNavigationState(input), checked = validateWidgetConfig(extensionId, config);
+  integer(page, 0, MAX_DESKTOP_PAGE, tr('主屏幕位置'));
+  if (!state.settings.pages.includes(page) && !state.entries.some((entry) => entry.parentId === null && !entry.detached && (entry.page ?? 0) === page)) fail(tr('目标位置已变化，请重新选择。'));
+  const widgetId = newId('widget');
+  state.entries.push({ id: widgetId, type: 'widget', name: WIDGET_NAMES[extensionId], groupId: 'group-home', parentId: null, page,
+    icon: letterIcon(WIDGET_NAMES[extensionId]), order: state.entries.filter((entry) => entry.parentId === null).length, extensionId, config: checked });
+  return { state: finish(state), widgetId };
 }
 
 export function parseBookmarks(html) {

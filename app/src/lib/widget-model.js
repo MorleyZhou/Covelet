@@ -7,7 +7,20 @@ export const CLOCK_WIDGET_ID = 'clock';
 export const isRetiredClockWidget = (entry) => entry?.type === 'widget' && entry.extensionId === CLOCK_WIDGET_ID;
 export const NOTES_WIDGET_ID = 'notes';
 export const READING_WIDGET_ID = 'read-later';
-export const WIDGET_NAMES = Object.freeze({ get clock() { return tr("时钟"); }, get 'github-contributions'() { return tr("GitHub 贡献"); }, get notes() { return tr("便笺"); }, get 'read-later'() { return tr("稍后读"); } } );
+export const SAVED_VIEW_WIDGET_ID = 'saved-view';
+export const WIDGET_NAMES = Object.freeze({ get clock() { return tr("时钟"); }, get 'github-contributions'() { return tr("GitHub 贡献"); }, get notes() { return tr("便笺"); }, get 'read-later'() { return tr("稍后读"); }, get 'saved-view'() { return tr('动态清单'); } } );
+export const validWidgetContentId = (value) => typeof value === 'string' && /^[a-z\d-]{1,100}$/iu.test(value);
+
+// Structural only: safe for privacy derivation without evaluating a view and
+// recursing through saved-views -> privateContentKeys -> saved-views.
+export function widgetContentReference(entry) {
+  if (entry?.type !== 'widget') return null;
+  const field = entry.extensionId === NOTES_WIDGET_ID ? 'noteId' : entry.extensionId === SAVED_VIEW_WIDGET_ID ? 'viewId' : null;
+  const id = field && entry.config?.[field];
+  if (!field || !validWidgetContentId(id)) return null;
+  const kind = field === 'noteId' ? 'note' : 'view';
+  return { field, kind, id, key: `${kind}:${id}` };
+}
 export const WIDGET_SIZE_OPTIONS = Object.freeze([
   Object.freeze({ value: 'mini', get label() { return tr("迷你 · 1×1"); } }),
   Object.freeze({ value: 'small', get label() { return tr("小 · 2×2"); } }),
@@ -43,10 +56,12 @@ export function validateWidgetConfig(extensionId, input) {
     if (input.timeZone !== undefined) config.timeZone = input.timeZone === 'local' ? 'local' : normalizeTimeZone(input.timeZone);
     return config;
   }
-  if ([NOTES_WIDGET_ID, READING_WIDGET_ID].includes(extensionId)) {
-    if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some((key) => key !== 'size')
+  if ([NOTES_WIDGET_ID, READING_WIDGET_ID, SAVED_VIEW_WIDGET_ID].includes(extensionId)) {
+    const field = extensionId === NOTES_WIDGET_ID ? 'noteId' : extensionId === SAVED_VIEW_WIDGET_ID ? 'viewId' : null;
+    if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some((key) => key !== 'size' && key !== field)
       || !WIDGET_SIZE_OPTIONS.some(({ value }) => value === input.size)) throw Error(tr("组件配置无效。"));
-    return { size: input.size };
+    if (field && Object.hasOwn(input, field) && !validWidgetContentId(input[field])) throw Error(tr('组件配置无效。'));
+    return { size: input.size, ...(field && Object.hasOwn(input, field) ? { [field]: input[field] } : {}) };
   }
   if (extensionId !== GITHUB_WIDGET_ID) throw new Error(tr("不支持此组件。"));
   if (!input || typeof input !== 'object' || Array.isArray(input)

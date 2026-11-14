@@ -157,6 +157,14 @@ function protectOpenEditors(current, incoming) {
     record.revision = sameJson(oldContent, newContent) ? oldRevision : Math.max(oldRevision + 1, incomingRevision);
   }
 }
+// Prepare a replacement for a paired encrypted navigation/preferences/tools
+// commit. The caller holds the tools lock and publishes all records together.
+export function preparePersonalToolsRestore(current, input, { expectedRevision } = {}) {
+  const before = check(current), incoming = check(input);
+  if (!Number.isSafeInteger(expectedRevision) || before.revision !== expectedRevision) throw Object.assign(Error(tr('恢复期间数据已更新，请重新预览。')), { code: 'REVISION_CONFLICT' });
+  protectOpenEditors(before, incoming);
+  return check(pruneTrash({ ...incoming, revision: before.revision + 1 }));
+}
 // Complete backups use these APIs instead of writing storage directly. They
 // share the same lock and revision guards as the note editor and popup.
 export function replacePersonalTools(input, options = {}) {

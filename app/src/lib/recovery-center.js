@@ -2,7 +2,7 @@ import { tr } from '../i18n/index.js';
 import { localData } from './local-data.js';
 import * as navigation from './storage.js';
 import { migrateNavigationState } from './model.js';
-import { loadPersonalToolsSnapshot, validatePersonalTools, replacePersonalTools, inspectPersonalToolsBackup, personalContentKeys } from './personal-tools.js';
+import { loadPersonalToolsSnapshot, validatePersonalTools, replacePersonalTools, inspectPersonalToolsBackup, personalContentKeys, PERSONAL_TRASH_LIMITS } from './personal-tools.js';
 import { loadContentPreferences, validateContentPreferences, replaceContentPreferences, mergeContentPreferences, contentPreferencesForKeys } from './content-preferences.js';
 import { loadDesktopTemplateEnvelope, validateSavedDesktopTemplates, replaceDesktopTemplates } from './desktop-templates.js';
 import { navigationIconSources } from './navigation-icon-intake.js';
@@ -10,6 +10,7 @@ import { cloneTrashForAppend } from './navigation-trash-core.js';
 import { navigationResourceEntries } from './navigation-resources.js';
 import { remapNavigationPreferences, preserveInvalidViewReferences } from './navigation-recovery.js';
 import { privateContentKeys } from './presentation.js';
+import { remapWidgetContentReferences } from './referenced-widgets.js';
 import { encryptCompleteBackup, decryptCompleteBackup, throwIfBackupCancelled, validateBackupPassword } from './password-backup.js';
 
 const FORMAT = 'covelet-complete-backup';
@@ -114,23 +115,39 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     return { ...plan, expected: versions(current) };
   }
   function selectedTools(current, incoming, selected, mode) {
-    const next = copy(current);
+    const next = copy(current), restored = { notes: [], reading: [], trash: [] };
     for (const kind of ['notes', 'reading', 'trash']) {
       if (!selected.includes(kind)) continue;
       const records = (incoming[kind] || []).filter((item) => kind !== 'trash' || ['notes', 'reading'].includes(item.kind));
-      if (mode === 'replace') next[kind] = [...(kind === 'trash' ? current.trash.filter((item) => item.kind === 'snapshots') : []), ...copy(records)];
+      if (mode === 'replace') {
+        next[kind] = [...(kind === 'trash' ? current.trash.filter((item) => item.kind === 'snapshots') : []), ...copy(records)];
+        restored[kind].push(...records);
+      }
       else {
         const ids = new Set([...next.notes, ...next.reading, ...next.snapshots, ...(next.trash || [])].map((item) => item.id));
         const urls = new Set(next.reading.map((item) => item.url));
         for (const item of records) {
           if (ids.has(item.id) || kind === 'reading' && urls.has(item.url)) continue;
           (next[kind] ??= []).push(copy(item)); ids.add(item.id); if (kind === 'reading') urls.add(item.url);
+          restored[kind].push(item);
         }
       }
     }
     // Preserve this device's sync tracking; restoring content is a fresh local
     // edit, not a rollback of deletion knowledge learned from other devices.
-    return tools.validate(next);
+    const data = tools.validate(next), noteIdMap = new Map(restored.notes.map((note) => [note.id, note.id]));
+    const importedContentKeys = new Set([...restored.notes.map((note) => `note:${note.id}`), ...restored.reading.map((record) => `reading:${record.id}`)]);
+    const activeIds = new Set([...data.notes, ...data.reading, ...data.snapshots].map((record) => record.id));
+    const existingTrashIds = new Set(current.trash.map((item) => item.record.id));
+    const cutoff = Date.now() - PERSONAL_TRASH_LIMITS.retentionDays * 86400000;
+    for (const item of restored.trash) if (item.deletedAt > cutoff && !activeIds.has(item.record.id)
+      && (mode === 'replace' || !existingTrashIds.has(item.record.id))) {
+      importedContentKeys.add(`${item.kind === 'notes' ? 'note' : 'reading'}:${item.record.id}`);
+      // Retain a known recycled target's identity so restoring it later can
+      // reattach its pin. A local active/same-ID recycled collision is excluded.
+      if (item.kind === 'notes' && !noteIdMap.has(item.record.id)) noteIdMap.set(item.record.id, item.record.id);
+    }
+    return { data, noteIdMap, importedContentKeys };
   }
   async function mergeNavigation(current, incoming, currentPreferences) {
     const existing = await nav.inspectBackup(await nav.exportBackup(current));
@@ -198,7 +215,8 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     const icons = new Map(existing.icons), appendedSources = new Set(navigationIconSources({ entries: [...appended, ...importedOwned] }).map((item) => item.source));
     for (const [source, record] of incoming.icons || []) if (appendedSources.has(source) && !icons.has(source)) icons.set(source, record);
     return { plan: { state: migrateNavigationState(cloned.state), assets, icons }, desktopIdMap,
-      preferenceKeyMap: cloned.preferenceKeyMap, referenceIdMap: cloned.referenceIdMap };
+      preferenceKeyMap: cloned.preferenceKeyMap, referenceIdMap: cloned.referenceIdMap,
+      importedWidgetIds: new Set([...cloned.preferenceKeyMap].filter(([key]) => key.startsWith('widget:')).map(([, key]) => key.slice('widget:'.length))) };
   }
   async function restore(plan, { selected = plan.categories, mode = 'replace', onIconProgress, onIconResult } = {}) {
     if (!plan?.expected || !['replace', 'append'].includes(mode) || !Array.isArray(selected) || !selected.length || selected.some((key) => !RECOVERY_CATEGORIES.includes(key) || !plan.categories.includes(key))) fail(tr('请选择有效的恢复类别。'));
@@ -209,7 +227,7 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       if (plan.recoveryPointId && !sourcePoint) fail(tr('恢复前副本已更新，请重新预览。'));
       if (existingPoint && ['applying', 'needs-recovery'].includes(existingPoint.status) && !sourcePoint) fail(tr('上次恢复未完成，请先从「恢复前副本」找回需要的内容，再导入其他备份。'));
       // Re-validate mutable preview values before any persistence.
-      const next = {}; let desktopIdMap = new Map(), navigationMapping = null;
+      const next = {}; let desktopIdMap = new Map(), navigationMapping = null, restoredTools = null;
       if (selected.includes('navigation')) {
         if (mode === 'append') {
           const merged = await mergeNavigation(before.state, plan.navigation, before.preferences);
@@ -217,7 +235,9 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
           navigationMapping = merged;
         } else next.navigation = plan.navigation;
       }
-      if (selected.some((key) => ['notes', 'reading', 'trash'].includes(key))) next.tools = selectedTools(before.tools, plan.tools, selected, mode);
+      if (selected.some((key) => ['notes', 'reading', 'trash'].includes(key))) {
+        restoredTools = selectedTools(before.tools, plan.tools, selected, mode); next.tools = restoredTools.data;
+      }
       if (selected.includes('templates')) {
         const list = mode === 'append' ? [...before.templates.templates, ...plan.templates.templates.filter((item) => !before.templates.templates.some((old) => old.id === item.id))] : plan.templates.templates;
         next.templates = templates.validate({ ...before.templates, templates: list });
@@ -239,6 +259,28 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
           next.preferences = preferences.validate(mode === 'append' ? mergeContentPreferences(before.preferences, incomingPreferences, { desktopIdMap }) : incomingPreferences);
         }
       }
+      // A restored private tool remains private even when metadata was omitted.
+      // Publish its body and privacy together, including content-only restores.
+      if (next.tools && plan.preferences && !selected.includes('preferences')) {
+        const base = next.preferences || before.preferences, privateKeys = new Set(base.privateKeys);
+        for (const key of plan.preferences.privateKeys) if (restoredTools.importedContentKeys.has(key)) privateKeys.add(key);
+        next.preferences = preferences.validate({ ...base, privateKeys: [...privateKeys] });
+      }
+      if (next.navigation) {
+        const viewIdMap = new Map(), finalPreferences = next.preferences || before.preferences;
+        const existingViewIds = new Set((before.preferences.library?.views || []).map((view) => view.id));
+        const finalViewIds = new Set((finalPreferences.library?.views || []).map((view) => view.id));
+        if (selected.includes('preferences')) for (const view of plan.preferences?.library?.views || []) {
+          if (finalViewIds.has(view.id) && (mode === 'replace' || !existingViewIds.has(view.id))) viewIdMap.set(view.id, view.id);
+        }
+        const noteIds = (value) => [...(value?.notes || []), ...(value?.trash || []).filter((item) => item.kind === 'notes').map((item) => item.record)].map((record) => record.id);
+        next.navigation = { ...next.navigation, state: remapWidgetContentReferences(next.navigation.state, {
+          noteIdMap: restoredTools?.noteIdMap || new Map(), viewIdMap,
+          importedWidgetIds: navigationMapping?.importedWidgetIds,
+          reservedNoteIds: [...noteIds(before.tools), ...noteIds(plan.tools), ...noteIds(next.tools)],
+          reservedViewIds: [...existingViewIds, ...finalViewIds, ...(plan.preferences?.library?.views || []).map((view) => view.id)],
+        }) };
+      }
       if (next.navigation) {
         const base = next.preferences || before.preferences;
         const retained = new Set(base.privateKeys), present = new Set(navigationResourceEntries(next.navigation.state).map((entry) => `${entry.type}:${entry.id}`));
@@ -254,6 +296,9 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
         }
         next.preferences = preferences.validate({ ...base, privateKeys: [...retained] });
       }
+      // Tools and metadata form one content snapshot even without navigation.
+      // Preserve this device's existing metadata when it was not selected.
+      if (next.tools && !next.preferences) next.preferences = before.preferences;
       // Validation includes archive resources before the checkpoint and writes.
       if (next.navigation) next.navigation = await nav.validateBackupPlan(next.navigation);
       const point = { version: 1, id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: 'applying', data: snapshot.data, selected, mode,
@@ -262,18 +307,28 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       const saved = {}, completed = [];
       let iconReport = null, applyingDomain = null;
       const existingIds = new Set(before.state.entries.map((entry) => entry.id));
-      const iconOptions = { onIconProgress, onIconResult: (report) => { iconReport = report; onIconResult?.(report); },
+      const iconOptions = { onIconProgress, preserveContentReferences: true, onIconResult: (report) => { iconReport = report; onIconResult?.(report); },
         ...(mode === 'append' && next.navigation ? { iconEntryIds: next.navigation.state.entries.filter((entry) => !existingIds.has(entry.id)).map((entry) => entry.id) } : {}) };
+      const paired = next.navigation && next.preferences && typeof nav.restoreBackupWithPreferences === 'function';
+      const contentPair = !next.navigation && next.tools && next.preferences && typeof nav.restoreContentWithPreferences === 'function';
+      const pairedTools = Boolean(next.tools && (paired || contentPair));
       try {
-        const paired = next.navigation && next.preferences && typeof nav.restoreBackupWithPreferences === 'function';
         for (const domain of ['navigation', 'tools', 'templates', 'preferences']) {
           if (!next[domain]) continue;
-          if (paired && domain === 'preferences') continue;
-          applyingDomain = paired && domain === 'navigation' ? 'navigation-preferences' : domain;
+          if ((paired || contentPair) && domain === 'preferences' || paired && pairedTools && domain === 'tools') continue;
+          applyingDomain = paired && domain === 'navigation' ? 'navigation-preferences' : contentPair && domain === 'tools' ? 'tools-preferences' : domain;
           if (paired && domain === 'navigation') {
             const result = await nav.restoreBackupWithPreferences(next.navigation, { ...iconOptions,
-              expectedNavigationRevision: expected.navigation, expectedPreferencesRevision: expected.preferences, preferences: next.preferences });
-            saved.navigation = result.state; saved.preferences = result.preferences; completed.push('navigation-preferences'); applyingDomain = null; continue;
+              expectedNavigationRevision: expected.navigation, expectedPreferencesRevision: expected.preferences, preferences: next.preferences,
+              ...(pairedTools ? { tools: next.tools, expectedToolsRevision: expected.tools } : {}) });
+            saved.navigation = result.state; saved.preferences = result.preferences; if (result.tools) saved.tools = result.tools;
+            completed.push('navigation-preferences'); applyingDomain = null; continue;
+          }
+          if (contentPair && domain === 'tools') {
+            const result = await nav.restoreContentWithPreferences({ expectedNavigationRevision: expected.navigation,
+              expectedPreferencesRevision: expected.preferences, preferences: next.preferences, tools: next.tools, expectedToolsRevision: expected.tools });
+            saved.navigation = result.state; saved.preferences = result.preferences; saved.tools = result.tools;
+            completed.push('tools-preferences'); applyingDomain = null; continue;
           }
           saved[domain] = domain === 'navigation' ? await nav.restoreBackup(next.navigation, expected.navigation, iconOptions)
             : await ({ tools, templates, preferences })[domain].write(next[domain], { expectedRevision: expected[domain] });
@@ -286,8 +341,9 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
         const rollbackFailed = [];
         if (applyingDomain && (completed.length || cause.code !== 'REVISION_CONFLICT')) {
           try {
-            const changed = applyingDomain === 'navigation-preferences'
+            const changed = applyingDomain === 'navigation-preferences' || applyingDomain === 'tools-preferences'
               ? (await nav.loadState()).revision !== expected.navigation || (await preferences.read()).revision !== expected.preferences
+                || pairedTools && (await tools.read()).revision !== expected.tools
               : applyingDomain === 'navigation' ? (await nav.loadState()).revision !== expected.navigation
                 : (await ({ tools, templates, preferences })[applyingDomain].read()).revision !== expected[applyingDomain];
             if (changed) rollbackFailed.push(applyingDomain);
@@ -301,10 +357,15 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
               if (rollbackFailed.length) conflict();
               const original = await nav.inspectBackup(new Blob([fromBase64(snapshot.data.navigation)]));
               await nav.restoreBackupWithPreferences(original, { expectedNavigationRevision: saved.navigation.revision,
-                expectedPreferencesRevision: saved.preferences.revision, preferences: before.preferences, hydrateIcons: false });
+                expectedPreferencesRevision: saved.preferences.revision, preferences: before.preferences, hydrateIcons: false, preserveContentReferences: true,
+                ...(pairedTools ? { tools: before.tools, expectedToolsRevision: saved.tools.revision } : {}) });
+            } else if (domain === 'tools-preferences') {
+              if (rollbackFailed.length) conflict();
+              await nav.restoreContentWithPreferences({ expectedNavigationRevision: saved.navigation.revision,
+                expectedPreferencesRevision: saved.preferences.revision, preferences: before.preferences, tools: before.tools, expectedToolsRevision: saved.tools.revision });
             } else if (domain === 'navigation') {
               const original = await nav.inspectBackup(new Blob([fromBase64(snapshot.data.navigation)]));
-              await nav.restoreBackup(original, saved.navigation.revision, { hydrateIcons: false });
+              await nav.restoreBackup(original, saved.navigation.revision, { hydrateIcons: false, preserveContentReferences: true });
             } else await ({ tools, templates, preferences })[domain].write(before[domain], { expectedRevision: saved[domain].revision });
           } catch { rollbackFailed.push(domain); }
         }

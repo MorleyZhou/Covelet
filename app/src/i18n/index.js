@@ -82,7 +82,7 @@ export function isAppMessage(value) {
 }
 export const formatNumber = (value, options) => new Intl.NumberFormat(locale, options).format(value);
 export function builtinName(id, savedName) {
-  const key = ({ clock: '时钟', 'github-contributions': 'GitHub 贡献', notes: '便笺', 'read-later': '稍后读' })[id];
+  const key = ({ clock: '时钟', 'github-contributions': 'GitHub 贡献', notes: '便笺', 'read-later': '稍后读', 'saved-view': '动态清单' })[id];
   if (!key) return savedName;
   const variants = [key, ...Object.values(messages[key] || {})];
   return variants.includes(savedName) ? tr(key) : savedName;

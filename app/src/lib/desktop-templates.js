@@ -2,13 +2,13 @@ import { tr } from '../i18n/index.js';
 import { localData } from './local-data.js';
 import { createEmptyState, letterIcon, migrateNavigationState, validateState } from './model.js';
 import { DESKTOP_ROWS, MAX_DESKTOP_PAGE, freezeDesktopPositions, nextDesktopPage } from './desktop-layout.js';
-import { CLOCK_WIDGET_ID, NOTES_WIDGET_ID, READING_WIDGET_ID, WIDGET_NAMES, validateWidgetConfig } from './widget-model.js';
+import { CLOCK_WIDGET_ID, NOTES_WIDGET_ID, READING_WIDGET_ID, SAVED_VIEW_WIDGET_ID, WIDGET_NAMES, validateWidgetConfig, widgetContentReference } from './widget-model.js';
 import { prepareImport } from './import-plan.js';
 
 export const DESKTOP_TEMPLATE_MAX_BYTES = 256 * 1024;
 export const DESKTOP_TEMPLATE_MAX_SAVED = 20;
 const FORMAT = 'covelet-desktop-template';
-const SAFE_WIDGETS = new Set([CLOCK_WIDGET_ID, NOTES_WIDGET_ID, READING_WIDGET_ID]);
+const SAFE_WIDGETS = new Set([CLOCK_WIDGET_ID, NOTES_WIDGET_ID, READING_WIDGET_ID, SAVED_VIEW_WIDGET_ID]);
 // Old templates retain their clock configuration when read or backed up, but
 // new captures and applications no longer add or reposition the retired widget.
 export const activeTemplateWidgets = (template) => template.widgets.filter((widget) => widget.extensionId !== CLOCK_WIDGET_ID);
@@ -35,6 +35,11 @@ function appearanceOf(settings) {
   const appearance = Object.fromEntries(APPEARANCE_KEYS.map((key) => [key, copy(settings[key])]));
   if (appearance.background.kind === 'image') appearance.background = { kind: 'bing', value: 'daily' };
   return appearance;
+}
+function publicWidgetConfig(extensionId, config) {
+  // Shared templates carry geometry, never personal content identities. Notes
+  // become the existing generic component; a view becomes an unbound picker.
+  return [NOTES_WIDGET_ID, SAVED_VIEW_WIDGET_ID].includes(extensionId) ? { size: config.size } : copy(config);
 }
 function checkedPosition(position) {
   if (position === undefined) return undefined;
@@ -65,6 +70,7 @@ export function inspectDesktopTemplate(input) {
   const widgets = raw.widgets.map((widget, index) => {
     fields(widget, ['extensionId', 'config', 'page', 'position']);
     if (!SAFE_WIDGETS.has(widget.extensionId)) fail(tr('桌面方案不能包含账号组件或未知组件。'));
+    if ([NOTES_WIDGET_ID, SAVED_VIEW_WIDGET_ID].includes(widget.extensionId)) fields(widget.config, ['size']);
     const result = { extensionId: widget.extensionId, config: validateWidgetConfig(widget.extensionId, widget.config), page: checkedPage(widget.page) };
     const position = checkedPosition(widget.position);
     if (position) result.position = position;
@@ -92,7 +98,7 @@ export function createDesktopTemplate(input, { name = tr('我的桌面方案'), 
   const pages = [...new Set([...widgets, ...sites].map((entry) => entry.page ?? 0))].sort((a, b) => a - b);
   const pageMap = new Map(pages.map((page, index) => [page, index]));
   return inspectDesktopTemplate({ format: FORMAT, version: 1, name, appearance: appearanceOf(state.settings),
-    widgets: widgets.map((entry) => ({ extensionId: entry.extensionId, config: copy(entry.config), page: pageMap.get(entry.page ?? 0), ...(entry.position ? { position: copy(entry.position) } : {}) })),
+    widgets: widgets.map((entry) => ({ extensionId: entry.extensionId, config: publicWidgetConfig(entry.extensionId, entry.config), page: pageMap.get(entry.page ?? 0), ...(entry.position ? { position: copy(entry.position) } : {}) })),
     sites: sites.map((entry) => ({ name: entry.name, url: entry.url, page: pageMap.get(entry.page ?? 0), ...(entry.parentId === null && entry.position ? { position: copy(entry.position) } : {}) })) });
 }
 
@@ -111,7 +117,7 @@ export function applyDesktopTemplate(input, value, { appearance = true, widgets 
   const affected = new Set(), usedWidgets = new Set();
   let movedWidgets = 0, addedWidgets = 0, addedSites = 0, skippedDuplicates = 0, revealId = null;
   for (const widget of selectedWidgets) {
-    let entry = state.entries.find((item) => item.type === 'widget' && item.extensionId === widget.extensionId && !usedWidgets.has(item.id));
+    let entry = state.entries.find((item) => item.type === 'widget' && item.extensionId === widget.extensionId && !widgetContentReference(item) && !usedWidgets.has(item.id));
     if (entry) {
       // Widget runtimes and tool records are keyed by the existing ID. Only
       // geometry changes; style, zones and every other config field survive.

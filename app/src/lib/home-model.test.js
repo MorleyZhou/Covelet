@@ -70,7 +70,7 @@ test('retired clocks remain readable and portable while navigation migration onl
 });
 
 test('catalog and new templates cannot add clocks, but old saved/imported templates retain their clock data', () => {
-  assert.deepEqual(BUNDLED_EXTENSIONS.map(item => item.id), ['random-wallpaper', 'notes', 'read-later', 'github-contributions', 'custom-storage-sync']);
+  assert.deepEqual(BUNDLED_EXTENSIONS.map(item => item.id), ['random-wallpaper', 'notes', 'read-later', 'saved-view', 'github-contributions', 'custom-storage-sync']);
   assert.equal(EXTENSION_CATEGORIES.some(item => item.id === 'time'), false);
   assert.equal(extensionsForCatalog('all', 'clock').length, 0);
   assert.ok(BUILTIN_DESKTOP_TEMPLATES.every(template => template.widgets.every(widget => widget.extensionId !== 'clock')));

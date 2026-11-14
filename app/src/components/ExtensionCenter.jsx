@@ -28,7 +28,7 @@ const catalogTabs = [{ id: 'all', get label() { return tr('全部扩展'); }, Ic
   id: category.id, get label() { return category.label; }, Icon: ({ development: Code, productivity: NotePencil, learning: BookOpen, finance: ChartLine, creative: SquaresFour, life: Package, appearance: ImageIcon })[category.id] || ArrowsClockwise,
 }))];
 function ExtensionIcon({ extension }) {
-  const Icon = ({ notes: NotePencil, 'read-later': BookOpen, 'github-contributions': GithubLogo, 'random-wallpaper': ImageIcon })[extension.id] || ArrowsClockwise;
+  const Icon = ({ notes: NotePencil, 'read-later': BookOpen, 'saved-view': SquaresFour, 'github-contributions': GithubLogo, 'random-wallpaper': ImageIcon })[extension.id] || ArrowsClockwise;
   return <span className={`extension-item-icon extension-${extension.id}-icon`}><Icon size="54%" aria-hidden="true" /></span>;
 }
 // Management only: no app panel, content data, or provider configuration here.
@@ -56,7 +56,8 @@ export default function ExtensionCenter({ Dialog, state, initialExtension, editi
   const [busy, setBusy] = useState(false), [dirty, setDirty] = useState(false), [pending, setPending] = useState(null);
   const [compact, setCompact] = useState(() => matchMedia('(max-width: 620px)').matches);
   const searchRef = useRef(null), opener = useRef(null), scrollPosition = useRef(0), focusIntent = useRef(null);
-  const findWidget = (id) => state.entries.find((item) => item.type === 'widget' && item.extensionId === id && (!(editingId && initial?.id === id) || item.id === editingId));
+  const findWidget = (id) => state.entries.find((item) => item.type === 'widget' && item.extensionId === id
+    && (editingId && initial?.id === id ? item.id === editingId : !item.config.noteId && !item.config.viewId));
   const currentCategory = catalogTabs.find((item) => item.id === category) || catalogTabs[0], extensions = extensionsForCatalog(currentCategory.id, query);
   const guarded = (callback) => { if (busy) return; if (dirty) setPending(() => callback); else callback(); };
   useEffect(() => {

@@ -103,6 +103,11 @@ test('command panel opens from the toolbar and keyboard, returns focus, and open
   await expect(panel).toBeHidden();
   const settings = page.getByRole('dialog', { name: '设置', exact: true });
   await expect(settings).toBeVisible();
+  await expect.poll(() => settings.evaluate(dialog => dialog.contains(document.activeElement)), {
+    message: 'closing the command palette must leave focus inside its newly opened settings dialog',
+  }).toBe(true);
+  await page.keyboard.press('Tab');
+  await expect.poll(() => settings.evaluate(dialog => dialog.contains(document.activeElement))).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('command-settings.png'), animations: 'disabled' });
 });
 
