@@ -22,13 +22,14 @@
   <main class="wrap policy" id="policy" tabindex="-1">
     <article aria-labelledby="zh-title">
       <h1 id="zh-title">隐私政策</h1>
-      <p class="policy-date">更新于 <time datetime="2026-11-12">2026 年 11 月 12 日</time> · 适用于 Covelet 0.3.1 至 0.5.1</p>
+      <p class="policy-date">更新于 <time datetime="2026-11-14">2026 年 11 月 14 日</time> · 适用于 Covelet 0.3.1 至 0.6.0</p>
       <p>发布者为 Morley。支持和隐私联系邮箱为 <a href="mailto:support@morley.work">support@morley.work</a>。</p>
 
       <h2>本机数据</h2>
       <p>网站、文件夹、便笺、稍后读、图片、外观和隐私标记保存在当前浏览器的加密 IndexedDB 中。扩展可使用不可导出的设备密钥，设备访问权限仍由你的设备保护。隐藏密码用于控制本机显示，与设备密钥和同步密码分开。退役功能的记录可能仍留在本机数据、同步副本或备份中。</p>
       <p>首页时间使用设备时钟。时区、农历和星座在当前浏览器中计算，显示偏好保存在本机。首页时间无需定位或联网校时。</p>
       <p>从 0.4.0 起，桌面名称和顺序属于导航数据，可随自备存储同步。默认桌面和首次引导偏好保存在本机。浏览器负责管理你绑定的扩展快捷键。</p>
+      <p>从 0.6.0 起，全局命令面板和带标签、类型等条件的内容搜索在本机读取已有资料。搜索结果、正文命中高亮和定位是临时派生状态，不进入备份或同步；主动保存为动态清单的筛选条件属于内容配置。固定便笺和动态清单的组件保存目标引用，按原资料及其隐私标记显示；引用和每个桌面的外观设置沿用现有加密存储、完整备份和可选自备存储同步。这些本机操作不新增安装权限、外部服务或后台扫描，也不读取浏览历史或其他标签页。</p>
 
       <h2>自备存储同步</h2>
       <p>同步默认关闭。配置并解锁后，Covelet 使用同步密码加密内容和图片，再直接发送到你选择的 R2、OSS、GitHub、GitLab 或 HTTPS WebDAV。服务商会接收加密内容、文件路径、请求时间和网络连接信息。自动同步需单独开启。</p>
@@ -37,7 +38,7 @@
       <h2>何时会联网</h2>
       <ul>
         <li>Covelet 内容搜索在本机运行。提交网页搜索时，查询会交给浏览器默认搜索服务或你选择的搜索引擎。打开网站或确认批量打开时，浏览器会访问所选链接。</li>
-        <li>启用随机壁纸后，Bing 来源连接 <code>www.bing.com</code>；Wikimedia Commons 按需授权 <code>commons.wikimedia.org</code> 获取图片及许可信息，并授权 <code>upload.wikimedia.org</code> 下载图片。来源会收到连接信息。请求不带 Cookie 或 Referer，图片缓存在本机。关闭随机壁纸或改用颜色背景即可停止壁纸请求。</li>
+        <li>全局或任一桌面使用随机壁纸时，Bing 来源连接 <code>www.bing.com</code>；Wikimedia Commons 按需授权 <code>commons.wikimedia.org</code> 获取图片及许可信息，并授权 <code>upload.wikimedia.org</code> 下载图片。来源会收到连接信息。请求不带 Cookie 或 Referer，图片缓存在本机。各桌面共用当前设备的壁纸来源、轮换间隔和当前图片，切换桌面本身只读取缓存。全局和所有桌面均不再使用随机壁纸后，停止后续壁纸请求；仅将当前桌面改为颜色背景不会停止其他桌面的共享轮换。</li>
         <li>添加或编辑网站时，主动获取网站信息或图片，以及确认导入或修复图片时，可能连接相关站点。Covelet 仅按需申请实际来源的访问权限，日常导航使用本机缓存。显示便笺中的远程图片时，也可能连接图片来源。</li>
         <li>配置并授权 GitHub 贡献组件后，组件可按需请求所选账号的公开贡献日历。GitHub 会收到用户名和连接信息。组件只读取公开贡献数据。</li>
       </ul>
@@ -47,14 +48,16 @@
         <li><code>storage</code> 用于迁移旧数据并保存会话连接信息。内容和设置使用加密 IndexedDB。</li>
         <li><code>search</code> 用于调用浏览器默认搜索服务。</li>
         <li><code>favicon</code> 用于主动添加或导入时读取浏览器已有图标。</li>
-        <li><code>activeTab</code> 和 <code>scripting</code> 用于点击工具栏后读取当前页的地址、标题和图标声明。明确选择网页选文便笺或点击读取时，另读取主框架选中文字、标题和来源网址，不读取其他标签或框架全文。保存前可修改或取消。</li>
+        <li><code>activeTab</code> 和 <code>scripting</code> 用于点击工具栏后读取当前页的地址、标题和图标声明。明确选择网页选文便笺或点击读取时，另读取主框架选中文字、标题和来源网址，不读取其他标签或框架全文。你可以保存为新便笺，或追加到明确选定的已有便笺；保存前可修改或取消。</li>
         <li><code>alarms</code> 用于接续后台同步及清理旧版时钟提醒。</li>
         <li><code>www.bing.com</code> 是固定壁纸来源。可选 HTTP(S) 权限仅用于逐来源授权，安装时不会授予所有网站的访问权限。</li>
       </ul>
       <p>扩展不请求浏览历史、书签库、地理位置或通知权限。</p>
 
       <h2>备份和数据控制</h2>
-      <p>用户选择的书签 HTML 和 Markdown 链接文件在本机解析。书签 HTML 导出在本机生成，文件包含所选导航的名称、网址和分组，排除标记为隐藏的内容。普通 JSON/ZIP 和书签 HTML 导出未加密；从 0.5.0 起，完整备份也可用独立密码导出为 <code>.covelet</code> 加密文件。完整备份可能包含私密内容，登录凭据、同步连接和密码不进入完整备份。备份密码不保存，丢失后无法恢复加密文件；加解密和校验均在本机进行。恢复前会校验文件并请你确认，同时在浏览器中保留一份恢复前副本。</p>
+      <p>用户选择的书签 HTML、Markdown 链接、Raindrop HTML 和 OneTab 文本在本机解析，解析和预览不会访问导出来源的账号。导入支持的标签和备注会先供你审阅；重复网址默认保留本地信息，只有明确选定目标、来源和合并选项后才合并相应字段。</p>
+      <p>书签 HTML 和 Markdown 资料库 ZIP 在本机生成，生成过程不下载远程资源。书签 HTML 包含所选导航的名称、网址和分组；Markdown 资料库可包含所选网站、稍后读和便笺的正文、网址、标签、备注及其他支持的元数据，并生成索引和相对链接。这些导出未加密，始终排除标记为私密的内容（包括私密文件夹中的内容），即使当时已解锁显示。导出预览、文件名、索引和计数同样排除这些内容。</p>
+      <p>普通 JSON/ZIP 备份文件未加密，完整备份可能包含标记为私密或当前隐藏的内容，请妥善保管。从 0.5.0 起，完整备份也可用独立密码导出为 <code>.covelet</code> 加密文件。登录凭据、同步连接和密码不进入完整备份。备份密码不保存，丢失后无法恢复加密文件；加解密和校验均在本机进行。恢复前会校验文件并请你确认，同时在浏览器中保留一份恢复前副本。</p>
       <p>你可以编辑或删除内容、关闭同步、选择背景、撤销网站访问权限和导出备份。反馈由你主动发送，扩展不会自动附上日志、网址、图片或备份。</p>
 
       <h2>扩展与官网</h2>
@@ -64,13 +67,14 @@
 
     <article lang="en" aria-labelledby="english">
       <h2 class="policy-title" id="english">Privacy Policy</h2>
-      <p class="policy-date">Updated <time datetime="2026-11-12">November 12, 2026</time> · Applies to Covelet 0.3.1–0.5.1</p>
+      <p class="policy-date">Updated <time datetime="2026-11-14">November 14, 2026</time> · Applies to Covelet 0.3.1–0.6.0</p>
       <p>Morley publishes Covelet. For support or privacy inquiries, email <a href="mailto:support@morley.work">support@morley.work</a>.</p>
 
       <h3>Data on your device</h3>
       <p>Sites, folders, notes, Read Later items, images, appearance preferences, and privacy markings are stored in encrypted IndexedDB in your current browser. The extension can use the non-extractable device key. Your device's access controls still apply. The hiding password controls local display and is separate from the device key and sync password. Records from retired features may remain in local data, synced copies, or backups.</p>
       <p>The home page uses your device clock. It computes the selected time zone, lunar date, and zodiac sign in the browser and saves the display preferences on your device. The clock needs neither location access nor an online time service.</p>
       <p>Starting with 0.4.0, desktop names and order are part of your navigation data and can sync with your own storage. Your default desktop and first-run preference stay on this device. Your browser manages any extension keyboard shortcut you assign.</p>
+      <p>Starting with 0.6.0, the global command panel and content searches with conditions such as tags and types read existing content on your device. Search results, body-match highlights, and match positions are temporary derived state excluded from backups and sync. Filters you explicitly save as a dynamic list are content configuration. Pinned note and dynamic-list widgets store target references and display the original content under its privacy markings. References and per-desktop appearance settings use the existing encrypted storage, complete backups, and optional sync with your own storage. These local operations add no installation permissions, external services, or background scans, and do not read browsing history or other tabs.</p>
 
       <h3>Sync with your own storage</h3>
       <p>Sync is off by default. When configured and unlocked, Covelet encrypts content and images with your sync password and sends them directly to your selected R2, OSS, GitHub, GitLab, or HTTPS WebDAV service. The provider receives encrypted content, file paths, request times, and network connection information. Automatic sync requires a separate opt-in.</p>
@@ -79,7 +83,7 @@
       <h3>When Covelet connects to the internet</h3>
       <ul>
         <li>Search across Covelet content runs on your device. Submitting a web search sends the query to the browser's default search service or the search engine you choose. When you open sites individually or confirm opening a group, the browser visits the selected links.</li>
-        <li>When Random Wallpaper is on, the Bing source contacts <code>www.bing.com</code>. Wikimedia Commons requests optional access to <code>commons.wikimedia.org</code> for image and license metadata, and <code>upload.wikimedia.org</code> for image downloads. The selected hosts receive connection information. Requests omit cookies and referrers. Images are cached locally. Turn off Random Wallpaper or choose a color background to stop wallpaper requests.</li>
+        <li>When the global background or any desktop uses Random Wallpaper, the Bing source contacts <code>www.bing.com</code>. Wikimedia Commons requests optional access to <code>commons.wikimedia.org</code> for image and license metadata, and <code>upload.wikimedia.org</code> for image downloads. The selected hosts receive connection information. Requests omit cookies and referrers. Images are cached locally. Desktops share this device's wallpaper source, rotation interval, and current image; switching desktops itself only reads the cache. Further wallpaper requests stop when neither the global background nor any desktop uses Random Wallpaper. Changing only the current desktop to a color background does not stop shared rotation for other desktops.</li>
         <li>Adding or editing a site, requesting site information or images, or confirming image import or repair may contact the relevant origin. Covelet requests access for each origin as needed. Everyday navigation uses the local cache. Displaying a remote image in a note may contact that image's host.</li>
         <li>After authorization and configuration, the GitHub contributions widget can fetch the selected account's public contribution calendar. GitHub receives the username and connection information. The widget reads public contribution data only.</li>
       </ul>
@@ -89,14 +93,16 @@
         <li><code>storage</code> supports legacy data migration and session connection information. Content and settings use encrypted IndexedDB.</li>
         <li><code>search</code> calls the browser's default search service.</li>
         <li><code>favicon</code> reads existing browser icons during explicit add or import actions.</li>
-        <li><code>activeTab</code> and <code>scripting</code> read the current page's URL, title, and icon declarations after a toolbar click. Explicitly choosing a webpage selection note or clicking to read also reads selected text, the title, and source URL from the main frame, without reading other tabs or full frame content. You can edit the information or cancel before saving.</li>
+        <li><code>activeTab</code> and <code>scripting</code> read the current page's URL, title, and icon declarations after a toolbar click. Explicitly choosing a webpage selection note or clicking to read also reads selected text, the title, and source URL from the main frame, without reading other tabs or full frame content. You can save a new note or append to an existing note you explicitly select, and edit the information or cancel before saving.</li>
         <li><code>alarms</code> resumes background sync and clears legacy clock reminders.</li>
         <li><code>www.bing.com</code> is a fixed wallpaper host. Optional HTTP(S) access is granted per origin and does not provide access to all sites at installation.</li>
       </ul>
       <p>The extension does not request browsing history, the browser bookmarks library, geolocation, or notifications.</p>
 
       <h3>Backups and data controls</h3>
-      <p>Bookmark HTML and Markdown link files that you choose are parsed locally. Bookmark HTML exports are created on your device and include names, URLs, and groups for the selected shortcuts, excluding content marked as hidden. Ordinary JSON/ZIP and bookmark HTML exports are unencrypted. Starting with 0.5.0, complete backups can also be exported as encrypted <code>.covelet</code> files with a separate password. Complete backups can include private content and exclude login credentials, sync connections, and passwords. The backup password is not saved; losing it prevents recovery of the encrypted file. Encryption, decryption, and validation run locally. Restoration validates the file, asks for confirmation, and keeps a pre-restore copy in the browser.</p>
+      <p>Bookmark HTML, Markdown link, Raindrop HTML, and OneTab text files that you choose are parsed locally. Parsing and preview do not access accounts at the export source. Supported tags and descriptions are presented for review. Duplicate URLs keep local information by default; fields are merged only after you explicitly choose the target, source entries, and merge options.</p>
+      <p>Bookmark HTML and Markdown library ZIP exports are generated on your device without downloading remote resources. Bookmark HTML includes names, URLs, and groups for the selected shortcuts. A Markdown library can include the selected sites, Read Later items, and notes, with their text, URLs, tags, descriptions, other supported metadata, an index, and relative links. These exports are unencrypted and always exclude content marked private, including content in private folders, even when it is currently unlocked for display. Export previews, filenames, indexes, and counts exclude that content too.</p>
+      <p>Ordinary JSON/ZIP backup files are unencrypted. Complete backups can include content marked private or currently hidden; keep them secure. Starting with 0.5.0, complete backups can also be exported as encrypted <code>.covelet</code> files with a separate password. Login credentials, sync connections, and passwords are excluded from complete backups. The backup password is not saved; losing it prevents recovery of the encrypted file. Encryption, decryption, and validation run locally. Restoration validates the file, asks for confirmation, and keeps a pre-restore copy in the browser.</p>
       <p>You can edit or delete content, turn off sync, change backgrounds, revoke site permissions, and export backups. Feedback is voluntary. Covelet does not automatically attach logs, URLs, images, or backups.</p>
 
       <h3>The extension and the website</h3>
