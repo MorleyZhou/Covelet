@@ -71,7 +71,7 @@ test('settings separate backup, trash, and about, and sync opens from Extensions
   await expect(settings.getByRole('tabpanel', { name: '回收站', exact: true })).toContainText('回收站为空');
   await settings.getByRole('tab', { name: '备份与恢复', exact: true }).click();
   const backup = settings.getByRole('tabpanel', { name: '备份与恢复', exact: true });
-  await expect(backup.getByRole('button')).toHaveText(['导出备份', '加密导出', '恢复备份']);
+  await expect(backup.getByRole('button')).toHaveText(['导出 Markdown 资料库', '导出备份', '加密导出', '恢复备份']);
   await expect(backup).toContainText('普通备份文件未加密，请妥善保管。');
   await expect(page.getByRole('dialog')).toHaveCount(1);
   await page.keyboard.press('Escape');

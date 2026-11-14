@@ -143,7 +143,15 @@ test('near-capacity library records real input-to-result UI timings with zero or
   expect(widget).toBeTruthy();
   const card = page.locator(`[data-entry-id="${widget.id}"]`); await revealDesktopItem(page, card);
   await card.locator('[data-widget-launcher]').click(); notes = page.getByRole('dialog', { name: '便笺', exact: true });
-  await expect(editor(notes)).toBeVisible(); await editor(notes).fill('Updated benchneedle0000 evidence visible in the pinned note.');
+  // A mounted editor is provisional until the requested record and its legacy
+  // document have loaded. Measure edits to the actual bound note, not its
+  // temporary empty draft, without an arbitrary initialization sleep.
+  await expect(notes.getByLabel('便笺名称', { exact: true })).toHaveValue('Bench note 0000');
+  await expect(editor(notes)).toContainText('Initial project evidence benchneedle0000.');
+  await expect(editor(notes)).toContainText('Local context for synthetic benchmark 0.');
+  await expect(editor(notes)).toBeEditable();
+  await editor(notes).fill('Updated benchneedle0000 evidence visible in the pinned note.');
+  await expect(editor(notes)).toContainText('Updated benchneedle0000 evidence visible in the pinned note.');
   await expect(notes.getByRole('button', { name: '保存', exact: true })).toBeEnabled();
   await measure(timings, 'noteSaveToVisibleWidgetUpdateMs', async () => {
     await notes.getByRole('button', { name: '保存', exact: true }).click(); await expect(notes.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
