@@ -1688,3 +1688,16 @@ Markdown 导入预览|Markdown import preview|Markdown 匯入預覽|Markdown 読
 在桌面中查看结果|Show results on the desktop|在桌面中檢視結果|デスクトップで結果を表示|데스크톱에서 결과 보기|Ergebnisse auf dem Desktop anzeigen|Afficher les résultats sur le bureau|Показать результаты на рабочем столе
 移除条件|Remove condition|移除條件|条件を削除|조건 제거|Bedingung entfernen|Supprimer la condition|Удалить условие
 排除标签|Exclude tags|排除標籤|除外するタグ|제외할 태그|Tags ausschließen|Exclure les étiquettes|Исключить теги
+保存方式|Save mode|儲存方式|保存方法|저장 방식|Speichermodus|Mode d’enregistrement|Способ сохранения
+新建便笺|New note|新增便箋|新しいメモ|새 메모|Neue Notiz|Nouvelle note|Новая заметка
+追加到便笺|Append to a note|附加至便箋|メモに追記|메모에 추가|An Notiz anhängen|Ajouter à une note|Добавить к заметке
+搜索目标便笺|Search destination notes|搜尋目標便箋|追記先のメモを検索|대상 메모 검색|Zielnotizen suchen|Rechercher une note de destination|Найти целевую заметку
+选择目标便笺|Choose a destination note|選擇目標便箋|追記先のメモを選択|대상 메모 선택|Zielnotiz auswählen|Choisir une note de destination|Выбрать целевую заметку
+追加预览|Append preview|附加預覽|追記のプレビュー|추가 미리보기|Vorschau der Ergänzung|Aperçu de l’ajout|Предпросмотр добавления
+追加|Append|附加|追記|추가|Anhängen|Ajouter|Добавить
+所选便笺已变化，请重新选择。|The selected note has changed. Select it again.|所選便箋已變更，請重新選擇。|選択したメモが変更されました。選び直してください。|선택한 메모가 변경되었습니다. 다시 선택하세요.|Die ausgewählte Notiz wurde geändert. Wählen Sie sie erneut aus.|La note sélectionnée a changé. Sélectionnez-la à nouveau.|Выбранная заметка изменилась. Выберите её заново.
+搜索定位|Search matches|搜尋定位|検索位置|검색 위치|Suchtreffer|Correspondances de recherche|Совпадения поиска
+关闭搜索定位|Close search matches|關閉搜尋定位|検索位置を閉じる|검색 위치 닫기|Suchtreffer schließen|Fermer les correspondances|Закрыть совпадения поиска
+正文中没有匹配的文字。|No matching text in the note body.|內文中沒有符合的文字。|本文に一致するテキストはありません。|본문에 일치하는 텍스트가 없습니다.|Im Notiztext gibt es keinen passenden Text.|Aucun texte correspondant dans le corps de la note.|В тексте заметки нет совпадений.
+第 {0} / {1} 处|Match {0} of {1}|第 {0} / {1} 處|{1} 件中 {0} 件目|{1}개 중 {0}번째|Treffer {0} von {1}|Correspondance {0} sur {1}|Совпадение {0} из {1}
+仅显示前 {0} 处匹配。|Only the first {0} matches are shown.|僅顯示前 {0} 處符合結果。|最初の {0} 件の一致のみ表示します。|처음 {0}개의 일치 항목만 표시합니다.|Es werden nur die ersten {0} Treffer angezeigt.|Seules les {0} premières correspondances sont affichées.|Показаны только первые {0} совпадений.

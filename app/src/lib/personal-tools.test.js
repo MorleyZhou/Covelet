@@ -4,9 +4,13 @@ import {
   PERSONAL_TRASH_LIMITS, validatePersonalTools, loadPersonalTools, loadPersonalToolsSnapshot, replacePersonalTools, mergePersonalTools,
   deletePersonalRecord, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash,
   applySyncedPersonalTools, exportPersonalTools, importPersonalTools, saveReadingItem, bulkReadingItems,
+  appendNoteCapture,
 } from './personal-tools.js';
 import { createContentTag, getContentMetadata, loadContentPreferences, saveContentMetadata, saveContentSettings, saveSavedView } from './content-preferences.js';
 import { localData } from './local-data.js';
+import { captureNoteDocument } from './note-capture.js';
+import { noteDocumentText } from './note-document.js';
+import { fromMarkdown } from '@futelab/folio/serialization';
 
 const key = 'covelet.tools.v1', values = new Map();
 const now = Date.now();
@@ -68,6 +72,73 @@ test('new content and its metadata commit atomically and stale metadata never ch
   t.mock.method(localData, 'set', async () => { throw Error('synthetic failed commit'); });
   await assert.rejects(saveReadingItem({ title: 'Failed', url: 'https://example.com/failed' }, { metadata: { description: 'atomic', tagIds: [] } }), /未能保存/);
   assert.deepEqual(values, before);
+});
+
+test('captured append keeps note identity, title, rich prefix, tags and privacy in one tools commit', async (t) => {
+  const lockOrder = installLocks(t), document = JSON.parse(JSON.stringify(fromMarkdown('## Original\n\n**Kept text**')));
+  const original = { ...note(), title: 'Project notebook', pinned: true, document, body: noteDocumentText(document) };
+  await replacePersonalTools(state({ notes: [original], reading: [reading()] }));
+  const tag = await createContentTag('Project');
+  await saveContentSettings('note:note-a', { tagIds: [tag.id], private: true, alias: 'Project alias' });
+  const preferences = await loadContentPreferences(), preferencesBefore = values.get('covelet.content.preferences.v1');
+  const addition = captureNoteDocument({ body: '**Literal excerpt**', pageTitle: 'Source title', sourceUrl: 'https://source.test/article?q=1#section' });
+  const writes = [], originalSet = localData.set;
+  const write = t.mock.method(localData, 'set', async (patch) => { writes.push(Object.keys(patch)); return originalSet.call(localData, patch); });
+  const saved = await appendNoteCapture({ id: original.id, revision: original.revision, document: addition }, { expectedPreferencesRevision: preferences.revision });
+  write.mock.restore();
+  assert.deepEqual(writes, [[key]]); assert.deepEqual(lockOrder.slice(-2), ['covelet.content.preferences.v1', key]);
+  assert.equal(saved.id, original.id); assert.equal(saved.title, original.title); assert.equal(saved.createdAt, original.createdAt); assert.equal(saved.pinned, true);
+  assert.equal(saved.revision, original.revision + 1); assert.equal(saved.body, `${original.body}\n${noteDocumentText(addition)}`);
+  assert.deepEqual(saved.document.content.slice(0, document.content.length), document.content);
+  assert.equal(values.get('covelet.content.preferences.v1'), preferencesBefore);
+  assert.deepEqual((await loadPersonalToolsSnapshot()).reading, [reading()]);
+});
+
+test('append refuses stale note or preference baselines and deleted/hidden targets without changing any records', async (t) => {
+  installLocks(t);
+  await replacePersonalTools(state({ notes: [note()], reading: [reading()] }));
+  const addition = captureNoteDocument({ body: 'Keep this draft' });
+  let preferences = await loadContentPreferences(), before = new Map(values);
+  await assert.rejects(appendNoteCapture({ id: 'note-a', revision: 2, document: addition }, { expectedPreferencesRevision: preferences.revision }), { code: 'REVISION_CONFLICT' });
+  assert.deepEqual(values, before);
+  await saveContentMetadata('note:note-a', { tagIds: [] }); before = new Map(values);
+  await assert.rejects(appendNoteCapture({ id: 'note-a', revision: 1, document: addition }, { expectedPreferencesRevision: preferences.revision }), { code: 'REVISION_CONFLICT' });
+  assert.deepEqual(values, before);
+  preferences = await loadContentPreferences();
+  await assert.rejects(appendNoteCapture({ id: 'missing', revision: 1, document: addition }, { expectedPreferencesRevision: preferences.revision }), { code: 'REVISION_CONFLICT' });
+  assert.deepEqual(values, before);
+  values.set('covelet.content.preferences.v1', JSON.stringify({ ...preferences, presentation: true, privateKeys: ['note:note-a'] }));
+  before = new Map(values);
+  await assert.rejects(appendNoteCapture({ id: 'note-a', revision: 1, document: addition }, { expectedPreferencesRevision: preferences.revision }), { code: 'PRIVACY_LOCKED' });
+  assert.deepEqual(values, before);
+});
+
+test('append rejects combined note limits and storage failure without truncating old data or captured input', async (t) => {
+  installLocks(t);
+  const addition = captureNoteDocument({ body: 'Captured draft remains' }), additionBefore = structuredClone(addition);
+  await replacePersonalTools(state({ notes: [note('note-a', 'x'.repeat(59995))] }));
+  let before = new Map(values);
+  await assert.rejects(appendNoteCapture({ id: 'note-a', revision: 1, document: addition }, { expectedPreferencesRevision: 0 }), /超出大小限制/);
+  assert.deepEqual(values, before); assert.deepEqual(addition, additionBefore);
+  await replacePersonalTools(state({ notes: [note()] })); before = new Map(values);
+  const current = (await loadPersonalToolsSnapshot()).notes[0];
+  t.mock.method(localData, 'set', async () => { throw Error('synthetic quota failure'); });
+  await assert.rejects(appendNoteCapture({ id: 'note-a', revision: current.revision, document: addition }, { expectedPreferencesRevision: 0 }), /存储空间已满|未能保存/);
+  assert.deepEqual(values, before); assert.deepEqual(addition, additionBefore);
+});
+
+test('append enforces whole-tools capacity atomically and captures its input before an asynchronous lock', async (t) => {
+  installLocks(t);
+  const full = state({ notes: [note('target', 'Existing'), ...Array.from({ length: 199 }, (_, index) => note(`filler-${index}`, 'x'.repeat(20500)))] });
+  await replacePersonalTools(full);
+  const before = new Map(values), oversized = captureNoteDocument({ body: 'a'.repeat(55000) });
+  await assert.rejects(appendNoteCapture({ id: 'target', revision: 1, document: oversized }, { expectedPreferencesRevision: 0 }), /存储空间已满/);
+  assert.deepEqual(values, before);
+  await replacePersonalTools(state({ notes: [note()] }));
+  const addition = captureNoteDocument({ body: 'Original captured value' });
+  const pending = appendNoteCapture({ id: 'note-a', revision: 1, document: addition }, { expectedPreferencesRevision: 0 });
+  addition.content[0].content[0].text = 'Changed after save started';
+  assert.match((await pending).body, /Original captured value$/);
 });
 
 test('tools export v4 carries scoped metadata and imports it atomically without replacing duplicates', async (t) => {

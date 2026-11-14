@@ -113,6 +113,7 @@ import { localData } from './lib/local-data.js';
 import { DEFAULT_DESKTOP_KEY } from './lib/sync-data-rules.js';
 import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode, getContentMetadata, getContentTags } from './lib/content-preferences.js';
 import { parseStructuredSearch, removeStructuredCondition } from './lib/structured-search.js';
+import { matchedNoteSearchTerms } from './lib/note-search.js';
 import CommandPalette, { StructuredConditions } from './components/CommandPalette.jsx';
 import { defaultSavedFilters, filterSavedContent, resolveSavedView, viewFilters } from './lib/saved-views.js';
 import { useLocalDateKey } from './lib/use-local-date.js';
@@ -847,7 +848,7 @@ export function App() {
       window.open(item.url, "_blank", "noopener,noreferrer");
     else location.assign(item.url);
   }
-  function openContent(item) {
+  function openContent(item, searchText = parsedSearch.textQuery) {
     if (['site', 'folder'].includes(item.type)) { openEntry(item.entry); return; }
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
     setQuery(''); setFocused(false); setCandidate(-1); setFolder(null); setContext(null);
@@ -856,7 +857,9 @@ export function App() {
       focusDesktop();
       return;
     }
-    setModal({ kind: 'personal-content', type: item.type, recordId: item.id });
+    const searchQuery = item.type === 'note' && typeof searchText === 'string' && searchText.trim()
+      ? matchedNoteSearchTerms(item.record?.body || '', searchText) : undefined;
+    setModal({ kind: 'personal-content', type: item.type, recordId: item.id, searchQuery });
   }
   async function saveFolderName(name, originalName) {
     if (presentation && hiddenKeys.has(`folder:${folderId}`)) throw Error(tr('请先输入密码解除隐藏。'));
@@ -1708,7 +1711,7 @@ export function App() {
             onLocalOnly={() => { setModal(null); notify(tr('已关闭同步，仅在本机保存数据。')); }} />
         </Modal>}
         {modal?.kind === 'commands' && <CommandPalette Dialog={Modal} navigation={state} tools={personalData} preferences={contentPreferences}
-          hiddenKeys={presentation ? hiddenKeys : []} today={today} onClose={() => setModal(null)} onOpen={(item) => openContent(item)}
+          hiddenKeys={presentation ? hiddenKeys : []} today={today} onClose={() => setModal(null)} onOpen={(item, textQuery) => openContent(item, textQuery)}
           onSearch={(value) => { setQuery(value); setSearchContext(null); setSearchTagIds([]); setSearchFilter('all'); setFocused(true); requestAnimationFrame(() => inputRef.current?.focus()); }}
           actions={[
             { id: 'new-site', title: tr('添加网站'), run: newEntry },
@@ -1728,7 +1731,7 @@ export function App() {
             ...getContentTags(contentPreferences, { hiddenKeys: presentation ? hiddenKeys : [] }).map((tag) => ({ id: `tag:${tag.id}`, title: `${tr('标签')} · ${tag.name}`,
               run: () => { setSearchContext(null); setQuery(''); setSearchTagIds([tag.id]); setSearchFilter('all'); setFocused(true); requestAnimationFrame(() => inputRef.current?.focus()); } })),
           ]} />}
-        {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} Dialog={Modal} onClose={() => setModal(null)} />}
+        {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} searchQuery={modal.searchQuery} Dialog={Modal} onClose={() => setModal(null)} />}
         {modal?.kind === 'saved-views' && <SavedViews navigation={state} tools={personalData} preferences={contentPreferences} initialFilters={modal.initialFilters}
           Dialog={Modal} onSaveView={saveWorkingView} onApply={applyWorkingView} onBusyChange={setBusy} onClose={() => setModal(null)} />}
         {modal?.kind === 'resource-library' && <Modal title={tr('整理链接')} wide maximizable className="resource-library-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>

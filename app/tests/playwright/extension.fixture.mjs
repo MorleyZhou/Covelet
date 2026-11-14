@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { createNetworkFixture } from './network.mjs';
 
 const extensionPath = fileURLToPath(new URL('../../dist/extension/', import.meta.url));
+if (process.env.COVELET_NATIVE_BROWSER && !['chrome', 'edge'].includes(process.env.COVELET_NATIVE_BROWSER)) throw Error('COVELET_NATIVE_BROWSER must be chrome or edge.');
 export const test = base.extend({
   pregrantedHosts: [[], { option: true }],
   network: async ({}, use) => { await use(createNetworkFixture()); },
@@ -28,14 +29,24 @@ export const test = base.extend({
         }
       }
       const context = await chromium.launchPersistentContext(profile, {
-        channel: 'chromium', headless, viewport, locale, timezoneId,
-        args: [`--disable-extensions-except=${path}`, `--load-extension=${path}`, '--lang=zh-CN', '--no-first-run', '--disable-background-networking'],
+        ...(process.env.COVELET_NATIVE_BROWSER ? {
+          executablePath: ({ chrome: 'C:/Program Files/Google/Chrome/Application/chrome.exe', edge: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe' })[process.env.COVELET_NATIVE_BROWSER],
+          ignoreDefaultArgs: ['--disable-extensions'],
+        } : { channel: 'chromium' }), headless, viewport, locale, timezoneId,
+        args: [...(process.env.COVELET_NATIVE_BROWSER ? ['--enable-unsafe-extension-debugging'] : [`--disable-extensions-except=${path}`, `--load-extension=${path}`]), '--lang=zh-CN', '--no-first-run', '--disable-background-networking'],
       });
       session.context = context;
       await network.install(context);
       await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
       session.tracing = true;
       context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
+      if (process.env.COVELET_NATIVE_BROWSER) {
+        const cdp = await context.browser().newBrowserCDPSession();
+        const actualBrowser = await cdp.send('Browser.getVersion');
+        testInfo.annotations.push({ type: 'native-browser', description: actualBrowser.product });
+        await cdp.send('Extensions.loadUnpacked', { path });
+        await cdp.detach();
+      }
       let worker, id;
       await expect.poll(async () => {
         for (const candidate of context.serviceWorkers()) {

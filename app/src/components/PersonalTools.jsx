@@ -136,16 +136,16 @@ export default function PersonalWidget({ entry, open, onOpen, onClose, Dialog, p
   </>;
 }
 
-export function PersonalToolsDialog({ kind, initialRecordId, Dialog, onClose }) {
+export function PersonalToolsDialog({ kind, initialRecordId, searchQuery, Dialog, onClose }) {
   const [dirty, setDirty] = useState(false), [discard, setDiscard] = useState(false), [busy, setBusy] = useState(false);
   return <Dialog title={kind === 'note' ? tr('便笺') : tr('稍后读')} closeDisabled={busy} wide maximizable className="personal-tools-modal"
     onClose={() => { if (!busy) { if (dirty) setDiscard(true); else onClose(); } }}>
     {discard && <Confirm privacySafe busy={busy} action={tr('放弃修改')} onCancel={() => setDiscard(false)} onConfirm={onClose}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
-    {kind === 'note' ? <NotesTools Dialog={Dialog} initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} />}
+    {kind === 'note' ? <NotesTools Dialog={Dialog} initialRecordId={initialRecordId} searchQuery={searchQuery} onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} />}
   </Dialog>;
 }
 
-function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId }) {
+function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, searchQuery }) {
   const { data: rawData, core, error: loadError } = usePersonalTools(), action = useAction(), data = usePresentedTools(rawData), presentation = useContext(PresentationContext);
   const contentPreferences = useContentPreferences(), preferences = contentPreferences.data;
   const locked = presentation.active || preferences.presentation;
@@ -155,6 +155,7 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId }) {
   const [selectedTagIds, setSelectedTagIds] = useState([]);
   const [preview, setPreview] = useState(false), [pending, setPending] = useState(null), [deleting, setDeleting] = useState(false);
   const [editorKey, setEditorKey] = useState(() => crypto.randomUUID());
+  const [noteSearch, setNoteSearch] = useState(null);
   const fileInput = useRef(null), [markdownPreview, setMarkdownPreview] = useState(null), [markdownStatus, setMarkdownStatus] = useState('');
   const [selectionMode, setSelectionMode] = useState(false), [selected, setSelected] = useState({});
   const hidden = (key) => locked && (presentation.hiddenKeys.has(key) || preferences.privateKeys.includes(key));
@@ -171,18 +172,18 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId }) {
     const nextMetadata = note ? metadataFor(`note:${note.id}`) : emptyMetadata();
     setEditorKey(note?.id || crypto.randomUUID()); setDraft(note ? { ...note } : { title: '', body: '', pinned: false });
     setMetadata(nextMetadata); setOriginalMetadata(nextMetadata);
-    setDirty(false); setPreview(false); setPending(null); setDeleting(false); action.setError('');
+    setDirty(false); setPreview(false); setPending(null); setDeleting(false); setNoteSearch(null); action.setError('');
   };
   const selectedInitial = useRef(null);
   useEffect(() => {
     if (!initialRecordId || !data || !contentPreferences.ready || selectedInitial.current === initialRecordId) return;
     selectedInitial.current = initialRecordId;
     const record = data.notes.find((item) => item.id === initialRecordId);
-    if (record) select(record); else action.setError(tr('这条记录已被移除。'));
+    if (record) { select(record); setNoteSearch(searchQuery ?? null); } else action.setError(tr('这条记录已被移除。'));
   }, [initialRecordId, data, contentPreferences.ready]);
   const choose = (note) => dirty ? setPending({ note }) : select(note);
   const reopen = () => { if (dirty) setPending({ note: latest || null }); else select(latest || null); };
-  const patch = (value) => { setDraft((current) => ({ ...current, ...value })); setDirty(true); };
+  const patch = (value) => { setDraft((current) => ({ ...current, ...value })); setNoteSearch(null); setDirty(true); };
   const matches = notes.filter((note) => matchesTags(metadataFor(`note:${note.id}`), selectedTagIds)
     && (!query || core?.contains(`${note.title}\n${note.body}`, query)));
   const availableTagIds = [...new Set(notes.flatMap((note) => metadataFor(`note:${note.id}`).tagIds))];
@@ -299,6 +300,7 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId }) {
       <ContentMetadataEditor preferences={preferences} contentKey={draft.id ? `note:${draft.id}` : undefined} value={metadata}
         onChange={(value) => { setMetadata(value); setDirty(true); }} disabled={action.busy || unlocking || draftHidden || selectionMode || !contentPreferences.ready} allowDescription={false} onBusyChange={setMetadataBusy} />
       <FolioNoteEditor key={editorKey} documentId={editorKey} document={draft.document} body={draft.body} preview={preview} disabled={busy || draftHidden || selectionMode}
+        searchQuery={draft.id === initialRecordId && !draftHidden ? noteSearch : null} onCloseSearch={() => setNoteSearch(null)}
         onInitialize={(document) => setDraft((current) => current.document ? current : { ...current, document, body: noteDocumentText(document) })}
         onChange={(document) => patch({ document, body: noteDocumentText(document) })} onError={(reason) => action.setError(userErrorMessage(reason, tr('便笺未能保存，请重试。')))} />
       {deleting && !draftHidden && <Confirm busy={busy} onCancel={() => setDeleting(false)} onConfirm={() => action.run(async () => { await deletePersonalRecord('notes', draft.id, draft.revision); select(null); })}>{tr("删除“{0}”？", [draft.title])}</Confirm>}

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { captureNoteDocument, captureSourceUrl, captureVisibleTags, readSelectedPage } from './note-capture.js';
+import { appendCapturedDocument, captureNoteDocument, captureSourceUrl, captureVisibleTags, readSelectedPage } from './note-capture.js';
 import { noteDocumentText } from './note-document.js';
+import { fromMarkdown } from '@futelab/folio/serialization';
 
 function fixture({ result, execute, latest } = {}) {
   const updated = new Set(), removed = new Set(), calls = [];
@@ -116,4 +117,28 @@ test('locking removes private-only selected tags, including inherited hidden sit
   // Context locking also protects against stale props that still say unlocked.
   assert.deepEqual(captureVisibleTags(preferences, selected, { locked: true, hiddenKeys: new Set(['site:hidden-child']) }), ['shared-tag']);
   assert.deepEqual(captureVisibleTags({ ...preferences, library: { ...preferences.library, tags: [] } }, selected), []);
+});
+
+test('append preview preserves rich blocks and literal capture provenance without mutating either input', () => {
+  const original = { title: 'Existing', document: JSON.parse(JSON.stringify(fromMarkdown('## Kept heading\n\n**Existing bold** and [link](https://old.test/)'))), body: '' };
+  const addition = captureNoteDocument({ body: '**literal selection**\nSecond line', pageTitle: 'Source page', sourceUrl: 'https://capture.test/a?x=1#part' });
+  const before = structuredClone({ original, addition }), combined = appendCapturedDocument(original, addition);
+  assert.deepEqual(combined.content.slice(0, original.document.content.length), original.document.content);
+  assert.deepEqual(combined.content.slice(original.document.content.length), addition.content);
+  assert.equal(noteDocumentText(combined), `${noteDocumentText(original.document)}\n${noteDocumentText(addition)}`);
+  assert.deepEqual({ original, addition }, before);
+});
+
+test('legacy notes append using the existing editor Markdown rendering and reject combined size overflow', () => {
+  const legacy = { title: 'Legacy', body: '**Kept bold**\n\n- Existing list item' };
+  const addition = captureNoteDocument({ body: 'Added excerpt' }), combined = appendCapturedDocument(legacy, addition);
+  const rendered = JSON.parse(JSON.stringify(fromMarkdown(legacy.body)));
+  assert.deepEqual(combined.content.slice(0, rendered.content.length), rendered.content);
+  const long = { body: 'a'.repeat(59995) }, before = structuredClone(long);
+  assert.throws(() => appendCapturedDocument(long, addition), /超出大小限制/);
+  assert.deepEqual(long, before);
+  const unsafeLegacy = { body: '<script>alert("literal legacy")</script>' };
+  const safeAppend = appendCapturedDocument(unsafeLegacy, addition);
+  assert.equal(noteDocumentText(safeAppend).startsWith(unsafeLegacy.body), true);
+  assert.equal(JSON.stringify(safeAppend).includes('"type":"script"'), false);
 });
