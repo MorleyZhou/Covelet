@@ -1,0 +1,24 @@
+{
+  "license": "CC0-1.0",
+  "content": "All fixture URLs, titles, tags and descriptions are new synthetic examples created for Covelet. No third-party export content or code is redistributed.",
+  "inspectedAt": "2026-11-14",
+  "raindrop": {
+    "fixture": "raindrop-historical.html",
+    "format": "Observed historical Netscape HTML structure with A[TAGS] and A[DESCRIPTION] attributes",
+    "officialDocumentation": "https://help.raindrop.io/export",
+    "publicArtifactInspectedOnly": "https://gist.github.com/extratone/9ac1a0b37166537b5375d7d521a1a0fc",
+    "immutableArtifact": "https://gist.githubusercontent.com/extratone/9ac1a0b37166537b5375d7d521a1a0fc/raw/5f6a75db6f8519a13d150f0277c8e20957521ca7/BlessedWebUtilities.html",
+    "artifactCreated": "2023-08-04T15:19:47Z",
+    "clientVersion": "unknown; not encoded in the public export",
+    "scope": "Title, URL, folder, comma-delimited tags and DESCRIPTION attribute. DD highlights, DATA-COVER, uploaded files and user-note fields are not imported or claimed. The public artifact has no explicit reuse license and is not copied into this fixture."
+  },
+  "onetab": {
+    "fixture": "onetab-2.25.txt",
+    "supportedSerializerVersion": "2.25",
+    "officialPackageMetadata": "https://addons.mozilla.org/api/v5/addons/addon/onetab/",
+    "officialPackage": "https://addons.mozilla.org/firefox/downloads/file/5149827/onetab-2.25.xpi",
+    "packageCreated": "2026-10-21T20:12:29Z",
+    "packageSha256": "1cadebada498b074452e78e16f7964e7d4e4a01ce10721215a48fbd31df0d677",
+    "scope": "Own records passed through the inspected official plain URL/title serializer. URL/title join is space-pipe-space, link separator is newline, group separator is a blank line. Not an end-to-end browser export. The official package has a custom license and is not redistributed. Text contains no client version marker; compatibility does not identify a picked file's exporter. Rich text, labels, notes, named groups and other versions are not claimed."
+  }
+}

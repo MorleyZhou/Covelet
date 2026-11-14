@@ -114,6 +114,7 @@ import { DEFAULT_DESKTOP_KEY } from './lib/sync-data-rules.js';
 import { loadContentPreferences, useContentPreferences, saveContentSettings, setPresentationMode, getContentMetadata, getContentTags } from './lib/content-preferences.js';
 import { parseStructuredSearch, removeStructuredCondition } from './lib/structured-search.js';
 import { matchedNoteSearchTerms } from './lib/note-search.js';
+import { commitImportedPlan } from './lib/import-controller.js';
 import CommandPalette, { StructuredConditions } from './components/CommandPalette.jsx';
 import { PinDesktopContext } from './components/PinToDesktopDialog.jsx';
 import SavedViewWidget, { SavedViewTargetDialog } from './components/SavedViewWidget.jsx';
@@ -1815,10 +1816,19 @@ export function App() {
           />
         )}
         {modal?.kind === 'bookmarks' && <Modal title={tr('导入网址与书签 HTML')} className="bookmark-import-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }} wide>
-          <BookmarkImport state={state} initialPage={desktopScreen.current.page} columns={desktopScreen.current.columns}
+          <BookmarkImport state={state} preferences={contentPreferences} initialPage={desktopScreen.current.page} columns={desktopScreen.current.columns}
             pageLabel={(page) => desktopPageName(state.settings, page)}
             onBusyChange={setBusy} onClose={() => setModal(null)} onApply={async (prepared) => {
               const before = state;
+              if (prepared.request) {
+                const result = await commitImportedPlan(prepared.request);
+                const saved = result.state;
+                preferenceState.current = saved; setState(saved);
+                setUndo(result.preferencesChanged ? null : { before, revision: saved.revision });
+                if (result.revealId) revealDesktopEntry(saved, result.revealId);
+                notify(tr('已导入 {0} 个网址，更新 {1} 个已有网址的信息。', [formatNumber(result.addedSites), formatNumber(result.updatedSites)]));
+                setModal(null); return true;
+              }
               const added = new Set(prepared.rows.filter((row) => row.willAdd).map((row) => row.entryId));
               const saved = await commitImportedNavigation(prepared.state, added, prepared.sourceRevision,
                 tr('已导入 {0} 个网址，跳过 {1} 条重复网址。', [formatNumber(prepared.addedSites), formatNumber(prepared.skippedDuplicates)]));

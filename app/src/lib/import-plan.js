@@ -1,6 +1,8 @@
 import { tr } from '../i18n/index.js';
 import { letterIcon, migrateNavigationState, normalizeUrl, validateState } from './model.js';
 import { DESKTOP_ROWS, MAX_DESKTOP_PAGE, layoutDesktop } from './desktop-layout.js';
+import { CONTENT_LIBRARY_LIMITS, validateContentPreferences } from './content-preferences.js';
+import { sameJson } from './json-equal.js';
 
 const MAX_ENTRIES = 2000;
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -271,4 +273,161 @@ export function prepareImport(input, plan, { selectedIndices, page = 0, columns 
   const entriesById = new Map(state.entries.map((entry) => [entry.id, entry]));
   for (const row of rows) if (row.willAdd) row.targetPage = entriesById.get(row.entryId).page;
   return { state: validateState(state), addedSites: additions.length, addedFolders, skippedDuplicates, revealId, rows, sourceRevision: input.revision };
+}
+
+const metadataMessage = () => tr('备注和标签无效或超出大小限制。');
+const objectFields = (value, allowed) => value && typeof value === 'object' && !Array.isArray(value)
+  && Object.keys(value).every((key) => allowed.includes(key));
+const tagIdentity = (name) => name.normalize('NFKC').toLowerCase();
+const emptyMetadata = () => ({ description: '', tagIds: [] });
+const invalidMetadata = () => { throw Object.assign(Error(metadataMessage()), { code: 'IMPORT_METADATA_INVALID' }); };
+
+// Unsupported field values stay in the source preview. Only choosing to bring
+// that field in makes its capacity issue block the import; malformed schemas
+// are always rejected, including on unchecked rows.
+export function importMetadataIssues(value, details = {}) {
+  if (value === undefined) return [];
+  if (!objectFields(value, ['description', 'tagNames'])
+    || Object.hasOwn(value, 'description') && typeof value.description !== 'string'
+    || Object.hasOwn(value, 'tagNames') && (!Array.isArray(value.tagNames) || value.tagNames.some((name) => typeof name !== 'string'))) invalidMetadata();
+  const issues = [], add = (field, code = 'IMPORT_METADATA_LIMIT') => issues.push({ code, message: metadataMessage(), ...details, field });
+  if (value.description?.length > CONTENT_LIBRARY_LIMITS.description) add('description');
+  else if (value.description?.includes('\0')) add('description', 'IMPORT_METADATA_INVALID');
+  const tags = new Set();
+  let badName = false, longName = false;
+  for (const raw of value.tagNames || []) {
+    const name = raw.trim();
+    if (!name || /[\u0000-\u001f\u007f]/u.test(name)) badName = true;
+    if (name.length > CONTENT_LIBRARY_LIMITS.tagName) longName = true;
+    tags.add(tagIdentity(name));
+  }
+  if (badName) add('tagNames', 'IMPORT_METADATA_INVALID');
+  else if (longName || tags.size > CONTENT_LIBRARY_LIMITS.itemTags) add('tagNames');
+  return issues;
+}
+
+// Preview and commit call this same pure function. Decisions use source row
+// indices instead of generated entry IDs, so an atomic reprepare can allocate
+// fresh navigation/tag IDs without changing the user's chosen target.
+export function prepareImportWithMetadata(input, preferences, plan, { metadataChoices = {}, includeMetadata = true, ...options } = {}) {
+  const before = validateContentPreferences(preferences);
+  if (before.presentation) throw Object.assign(Error(tr('请先输入密码解除隐藏。')), { code: 'PRIVACY_LOCKED' });
+  if (typeof includeMetadata !== 'boolean' || !objectFields(metadataChoices, Object.keys(metadataChoices || {}))) invalidMetadata();
+  if (plan?.source !== undefined && (!objectFields(plan.source, ['format', 'supportedVersion'])
+    || !['raindrop-html', 'onetab-text'].includes(plan.source.format)
+    || plan.source.supportedVersion !== undefined && (plan.source.format !== 'onetab-text' || plan.source.supportedVersion !== '2.25'))) invalidMetadata();
+  if (Array.isArray(plan?.sites) && plan.sites.some((site) => !objectFields(site, ['name', 'url', 'folder', 'line', 'metadata', 'metadataIssues'])
+    || site.line !== undefined && (!Number.isSafeInteger(site.line) || site.line < 1))) invalidMetadata();
+  const prepared = prepareImport(input, plan, options), issues = [];
+  const sourceIssues = plan.sites.map((site, sourceIndex) => importMetadataIssues(site.metadata, { sourceIndex }));
+  const next = structuredClone(before), library = structuredClone(before.library || { version: 1, tags: [], items: {} });
+  const tagsByName = new Map(library.tags.map((tag) => [tagIdentity(tag.name), tag.id])), tagNamesById = new Map(library.tags.map((tag) => [tag.id, tag.name]));
+  const tagIds = new Set(tagNamesById.keys());
+  const addedRows = new Map(prepared.rows.filter((row) => row.willAdd).map((row) => [row.index, row]));
+  const newIds = new Set([...addedRows.values()].map((row) => row.entryId)), entriesById = new Map(prepared.state.entries.map((entry) => [entry.id, entry]));
+  const localsByUrl = new Map(), sourcesByUrl = new Map(), changedExisting = new Set();
+  for (const entry of prepared.state.entries) {
+    if (entry.type !== 'site' || newIds.has(entry.id)) continue;
+    if (!localsByUrl.has(entry.url)) localsByUrl.set(entry.url, []);
+    localsByUrl.get(entry.url).push(entry);
+  }
+  for (const row of prepared.rows) if (row.selected) {
+    if (!sourcesByUrl.has(row.url)) sourcesByUrl.set(row.url, []);
+    sourcesByUrl.get(row.url).push(row.index);
+  }
+  const readMetadata = (id) => structuredClone(library.items[`site:${id}`] || emptyMetadata());
+  const displayMetadata = (id) => {
+    const value = readMetadata(id);
+    return { ...value, tagNames: value.tagIds.map((tagId) => tagNamesById.get(tagId) || '') };
+  };
+  const putMetadata = (id, value) => {
+    const key = `site:${id}`, previous = library.items[key] || emptyMetadata();
+    if (sameJson(previous, value)) return;
+    library.items[key] = value;
+    if (!newIds.has(id)) changedExisting.add(id);
+  };
+  const importFields = (id, sourceIndices, { unionTags, description }, targetKey) => {
+    const actual = readMetadata(id), descriptions = new Set([actual.description]);
+    let changed = false;
+    for (const sourceIndex of sourceIndices) {
+      const source = plan.sites[sourceIndex].metadata;
+      if (!source) continue;
+      const relevant = sourceIssues[sourceIndex].filter((issue) => issue.field === 'tagNames' ? unionTags : description === 'append');
+      if (relevant.length) { issues.push(...relevant.map((issue) => ({ ...issue, targetKey }))); continue; }
+      if (unionTags) for (const raw of source.tagNames || []) {
+        const name = raw.trim(), identity = tagIdentity(name);
+        let tagId = tagsByName.get(identity);
+        if (!tagId) {
+          // Existing tag IDs and normalized names always win; nothing is
+          // created through a separate preference write.
+          for (let attempt = 0; attempt < 100 && !tagId; attempt++) {
+            const candidate = newId('tag');
+            if (!tagIds.has(candidate)) tagId = candidate;
+          }
+          if (!tagId) invalidMetadata();
+          tagsByName.set(identity, tagId); tagNamesById.set(tagId, name); tagIds.add(tagId); library.tags.push({ id: tagId, name });
+        }
+        if (!actual.tagIds.includes(tagId)) { actual.tagIds.push(tagId); changed = true; }
+      }
+      if (description === 'append' && source.description !== undefined) {
+        const value = source.description.trim();
+        const bounded = actual.description === value || actual.description.startsWith(`${value}\n\n`)
+          || actual.description.endsWith(`\n\n${value}`) || actual.description.includes(`\n\n${value}\n\n`);
+        if (value && !descriptions.has(value) && !bounded) {
+          actual.description = actual.description ? `${actual.description}\n\n${value}` : value;
+          descriptions.add(value); changed = true;
+        }
+      }
+    }
+    if (actual.tagIds.length > CONTENT_LIBRARY_LIMITS.itemTags || actual.description.length > CONTENT_LIBRARY_LIMITS.description) {
+      issues.push({ code: 'IMPORT_METADATA_LIMIT', message: metadataMessage(), targetKey,
+        field: actual.tagIds.length > CONTENT_LIBRARY_LIMITS.itemTags ? 'tagNames' : 'description' });
+    }
+    if (changed) putMetadata(id, actual);
+  };
+  if (includeMetadata) for (const [sourceIndex, row] of addedRows) {
+    importFields(row.entryId, [sourceIndex], { unionTags: true, description: 'append' }, `new:${sourceIndex}`);
+  }
+  const duplicateGroups = [], groupsByUrl = new Map();
+  for (const [url, sourceIndices] of sourcesByUrl) {
+    const local = localsByUrl.get(url) || [];
+    if (local.length === 0 && sourceIndices.length === 1) continue;
+    const candidates = local.map((entry) => ({ targetKey: `site:${entry.id}`, entryId: entry.id, name: entry.name, page: entry.page ?? 0,
+      parentId: entry.parentId, folderName: entriesById.get(entry.parentId)?.name || '', metadata: displayMetadata(entry.id) }));
+    const newSourceIndex = sourceIndices.find((index) => addedRows.has(index));
+    let newTargetKey;
+    if (newSourceIndex !== undefined) {
+      const row = addedRows.get(newSourceIndex), entry = entriesById.get(row.entryId);
+      newTargetKey = `new:${newSourceIndex}`;
+      candidates.push({ targetKey: newTargetKey, entryId: entry.id, name: entry.name, page: entry.page ?? 0,
+        parentId: entry.parentId, folderName: entriesById.get(entry.parentId)?.name || '', metadata: displayMetadata(entry.id) });
+    }
+    const group = { url, sourceIndices, targets: candidates, ...(newTargetKey ? { newTargetKey } : {}) };
+    duplicateGroups.push(group); groupsByUrl.set(url, group);
+  }
+  for (const [url, choice] of Object.entries(metadataChoices)) {
+    const group = groupsByUrl.get(url), choiceIssue = () => issues.push({ code: 'IMPORT_CHOICE_INVALID', message: tr('导入选择无效。'), url });
+    if (!group || !objectFields(choice, ['targetKey', 'sourceIndices', 'unionTags', 'description'])
+      || typeof choice.unionTags !== 'boolean' || !['keep', 'append'].includes(choice.description)
+      || !Array.isArray(choice.sourceIndices) || new Set(choice.sourceIndices).size !== choice.sourceIndices.length
+      || choice.sourceIndices.some((index) => !Number.isSafeInteger(index) || !group.sourceIndices.includes(index))) { choiceIssue(); continue; }
+    const target = group.targets.find((item) => item.targetKey === choice.targetKey);
+    const requested = choice.unionTags || choice.description === 'append';
+    if ((!target && (requested || choice.targetKey)) || requested && choice.sourceIndices.length === 0
+      || includeMetadata && options.skipDuplicates === false) { choiceIssue(); continue; }
+    if (includeMetadata && requested) importFields(target.entryId, choice.sourceIndices, choice, target.targetKey);
+  }
+  if (library.tags.length > CONTENT_LIBRARY_LIMITS.tags || Object.keys(library.items).length > CONTENT_LIBRARY_LIMITS.items) {
+    issues.push({ code: 'IMPORT_METADATA_LIMIT', message: metadataMessage(), field: library.tags.length > CONTENT_LIBRARY_LIMITS.tags ? 'tags' : 'items' });
+  }
+  const expectedMetadata = [...changedExisting].map((id) => ({ key: `site:${id}`, ...structuredClone(before.library?.items[`site:${id}`] || emptyMetadata()) }));
+  let nextPreferences = null;
+  if (!issues.length) {
+    if (before.library || library.tags.length || Object.keys(library.items).length) next.library = library;
+    try { nextPreferences = validateContentPreferences(next); }
+    catch { issues.push({ code: 'IMPORT_METADATA_LIMIT', message: metadataMessage(), field: 'library' }); }
+  }
+  return { ...prepared, nextPreferences, preferencesChanged: Boolean(nextPreferences && !sameJson(nextPreferences, before)),
+    sourcePreferencesRevision: before.revision, expectedMetadata, updatedSites: changedExisting.size,
+    addedTags: issues.length ? 0 : library.tags.length - (before.library?.tags.length || 0), duplicateGroups, issues };
 }

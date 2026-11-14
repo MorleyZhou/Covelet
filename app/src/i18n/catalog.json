@@ -2885,6 +2885,222 @@
     "fr": "Lecture du document",
     "ru": "Просмотр документа"
   },
+  "没有可应用的更改。": {
+    "en": "There are no changes to apply.",
+    "zh-TW": "沒有可套用的變更。",
+    "ja": "適用する変更はありません。",
+    "ko": "적용할 변경 사항이 없습니다.",
+    "de": "Keine Änderungen zum Anwenden.",
+    "fr": "Aucune modification à appliquer.",
+    "ru": "Нет изменений для применения."
+  },
+  "OneTab 组 {0}": {
+    "en": "OneTab group {0}",
+    "zh-TW": "OneTab 群組 {0}",
+    "ja": "OneTab グループ {0}",
+    "ko": "OneTab 그룹 {0}",
+    "de": "OneTab-Gruppe {0}",
+    "fr": "Groupe OneTab {0}",
+    "ru": "Группа OneTab {0}"
+  },
+  "导入此格式前，请先解除隐藏。": {
+    "en": "Unlock hidden content before importing this format.",
+    "zh-TW": "匯入此格式前，請先解除隱藏。",
+    "ja": "この形式をインポートする前に、非表示を解除してください。",
+    "ko": "이 형식을 가져오기 전에 숨김을 해제하세요.",
+    "de": "Vor dem Import dieses Formats ausgeblendete Inhalte entsperren.",
+    "fr": "Déverrouillez le contenu masqué avant d’importer ce format.",
+    "ru": "Перед импортом этого формата разблокируйте скрытое содержимое."
+  },
+  "粘贴格式": {
+    "en": "Paste format",
+    "zh-TW": "貼上格式",
+    "ja": "貼り付け形式",
+    "ko": "붙여넣기 형식",
+    "de": "Einfügeformat",
+    "fr": "Format du texte collé",
+    "ru": "Формат вставки"
+  },
+  "网址 / Markdown": {
+    "en": "URLs / Markdown",
+    "zh-TW": "網址 / Markdown",
+    "ja": "URL / Markdown",
+    "ko": "URL / Markdown",
+    "de": "URLs / Markdown",
+    "fr": "URL / Markdown",
+    "ru": "Ссылки / Markdown"
+  },
+  "OneTab 文本": {
+    "en": "OneTab text",
+    "zh-TW": "OneTab 文字",
+    "ja": "OneTab テキスト",
+    "ko": "OneTab 텍스트",
+    "de": "OneTab-Text",
+    "fr": "Texte OneTab",
+    "ru": "Текст OneTab"
+  },
+  "导入 Raindrop HTML 文件": {
+    "en": "Import Raindrop HTML file",
+    "zh-TW": "匯入 Raindrop HTML 檔案",
+    "ja": "Raindrop HTML ファイルをインポート",
+    "ko": "Raindrop HTML 파일 가져오기",
+    "de": "Raindrop-HTML-Datei importieren",
+    "fr": "Importer un fichier HTML Raindrop",
+    "ru": "Импортировать HTML-файл Raindrop"
+  },
+  "导入 OneTab 文本文件": {
+    "en": "Import OneTab text file",
+    "zh-TW": "匯入 OneTab 文字檔案",
+    "ja": "OneTab テキストファイルをインポート",
+    "ko": "OneTab 텍스트 파일 가져오기",
+    "de": "OneTab-Textdatei importieren",
+    "fr": "Importer un fichier texte OneTab",
+    "ru": "Импортировать текстовый файл OneTab"
+  },
+  "导入组名": {
+    "en": "Imported group names",
+    "zh-TW": "匯入群組名稱",
+    "ja": "インポートするグループ名",
+    "ko": "가져올 그룹 이름",
+    "de": "Namen der importierten Gruppen",
+    "fr": "Noms des groupes importés",
+    "ru": "Названия импортируемых групп"
+  },
+  "第 {0} 组": {
+    "en": "Group {0}",
+    "zh-TW": "第 {0} 組",
+    "ja": "グループ {0}",
+    "ko": "그룹 {0}",
+    "de": "Gruppe {0}",
+    "fr": "Groupe {0}",
+    "ru": "Группа {0}"
+  },
+  "导入支持的标签和备注": {
+    "en": "Import supported tags and notes",
+    "zh-TW": "匯入支援的標籤與備註",
+    "ja": "対応するタグとメモをインポート",
+    "ko": "지원되는 태그와 메모 가져오기",
+    "de": "Unterstützte Tags und Notizen importieren",
+    "fr": "Importer les étiquettes et notes prises en charge",
+    "ru": "Импортировать поддерживаемые метки и заметки"
+  },
+  "将更新 {0} 个已有网址的标签或备注。": {
+    "en": "Tags or notes will be updated for {0} existing links.",
+    "zh-TW": "將更新 {0} 個現有網址的標籤或備註。",
+    "ja": "既存のリンク {0} 件のタグまたはメモを更新します。",
+    "ko": "기존 링크 {0}개의 태그 또는 메모를 업데이트합니다.",
+    "de": "Tags oder Notizen von {0} vorhandenen Links werden aktualisiert.",
+    "fr": "Les étiquettes ou notes de {0} liens existants seront mises à jour.",
+    "ru": "Метки или заметки {0} существующих ссылок будут обновлены."
+  },
+  "重复项信息合并": {
+    "en": "Merge information from duplicates",
+    "zh-TW": "合併重複項目資訊",
+    "ja": "重複項目の情報を統合",
+    "ko": "중복 항목 정보 병합",
+    "de": "Informationen aus Duplikaten zusammenführen",
+    "fr": "Fusionner les informations des doublons",
+    "ru": "Объединить сведения из дубликатов"
+  },
+  "合并目标": {
+    "en": "Merge target",
+    "zh-TW": "合併目標",
+    "ja": "統合先",
+    "ko": "병합 대상",
+    "de": "Zusammenführen mit",
+    "fr": "Destination de fusion",
+    "ru": "Куда объединить"
+  },
+  "保留本地信息": {
+    "en": "Keep local information",
+    "zh-TW": "保留本機資訊",
+    "ja": "ローカル情報を保持",
+    "ko": "로컬 정보 유지",
+    "de": "Lokale Informationen behalten",
+    "fr": "Conserver les informations locales",
+    "ru": "Сохранить локальные сведения"
+  },
+  "本次新增": {
+    "en": "Added in this import",
+    "zh-TW": "本次新增",
+    "ja": "今回のインポートで追加",
+    "ko": "이번에 추가됨",
+    "de": "In diesem Import neu",
+    "fr": "Ajouté lors de cet import",
+    "ru": "Добавляется при этом импорте"
+  },
+  "目标现有信息": {
+    "en": "Existing target information",
+    "zh-TW": "目標現有資訊",
+    "ja": "統合先の既存情報",
+    "ko": "대상의 기존 정보",
+    "de": "Vorhandene Informationen des Ziels",
+    "fr": "Informations existantes de la destination",
+    "ru": "Текущие сведения целевой записи"
+  },
+  "选择参与合并的来源": {
+    "en": "Select sources to merge",
+    "zh-TW": "選擇參與合併的來源",
+    "ja": "統合するソースを選択",
+    "ko": "병합할 원본 선택",
+    "de": "Quellen zum Zusammenführen auswählen",
+    "fr": "Sélectionner les sources à fusionner",
+    "ru": "Выберите источники для объединения"
+  },
+  "合并来源 {0}": {
+    "en": "Merge source {0}",
+    "zh-TW": "合併來源 {0}",
+    "ja": "統合ソース {0}",
+    "ko": "병합 원본 {0}",
+    "de": "Quelle {0} zusammenführen",
+    "fr": "Fusionner la source {0}",
+    "ru": "Объединить источник {0}"
+  },
+  "合并来源标签": {
+    "en": "Merge source tags",
+    "zh-TW": "合併來源標籤",
+    "ja": "ソースのタグを統合",
+    "ko": "원본 태그 병합",
+    "de": "Tags der Quellen zusammenführen",
+    "fr": "Fusionner les étiquettes des sources",
+    "ru": "Объединить метки источников"
+  },
+  "追加来源备注": {
+    "en": "Append source notes",
+    "zh-TW": "附加來源備註",
+    "ja": "ソースのメモを追記",
+    "ko": "원본 메모 덧붙이기",
+    "de": "Notizen der Quellen anhängen",
+    "fr": "Ajouter les notes des sources",
+    "ru": "Дополнить заметками источников"
+  },
+  "第 {0} 项": {
+    "en": "Item {0}",
+    "zh-TW": "第 {0} 項",
+    "ja": "項目 {0}",
+    "ko": "항목 {0}",
+    "de": "Eintrag {0}",
+    "fr": "Élément {0}",
+    "ru": "Запись {0}"
+  },
+  "资料已在其他页面更新，请重新预览后再导入。": {
+    "en": "Content changed in another tab. Preview again before importing.",
+    "zh-TW": "資料已在其他頁面更新，請重新預覽後再匯入。",
+    "ja": "別のタブで内容が更新されました。再度プレビューしてからインポートしてください。",
+    "ko": "다른 탭에서 자료가 변경되었습니다. 다시 미리 본 후 가져오세요.",
+    "de": "Inhalte wurden in einem anderen Tab geändert. Vor dem Import erneut prüfen.",
+    "fr": "Le contenu a changé dans un autre onglet. Relancez l’aperçu avant d’importer.",
+    "ru": "Данные изменены в другой вкладке. Перед импортом обновите предпросмотр."
+  },
+  "重新预览": {
+    "en": "Refresh preview",
+    "zh-TW": "重新預覽",
+    "ja": "プレビューを更新",
+    "ko": "미리 보기 새로 고침",
+    "de": "Vorschau aktualisieren",
+    "fr": "Actualiser l’aperçu",
+    "ru": "Обновить предпросмотр"
+  },
   "添加所选标签": {
     "en": "Add selected tags",
     "zh-TW": "新增所選標籤",
@@ -10219,15 +10435,6 @@
     "de": "Wiederherstellung starten",
     "fr": "Démarrer la restauration",
     "ru": "Начать восстановление"
-  },
-  "重新预览": {
-    "en": "Refresh preview",
-    "zh-TW": "重新預覽",
-    "ja": "プレビューを更新",
-    "ko": "미리 보기 새로 고침",
-    "de": "Vorschau aktualisieren",
-    "fr": "Actualiser l’aperçu",
-    "ru": "Обновить предпросмотр"
   },
   "工具内容还有待上传或冲突版本，请先处理后再切换存储位置。": {
     "en": "Tool content has pending uploads or conflicting versions. Resolve them before changing storage locations.",

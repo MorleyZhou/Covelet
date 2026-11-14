@@ -37,6 +37,14 @@ selections, all/any/excluded tag matching, complete-backup round trips, local
 midnight date changes, pinned-list updates and already-locked tag visibility.
 The bulk and saved-view controls are exercised in all eight languages at 390×540.
 
+`import-metadata.spec.mjs` covers Raindrop attribute tags/notes, OneTab text and
+editable groups, legacy Firefox DD handling, explicit duplicate merge targets,
+metadata limits, re-preview after concurrent edits, cancellation and eight
+languages at 390×540. Import sources are synthetic; parse/preview/apply make no
+network requests. A delayed real `File.text()` result makes the cross-tab lock
+transition deterministic while retaining the native file read and production
+parser, preview and commit paths.
+
 The note-capture cases grant only `https://capture.example/*` in a temporary test
 copy and intercept that page and its exact icon probes. The actual browser
 selection is read by `chrome.scripting` while the popup runs in an inactive tab.
