@@ -17518,5 +17518,95 @@
     "de": "Es werden nur die ersten {0} Treffer angezeigt.",
     "fr": "Seules les {0} premières correspondances sont affichées.",
     "ru": "Показаны только первые {0} совпадений."
+  },
+  "固定到桌面": {
+    "en": "Pin to desktop",
+    "zh-TW": "固定至桌面",
+    "ja": "デスクトップに固定",
+    "ko": "데스크톱에 고정",
+    "de": "Auf dem Desktop anheften",
+    "fr": "Épingler sur le bureau",
+    "ru": "Закрепить на главном экране"
+  },
+  "目标桌面": {
+    "en": "Destination desktop",
+    "zh-TW": "目標桌面",
+    "ja": "固定先のデスクトップ",
+    "ko": "대상 데스크톱",
+    "de": "Ziel-Desktop",
+    "fr": "Bureau de destination",
+    "ru": "Экран назначения"
+  },
+  "固定": {
+    "en": "Pin",
+    "zh-TW": "固定",
+    "ja": "固定",
+    "ko": "고정",
+    "de": "Anheften",
+    "fr": "Épingler",
+    "ru": "Закрепить"
+  },
+  "选择动态清单": {
+    "en": "Choose a smart list",
+    "zh-TW": "選擇動態清單",
+    "ja": "スマートリストを選択",
+    "ko": "스마트 목록 선택",
+    "de": "Dynamische Liste auswählen",
+    "fr": "Choisir une liste dynamique",
+    "ru": "Выбрать умный список"
+  },
+  "清单已移除": {
+    "en": "List removed",
+    "zh-TW": "清單已移除",
+    "ja": "リストは削除されました",
+    "ko": "목록이 삭제되었습니다",
+    "de": "Liste entfernt",
+    "fr": "Liste supprimée",
+    "ru": "Список удалён"
+  },
+  "清单条件已失效": {
+    "en": "List conditions are no longer valid",
+    "zh-TW": "清單條件已失效",
+    "ja": "リストの条件が無効です",
+    "ko": "목록 조건이 더 이상 유효하지 않습니다",
+    "de": "Listenbedingungen sind nicht mehr gültig",
+    "fr": "Les conditions de la liste ne sont plus valides",
+    "ru": "Условия списка больше не действуют"
+  },
+  "没有匹配的内容": {
+    "en": "No matching content",
+    "zh-TW": "沒有符合的內容",
+    "ja": "一致するコンテンツはありません",
+    "ko": "일치하는 콘텐츠가 없습니다",
+    "de": "Keine passenden Inhalte",
+    "fr": "Aucun contenu correspondant",
+    "ru": "Нет подходящего содержимого"
+  },
+  "便笺已移除": {
+    "en": "Note removed",
+    "zh-TW": "便箋已移除",
+    "ja": "メモは削除されました",
+    "ko": "메모가 삭제되었습니다",
+    "de": "Notiz entfernt",
+    "fr": "Note supprimée",
+    "ru": "Заметка удалена"
+  },
+  "在桌面查看动态清单，打开匹配的内容。": {
+    "en": "View a smart list on your desktop and open matching content.",
+    "zh-TW": "在桌面檢視動態清單，開啟符合的內容。",
+    "ja": "デスクトップでスマートリストを表示し、一致するコンテンツを開けます。",
+    "ko": "데스크톱에서 스마트 목록을 보고 일치하는 콘텐츠를 엽니다.",
+    "de": "Eine dynamische Liste auf dem Desktop ansehen und passende Inhalte öffnen.",
+    "fr": "Consultez une liste dynamique sur votre bureau et ouvrez le contenu correspondant.",
+    "ru": "Просматривайте умный список на главном экране и открывайте подходящее содержимое."
+  },
+  "已固定到桌面": {
+    "en": "Pinned to desktop",
+    "zh-TW": "已固定至桌面",
+    "ja": "デスクトップに固定しました",
+    "ko": "데스크톱에 고정했습니다",
+    "de": "Auf dem Desktop angeheftet",
+    "fr": "Épinglé sur le bureau",
+    "ru": "Закреплено на главном экране"
   }
 }

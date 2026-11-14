@@ -13,6 +13,7 @@ import { Button } from './ui/button.jsx';
 import { Checkbox } from './ui/checkbox.jsx';
 import { Input } from './ui/input.jsx';
 import './saved-views.css';
+import PinToDesktopDialog from './PinToDesktopDialog.jsx';
 
 function conditionMessage(result) {
   if (result.status === 'hidden') return tr('清单包含隐藏条件，请先解锁。');
@@ -26,6 +27,7 @@ export default function SavedViews({ navigation, tools, preferences, initialFilt
   const today = useLocalDateKey();
   const [editor, setEditor] = useState(null), [deleting, setDeleting] = useState(null), [discarding, setDiscarding] = useState(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const [pinning, setPinning] = useState(null);
   const locked = presentation.active || preferences.presentation;
   const effectivePreferences = useMemo(() => ({ ...preferences, presentation: locked }), [preferences, locked]);
   const hiddenKeys = locked ? presentation.hiddenKeys : undefined;
@@ -108,6 +110,7 @@ export default function SavedViews({ navigation, tools, preferences, initialFilt
                 <strong>{view.name}</strong><span>{result.status === 'ready' ? typeOptions.find((option) => option.value === view.type)?.label : conditionMessage(result)}</span>
               </Button>
               <Button type="button" variant="ghost" size="icon" disabled={busy} aria-label={tr('编辑清单')} onClick={() => startEditing(view, preferences.privateKeys.includes(`view:${view.id}`))}><PencilSimple size={18} /></Button>
+              <Button type="button" variant="ghost" size="sm" disabled={busy || result.status !== 'ready'} onClick={() => setPinning({ id: view.id, revision: view.revision })}>{tr('固定到桌面')}</Button>
               <Button type="button" variant="ghost" size="icon" disabled={busy} aria-label={tr('删除清单')} onClick={() => { setDeleting(structuredClone(view)); setError(''); }}><Trash size={18} /></Button>
             </div>;
           })}
@@ -168,6 +171,8 @@ export default function SavedViews({ navigation, tools, preferences, initialFilt
       {discarding && <PromptDialog title={tr('放弃修改')} action={tr('放弃修改')} destructive privacySafe busy={busy} onCancel={() => setDiscarding(null)} onConfirm={() => {
         const destination = discarding; setDiscarding(null); setEditor(null); setError(''); if (destination === 'close') onClose();
       }}><p>{tr('当前内容尚未保存，放弃修改？')}</p></PromptDialog>}
+      {pinning && <PinToDesktopDialog kind="view" record={pinning} preferences={preferences} Dialog={Dialog} onClose={() => setPinning(null)}
+        onBusyChange={(value) => { setBusy(value); onBusyChange?.(value); }} />}
     </div>
   </Dialog>;
 }

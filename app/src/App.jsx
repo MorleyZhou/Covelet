@@ -115,6 +115,9 @@ import { loadContentPreferences, useContentPreferences, saveContentSettings, set
 import { parseStructuredSearch, removeStructuredCondition } from './lib/structured-search.js';
 import { matchedNoteSearchTerms } from './lib/note-search.js';
 import CommandPalette, { StructuredConditions } from './components/CommandPalette.jsx';
+import { PinDesktopContext } from './components/PinToDesktopDialog.jsx';
+import SavedViewWidget, { SavedViewTargetDialog } from './components/SavedViewWidget.jsx';
+import { resolveReferencedWidget, widgetContentReference } from './lib/referenced-widgets.js';
 import { defaultSavedFilters, filterSavedContent, resolveSavedView, viewFilters } from './lib/saved-views.js';
 import { useLocalDateKey } from './lib/use-local-date.js';
 import { commitNavigationTransfer, commitNavigationTags } from './lib/navigation-library.js';
@@ -169,14 +172,14 @@ function SearchProviderIcon({ provider, epoch, fallback = "globe" }) {
   return <ProviderIcon key={template} provider={provider} src={cached?.template === template && cached.syncRevision === syncRevision ? cached.url : undefined} fallback={fallback} />;
 }
 
-function WidgetTile({ item, editing, className, children, presentationHidden = false, ...props }) {
+function WidgetTile({ item, editing, className, children, presentationHidden = false, caption, ...props }) {
   const { requestUnlock } = useContext(PresentationContext);
   return <div {...props} className={`${className} widget-tile widget-size-${item.config.size} ${presentationHidden ? 'presentation-private-widget' : ''}`}>
     <div key="live" className="widget-live-content" style={presentationHidden ? { display: 'none' } : undefined} aria-hidden={presentationHidden || undefined} inert={editing || presentationHidden || undefined}>{children}</div>
     {presentationHidden && <Button key="shield" variant="unstyled" size="unstyled" type="button" className="presentation-widget-lock" data-widget-launcher onClick={requestUnlock} aria-haspopup="dialog" aria-label={tr('输入密码查看隐藏内容')} title={tr('输入密码查看隐藏内容')}>
       <span className="presentation-private-icon" aria-hidden="true"><LockSimple size={26} /></span>
     </Button>}
-    {(presentationHidden || item.config.size === 'mini' || !(['notes', 'read-later'].includes(item.extensionId))) && <span className="site-name widget-caption">{presentationHidden ? tr('已隐藏') : builtinName(item.extensionId, item.name)}</span>}
+    {(presentationHidden || item.config.size === 'mini' || !(['notes', 'read-later', 'saved-view'].includes(item.extensionId))) && <span className="site-name widget-caption">{presentationHidden ? tr('已隐藏') : caption || builtinName(item.extensionId, item.name)}</span>}
   </div>;
 }
 
@@ -370,7 +373,9 @@ function Modal({ title, titleContent, titleActions, onClose, onBack, backLabel =
   function focusContent() {
     if (!ref.current || ref.current.querySelector('[role=alertdialog]')) return;
     const selector = previousTitle.current ? ".modal-title h2" : titleContent ? ".modal-title > .icon-button" : "input:not([type=file]):not([type=hidden]):not([aria-hidden=true]),[role=combobox],textarea,[role=tab][aria-selected=true]";
-    const target = ref.current.querySelector('[data-autofocus]') || ref.current.querySelector(selector) || ref.current.querySelector('button:not(:disabled)') || ref.current;
+    const eligible = (node) => !node.matches(':disabled, [aria-disabled="true"]')
+      && !node.closest('[hidden], [inert], [aria-hidden="true"]') && node.getClientRects().length > 0;
+    const target = [...ref.current.querySelectorAll('[data-autofocus]'), ...ref.current.querySelectorAll(selector), ...ref.current.querySelectorAll('button:not(:disabled)')].find(eligible) || ref.current;
     target.focus({ preventScroll: true });
     previousTitle.current = title;
   }
@@ -389,8 +394,9 @@ function Modal({ title, titleContent, titleActions, onClose, onBack, backLabel =
       onCloseAutoFocus={(event) => {
         event.preventDefault();
         // Radix restores focus after unmount; a new dialog or menu may own it.
-        if (document.querySelector('[data-ui-modal][data-state="open"], [data-popover][data-state="open"]')) return;
-        if (opener.current?.isConnected && !opener.current.matches(':disabled')) opener.current.focus({ preventScroll: true });
+        const surfaces = [...document.querySelectorAll('[data-ui-modal][data-state="open"], [data-popover][data-state="open"]')];
+        if (surfaces.some((surface) => !surface.contains(opener.current))) return;
+        if (opener.current?.isConnected && !opener.current.matches(':disabled') && !opener.current.closest('[hidden], [inert], [aria-hidden="true"]')) opener.current.focus({ preventScroll: true });
       }}
       onEscapeKeyDown={(event) => { if (closeDisabled || event.target?.closest('.folder-name-editor')) event.preventDefault(); }}
       onInteractOutside={(event) => { if (closeDisabled) event.preventDefault(); }}
@@ -537,15 +543,28 @@ export function App() {
   });
   const desktopState = layoutEditor.draft || state;
   const presentation = contentPreferences.presentation;
-  const hiddenKeys = useMemo(() => privateContentKeys(desktopState, layoutTransferPreferences(contentPreferences, transferCopies.current)), [desktopState, contentPreferences]);
+  const { hiddenKeys, referenceStates } = useMemo(() => {
+    const preferences = layoutTransferPreferences(contentPreferences, transferCopies.current), keys = privateContentKeys(desktopState, preferences), references = new Map();
+    for (const entry of desktopState?.entries || []) {
+      if (!widgetContentReference(entry)) continue;
+      const result = resolveReferencedWidget(entry, { navigation: desktopState, tools: personalData, preferences, hiddenKeys: keys, today });
+      references.set(entry.id, result);
+      if (preferences.presentation && result.status === 'hidden') keys.add(`widget:${entry.id}`);
+    }
+    return { hiddenKeys: keys, referenceStates: references };
+  }, [desktopState, contentPreferences, personalData, today]);
   const privacyKey = presentation ? `hidden:${[...hiddenKeys].sort().join('\n')}` : 'public';
   const requestPrivacyUnlock = useCallback(() => setPrivacyDialog('unlock'), []);
   const presentationContext = useMemo(() => ({ active: presentation, hiddenKeys, requestUnlock: requestPrivacyUnlock }), [presentation, hiddenKeys, requestPrivacyUnlock]);
   const privateEntryIds = useMemo(() => (desktopState?.entries || []).filter((item) => hiddenKeys.has(`${item.type}:${item.id}`)).map((item) => item.id), [desktopState, hiddenKeys]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     setPresentationHint('');
     stopLayoutPress(); cancelDrag();
     if (!presentation) { setPrivacyDialog((value) => value === 'unlock' ? null : value); return; }
+    // A query may contain a private tag name even after its result becomes
+    // invalid. Clear transient search surfaces before painting a new lock state.
+    setQuery(''); setSearchTagIds([]); setSearchContext(null); setSearchFilter('all'); setFocused(false); setCandidate(-1);
+    setModal((current) => current?.kind === 'commands' ? null : current);
     setContext((current) => current?.item && hiddenKeys.has(`${current.item.type}:${current.item.id}`) ? null : current);
     layoutEditor.setSelectedIds((ids) => ids.filter((id) => !privateEntryIds.includes(id)));
   }, [presentation, privacyKey]);
@@ -560,7 +579,7 @@ export function App() {
     } finally { privacyOperation.current = false; setPrivacyBusy(false); }
   }
   useEffect(() => {
-    if (modal?.kind === 'personal-tool' && state && !state.entries.some((item) => item.id === modal.id && item.type === 'widget' && !item.detached)) setModal(null);
+    if (['personal-tool', 'saved-view-target'].includes(modal?.kind) && state && !state.entries.some((item) => item.id === modal.id && item.type === 'widget' && !item.detached)) setModal(null);
   }, [state, modal?.kind, modal?.id]);
   useEffect(() => {
     let mounted = true, initial = true;
@@ -832,11 +851,11 @@ export function App() {
     if (presentation && hiddenKeys.has(`widget:${item.id}`)) { requestPrivacyUnlock(); return; }
     if (layoutEditor.editing || modal || drag) return;
     stopLayoutPress(); cancelDrag(); setContext(null); setEngineMenu(false); setQuery(''); setFocused(false);
-    setModal({ kind: item.extensionId === GITHUB_WIDGET_ID ? 'github-tool' : 'personal-tool', id: item.id });
+    setModal({ kind: item.extensionId === 'saved-view' ? 'saved-view-target' : item.extensionId === GITHUB_WIDGET_ID ? 'github-tool' : 'personal-tool', id: item.id, recordId: item.config.noteId });
   }
   function openEntry(item) {
     if (presentation && hiddenKeys.has(`${item.type}:${item.id}`)) { requestPrivacyUnlock(); return; }
-    if (item.type === 'widget' && ([GITHUB_WIDGET_ID, 'notes', 'read-later'].includes(item.extensionId))) {
+    if (item.type === 'widget' && ([GITHUB_WIDGET_ID, 'notes', 'read-later', 'saved-view'].includes(item.extensionId))) {
       revealDesktopEntry(state, item.id); openWidget(item); return;
     }
     if (item.type === "folder") {
@@ -1015,15 +1034,20 @@ export function App() {
     const latest = demo ? preferenceState.current : await loadState();
     const existing = latest.entries.find((item) => item.id === original?.id);
     if (original && (!existing || Boolean(existing.detached) !== Boolean(original.detached) || JSON.stringify(existing.config) !== JSON.stringify(original.config))) throw new Error(tr("组件已在其他页面修改或移除，请重新打开扩展。"));
-    if (!original && latest.entries.some((item) => item.type === 'widget' && item.extensionId === extensionId)) throw new Error(tr("组件已在其他页面添加，请重新打开扩展。"));
+    if (!original && latest.entries.some((item) => item.type === 'widget' && item.extensionId === extensionId && !widgetContentReference(item))) throw new Error(tr("组件已在其他页面添加，请重新打开扩展。"));
     const next = configureWidget(latest, extensionId, config, original?.id, { page: desktopScreen.current.page });
     const saved = await commit(next, undefined, latest.revision);
     if (!saved) throw new Error(tr("组件未保存，请重试。"));
     if (close) setModal(null);
-    const widget = saved.entries.find((item) => original ? item.id === original.id : item.type === 'widget' && item.extensionId === extensionId);
+    const widget = saved.entries.find((item) => original ? item.id === original.id : item.type === 'widget' && item.extensionId === extensionId && !widgetContentReference(item));
     revealDesktopEntry(saved, widget.id);
     setDraftPage(null);
     if (close) requestAnimationFrame(() => document.getElementById(`widget-title-${widget.id}`)?.focus({ preventScroll: true }));
+  }
+  function acceptPinnedWidget({ state: next, widgetId }) {
+    if (next.revision >= preferenceState.current.revision) preferenceState.current = next;
+    setState((current) => current.revision > next.revision ? current : next);
+    setDraftPage(null); revealDesktopEntry(next, widgetId); notify(tr('已固定到桌面'));
   }
   async function detachWidget(original) {
     const latest = demo ? preferenceState.current : await loadState(), current = latest.entries.find((item) => item.id === original.id);
@@ -1201,6 +1225,7 @@ export function App() {
       const children = desktopState.entries.filter((entry) => entry.parentId === item.id && (!presentation || !hiddenKeys.has(`site:${entry.id}`))).sort((a, b) => a.order - b.order);
       const editing = layoutEditor.editing && item.parentId === null && (!presentation || !hiddenKeys.has(`${item.type}:${item.id}`)), selected = editing && layoutEditor.selectedIds.includes(item.id);
       const Tile = item.type === 'widget' ? WidgetTile : 'div';
+      const reference = referenceStates.get(item.id), caption = reference?.status === 'ready' ? reference.target.title || reference.target.name : undefined;
       const placement = placements?.get(item.id);
       if (presentation && item.type !== 'widget' && hiddenKeys.has(`${item.type}:${item.id}`)) return <div key={item.id} className={`site-tile presentation-private-tile ${drag?.ids.includes(item.id) ? 'dragging' : ''}`}
         {...tileProps(item)}
@@ -1210,7 +1235,7 @@ export function App() {
         <Button variant="unstyled" size="unstyled" type="button" className="site-link" onClick={requestPrivacyUnlock} aria-haspopup="dialog" aria-label={tr('输入密码查看隐藏内容')} title={tr('输入密码查看隐藏内容')}>
           <span className="site-icon presentation-private-icon" aria-hidden="true"><LockSimple size={26} /></span><span className="site-name">{tr('已隐藏')}</span>
         </Button></div>;
-      return <Tile key={item.id} {...(item.type === 'widget' ? { item, editing, presentationHidden: presentation && hiddenKeys.has(`widget:${item.id}`) } : {})}
+      return <Tile key={item.id} {...(item.type === 'widget' ? { item, editing, caption, presentationHidden: presentation && hiddenKeys.has(`widget:${item.id}`) } : {})}
         role={editing ? 'button' : undefined} tabIndex={editing ? 0 : undefined} aria-label={editing ? builtinName(item.extensionId, item.name) : undefined} aria-pressed={editing ? selected : undefined}
         data-grid-row={placement ? placement.row - 1 : undefined} data-grid-column={placement ? placement.column - 1 : undefined}
         style={placement ? { gridColumn: `${placement.column} / span ${placement.columns}`, gridRow: `${placement.row} / span ${placement.rows}` } : undefined}
@@ -1247,7 +1272,10 @@ export function App() {
           const box = source.getBoundingClientRect();
           setContext({ kind: editing ? 'layout' : "entry", item, source, keyboard: true, x: box.left, y: box.bottom + 6 });
         }}>
-        {item.type === 'widget' ? ['notes', 'read-later'].includes(item.extensionId) ? <PersonalWidget entry={item} open={modal?.kind === 'personal-tool' && modal.id === item.id} onOpen={() => openWidget(item)} onClose={() => setModal(null)} Dialog={Modal} portalTarget={mainRef.current} />
+        {item.type === 'widget' ? ['notes', 'read-later'].includes(item.extensionId) ? <PersonalWidget entry={item} open={modal?.kind === 'personal-tool' && modal.id === item.id} initialRecordId={modal?.recordId} onOpen={() => openWidget(item)} onClose={() => setModal(null)} Dialog={Modal} portalTarget={mainRef.current} />
+          : item.extensionId === 'saved-view' ? <SavedViewWidget entry={item} navigation={state} tools={personalData} preferences={contentPreferences} hiddenKeys={hiddenKeys} today={today} resolution={reference}
+            onConfigure={() => setModal({ kind: 'saved-view-target', id: item.id })} onOpenContent={(row) => openContent(row, '')}
+            onOpenList={(view) => applyWorkingView(viewFilters(view), view).catch((reason) => notify(userErrorMessage(reason), 'error'))} />
           : <GitHubWidget entry={item} open={modal?.kind === 'github-tool' && modal.id === item.id} onOpen={() => openWidget(item)} onClose={() => setModal(null)} onSaveConfig={(config) => useWidget(config, item, item.extensionId, { close: false })} Dialog={Modal} portalTarget={mainRef.current} /> : item.type === "site" ? <a className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} href={item.url} draggable={false} target={settings.openNewTab ? "_blank" : undefined} rel="noreferrer noopener" title={`${item.name}\n${item.url}`}>
           <SiteIcon entry={item} /><span className="site-name">{item.name}</span>
         </a> : <Button variant="unstyled" size="unstyled" className="site-link" inert={editing || undefined} tabIndex={editing ? -1 : undefined} title={item.name} aria-label={item.name} aria-haspopup="dialog" onClick={() => openEntry(item)}>
@@ -1326,6 +1354,7 @@ export function App() {
   return (
     <DialogError.Provider value={!isSyncNotice && notice?.kind === 'error' ? notice.text : ''}>
       <PresentationContext.Provider value={presentationContext}>
+      <PinDesktopContext.Provider value={{ page: desktopScreen.current.page, onPinned: acceptPinnedWidget }}>
       <AdaptIcons.Provider value={visualEnabled}>
       <main
         ref={mainRef}
@@ -1734,6 +1763,9 @@ export function App() {
         {modal?.kind === 'personal-content' && <PersonalToolsDialog key={`${modal.type}:${modal.recordId}`} kind={modal.type} initialRecordId={modal.recordId} searchQuery={modal.searchQuery} Dialog={Modal} onClose={() => setModal(null)} />}
         {modal?.kind === 'saved-views' && <SavedViews navigation={state} tools={personalData} preferences={contentPreferences} initialFilters={modal.initialFilters}
           Dialog={Modal} onSaveView={saveWorkingView} onApply={applyWorkingView} onBusyChange={setBusy} onClose={() => setModal(null)} />}
+        {modal?.kind === 'saved-view-target' && state.entries.find((entry) => entry.id === modal.id && !entry.detached) && <SavedViewTargetDialog
+          entry={state.entries.find((entry) => entry.id === modal.id)} navigation={state} tools={personalData} preferences={contentPreferences} hiddenKeys={hiddenKeys}
+          Dialog={Modal} onClose={() => setModal(null)} onBusyChange={setBusy} />}
         {modal?.kind === 'resource-library' && <Modal title={tr('整理链接')} wide maximizable className="resource-library-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
           <ResourceLibrary navigation={state} tools={personalData} preferences={contentPreferences} initialFilters={modal.initialFilters} Dialog={Modal}
             onSaveView={(filters) => setModal({ kind: 'saved-views', initialFilters: filters })} onReveal={revealLibraryItem}
@@ -1806,6 +1838,7 @@ export function App() {
         )}
       </main>
       </AdaptIcons.Provider>
+      </PinDesktopContext.Provider>
       </PresentationContext.Provider>
     </DialogError.Provider>
   );

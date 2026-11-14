@@ -12,6 +12,9 @@ import { sameJson } from './json-equal.js';
 import { navigationResourceEntries, remapNavigationAssets } from './navigation-resources.js';
 import { prepareNavigationDeletion, removeTrashMetadata } from './navigation-trash-core.js';
 import { privateContentKeys } from './presentation.js';
+import { loadPersonalToolsSnapshot, preparePersonalToolsRestore } from './personal-tools.js';
+import { remapWidgetContentReferences } from './referenced-widgets.js';
+import { widgetContentReference } from './widget-model.js';
 
 const STORE_KEY = 'owntab.local.v1';
 const LOCK_NAME = 'owntab.local.write.v1';
@@ -307,7 +310,7 @@ function parseJson(bytes) {
 }
 
 // Adapters make backup and transaction tests independent of a real browser database.
-export function createStorage({ configStore, assetStore, privacy = withNavigationPrivacy, iconResources = { read: readNavigationIconResource, restore: restoreNavigationIconResource,
+export function createStorage({ configStore, assetStore, privacy = withNavigationPrivacy, personalTools = { read: loadPersonalToolsSnapshot, prepare: preparePersonalToolsRestore }, iconResources = { read: readNavigationIconResource, restore: restoreNavigationIconResource,
   prepare: prepareImportedNavigationIcons, retain: retainNavigationIconResources }, locks, initialState = createEmptyState, imageTools = browserImages, uuid = () => crypto.randomUUID() } = {}) {
   let config;
   let assets;
@@ -351,6 +354,24 @@ export function createStorage({ configStore, assetStore, privacy = withNavigatio
     if (report?.cancelled) fail(tr('数据已更新，已停止本次图标补齐，请重试。'), 'REVISION_CONFLICT');
     try { options.onIconResult?.(report); } catch { /* UI observers cannot interrupt a validated restoration. */ }
   };
+  const writeRecoveryPair = (next, currentRevision, pair) => exclusive(() => privacy(async (_current, prepare) => {
+    const commit = async () => {
+      const records = prepare([], { replacePreferences: pair.preferences, expectedRevision: pair.expectedPreferencesRevision });
+      const committedPreferences = records['covelet.content.preferences.v1'];
+      let committedTools;
+      if (pair.tools !== undefined) {
+        committedTools = await personalTools.prepare(await personalTools.read(), pair.tools, { expectedRevision: pair.expectedToolsRevision });
+        records['covelet.tools.v1'] = committedTools;
+      }
+      const state = await writeState(next, currentRevision, records);
+      return { state, preferences: committedPreferences, ...(committedTools ? { tools: committedTools } : {}) };
+    };
+    if (pair.tools === undefined) return commit();
+    const manager = locks || globalThis.navigator?.locks;
+    if (manager?.request) return manager.request('covelet.tools.v1', { mode: 'exclusive' }, commit);
+    if (getConfig().requireLocks) fail(tr('无法开始恢复，当前数据未改变。请稍后重试。'), 'LOCK_UNAVAILABLE');
+    return commit();
+  }));
   const api = {
     async loadState() { return (await readEnvelope()).state; },
     saveState(next, expectedRevision) { return exclusive(() => writeState(next, expectedRevision)); },
@@ -529,7 +550,15 @@ export function createStorage({ configStore, assetStore, privacy = withNavigatio
       if (!Number.isSafeInteger(currentRevision) || (await readEnvelope()).state.revision !== currentRevision) fail(tr('数据已在另一个标签页更新，请重新加载后再试。'), 'REVISION_CONFLICT');
       const checked = await api.validateBackupPlan(plan);
       const legacyState = checked.state;
-      const state = migrateNavigationState(legacyState);
+      let state = migrateNavigationState(legacyState);
+      if (!options.preserveContentReferences && navigationResourceEntries(state).some(widgetContentReference)) {
+        const currentTools = await personalTools.read();
+        const views = await privacy((current) => current.library?.views || []);
+        state = remapWidgetContentReferences(state, {
+          reservedNoteIds: [...currentTools.notes, ...currentTools.trash.filter((item) => item.kind === 'notes').map((item) => item.record)].map((note) => note.id),
+          reservedViewIds: views.map((view) => view.id),
+        });
+      }
       if (!(plan.assets instanceof Map)) fail(tr("请先检查备份文件。"));
       const references = assetReferences(state);
       if (assetReferences(legacyState).size !== plan.assets.size || [...references].some((id) => !plan.assets.has(id))) fail(tr("备份中的图片不完整，请重新选择备份文件。"));
@@ -554,14 +583,7 @@ export function createStorage({ configStore, assetStore, privacy = withNavigatio
         }
         const remapped = remapAssets(state, ids);
         if (options.pairedPreferences) {
-          const { preferences, expectedPreferencesRevision } = options.pairedPreferences;
-          let committedPreferences;
-          const saved = await exclusive(() => privacy((_current, prepare) => {
-            const records = prepare([], { replacePreferences: preferences, expectedRevision: expectedPreferencesRevision });
-            committedPreferences = Object.values(records)[0];
-            return writeState(remapped, currentRevision, records);
-          }));
-          return { state: saved, preferences: committedPreferences };
+          return await writeRecoveryPair(remapped, currentRevision, options.pairedPreferences);
         }
         return await api.saveState(remapped, currentRevision);
       } catch (error) {
@@ -569,9 +591,15 @@ export function createStorage({ configStore, assetStore, privacy = withNavigatio
         throw error;
       } finally { releaseIcons?.(); }
     },
-    restoreBackupWithPreferences(plan, { expectedNavigationRevision, expectedPreferencesRevision, preferences, ...options } = {}) {
-      const pair = { preferences, expectedPreferencesRevision };
+    restoreBackupWithPreferences(plan, { expectedNavigationRevision, expectedPreferencesRevision, preferences, tools, expectedToolsRevision, ...options } = {}) {
+      const pair = { preferences, expectedPreferencesRevision, tools, expectedToolsRevision };
       return api.restoreBackup(plan, expectedNavigationRevision, { ...options, pairedPreferences: pair });
+    },
+    async restoreContentWithPreferences({ expectedNavigationRevision, expectedPreferencesRevision, preferences, tools, expectedToolsRevision } = {}) {
+      // Content-only recovery also uses the navigation CAS. No assets or layout
+      // are replaced, but live pins cannot observe tools and privacy separately.
+      return writeRecoveryPair(await api.loadState(), expectedNavigationRevision,
+        { preferences, expectedPreferencesRevision, tools, expectedToolsRevision });
     },
     async restoreSnapshot(expectedRevision, options = {}) {
       const envelope = await readEnvelope();
@@ -604,5 +632,5 @@ export function createStorage({ configStore, assetStore, privacy = withNavigatio
 }
 
 const storage = createStorage({ initialState: createInitialState });
-export const { loadState, saveState, saveStateWithPrivacy, saveStateWithTrash, validateNavigationResources, restoreBackupWithPreferences, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, validateBackupPlan, restoreBackup, restoreSnapshot,
+export const { loadState, saveState, saveStateWithPrivacy, saveStateWithTrash, validateNavigationResources, restoreBackupWithPreferences, restoreContentWithPreferences, subscribeState, putImage, getAssetUrl, exportBackup, inspectBackup, validateBackupPlan, restoreBackup, restoreSnapshot,
   getSyncStatus, subscribeSyncStatus, setSyncEnabled, syncNow, getSyncConflicts, restoreSyncConflict } = storage;

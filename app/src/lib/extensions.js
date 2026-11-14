@@ -23,6 +23,9 @@ export const BUNDLED_EXTENSIONS = Object.freeze([
   Object.freeze({ id: 'read-later', type: 'widget', category: 'productivity', get name() { return tr("稍后读"); },
     get description() { return tr("收藏链接，按未读、已读与归档整理。"); }, core: 'tools-core.wasm',
     keywords: Object.freeze(['阅读', '链接', '收藏', '未读', 'reading']) }),
+  Object.freeze({ id: 'saved-view', type: 'widget', category: 'productivity', get name() { return tr('动态清单'); },
+    get description() { return tr('在桌面查看动态清单，打开匹配的内容。'); },
+    keywords: Object.freeze(['清单', '筛选', '标签', '项目', 'saved view', 'filter']) }),
   Object.freeze({
     id: 'github-contributions',
     type: 'widget',

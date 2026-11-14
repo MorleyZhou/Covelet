@@ -1,0 +1,8 @@
+.saved-view-widget { min-width: 0; overflow: hidden; }
+.saved-view-heading { width: 100%; text-align: start; }
+.saved-view-heading strong { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: inherit; }
+.saved-view-results { gap: 6px; overflow: hidden; }
+.saved-view-result { display: flex; flex-direction: column; gap: 2px; text-align: start; width: 100%; padding: 2px 0; }
+.saved-view-result strong, .saved-view-result small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.saved-view-result strong { font-size: 12px; }
+.saved-view-result small { font-size: 10px; opacity: .7; }

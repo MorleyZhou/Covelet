@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo } from 'react';
 import { navigationResourceEntries } from './navigation-resources.js';
+import { widgetContentReference } from './widget-model.js';
 
 export const PresentationContext = createContext({ active: false, hiddenKeys: new Set(), requestUnlock: () => {} });
 export function usePresentedTools(data) {
@@ -15,6 +16,8 @@ export function privateContentKeys(navigation, preferences) {
   const keys = new Set(preferences.privateKeys || []);
   for (const entry of navigationResourceEntries(navigation)) {
     if (entry.parentId && keys.has(`folder:${entry.parentId}`)) keys.add(`site:${entry.id}`);
+    const reference = widgetContentReference(entry);
+    if (reference && keys.has(reference.key)) keys.add(`widget:${entry.id}`);
   }
   return keys;
 }

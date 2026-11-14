@@ -1701,3 +1701,13 @@ Markdown 导入预览|Markdown import preview|Markdown 匯入預覽|Markdown 読
 正文中没有匹配的文字。|No matching text in the note body.|內文中沒有符合的文字。|本文に一致するテキストはありません。|본문에 일치하는 텍스트가 없습니다.|Im Notiztext gibt es keinen passenden Text.|Aucun texte correspondant dans le corps de la note.|В тексте заметки нет совпадений.
 第 {0} / {1} 处|Match {0} of {1}|第 {0} / {1} 處|{1} 件中 {0} 件目|{1}개 중 {0}번째|Treffer {0} von {1}|Correspondance {0} sur {1}|Совпадение {0} из {1}
 仅显示前 {0} 处匹配。|Only the first {0} matches are shown.|僅顯示前 {0} 處符合結果。|最初の {0} 件の一致のみ表示します。|처음 {0}개의 일치 항목만 표시합니다.|Es werden nur die ersten {0} Treffer angezeigt.|Seules les {0} premières correspondances sont affichées.|Показаны только первые {0} совпадений.
+固定到桌面|Pin to desktop|固定至桌面|デスクトップに固定|데스크톱에 고정|Auf dem Desktop anheften|Épingler sur le bureau|Закрепить на главном экране
+目标桌面|Destination desktop|目標桌面|固定先のデスクトップ|대상 데스크톱|Ziel-Desktop|Bureau de destination|Экран назначения
+固定|Pin|固定|固定|고정|Anheften|Épingler|Закрепить
+选择动态清单|Choose a smart list|選擇動態清單|スマートリストを選択|스마트 목록 선택|Dynamische Liste auswählen|Choisir une liste dynamique|Выбрать умный список
+清单已移除|List removed|清單已移除|リストは削除されました|목록이 삭제되었습니다|Liste entfernt|Liste supprimée|Список удалён
+清单条件已失效|List conditions are no longer valid|清單條件已失效|リストの条件が無効です|목록 조건이 더 이상 유효하지 않습니다|Listenbedingungen sind nicht mehr gültig|Les conditions de la liste ne sont plus valides|Условия списка больше не действуют
+没有匹配的内容|No matching content|沒有符合的內容|一致するコンテンツはありません|일치하는 콘텐츠가 없습니다|Keine passenden Inhalte|Aucun contenu correspondant|Нет подходящего содержимого
+便笺已移除|Note removed|便箋已移除|メモは削除されました|메모가 삭제되었습니다|Notiz entfernt|Note supprimée|Заметка удалена
+在桌面查看动态清单，打开匹配的内容。|View a smart list on your desktop and open matching content.|在桌面檢視動態清單，開啟符合的內容。|デスクトップでスマートリストを表示し、一致するコンテンツを開けます。|데스크톱에서 스마트 목록을 보고 일치하는 콘텐츠를 엽니다.|Eine dynamische Liste auf dem Desktop ansehen und passende Inhalte öffnen.|Consultez une liste dynamique sur votre bureau et ouvrez le contenu correspondant.|Просматривайте умный список на главном экране и открывайте подходящее содержимое.
+已固定到桌面|Pinned to desktop|已固定至桌面|デスクトップに固定しました|데스크톱에 고정했습니다|Auf dem Desktop angeheftet|Épinglé sur le bureau|Закреплено на главном экране

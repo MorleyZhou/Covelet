@@ -5,7 +5,7 @@ import { createStorage } from './storage.js';
 import { createEmptyState, deleteEntry } from './model.js';
 import { prepareNavigationDeletion, restoreTrashItem } from './navigation-trash-core.js';
 import { createConfiguredNavigation } from '../../tests/fixtures/navigation-state.mjs';
-import { validatePersonalTools } from './personal-tools.js';
+import { validatePersonalTools, preparePersonalToolsRestore } from './personal-tools.js';
 import { validateContentPreferences, prepareContentPreferencesRestore } from './content-preferences.js';
 import { validateSavedDesktopTemplates, BUILTIN_DESKTOP_TEMPLATES } from './desktop-templates.js';
 import { defaultSavedFilters, resolveSavedView } from './saved-views.js';
@@ -13,6 +13,7 @@ import { fromMarkdown } from '@futelab/folio/serialization';
 import { captureNoteDocument } from './note-capture.js';
 import { noteDocumentText } from './note-document.js';
 import { localData } from './local-data.js';
+import { resolveReferencedWidget } from './referenced-widgets.js';
 import { encryptCompleteBackup, decryptCompleteBackup, isEncryptedBackup, PASSWORD_BACKUP_LIMITS } from './password-backup.js';
 
 const clone = (value) => structuredClone(value);
@@ -22,16 +23,21 @@ const site = (id, url, iconUrl, order) => ({ id, url, iconUrl, order, type: 'sit
 const note = (body = 'before') => ({ id: 'note-a', revision: 1, createdAt: 1, updatedAt: 1, title: 'Private note', body, pinned: false });
 function harness() {
   let envelope = null, point = null, rejectPoint = false, pointWrites = 0;
-  let preferences;
+  let preferences, tools;
   const icons = new Map(), assets = new Map(), hydrations = [], restoredImages = [], commits = [];
   const nav = createStorage({ initialState: createEmptyState, configStore: {
     read: async () => clone(envelope), write: async (value, records) => {
       const incoming = records?.['covelet.content.preferences.v1'];
       const staged = incoming ? preferences.prepare(incoming, { expectedRevision: incoming.revision - 1 }) : null;
-      envelope = clone(value); if (staged) preferences.commitPrepared(staged);
-      commits.push({ navigationRevision: value.state.revision, preferencesRevision: staged?.revision });
+      const incomingTools = records?.['covelet.tools.v1'];
+      const stagedTools = incomingTools ? tools.prepare(incomingTools, { expectedRevision: incomingTools.revision - 1 }) : null;
+      if (staged && preferences.current().revision !== incoming.revision - 1) throw Object.assign(Error('conflict'), { code: 'REVISION_CONFLICT' });
+      envelope = clone(value); if (staged) preferences.commitPrepared(staged); if (stagedTools) tools.commitPrepared(stagedTools);
+      commits.push({ navigationRevision: value.state.revision, preferencesRevision: staged?.revision, toolsRevision: stagedTools?.revision,
+        snapshot: clone({ state: value.state, preferences: preferences.current(), tools: tools.current() }) });
     }, subscribe: () => () => {},
-  }, assetStore: { get: async (id) => clone(assets.get(id)), add: async (record) => assets.set(record.id, clone(record)), delete: async (id) => assets.delete(id) },
+  }, personalTools: { read: () => tools.read(), prepare: preparePersonalToolsRestore },
+  assetStore: { get: async (id) => clone(assets.get(id)), add: async (record) => assets.set(record.id, clone(record)), delete: async (id) => assets.delete(id) },
   syncStore: null, imageTools: { validate: async () => ({ width: 1, height: 1 }) },
   privacy: async (run) => run(await preferences.read(), (_keys, { replacePreferences, expectedRevision } = {}) => {
     if (!replacePreferences) throw Error('Expected paired recovery preferences.');
@@ -58,7 +64,7 @@ function harness() {
       failWrites(value = true) { fail = value; }, beforeWrite(action) { beforeWrite = action; },
     };
   };
-  const tools = domain(validatePersonalTools, null), templates = domain(validateSavedDesktopTemplates, null);
+  tools = domain(validatePersonalTools, null); const templates = domain(validateSavedDesktopTemplates, null);
   preferences = domain(validateContentPreferences, null);
   const points = { read: async () => clone(point), async write(value) { if (rejectPoint) throw Error('checkpoint quota'); pointWrites++; point = clone(value); } };
   const center = createRecoveryCenter({ nav, tools, preferences, templates, points, locks: { request: (_key, action) => action() } });
@@ -239,7 +245,7 @@ test('incoming active IDs are remapped around local recycled owners, orphan meta
   }
 });
 
-test('a concurrent first tool-write failure preserves imported metadata and marks the paired restore recoverable', async () => {
+test('an atomic tool CAS rejection publishes neither incoming navigation nor metadata and preserves the concurrent edit', async () => {
   const source = harness(), target = harness();
   await source.nav.saveState(singleNavigation('incoming', 'https://incoming.test/'), 0);
   source.tools.change({ notes: [note('incoming body')] });
@@ -248,12 +254,14 @@ test('a concurrent first tool-write failure preserves imported metadata and mark
   target.tools.change({ notes: [note('before')] });
   target.preferences.change({ aliases: { 'note:note-a': 'before metadata' } });
   const plan = await target.center.preview(await source.center.exportCompleteBackup());
+  const beforeWrites = target.commits.length;
   target.tools.beforeWrite(() => target.tools.change({ notes: [note('concurrent body')] }));
-  await assert.rejects(target.center.restore(plan), { code: 'RECOVERY_REQUIRED' });
+  await assert.rejects(target.center.restore(plan), { code: 'REVISION_CONFLICT' });
   assert.equal((await target.tools.read()).notes[0].body, 'concurrent body');
-  assert.equal((await target.preferences.read()).aliases['note:note-a'], 'incoming metadata');
-  assert.equal((await target.nav.loadState()).entries[0].id, 'incoming');
-  assert.equal((await target.center.getRecoveryPoint()).status, 'needs-recovery');
+  assert.equal((await target.preferences.read()).aliases['note:note-a'], 'before metadata');
+  assert.equal((await target.nav.loadState()).entries[0].id, 'current');
+  assert.equal(target.commits.length, beforeWrites);
+  assert.equal((await target.center.getRecoveryPoint()).status, 'rolled-back');
   assert.equal((await target.center.previewRecoveryPoint()).preferences.aliases['note:note-a'], 'before metadata');
 });
 
@@ -596,4 +604,133 @@ test('A+ recovery excludes legacy snapshots and preserves existing historical co
   await subject.center.restore(plan, { selected: ['notes', 'trash'], mode: 'replace' });
   const saved = await subject.tools.read();
   assert.deepEqual(saved.snapshots, [record]); assert.deepEqual(saved.trash, [item]); assert.equal(saved.notes[0].body, 'incoming');
+});
+
+const pinnedWidget = (id, extensionId, config, order = 0) => ({ id, type: 'widget', name: 'Pinned content', extensionId, config,
+  groupId: 'group-home', parentId: null, page: 0, order, icon: { kind: 'letter', value: 'P' } });
+function pinNavigation(prefix = 'source', noteId = 'note-a', viewId = 'view-a') {
+  const state = createEmptyState();
+  state.entries = [pinnedWidget(`${prefix}-note-pin`, 'notes', { size: 'small', noteId }),
+    pinnedWidget(`${prefix}-view-pin`, 'saved-view', { size: 'small', viewId }, 1)];
+  return state;
+}
+const pinnedPreferences = (name = 'Source view', privateKeys = []) => ({ privateKeys, library: { version: 1, tags: [], items: {},
+  views: [{ id: 'view-a', revision: 1, name, ...defaultSavedFilters(), type: 'note' }] } });
+
+test('complete pin recovery publishes source targets and privacy in one snapshot with no same-ID local-content exposure', async () => {
+  const source = harness(), target = harness();
+  await source.nav.saveState(pinNavigation(), 0); source.tools.change({ notes: [note('SOURCE BODY')] });
+  source.preferences.change(pinnedPreferences());
+  await target.nav.saveState(pinNavigation('local'), 0); target.tools.change({ notes: [note('LOCAL PRIVATE BODY')] });
+  target.preferences.change(pinnedPreferences('Local view', ['note:note-a']));
+  const before = { state: await target.nav.loadState(), tools: await target.tools.read(), preferences: await target.preferences.read() };
+  const count = target.commits.length;
+  await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()));
+  const writes = target.commits.slice(count);
+  assert.equal(writes.length, 1); assert.equal(writes[0].toolsRevision, (await target.tools.read()).revision);
+  for (const { snapshot } of writes) {
+    const entry = snapshot.state.entries.find((item) => item.id === 'source-note-pin');
+    const result = resolveReferencedWidget(entry, { navigation: snapshot.state, tools: snapshot.tools, preferences: snapshot.preferences });
+    assert.equal(result.status, 'ready'); assert.equal(result.target.body, 'SOURCE BODY');
+    assert.equal(entry.config.noteId, 'note-a');
+    assert.equal(snapshot.state.entries.find((item) => item.id === 'source-view-pin').config.viewId, 'view-a');
+  }
+  assert.ok((await target.tools.read()).notes[0].revision > before.tools.notes[0].revision, 'open editors must reject the overwritten record revision');
+  const rescue = await target.center.previewRecoveryPoint();
+  assert.equal(rescue.tools.notes[0].body, before.tools.notes[0].body);
+  await target.center.restore(rescue);
+  assert.equal((await target.nav.loadState()).entries[0].config.noteId, 'note-a');
+  assert.equal((await target.tools.read()).notes[0].body, 'LOCAL PRIVATE BODY');
+});
+
+test('content-only recovery pairs the new body with source privacy even when metadata is not selected', async () => {
+  const source = harness(), target = harness();
+  source.tools.change({ notes: [note('SOURCE PRIVATE BODY')] }); source.preferences.change({ privateKeys: ['note:note-a'] });
+  await target.nav.saveState(pinNavigation('local'), 0); target.tools.change({ notes: [note('Public old body')] });
+  target.preferences.change({ presentation: true });
+  const beforeState = await target.nav.loadState(), count = target.commits.length;
+  await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { selected: ['notes'] });
+  assert.deepEqual(await target.nav.loadState(), beforeState, 'a content-only restore must not revise or replace navigation');
+  const writes = target.commits.slice(count); assert.equal(writes.length, 1);
+  assert.equal(writes[0].snapshot.tools.notes[0].body, 'SOURCE PRIVATE BODY');
+  assert.ok(writes[0].snapshot.preferences.privateKeys.includes('note:note-a'));
+  assert.equal(resolveReferencedWidget(writes[0].snapshot.state.entries[0], { navigation: writes[0].snapshot.state,
+    tools: writes[0].snapshot.tools, preferences: writes[0].snapshot.preferences }).status, 'hidden');
+});
+
+test('navigation-only recovery and direct ZIP restore isolate imported references from matching local targets', async () => {
+  for (const direct of [false, true]) {
+    const source = harness(), target = harness();
+    await source.nav.saveState(pinNavigation(), 0); source.tools.change({ notes: [note('Source body')] }); source.preferences.change(pinnedPreferences());
+    target.tools.change({ notes: [note('UNRELATED LOCAL BODY')] }); target.preferences.change(pinnedPreferences('Unrelated local view'));
+    const sourceState = await source.nav.loadState();
+    if (direct) await target.nav.restoreBackup(await target.nav.inspectBackup(await source.nav.exportBackup(sourceState)), 0);
+    else await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { selected: ['navigation'] });
+    const navigation = await target.nav.loadState(), environment = { navigation, tools: await target.tools.read(), preferences: await target.preferences.read() };
+    assert.match(navigation.entries[0].config.noteId, /^missing-note-/u);
+    assert.match(navigation.entries[1].config.viewId, /^missing-view-/u);
+    for (const entry of navigation.entries) assert.equal(resolveReferencedWidget(entry, environment).status, 'missing');
+    assert.equal((await source.nav.loadState()).entries[0].config.noteId, 'note-a', 'planning must not mutate the source backup');
+  }
+});
+
+test('append isolates skipped note/view collisions while preserving local pins and binding actually imported targets', async () => {
+  const source = harness(), target = harness(), incoming = pinNavigation();
+  incoming.entries.push(pinnedWidget('new-note-pin', 'notes', { size: 'small', noteId: 'new-note' }, 2));
+  incoming.entries.push(pinnedWidget('new-view-pin', 'saved-view', { size: 'small', viewId: 'new-view' }, 3));
+  await source.nav.saveState(incoming, 0);
+  source.tools.change({ notes: [note('Source colliding body'), { ...note('Actually imported'), id: 'new-note' }] });
+  const sourcePreferences = pinnedPreferences();
+  sourcePreferences.library.views.push({ ...sourcePreferences.library.views[0], id: 'new-view', name: 'Actually imported view' });
+  source.preferences.change(sourcePreferences);
+  await target.nav.saveState(pinNavigation('local'), 0); target.tools.change({ notes: [note('LOCAL BODY')] }); target.preferences.change(pinnedPreferences('LOCAL VIEW'));
+  await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { mode: 'append' });
+  const navigation = await target.nav.loadState(), environment = { navigation, tools: await target.tools.read(), preferences: await target.preferences.read() };
+  assert.equal(navigation.entries.find((entry) => entry.id === 'local-note-pin').config.noteId, 'note-a');
+  assert.equal(navigation.entries.find((entry) => entry.id === 'local-view-pin').config.viewId, 'view-a');
+  const collidingNote = navigation.entries.find((entry) => entry.id === 'source-note-pin'), collidingView = navigation.entries.find((entry) => entry.id === 'source-view-pin');
+  assert.match(collidingNote.config.noteId, /^missing-note-/u); assert.match(collidingView.config.viewId, /^missing-view-/u);
+  assert.equal(resolveReferencedWidget(collidingNote, environment).status, 'missing'); assert.equal(resolveReferencedWidget(collidingView, environment).status, 'missing');
+  assert.equal(resolveReferencedWidget(navigation.entries.find((entry) => entry.id === 'new-note-pin'), environment).target.body, 'Actually imported');
+  assert.equal(resolveReferencedWidget(navigation.entries.find((entry) => entry.id === 'new-view-pin'), environment).target.name, 'Actually imported view');
+});
+
+test('known recycled note targets retain identity through a complete restore without binding an unrelated active collision', async () => {
+  const source = harness(), target = harness();
+  await source.nav.saveState(pinNavigation(), 0);
+  const recycled = { id: 'note-trash', kind: 'notes', deletedAt: Date.now(), record: note('Recycled source') };
+  source.tools.change({ trash: [recycled] });
+  const file = await source.center.exportCompleteBackup();
+  await target.center.restore(await target.center.preview(file));
+  let navigation = await target.nav.loadState();
+  assert.equal(navigation.entries[0].config.noteId, 'note-a');
+  assert.equal(resolveReferencedWidget(navigation.entries[0], { navigation, tools: await target.tools.read(), preferences: await target.preferences.read() }).status, 'missing');
+  target.tools.change({ notes: [recycled.record], trash: [] });
+  assert.equal(resolveReferencedWidget(navigation.entries[0], { navigation, tools: await target.tools.read(), preferences: await target.preferences.read() }).target.body, 'Recycled source');
+  const collision = harness(); collision.tools.change({ notes: [note('UNRELATED ACTIVE')] });
+  await collision.center.restore(await collision.center.preview(file), { selected: ['navigation', 'trash'] });
+  navigation = await collision.nav.loadState(); assert.match(navigation.entries[0].config.noteId, /^missing-note-/u);
+});
+
+test('failed atomic tools preparation publishes no new pin, metadata or body; later failure rolls all three back together', async () => {
+  for (const domain of ['tools', 'templates']) {
+    const source = harness(), target = harness();
+    await source.nav.saveState(pinNavigation(), 0); source.tools.change({ notes: [note('SOURCE')] }); source.preferences.change(pinnedPreferences());
+    await target.nav.saveState(pinNavigation('local'), 0); target.tools.change({ notes: [note('LOCAL')] }); target.preferences.change(pinnedPreferences('LOCAL VIEW'));
+    const before = { state: await target.nav.loadState(), tools: await target.tools.read(), preferences: await target.preferences.read() }, count = target.commits.length;
+    target[domain].failWrites();
+    await assert.rejects(target.center.restore(await target.center.preview(await source.center.exportCompleteBackup())), /本次更改已撤销/u);
+    assert.deepEqual((await target.nav.loadState()).entries, before.state.entries);
+    assert.equal((await target.tools.read()).notes[0].body, 'LOCAL'); assert.equal((await target.preferences.read()).library.views[0].name, 'LOCAL VIEW');
+    const writes = target.commits.slice(count);
+    if (domain === 'tools') assert.equal(writes.length, 0);
+    else {
+      assert.equal(writes.length, 2);
+      for (const { snapshot } of writes) {
+        const entry = snapshot.state.entries.find((item) => item.extensionId === 'notes');
+        const result = resolveReferencedWidget(entry, { navigation: snapshot.state, tools: snapshot.tools, preferences: snapshot.preferences });
+        assert.equal(result.target.body, entry.id === 'source-note-pin' ? 'SOURCE' : 'LOCAL');
+      }
+    }
+  }
 });

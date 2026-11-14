@@ -28,6 +28,7 @@ import ContentMetadataEditor, { ContentTagFilter } from './ContentMetadataEditor
 import { isReadingDue } from '../lib/reading-revisit.js';
 import { useLocalDateKey } from '../lib/use-local-date.js';
 import { inspectMarkdownNotes, importMarkdownNotes, exportMarkdownNotes } from '../lib/markdown-notes.js';
+import PinToDesktopDialog from './PinToDesktopDialog.jsx';
 
 const newest = (items) => [...items].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
 const stop = (event) => event.stopPropagation();
@@ -103,7 +104,7 @@ export function PersonalToolsTrashPanel({ onBusyChange, disabled = false }) {
 
 export function PersonalWidgetSettings({ extensionId, entry, introduction, onUse, onBusyChange }) {
   const [size, setSize] = useState(entry?.config.size || 'small'), action = useAction(onBusyChange);
-  return <form className="form-stack widget-config-form" onSubmit={(event) => { event.preventDefault(); action.run(() => onUse(validateWidgetConfig(extensionId, { size }), entry, extensionId)); }}>
+  return <form className="form-stack widget-config-form" onSubmit={(event) => { event.preventDefault(); action.run(() => onUse(validateWidgetConfig(extensionId, { ...entry?.config, size }), entry, extensionId)); }}>
     <div className="settings-scroll form-stack">{introduction}<Select label={tr("尺寸")} value={size} onChange={setSize} disabled={action.busy} options={WIDGET_SIZE_OPTIONS} />
       <p className="hint">{tr('移除组件不会删除内容。')}</p><MessageDialog message={action.error} onClose={() => action.setError('')} /></div>
     <div className="settings-footer"><Button variant="default" type="submit" className="button primary" disabled={action.busy}>{entry && !entry.detached ? tr("保存") : tr("使用")}</Button></div>
@@ -113,25 +114,26 @@ export function PersonalWidgetPreview({ extensionId }) {
   const Icon = extensionId === 'notes' ? NotePencil : BookOpen;
   return <figure className={`personal-widget-preview ${extensionId}`} aria-label={tr("{0}预览", [WIDGET_NAMES[extensionId]])}><Icon size={32} /><strong>{WIDGET_NAMES[extensionId]}</strong></figure>;
 }
-export default function PersonalWidget({ entry, open, onOpen, onClose, Dialog, portalTarget }) {
+export default function PersonalWidget({ entry, open, initialRecordId, onOpen, onClose, Dialog, portalTarget }) {
   const { data: rawData } = usePersonalTools(), data = usePresentedTools(rawData);
   const [dirty, setDirty] = useState(false), [discard, setDiscard] = useState(false), [busy, setBusy] = useState(false);
   const notes = entry.extensionId === 'notes', items = newest(data?.[notes ? 'notes' : 'reading'] || []);
-  const visible = notes ? items : items.filter((item) => item.status === 'unread');
+  const bound = notes && Boolean(entry.config.noteId);
+  const visible = bound ? items.filter((item) => item.id === entry.config.noteId) : notes ? items : items.filter((item) => item.status === 'unread');
   const Icon = notes ? NotePencil : BookOpen, mini = entry.config.size === 'mini';
   useEffect(() => { if (!open) { setDirty(false); setDiscard(false); } }, [open]);
   const close = () => { if (busy) return; if (dirty) setDiscard(true); else onClose(); };
   return <>
     <Button variant="unstyled" size="unstyled" type="button" data-widget-launcher data-widget-surface id={`widget-title-${entry.id}`} className={`personal-widget personal-widget-${entry.config.size} personal-widget-${entry.extensionId}`}
-      aria-haspopup="dialog" aria-expanded={open} aria-label={tr("{0}，{1}，打开", [builtinName(entry.extensionId, entry.name), notes ? tr("{0} 条便笺", [formatNumber(items.length)]) : tr("{0} 条未读", [formatNumber(visible.length)])])} onClick={onOpen}>
-      <span className="personal-widget-heading"><Icon size={mini ? 25 : 20} /><span>{notes ? tr("便笺") : tr("未读")}</span><b>{formatNumber(notes ? items.length : visible.length)}</b></span>
-      {!mini && <span className="personal-widget-body">{notes ? visible[0] ? <><strong>{visible[0].title}</strong><span className="personal-note-excerpt">{visible[0].body}</span></> : <span className="personal-widget-empty">{tr("记下此刻的想法")}</span>
+      aria-haspopup="dialog" aria-expanded={open} aria-label={tr("{0}，{1}，打开", [bound ? visible[0]?.title || tr(rawData ? '便笺已移除' : '正在读取…') : builtinName(entry.extensionId, entry.name), notes ? tr("{0} 条便笺", [formatNumber(bound ? visible.length : items.length)]) : tr("{0} 条未读", [formatNumber(visible.length)])])} onClick={onOpen}>
+      <span className="personal-widget-heading"><Icon size={mini ? 25 : 20} /><span>{notes ? tr("便笺") : tr("未读")}</span><b>{formatNumber(notes ? bound ? visible.length : items.length : visible.length)}</b></span>
+      {!mini && <span className="personal-widget-body">{notes ? visible[0] ? <><strong>{visible[0].title}</strong><span className="personal-note-excerpt">{visible[0].body}</span></> : <span className="personal-widget-empty">{bound ? tr(rawData ? '便笺已移除' : '正在读取…') : tr("记下此刻的想法")}</span>
         : visible.length ? visible.slice(0, entry.config.size === 'large' ? 7 : 3).map((item) => <span className="personal-reading-preview" key={item.id}><strong>{item.title}</strong><small>{new URL(item.url).hostname}</small></span>) : <span className="personal-widget-empty">{tr("没有未读链接")}</span>}</span>}
     </Button>
     {open && Dialog && portalTarget && createPortal(<div className="personal-dialog-layer" onContextMenu={stop} onKeyDown={stop} onPointerDown={stop} onPointerMove={stop} onPointerUp={stop}>
       <Dialog title={builtinName(entry.extensionId, entry.name)} privacyKeys={[`widget:${entry.id}`]} onClose={close} closeDisabled={busy} className="personal-tools-modal" wide maximizable>
         {discard && <Confirm privacySafe busy={busy} action={tr("放弃修改")} onCancel={() => setDiscard(false)} onConfirm={onClose}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
-        {notes ? <NotesTools Dialog={Dialog} onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} onBusyChange={setBusy} onDirtyChange={setDirty} />}
+        {notes ? <NotesTools Dialog={Dialog} initialRecordId={initialRecordId} onDirtyChange={setDirty} onBusyChange={setBusy} /> : <ReadingTools Dialog={Dialog} onBusyChange={setBusy} onDirtyChange={setDirty} />}
       </Dialog></div>, portalTarget)}
   </>;
 }
@@ -156,6 +158,7 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
   const [preview, setPreview] = useState(false), [pending, setPending] = useState(null), [deleting, setDeleting] = useState(false);
   const [editorKey, setEditorKey] = useState(() => crypto.randomUUID());
   const [noteSearch, setNoteSearch] = useState(null);
+  const [pinning, setPinning] = useState(null), [pinBusy, setPinBusy] = useState(false);
   const fileInput = useRef(null), [markdownPreview, setMarkdownPreview] = useState(null), [markdownStatus, setMarkdownStatus] = useState('');
   const [selectionMode, setSelectionMode] = useState(false), [selected, setSelected] = useState({});
   const hidden = (key) => locked && (presentation.hiddenKeys.has(key) || preferences.privateKeys.includes(key));
@@ -165,7 +168,7 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
   const visibleTags = getContentTags({ ...preferences, presentation: locked }, { hiddenKeys: presentation.hiddenKeys });
   const changedElsewhere = draft.id && (!latest || latest.revision !== draft.revision
     || contentPreferences.ready && !draftHidden && !sameMetadata(metadataFor(`note:${draft.id}`), originalMetadata));
-  const busy = action.busy || unlocking || metadataBusy;
+  const busy = action.busy || unlocking || metadataBusy || pinBusy;
   useEffect(() => { onDirtyChange(dirty); }, [dirty, onDirtyChange]);
   useEffect(() => { onBusyChange?.(busy); }, [busy, onBusyChange]);
   const select = (note) => {
@@ -295,6 +298,8 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
       <div className="note-editor-scroll">
       <label className="visually-hidden" htmlFor="note-title">{tr("便笺名称")}</label><Input unstyled id="note-title" className="note-title-input" value={draft.title} placeholder={tr("未命名便笺")} maxLength={200} disabled={busy} onChange={(event) => patch({ title: event.target.value })} />
       <div className="note-editor-actions"><Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={draft.pinned} onClick={() => patch({ pinned: !draft.pinned })}><PushPin size={16} weight={draft.pinned ? 'fill' : 'regular'} />{tr("置顶")}</Button>
+        <Button type="button" variant="ghost" size="sm" disabled={busy || dirty || changedElsewhere || draftHidden || !draft.id || !contentPreferences.ready}
+          onClick={() => setPinning({ id: draft.id, revision: draft.revision })}><SquaresFour size={16} />{tr('固定到桌面')}</Button>
         <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={preview} onClick={() => setPreview(!preview)}>{preview ? tr("编辑") : tr("预览")}</Button>
         <Button variant="ghost" type="button" className="button quiet" disabled={!draft.body || busy} onClick={() => action.run(async () => { try { await navigator.clipboard.writeText(draft.document ? noteDocumentText(draft.document) : draft.body); } catch { throw Error(tr("无法复制，请手动选择文字。")); } })} aria-label={tr("复制便笺")}><Copy size={16} /></Button></div>
       <ContentMetadataEditor preferences={preferences} contentKey={draft.id ? `note:${draft.id}` : undefined} value={metadata}
@@ -309,6 +314,7 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
         onClick={() => downloadMarkdown([draft.id], { [draft.id]: draft.revision })}><DownloadSimple size={16} />{tr('导出 Markdown')}</Button><Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => setDeleting(true)} aria-label={tr("删除便笺")}><Trash size={16} /></Button></>}<Button variant="default" type={changedElsewhere ? 'button' : 'submit'} className="button primary" onClick={changedElsewhere ? reopen : undefined} disabled={!data || !core || !contentPreferences.ready || busy || !changedElsewhere && (!dirty || Boolean(documentError))}>{changedElsewhere ? tr('重新打开') : tr("保存")}</Button></div>
       </fieldset>
     </form></PrivateEditor></div>
+    {pinning && <PinToDesktopDialog kind="note" record={pinning} preferences={preferences} Dialog={Dialog} onClose={() => setPinning(null)} onBusyChange={setPinBusy} />}
   </div>;
 }
 
