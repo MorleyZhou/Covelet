@@ -186,6 +186,39 @@ export function createDemoState() {
   return validateState(state);
 }
 
+function validateBackground(background, { allowImage = true } = {}) {
+  keys(background, ['kind', 'value', 'gradient'], tr("背景"));
+  const { kind, value } = background;
+  if (typeof value !== 'string' || !value || value.length > 2000) fail(tr("背景值无效"));
+  if (Object.hasOwn(background, 'gradient')) {
+    if (kind !== 'gradient') fail(tr("背景类型与渐变设置不符"));
+    validateGradient(background.gradient);
+    if (value !== gradientCss(background.gradient)) fail(tr("渐变背景与颜色设置不符"));
+  }
+  if (kind === 'bing') {
+    if (value !== 'daily') fail(tr("每日背景来源无效"));
+  } else if (kind === 'builtin') {
+    if (!BACKGROUNDS.has(value)) fail(tr("内置背景无效"));
+  } else if (kind === 'color') {
+    if (!/^#[a-f\d]{3}(?:[a-f\d]{3})?$/iu.test(value)) fail(tr("背景颜色无效"));
+  } else if (kind === 'gradient') {
+    // Keep the same small CSS vocabulary for global and per-desktop styles.
+    if (!/^(?:linear|radial)-gradient\(/iu.test(value) || !/^[a-z\d\s#%,.()+-]+$/iu.test(value)
+      || [...value.matchAll(/([a-z-]+)\s*\(/giu)].some((match) => !['linear-gradient', 'radial-gradient', 'rgb', 'rgba', 'hsl', 'hsla'].includes(match[1].toLowerCase()))) fail(tr("渐变背景无效"));
+  } else if (kind === 'image' && allowImage) assetId(value);
+  else fail(tr("背景类型无效"));
+}
+
+export function validateDesktopAppearance(input) {
+  const appearance = copy(input);
+  if (!appearance || ![Object.prototype, null].includes(Object.getPrototypeOf(appearance))) fail(tr('背景类型无效'));
+  keys(appearance, ['background', 'shade', 'blur'], tr('外观'));
+  if (Object.hasOwn(appearance, 'background')) validateBackground(appearance.background, { allowImage: false });
+  if (Object.hasOwn(appearance, 'shade')) number(appearance.shade, 0, 90, tr('背景遮罩'));
+  if (Object.hasOwn(appearance, 'blur')) number(appearance.blur, 0, 40, tr('背景模糊'));
+  return appearance;
+}
+
 function validateSettings(settings) {
   keys(settings, ['theme', 'background', 'shade', 'blur', 'width', 'iconSize', 'gap', 'columns', 'showLabels', 'showClock', 'openNewTab', 'minimal', 'visualEnhancement', 'adaptiveWallpaper', 'adaptIcons', 'pages', 'desktopPages'], tr("设置"));
   // Fill newly introduced preferences in old local configurations and backups.
@@ -200,11 +233,15 @@ function validateSettings(settings) {
     const label = tr('屏幕管理'), ids = new Set();
     keys(settings.desktopPages, settings.pages.map(String), label);
     for (const page of Object.values(settings.desktopPages)) {
-      keys(page, ['id', 'name'], label);
+      keys(page, ['id', 'name', 'appearance'], label);
       identifier(page.id);
       if (ids.has(page.id)) fail(tr('主屏幕列表无效'));
       ids.add(page.id);
       if (Object.hasOwn(page, 'name')) page.name = name(page.name);
+      if (Object.hasOwn(page, 'appearance')) {
+        page.appearance = validateDesktopAppearance(page.appearance);
+        if (!Object.keys(page.appearance).length) delete page.appearance;
+      }
     }
     if (!ids.size) delete settings.desktopPages;
   }
@@ -217,26 +254,7 @@ function validateSettings(settings) {
   delete settings.adaptiveWallpaper;
   delete settings.adaptIcons;
   if (!['system', 'light', 'dark'].includes(settings.theme)) fail(tr("主题无效"));
-  keys(settings.background, ['kind', 'value', 'gradient'], tr("背景"));
-  const { kind, value } = settings.background;
-  if (typeof value !== 'string' || !value || value.length > 2000) fail(tr("背景值无效"));
-  if (Object.hasOwn(settings.background, 'gradient')) {
-    if (kind !== 'gradient') fail(tr("背景类型与渐变设置不符"));
-    validateGradient(settings.background.gradient);
-    if (value !== gradientCss(settings.background.gradient)) fail(tr("渐变背景与颜色设置不符"));
-  }
-  if (kind === 'bing') {
-    if (value !== 'daily') fail(tr("每日背景来源无效"));
-  } else if (kind === 'builtin') {
-    if (!BACKGROUNDS.has(value)) fail(tr("内置背景无效"));
-  } else if (kind === 'color') {
-    if (!/^#[a-f\d]{3}(?:[a-f\d]{3})?$/iu.test(value)) fail(tr("背景颜色无效"));
-  } else if (kind === 'gradient') {
-    // A small CSS vocabulary prevents escaped url()/image-set() or additional image layers in imported data.
-    if (!/^(?:linear|radial)-gradient\(/iu.test(value) || !/^[a-z\d\s#%,.()+-]+$/iu.test(value)
-      || [...value.matchAll(/([a-z-]+)\s*\(/giu)].some((match) => !['linear-gradient', 'radial-gradient', 'rgb', 'rgba', 'hsl', 'hsla'].includes(match[1].toLowerCase()))) fail(tr("渐变背景无效"));
-  } else if (kind === 'image') assetId(value);
-  else fail(tr("背景类型无效"));
+  validateBackground(settings.background);
   number(settings.shade, 0, 90, tr("背景遮罩"));
   number(settings.blur, 0, 40, tr("背景模糊"));
   number(settings.width, 480, 1920, tr("内容宽度"));

@@ -114,7 +114,9 @@
 @media (forced-colors: active) {
   .ui-checkbox { border-color: ButtonText; color: HighlightText; }
   .ui-checkbox[data-state=checked], .ui-checkbox[data-state=indeterminate] { forced-color-adjust: none; background: Highlight; border-color: Highlight; }
-  .ui-button-primary, .ui-button-destructive { background: Highlight; color: HighlightText; }
+  .ui-button-primary, .ui-button-destructive { forced-color-adjust: none; background: Highlight; color: HighlightText; border: 1px solid Highlight; }
+  :is(.ui-button-primary, .ui-button-destructive):not(:disabled):hover { background: Highlight; color: HighlightText; }
+  :is(.ui-button-primary, .ui-button-destructive):disabled { opacity: 1; background: ButtonFace; color: GrayText; border-color: GrayText; }
   .ui-input:focus-visible, .ui-input-unstyled:focus-visible { outline: 1px solid Highlight; outline-offset: -1px; }
   .ui-floating-panel, .ui-dialog-content { border: 1px solid CanvasText; }
   .modal.ui-dialog-content { border-color: CanvasText; box-shadow: none; }
@@ -122,4 +124,5 @@
   .ui-switch[data-state=checked] { forced-color-adjust: none; background: Highlight; }
   .ui-switch-thumb { forced-color-adjust: none; background: ButtonFace; }
   .ui-button:focus-visible, .ui-select-trigger:focus-visible, .ui-tabs-trigger:focus-visible, .ui-slider-thumb:focus-visible { outline: 1px solid Highlight; outline-offset: -1px; }
+  :is(.ui-button-primary, .ui-button-destructive):focus-visible { outline: 2px solid ButtonText; outline-offset: 2px; }
 }

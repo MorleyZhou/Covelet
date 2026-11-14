@@ -13,6 +13,21 @@ npm run test:e2e
 `npm run test:e2e -- --headed` shows the test-owned browser; `--grep` selects cases.
 `npm run test:e2e:report` opens the saved report.
 
+The complete 0.6 candidate regression uses
+`npx playwright test --config tests/playwright-regression.config.mjs`.
+It discovers every spec in this directory, including the near-capacity user
+journey and actual 0.5.1 upgrade. Reports are isolated under
+`output/playwright/covelet/0.6.0-final/{chromium,chrome,edge}/`.
+Set `COVELET_NATIVE_BROWSER=chrome` or `edge` to test the installed Windows
+binary in a fresh test-owned profile; omit it for bundled Chromium.
+
+The upgrade spec requires the official `covelet-0.5.1.zip` at
+`output/0.6.0-upgrade/baseline/` and an unpacked 0.6.0 build. It checks the fixed
+release SHA-256 before loading, keeps one temporary unpacked path/profile/ID
+through the upgrade, and retains actual UI backup downloads as evidence. It
+never downloads this prerequisite automatically or writes production profiles.
+The browser fixtures must be installed locally; this task does not run Actions.
+
 For the 0.6 command palette, structured search and note-workflow batches, run
 `npx playwright test --config tests/playwright-batch.config.mjs` after rebuilding
 the unpacked extension. These cases cover the real palette, query conditions,
@@ -44,6 +59,16 @@ languages at 390×540. Import sources are synthetic; parse/preview/apply make no
 network requests. A delayed real `File.text()` result makes the cross-tab lock
 transition deterministic while retaining the native file read and production
 parser, preview and commit paths.
+
+`desktop-appearance-export.spec.mjs` checks desktop appearance inheritance,
+explicit saves, logical identities through responsive pages/reordering and full
+backup restore, shared cached wallpaper, and stale or rejected changes. Library
+ZIP checks cover all three content types, private exclusions, unsupported-note
+deselection, quoted front matter, filename collisions and encoded relative links.
+A controlled HTTPS link reader validates browser path resolution independently
+of the app. The suite also uses simulated touch, real `chrome.tabs.setZoom(2)`
+and forced-colors emulation. It preserves a mixed ZIP for separate native
+Obsidian acceptance at `output/0.6.0-portability/exported/Covelet-library.zip`.
 
 The note-capture cases grant only `https://capture.example/*` in a temporary test
 copy and intercept that page and its exact icon probes. The actual browser

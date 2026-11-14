@@ -115,6 +115,9 @@ import { loadContentPreferences, useContentPreferences, saveContentSettings, set
 import { parseStructuredSearch, removeStructuredCondition } from './lib/structured-search.js';
 import { matchedNoteSearchTerms } from './lib/note-search.js';
 import { commitImportedPlan } from './lib/import-controller.js';
+import { effectiveDesktopAppearance } from './lib/desktop-appearance.js';
+import DesktopAppearanceEditor from './components/DesktopAppearanceEditor.jsx';
+import MarkdownLibraryExport from './components/MarkdownLibraryExport.jsx';
 import CommandPalette, { StructuredConditions } from './components/CommandPalette.jsx';
 import { PinDesktopContext } from './components/PinToDesktopDialog.jsx';
 import SavedViewWidget, { SavedViewTargetDialog } from './components/SavedViewWidget.jsx';
@@ -556,6 +559,12 @@ export function App() {
   }, [desktopState, contentPreferences, personalData, today]);
   const privacyKey = presentation ? `hidden:${JSON.stringify([[...hiddenKeys].sort(),
     getContentTags(contentPreferences, { hiddenKeys }).map(({ id, name }) => [id, name])])}` : 'public';
+  const exportPrivacyKey = JSON.stringify([...hiddenKeys].sort());
+  useLayoutEffect(() => {
+    // Export previews always exclude marked content, including while unlocked.
+    // Drop a frozen preview before paint when an inherited mark changes.
+    setModal((current) => current?.kind === 'markdown-library-export' ? null : current);
+  }, [exportPrivacyKey]);
   const requestPrivacyUnlock = useCallback(() => setPrivacyDialog('unlock'), []);
   const presentationContext = useMemo(() => ({ active: presentation, hiddenKeys, requestUnlock: requestPrivacyUnlock }), [presentation, hiddenKeys, requestPrivacyUnlock]);
   const privateEntryIds = useMemo(() => (desktopState?.entries || []).filter((item) => hiddenKeys.has(`${item.type}:${item.id}`)).map((item) => item.id), [desktopState, hiddenKeys]);
@@ -659,7 +668,14 @@ export function App() {
     loadWallpaperInterval().catch(() => DEFAULT_WALLPAPER_INTERVAL).then(interval => { if (active && !intervalChanged) setWallpaperInterval(interval); });
     return () => { active = false; stopSource(); stopInterval(); };
   }, []);
-  const wallpaper = useRandomWallpaper(['bing', 'image'].includes(settings?.background.kind), wallpaperSource, wallpaperInterval, wallpaperRefresh);
+  const appearancePage = Number(activeScreen.split(':')[0]);
+  const desktopAppearance = useMemo(() => settings ? effectiveDesktopAppearance(desktopState.settings, appearancePage) : null,
+    [settings, desktopState?.settings, appearancePage]);
+  // Moving from a color desktop back to a random one only reuses the device's
+  // current photo; the lease must not depend on the visible desktop.
+  const usesRandomWallpaper = ['bing', 'image'].includes(settings?.background.kind)
+    || Object.values(settings?.desktopPages || {}).some((page) => page.appearance?.background?.kind === 'bing');
+  const wallpaper = useRandomWallpaper(usesRandomWallpaper, wallpaperSource, wallpaperInterval, wallpaperRefresh);
   async function setWallpaperBackground(background) {
     const latest = await loadState();
     if (latest.settings.background.kind === background.kind && latest.settings.background.value === background.value) return;
@@ -678,13 +694,13 @@ export function App() {
       setWallpaperRefresh(revision => revision + 1);
     } finally { dailyWallpaper.dispose(next); }
   }
-  const imageUrl = ["bing", "image"].includes(settings?.background.kind)
+  const imageUrl = ["bing", "image"].includes(desktopAppearance?.background.kind)
     ? wallpaper?.url || "./assets/alpine-lake.png"
-    : settings?.background.kind === "builtin" ? "./assets/alpine-lake.png" : null;
+    : desktopAppearance?.background.kind === "builtin" ? "./assets/alpine-lake.png" : null;
   const visualEnabled = Boolean(settings?.visualEnhancement);
   const wallpaperAppearance = useWallpaperAppearance(imageUrl, visualEnabled);
   const adaptive = visualEnabled && wallpaperAppearance.phase === "ready"
-    ? createAdaptiveAppearance(wallpaperAppearance.palette, settings.shade) : null;
+    ? createAdaptiveAppearance(wallpaperAppearance.palette, desktopAppearance.shade) : null;
   const searchPage = Number(activeScreen.split(':')[0]);
   const baseSearchFilters = useMemo(() => ({ ...defaultSavedFilters(), ...(searchContext ? {
     scope: searchContext.scope, domain: searchContext.domain, readingStatus: searchContext.readingStatus, revisit: searchContext.revisit ?? null,
@@ -782,8 +798,8 @@ export function App() {
       } catch (err) { notify(userErrorMessage(err), "error"); }
     },
   });
-  useNavigationContrast({ rootRef: mainRef, wallpaperRef, enabled: visualEnabled, background: settings?.background,
-    sample: wallpaperAppearance.palette?.sample, shade: settings?.shade, blur: settings?.blur, theme: settings?.theme,
+  useNavigationContrast({ rootRef: mainRef, wallpaperRef, enabled: visualEnabled, background: desktopAppearance?.background,
+    sample: wallpaperAppearance.palette?.sample, shade: desktopAppearance?.shade, blur: desktopAppearance?.blur, theme: settings?.theme,
     screenKey: activeScreen, entries: desktopState?.entries, editing: layoutEditor.editing, showLabels: settings?.showLabels, drag });
   function revealDesktopEntry(next, id) {
     const entry = next.entries.find((item) => item.id === id);
@@ -1338,8 +1354,8 @@ export function App() {
         )}
       </main>
     );
-  const background = ["color", "gradient"].includes(settings.background.kind)
-    ? colorBackgroundCss(settings.background)
+  const background = ["color", "gradient"].includes(desktopAppearance.background.kind)
+    ? colorBackgroundCss(desktopAppearance.background)
     : undefined;
   const isSyncNotice = notice?.scope === 'sync';
   const toast = notice && (
@@ -1378,12 +1394,12 @@ export function App() {
               : background
                 ? { background }
                 : {}),
-            filter: `blur(${settings.blur}px)`,
+            filter: `blur(${desktopAppearance.blur}px)`,
           }}
         />
         <div
           className="wallpaper-shade"
-          style={{ backgroundColor: `rgba(0,0,0,${(adaptive?.shade ?? settings.shade) / 100})`,
+          style={{ backgroundColor: `rgba(0,0,0,${(adaptive?.shade ?? desktopAppearance.shade) / 100})`,
             ...(visualEnabled ? { backgroundImage: VISUAL_SHADE_BACKGROUND } : {}) }}
         />
         <header className="page-header">
@@ -1753,6 +1769,7 @@ export function App() {
             { id: 'library', title: tr('整理链接'), run: () => setModal({ kind: 'resource-library' }) },
             { id: 'import', title: tr('导入网址与书签 HTML'), run: () => setModal({ kind: 'bookmarks' }) },
             { id: 'export', title: tr('导出书签 HTML'), run: () => setModal({ kind: 'bookmark-export' }) },
+            { id: 'markdown-library-export', title: tr('导出 Markdown 资料库'), run: () => setModal({ kind: 'markdown-library-export' }) },
             { id: 'settings', title: tr('设置'), run: () => setModal({ kind: 'settings' }) },
             ...[['appearance', tr('外观')], ['search', tr('搜索引擎')], ['time', tr('时间与日期')], ['about', tr('关于')]].map(([tab, title]) => ({ id: `settings:${tab}`, title,
               run: () => setModal({ kind: 'settings', tab }) })),
@@ -1794,6 +1811,7 @@ export function App() {
           <Settings
             state={state}
             initialTab={modal.tab}
+            initialPage={desktopScreen.current.page}
             contentPreferences={contentPreferences}
             busy={busy}
             onBusyChange={setBusy}
@@ -1806,6 +1824,7 @@ export function App() {
               return saved;
             }}
             onContentPreferences={() => setModal({ kind: 'content-preferences' })}
+            onExportLibrary={() => setModal({ kind: 'markdown-library-export' })}
             onRestored={(next) => {
               if (next.revision >= preferenceState.current.revision) preferenceState.current = next;
               setState((current) => current.revision > next.revision ? current : next);
@@ -1842,10 +1861,13 @@ export function App() {
           <BookmarkExport state={state} hiddenKeys={hiddenKeys} initialPage={desktopScreen.current.page}
             pageLabel={(page) => desktopPageName(state.settings, page)} onBusyChange={setBusy} onClose={() => setModal(null)} />
         </Modal>}
+        {modal?.kind === 'markdown-library-export' && <Modal title={tr('导出 Markdown 资料库')} wide className="markdown-library-modal" closeDisabled={busy} onClose={() => { if (!busy) setModal(null); }}>
+          <MarkdownLibraryExport onBusyChange={setBusy} onClose={() => setModal(null)} />
+        </Modal>}
         {privacyDialog && <PrivacyPasswordDialog purpose={privacyDialog} onClose={() => setPrivacyDialog(null)} />}
-        {settings.background.kind === 'bing' && wallpaper?.copyright && wallpaper.copyrightUrl && (
+        {desktopAppearance.background.kind === 'bing' && wallpaper?.copyright && wallpaper.copyrightUrl && (
           <a className="wallpaper-credit" href={wallpaper.copyrightUrl} target="_blank" rel="noopener noreferrer" title={wallpaper.title}>
-            {wallpaper.copyright}{wallpaper.stale ? tr(" · 缓存壁纸") : ""}
+            {wallpaper.copyright}{wallpaper.stale ? ` · ${tr('缓存壁纸')}` : ""}
           </a>
         )}
       </main>
@@ -1859,6 +1881,7 @@ export function App() {
 function Settings({
   state,
   initialTab = 'appearance',
+  initialPage = 0,
   contentPreferences,
   busy = false,
   onBusyChange,
@@ -1866,6 +1889,7 @@ function Settings({
   readPreferences,
   writePreferences,
   onContentPreferences,
+  onExportLibrary,
   onRestored,
   providerIconEpoch,
   onProviderIconReady,
@@ -1879,6 +1903,8 @@ function Settings({
     [newKeyword, setNewKeyword] = useState(""),
     [error, setError] = useState("");
   const [saving, setSaving] = useState({ phase: "idle" });
+  const [appearanceTarget, setAppearanceTarget] = useState(null), [discardAppearance, setDiscardAppearance] = useState(null);
+  const [appearanceDirty, setAppearanceDirty] = useState(false);
   const [defaultId, setDefaultId] = useState(null), [choosingDefault, setChoosingDefault] = useState(false);
   useEffect(() => {
     let active = true;
@@ -1933,7 +1959,21 @@ function Settings({
     } catch (reason) { setError(userErrorMessage(reason)); }
     finally { setChoosingDefault(false); }
   }
-  function closeSettings() { afterSave(onClose); }
+  function closeSettings() { if (appearanceDirty) setDiscardAppearance('close'); else afterSave(onClose); }
+  async function selectAppearanceScope(value) {
+    if (busy) return;
+    try {
+      await saver.flush();
+      if (value === 'global') { setAppearanceTarget(null); return; }
+      const latest = await readPreferences();
+      const found = value.startsWith('@page:') ? [value.slice(6)] : Object.entries(latest.settings.desktopPages || {}).find(([, item]) => item.id === value);
+      if (!found || value.startsWith('@page:') && latest.revision !== state.revision || !logicalDesktopPages(latest).includes(Number(found[0]))) throw Error(tr('这一屏已发生变化，请重新打开屏幕管理。'));
+      const page = Number(found[0]);
+      setAppearanceTarget({ page, id: latest.settings.desktopPages?.[page]?.id || null, state: latest });
+      setError('');
+    } catch (reason) { setError(userErrorMessage(reason)); }
+  }
+  function requestAppearanceScope(value) { if (appearanceDirty) setDiscardAppearance(value); else selectAppearanceScope(value); }
   async function refreshPreferences() {
     const latest = await saver.reload();
     setDraft(structuredClone(latest.settings));
@@ -1970,7 +2010,9 @@ function Settings({
     ["time", tr('时间与日期')], ["backup", tr('备份与恢复')], ["trash", tr('回收站')], ["about", tr('关于')]];
   return (
     <Modal title={tr("设置")} closeDisabled={busy} onClose={closeSettings} className="settings-modal preferences-modal" wide>
-      <Tabs className="settings-layout" value={tab} orientation="vertical" onValueChange={(value) => { setTab(value); setError(''); }}>
+      <Tabs className="settings-layout" value={tab} orientation="vertical" onValueChange={(value) => {
+        if (appearanceDirty) setDiscardAppearance(`tab:${value}`); else { setTab(value); setError(''); }
+      }}>
       <TabsList className="settings-tabs" aria-label={tr("设置分类")}>
         {tabs.map(([id, name]) => (
           <TabsTrigger
@@ -1997,11 +2039,18 @@ function Settings({
                 <Switch aria-label={tr("极简模式")} checked={draft.minimal} onCheckedChange={(minimal) => patch({ minimal })} />
               </label>
             </div>
+            <Select label={tr('外观范围')} value={appearanceTarget ? appearanceTarget.id || `@page:${appearanceTarget.page}` : 'global'} disabled={busy}
+              options={[{ value: 'global', label: tr('全局外观') }, ...logicalDesktopPages(state).map((page) => ({ value: state.settings.desktopPages?.[page]?.id || `@page:${page}`,
+                label: `${desktopPageName(state.settings, page)}${page === initialPage ? ` · ${tr('当前桌面')}` : ''}` }))]} onChange={requestAppearanceScope} />
+            {appearanceTarget ? <DesktopAppearanceEditor key={appearanceTarget.id || `@page:${appearanceTarget.page}`} state={state} target={appearanceTarget}
+              readPreferences={readPreferences} writePreferences={writePreferences} beforeOperation={() => saver.flush()} onBusyChange={onBusyChange} Range={Range} onDirtyChange={setAppearanceDirty}
+              onSaved={async (next, identity) => { onRestored(next); await refreshPreferences(); setAppearanceTarget({ ...identity, state: next }); }} /> : <>
             <BackgroundPicker value={draft.background} onChange={(background) => patch({ background })} />
             <div className="appearance-ranges">
               <Range label={tr("背景变暗")} value={draft.shade} min={0} max={90} suffix="%" onChange={(shade) => patch({ shade })} />
               <Range label={tr("背景模糊")} value={draft.blur} min={0} max={40} suffix="px" onChange={(blur) => patch({ blur })} />
             </div>
+            </>}
           </>
         )}
         {tab === "enhancements" && (
@@ -2162,10 +2211,10 @@ function Settings({
           </>
         )}
         {tab === 'time' && <TimeAndDateSettings disabled={demo} />}
-        {tab === 'backup' && <RecoveryCenter disabled={demo} onBusyChange={onBusyChange} beforeOperation={() => saver.flush()} onRestored={async (next) => {
+        {tab === 'backup' && <><Button type="button" variant="secondary" disabled={demo || busy} onClick={() => afterSave(onExportLibrary)}>{tr('导出 Markdown 资料库')}</Button><RecoveryCenter disabled={demo} onBusyChange={onBusyChange} beforeOperation={() => saver.flush()} onRestored={async (next) => {
           onRestored(next);
           try { await refreshPreferences(); } catch (reason) { setError(userErrorMessage(reason)); }
-        }} />}
+        }} /></>}
         {tab === 'trash' && <><NavigationTrash navigation={state} preferences={contentPreferences} Dialog={Modal}
           onBusyChange={onBusyChange} disabled={demo} beforeOperation={() => saver.flush()} onStateChange={async (next) => {
             onRestored(next);
@@ -2193,6 +2242,12 @@ function Settings({
       </div>}
       </div>
       </Tabs>
+      {discardAppearance && <PromptDialog privacySafe title={tr('放弃修改')} action={tr('放弃修改')} destructive busy={busy} onCancel={() => setDiscardAppearance(null)} onConfirm={() => {
+        const destination = discardAppearance; setDiscardAppearance(null);
+        if (destination === 'close') afterSave(onClose);
+        else if (destination.startsWith('tab:')) { setTab(destination.slice(4)); setError(''); }
+        else selectAppearanceScope(destination);
+      }}><p>{tr('当前内容尚未保存，放弃修改？')}</p></PromptDialog>}
     </Modal>
   );
 }
