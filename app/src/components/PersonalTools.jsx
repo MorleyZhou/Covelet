@@ -25,7 +25,7 @@ import { copyReadingToNavigation } from '../lib/reading-to-navigation.js';
 import NavigationDestination from './NavigationDestination.jsx';
 import { getContentMetadata, getContentTags, useContentPreferences } from '../lib/content-preferences.js';
 import ContentMetadataEditor, { ContentTagFilter } from './ContentMetadataEditor.jsx';
-import { isReadingDue } from '../lib/reading-revisit.js';
+import { isReadingDue, isDateKey } from '../lib/reading-revisit.js';
 import { useLocalDateKey } from '../lib/use-local-date.js';
 import { inspectMarkdownNotes, importMarkdownNotes, exportMarkdownNotes } from '../lib/markdown-notes.js';
 import PinToDesktopDialog from './PinToDesktopDialog.jsx';
@@ -331,6 +331,8 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
   const today = useLocalDateKey(), revisitInputId = useId(), listRef = useRef(null);
   const [page, setPage] = useState(0), [selectionMode, setSelectionMode] = useState(false), [selected, setSelected] = useState({});
   const [bulkAction, setBulkAction] = useState('read'), [bulkDelete, setBulkDelete] = useState(null), [bulkStatus, setBulkStatus] = useState('');
+  const [bulkTagIds, setBulkTagIds] = useState([]), [bulkDate, setBulkDate] = useState('');
+  const bulkDateInputId = useId();
   const hidden = (key) => locked && (presentation.hiddenKeys.has(key) || preferences.privateKeys.includes(key));
   const draftHidden = Boolean(draft.id) && hidden(`reading:${draft.id}`);
   const deletionHidden = Boolean(deleting) && hidden(`reading:${deleting.id}`);
@@ -369,7 +371,11 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
   const pageCount = Math.max(1, Math.ceil(records.length / READING_PAGE_SIZE)), currentPage = Math.min(page, pageCount - 1);
   const pageRecords = records.slice(currentPage * READING_PAGE_SIZE, (currentPage + 1) * READING_PAGE_SIZE);
   const selectedIds = Object.keys(selected).filter((id) => !hidden(`reading:${id}`));
-  const selectionStale = selectedIds.some((id) => !rawData?.reading.some((item) => item.id === id && item.revision === selected[id]));
+  const selectionStale = selectedIds.some((id) => !rawData?.reading.some((item) => item.id === id && item.revision === selected[id].revision)
+    || !sameMetadata(metadataFor(`reading:${id}`), selected[id].metadata));
+  const bulkTagsAction = bulkAction === 'tag-add' || bulkAction === 'tag-remove';
+  const bulkTagsValid = bulkTagIds.length > 0 && bulkTagIds.every((id) => visibleTags.some((tag) => tag.id === id));
+  const bulkOptionsValid = !bulkTagsAction || bulkTagsValid;
   const pageSelected = pageRecords.filter((item) => Object.hasOwn(selected, item.id)).length;
   const bulkVisible = bulkDelete && bulkDelete.ids.every((id) => !hidden(`reading:${id}`));
   const bulkValid = bulkVisible && rawData?.revision === bulkDelete.expectedRevision && preferences.revision === bulkDelete.expectedPreferencesRevision
@@ -385,7 +391,7 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
   function toggleRecord(item, checked) {
     setSelected((current) => {
       const next = { ...current };
-      if (checked) next[item.id] ??= item.revision; else delete next[item.id];
+      if (checked) next[item.id] ??= { revision: item.revision, metadata: structuredClone(metadataFor(`reading:${item.id}`)) }; else delete next[item.id];
       return next;
     });
     setBulkStatus(''); action.setError('');
@@ -393,7 +399,7 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
   function togglePage(checked) {
     setSelected((current) => {
       const next = { ...current };
-      for (const item of pageRecords) { if (checked) next[item.id] ??= item.revision; else delete next[item.id]; }
+      for (const item of pageRecords) { if (checked) next[item.id] ??= { revision: item.revision, metadata: structuredClone(metadataFor(`reading:${item.id}`)) }; else delete next[item.id]; }
       return next;
     });
     setBulkStatus(''); action.setError('');
@@ -403,11 +409,15 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
     clearSelection(); setBulkStatus(tr('已处理 {0} 条链接。', [formatNumber(result.count)]));
   }
   function beginBulk() {
-    if (!rawData || busy || !contentPreferences.ready || !selectedIds.length || selectionStale) return;
+    if (!rawData || busy || !contentPreferences.ready || !selectedIds.length || selectionStale || !bulkOptionsValid || bulkAction === 'revisit' && !isDateKey(bulkDate)) return;
     const snapshot = { ids: [...selectedIds], expectedRevision: rawData.revision, expectedPreferencesRevision: preferences.revision,
-      expectedRecordRevisions: Object.fromEntries(selectedIds.map((id) => [id, selected[id]])) };
+      expectedRecordRevisions: Object.fromEntries(selectedIds.map((id) => [id, selected[id].revision])),
+      ...(bulkTagsAction ? { operation: bulkAction === 'tag-add' ? 'add' : 'remove', tagIds: [...bulkTagIds],
+        expectedMetadata: Object.fromEntries(selectedIds.map((id) => [`reading:${id}`, structuredClone(selected[id].metadata)])) } : {}),
+      ...(['revisit', 'clear-revisit'].includes(bulkAction) ? { revisitOn: bulkAction === 'clear-revisit' ? null : bulkDate } : {}) };
     action.setError(''); setBulkStatus('');
-    if (bulkAction === 'delete') setBulkDelete(snapshot); else action.run(() => applyBulk(snapshot, bulkAction));
+    if (bulkAction === 'delete') setBulkDelete(snapshot);
+    else action.run(() => applyBulk(snapshot, bulkTagsAction ? 'tags' : bulkAction === 'clear-revisit' ? 'revisit' : bulkAction));
   }
   function chooseDestination(record) {
     action.run(async () => {
@@ -458,8 +468,20 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
       <Button type="button" variant="ghost" size="sm" disabled={busy || draftHasContent || !contentPreferences.ready || !selectionMode && !records.length} onClick={() => { setSelectionMode((value) => !value); clearSelection(); action.setError(''); }}>{selectionMode ? tr('取消选择') : tr('批量选择')}</Button></div>
     {selectionMode && <div className="reading-bulk-toolbar"><label><Checkbox aria-label={tr('全选本页链接')} checked={pageRecords.length && pageSelected === pageRecords.length ? true : pageSelected ? 'indeterminate' : false}
       disabled={busy || !pageRecords.length} onCheckedChange={(checked) => togglePage(checked === true)} />{tr('全选本页')}</label><span>{tr('已选 {0} 条链接', [formatNumber(selectedIds.length)])}</span>
-      <Select label={tr('批量操作')} value={bulkAction} disabled={busy} options={[{ value: 'read', label: tr('标为已读') }, { value: 'unread', label: tr('标为未读') }, { value: 'archived', label: tr('归档') }, { value: 'delete', label: tr('删除') }]}
-        onChange={setBulkAction} /><Button type="button" variant={bulkAction === 'delete' ? 'destructive' : 'default'} disabled={busy || !selectedIds.length || selectionStale} onClick={beginBulk}>{tr('应用')}</Button>
+      <Select label={tr('批量操作')} value={bulkAction} disabled={busy} options={[{ value: 'read', label: tr('标为已读') }, { value: 'unread', label: tr('标为未读') }, { value: 'archived', label: tr('归档') },
+        { value: 'tag-add', label: tr('添加所选标签') }, { value: 'tag-remove', label: tr('移除所选标签') },
+        { value: 'revisit', label: tr('设置再看日期') }, { value: 'clear-revisit', label: tr('清除再看日期') }, { value: 'delete', label: tr('删除') }]}
+        onChange={(value) => { setBulkAction(value); setBulkStatus(''); action.setError(''); }} />
+      <Button type="button" variant={bulkAction === 'delete' ? 'destructive' : 'default'} disabled={busy || !selectedIds.length || selectionStale || !bulkOptionsValid || bulkAction === 'revisit' && !isDateKey(bulkDate)} onClick={beginBulk}>{tr('应用')}</Button>
+      {bulkTagsAction && <fieldset className="reading-bulk-options" disabled={busy}>
+        <legend>{tr('批量标签')}</legend><div className="content-tag-options">{visibleTags.map((tag) => <label className="content-tag-option" key={tag.id}>
+          <Checkbox checked={bulkTagIds.includes(tag.id)} disabled={!bulkTagIds.includes(tag.id) && bulkTagIds.length >= 20} onCheckedChange={(checked) => setBulkTagIds((ids) => checked === true ? [...ids, tag.id] : ids.filter((id) => id !== tag.id))} />
+          <span>{tag.name}</span></label>)}</div>
+        {!visibleTags.length && <p className="hint">{tr('暂无可用标签')}</p>}
+        {bulkTagIds.some((id) => !visibleTags.some((tag) => tag.id === id)) && <Button type="button" variant="ghost" size="sm" onClick={() => setBulkTagIds([])}>{tr('清除所选标签')}</Button>}
+      </fieldset>}
+      {bulkAction === 'revisit' && <div className="reading-bulk-options"><label htmlFor={bulkDateInputId}>{tr('统一再看日期')}</label>
+        <Input id={bulkDateInputId} type="date" min="0001-01-01" max="9999-12-31" disabled={busy} value={bulkDate} onChange={(event) => setBulkDate(event.target.value)} /></div>}
       {selectionStale && !busy && <p className="form-error" role="alert">{tr('所选内容已变化，请重新选择。')}</p>}</div>}
     <MessageDialog message={loadError || contentPreferences.error || (!copy && action.error) || (!draftHidden && !busy && changedElsewhere ? tr('这条记录已在其他页面修改，请重新打开后再保存。') : '')} onClose={() => action.setError('')} />
     {copyStatus && <p className="hint" role="status">{copyStatus}</p>}

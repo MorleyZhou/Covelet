@@ -118,4 +118,22 @@ test('the frozen published 0.5.1 validator refuses new exclusions without droppi
   assert.throws(() => legacy.validateSavedView(view), { code: 'SAVED_VIEW_INVALID' });
   assert.deepEqual(view, before);
   assert.doesNotThrow(() => legacy.validateSavedView({ id: 'legacy', revision: 1, name: 'Legacy', ...defaultSavedFilters() }));
+  for (const patch of [{ tagMode: 'any' }, { revisit: 'today' }, { revisit: 'next7d' }]) {
+    const extended = { id: 'extended', revision: 1, name: 'Extended', ...defaultSavedFilters(), ...patch }, before = structuredClone(extended);
+    assert.throws(() => legacy.validateSavedView(extended), { code: 'SAVED_VIEW_INVALID' });
+    assert.deepEqual(extended, before);
+    assert.doesNotThrow(() => validateSavedView(extended));
+  }
+});
+
+test('an ANY base condition accepts overlapping excluded tags without changing default ALL query conflicts', () => {
+  const parsed = parse('tag:"项目 A" tag:Done -tag:Done', { baseFilters: { tagMode: 'any', revisit: 'next7d' } });
+  assert.equal(parsed.status, 'ready'); assert.equal(parsed.filters.tagMode, 'any'); assert.equal(parsed.filters.revisit, 'next7d');
+  assert.deepEqual(parsed.filters.tagIds, ['project-a', 'done']); assert.deepEqual(parsed.filters.excludeTagIds, ['done']);
+  assert.equal(parse('tag:Done -tag:Done').status, 'invalid');
+  assert.equal(parse('tag:Done -tag:Done', { baseFilters: { tagMode: 'any' } }).status, 'ready');
+  const { navigation, tools, preferences } = libraryContext();
+  assert.deepEqual(filterSavedContent(navigation, tools, preferences, parsed.filters, { today: '2026-11-14' }).rows, []);
+  const union = parse('tag:"项目 A" tag:Done -tag:Done', { baseFilters: { tagMode: 'any' } });
+  assert.deepEqual(filterSavedContent(navigation, tools, preferences, union.filters).rows.map((row) => row.key), ['site:a', 'note:n']);
 });

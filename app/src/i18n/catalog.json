@@ -2885,6 +2885,123 @@
     "fr": "Lecture du document",
     "ru": "Просмотр документа"
   },
+  "添加所选标签": {
+    "en": "Add selected tags",
+    "zh-TW": "新增所選標籤",
+    "ja": "選択したタグを追加",
+    "ko": "선택한 태그 추가",
+    "de": "Ausgewählte Tags hinzufügen",
+    "fr": "Ajouter les étiquettes sélectionnées",
+    "ru": "Добавить выбранные метки"
+  },
+  "移除所选标签": {
+    "en": "Remove selected tags",
+    "zh-TW": "移除所選標籤",
+    "ja": "選択したタグを削除",
+    "ko": "선택한 태그 제거",
+    "de": "Ausgewählte Tags entfernen",
+    "fr": "Retirer les étiquettes sélectionnées",
+    "ru": "Удалить выбранные метки"
+  },
+  "设置再看日期": {
+    "en": "Set revisit date",
+    "zh-TW": "設定再看日期",
+    "ja": "再読日を設定",
+    "ko": "다시 볼 날짜 설정",
+    "de": "Wiedervorlagedatum festlegen",
+    "fr": "Définir la date de relecture",
+    "ru": "Назначить дату повторного чтения"
+  },
+  "清除再看日期": {
+    "en": "Clear revisit date",
+    "zh-TW": "清除再看日期",
+    "ja": "再読日を解除",
+    "ko": "다시 볼 날짜 지우기",
+    "de": "Wiedervorlagedatum löschen",
+    "fr": "Effacer la date de relecture",
+    "ru": "Убрать дату повторного чтения"
+  },
+  "批量标签": {
+    "en": "Bulk tags",
+    "zh-TW": "批次標籤",
+    "ja": "一括編集するタグ",
+    "ko": "일괄 편집할 태그",
+    "de": "Tags für die Sammelbearbeitung",
+    "fr": "Étiquettes à modifier en lot",
+    "ru": "Метки для группового изменения"
+  },
+  "统一再看日期": {
+    "en": "Revisit date for selected items",
+    "zh-TW": "統一再看日期",
+    "ja": "選択項目の再読日",
+    "ko": "선택한 항목의 다시 볼 날짜",
+    "de": "Wiedervorlagedatum für die Auswahl",
+    "fr": "Date de relecture de la sélection",
+    "ru": "Дата повторного чтения выбранных записей"
+  },
+  "标签匹配": {
+    "en": "Tag matching",
+    "zh-TW": "標籤比對",
+    "ja": "タグの一致条件",
+    "ko": "태그 일치 조건",
+    "de": "Tag-Verknüpfung",
+    "fr": "Correspondance des étiquettes",
+    "ru": "Условия совпадения меток"
+  },
+  "包含全部所选标签": {
+    "en": "Include all selected tags",
+    "zh-TW": "包含全部所選標籤",
+    "ja": "選択したすべてのタグを含む",
+    "ko": "선택한 모든 태그 포함",
+    "de": "Alle ausgewählten Tags enthalten",
+    "fr": "Contenir toutes les étiquettes sélectionnées",
+    "ru": "Содержат все выбранные метки"
+  },
+  "包含任一所选标签": {
+    "en": "Include any selected tag",
+    "zh-TW": "包含任一所選標籤",
+    "ja": "選択したいずれかのタグを含む",
+    "ko": "선택한 태그 중 하나 이상 포함",
+    "de": "Mindestens einen ausgewählten Tag enthalten",
+    "fr": "Contenir au moins une étiquette sélectionnée",
+    "ru": "Содержат любую выбранную метку"
+  },
+  "今天": {
+    "en": "Today",
+    "zh-TW": "今天",
+    "ja": "今日",
+    "ko": "오늘",
+    "de": "Heute",
+    "fr": "Aujourd’hui",
+    "ru": "Сегодня"
+  },
+  "未来七天": {
+    "en": "Next seven days",
+    "zh-TW": "未來七天",
+    "ja": "今後7日間",
+    "ko": "앞으로 7일",
+    "de": "Nächste sieben Tage",
+    "fr": "Les sept prochains jours",
+    "ru": "Ближайшие семь дней"
+  },
+  "暂无可用标签": {
+    "en": "No tags available",
+    "zh-TW": "暫無可用標籤",
+    "ja": "使用できるタグがありません",
+    "ko": "사용 가능한 태그가 없습니다",
+    "de": "Keine Tags verfügbar",
+    "fr": "Aucune étiquette disponible",
+    "ru": "Нет доступных меток"
+  },
+  "清除所选标签": {
+    "en": "Clear selected tags",
+    "zh-TW": "清除所選標籤",
+    "ja": "選択したタグを解除",
+    "ko": "선택한 태그 지우기",
+    "de": "Tag-Auswahl löschen",
+    "fr": "Effacer les étiquettes sélectionnées",
+    "ru": "Сбросить выбранные метки"
+  },
   "清理旧版时钟留下的提醒。": {
     "en": "Clear reminders left by older clock widgets.",
     "zh-TW": "清理舊版時鐘留下的提醒。",

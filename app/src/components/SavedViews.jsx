@@ -53,7 +53,8 @@ export default function SavedViews({ navigation, tools, preferences, initialFilt
     || locked && (editor.private || editor.originalPrivate || preferences.privateKeys.includes(`view:${value.id}`))));
   const dirty = editor && (JSON.stringify({ ...editor.value, revisit: editor.value.revisit ?? null })
     !== JSON.stringify({ ...editor.original, revisit: editor.original.revisit ?? null }) || editor.private !== editor.originalPrivate);
-  const missingTagIds = value?.tagIds.filter((id) => !preferences.library?.tags.some((tag) => tag.id === id)) || [];
+  const missingTagIds = [...new Set([...(value?.tagIds || []), ...(value?.excludeTagIds || [])])]
+    .filter((id) => !preferences.library?.tags.some((tag) => tag.id === id));
   const scopeValue = value?.scope.kind === 'desktop' ? `desktop:${value.scope.desktopId}`
     : value?.scope.kind === 'folder' ? `folder:${value.scope.folderId}` : 'all';
   const scopeChanged = value?.scope.kind === 'desktop' && value.scope.desktopId.startsWith('@page:')
@@ -68,8 +69,12 @@ export default function SavedViews({ navigation, tools, preferences, initialFilt
       expectedNavigationRevision: navigation.revision }); setError('');
   }
   function startNew(filters) { startEditing({ name: '', ...defaultSavedFilters(), ...structuredClone(filters) }); }
-  function patch(changes) { setEditor((current) => ({ ...current, value: { ...current.value, ...changes },
-    ...(Object.hasOwn(changes, 'scope') ? { expectedNavigationRevision: navigation.revision } : {}) })); setError(''); }
+  function patch(changes) { setEditor((current) => {
+    const value = { ...current.value, ...changes };
+    if (value.tagMode !== 'any') delete value.tagMode;
+    if (!value.excludeTagIds?.length) delete value.excludeTagIds;
+    return { ...current, value, ...(Object.hasOwn(changes, 'scope') ? { expectedNavigationRevision: navigation.revision } : {}) };
+  }); setError(''); }
   function requestClose(destination = 'close') {
     if (busy) return;
     if (dirty) { setDiscarding(destination); return; }
@@ -135,24 +140,32 @@ export default function SavedViews({ navigation, tools, preferences, initialFilt
           ]} onChange={(readingStatus) => patch({ readingStatus: readingStatus === 'all' ? null : readingStatus })} />
           <Select label={tr('再看日期')} value={value.revisit ?? 'all'} disabled={busy} options={[
             { value: 'all', label: tr('不限日期') }, { value: 'due', label: tr('待再看') },
+            { value: 'today', label: tr('今天') }, { value: 'next7d', label: tr('未来七天') },
             { value: 'scheduled', label: tr('已设日期') }, { value: 'none', label: tr('未设日期') },
           ]} onChange={(revisit) => patch({ revisit: revisit === 'all' ? null : revisit })} />
         </div>
         {value.revisit && <p className="hint">{tr('日期条件仅匹配稍后读，可与阅读状态组合。')}</p>}
         <fieldset className="saved-view-tags" disabled={busy}>
-          <legend>{tr('标签')}</legend><p className="hint">{tr('同时包含所选标签')}</p>
+          <legend>{tr('标签')}</legend>
+          <Select label={tr('标签匹配')} value={value.tagMode || 'all'} disabled={busy} options={[
+            { value: 'all', label: tr('包含全部所选标签') }, { value: 'any', label: tr('包含任一所选标签') },
+          ]} onChange={(tagMode) => patch({ tagMode })} />
           <div className="saved-view-tag-options">
             {tags.map((tag) => <label className="saved-view-tag" key={tag.id}><Checkbox checked={value.tagIds.includes(tag.id)}
               disabled={!value.tagIds.includes(tag.id) && value.tagIds.length >= SAVED_VIEW_LIMITS.tags}
               onCheckedChange={(checked) => patch({ tagIds: checked === true ? [...value.tagIds, tag.id] : value.tagIds.filter((id) => id !== tag.id) })} /><span>{tag.name}</span></label>)}
           </div>
-          {missingTagIds.length > 0 && <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => patch({ tagIds: value.tagIds.filter((id) => !missingTagIds.includes(id)) })}>{tr('移除失效标签')}</Button>}
+          {missingTagIds.length > 0 && <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => patch({
+            tagIds: value.tagIds.filter((id) => !missingTagIds.includes(id)), excludeTagIds: (value.excludeTagIds || []).filter((id) => !missingTagIds.includes(id)),
+          })}>{tr('移除失效标签')}</Button>}
         </fieldset>
-        {Boolean(value.excludeTagIds?.length) && <fieldset className="saved-view-tags" disabled={busy}>
+        <fieldset className="saved-view-tags" disabled={busy}>
           <legend>{tr('排除标签')}</legend>
-          <div className="saved-view-tag-options">{value.excludeTagIds.map((id) => <Button key={id} type="button" variant="secondary" size="sm"
-            onClick={() => patch({ excludeTagIds: value.excludeTagIds.filter((value) => value !== id) })}>{tags.find((tag) => tag.id === id)?.name || tr('移除失效标签')} ×</Button>)}</div>
-        </fieldset>}
+          <div className="saved-view-tag-options">{tags.map((tag) => <label className="saved-view-tag" key={tag.id}>
+            <Checkbox checked={Boolean(value.excludeTagIds?.includes(tag.id))} disabled={!value.excludeTagIds?.includes(tag.id) && (value.excludeTagIds?.length || 0) >= SAVED_VIEW_LIMITS.tags}
+              onCheckedChange={(checked) => patch({ excludeTagIds: checked === true ? [...(value.excludeTagIds || []), tag.id] : value.excludeTagIds.filter((id) => id !== tag.id) })} />
+            <span>{tag.name}</span></label>)}</div>
+        </fieldset>
         <label className="saved-view-private"><Checkbox checked={editor.private} disabled={busy} onCheckedChange={(checked) => setEditor((current) => ({ ...current, private: checked === true }))} />{tr('开启隐藏时锁定此清单')}</label>
         <p className={preview?.status === 'ready' && !scopeChanged ? 'hint' : 'form-error'} role="status">{scopeChanged
           ? tr('目标位置已变化，请重新选择。') : preview?.status === 'ready'

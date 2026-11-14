@@ -22,9 +22,22 @@ export function isReadingDue(item, today = localDateKey()) {
   return isDateKey(today) && isDateKey(item?.revisitOn) && item.revisitOn <= today;
 }
 
+function nextSevenDayEnd(today) {
+  const [year, month, day] = today.split('-').map(Number), date = new Date(0);
+  // Calendar arithmetic must ignore DST and Date.UTC's special handling of
+  // years 0..99. Stored dates remain local-day keys rather than instants.
+  date.setUTCFullYear(year, month - 1, day);
+  date.setUTCHours(0, 0, 0, 0);
+  date.setUTCDate(date.getUTCDate() + 6);
+  if (date.getUTCFullYear() > 9999) return '9999-12-31';
+  return `${String(date.getUTCFullYear()).padStart(4, '0')}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+}
+
 export function matchesReadingRevisit(item, revisit, today = localDateKey()) {
   if (revisit === null || revisit === undefined) return true;
   if (revisit === 'none') return item?.revisitOn === undefined;
   if (revisit === 'scheduled') return isDateKey(item?.revisitOn);
+  if (revisit === 'today') return isDateKey(today) && item?.revisitOn === today;
+  if (revisit === 'next7d') return isDateKey(today) && isDateKey(item?.revisitOn) && item.revisitOn >= today && item.revisitOn <= nextSevenDayEnd(today);
   return revisit === 'due' && isReadingDue(item, today);
 }
