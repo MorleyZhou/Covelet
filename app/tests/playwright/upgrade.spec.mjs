@@ -8,7 +8,7 @@ import { unzipSync } from 'fflate';
 import { createNetworkFixture } from './network.mjs';
 import { createNote, inspectCompleteBackup, openRecovery, revealDesktopItem, restorePreview } from './backup-helpers.mjs';
 
-const baselineZip = fileURLToPath(new URL('../../../output/0.6.0-upgrade/baseline/covelet-0.5.1.zip', import.meta.url));
+const baselineZip = fileURLToPath(new URL('../../../output/playwright/covelet/0.6.0/upgrade/baseline/covelet-0.5.1.zip', import.meta.url));
 const currentBuild = fileURLToPath(new URL('../../dist/extension/', import.meta.url));
 const baselineSha256 = '60769c07be2f8553a52fff0e24cfdc4741f0f355367806307f72b9dbe8672e74';
 const browserExecutables = { chrome: 'C:/Program Files/Google/Chrome/Application/chrome.exe', edge: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe' };

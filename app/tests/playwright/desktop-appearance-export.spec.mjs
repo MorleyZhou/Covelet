@@ -154,7 +154,7 @@ async function exportZip(page, dialog, testInfo) {
   const bytes = Buffer.concat(chunks);
   if (testInfo) {
     const artifact = testInfo.outputPath('Covelet-library.zip'); await writeFile(artifact, bytes); await testInfo.attach('mixed-library-zip', { path: artifact, contentType: 'application/zip' });
-    const portable = fileURLToPath(new URL('../../../output/0.6.0-portability/exported/Covelet-library.zip', import.meta.url));
+    const portable = fileURLToPath(new URL('../../../output/playwright/covelet/0.6.0/portability/exported/Covelet-library.zip', import.meta.url));
     await mkdir(dirname(portable), { recursive: true }); await writeFile(portable, bytes);
   }
   return Object.fromEntries(Object.entries(unzipSync(bytes)).map(([name, contents]) => [name, strFromU8(contents)]));

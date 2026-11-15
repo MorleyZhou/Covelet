@@ -13,11 +13,19 @@ npm run test:e2e
 `npm run test:e2e -- --headed` shows the test-owned browser; `--grep` selects cases.
 `npm run test:e2e:report` opens the saved report.
 
+Keep test artifacts under the existing `output/playwright/` root. Routine runs
+reuse their stable report paths; do not add top-level output folders for each
+attempt. Retained 0.6.0 evidence is grouped under `output/playwright/covelet/0.6.0/`.
+Formal distribution packages and store receipts belong in `output/releases/v0.6.0/`.
+Test-owned profiles and privacy-check scratch directories are removed on exit.
+The archive's `README.md` and `relocations.json` map old paths to their new locations;
+original report bytes (including historical absolute attachment paths) are preserved.
+
 The complete 0.6 candidate regression uses
 `npx playwright test --config tests/playwright-regression.config.mjs`.
 It discovers every spec in this directory, including the near-capacity user
 journey and actual 0.5.1 upgrade. Reports are isolated under
-`output/playwright/covelet/0.6.0-final/{chromium,chrome,edge}/`.
+`output/playwright/covelet/0.6.0/final/{chromium,chrome,edge}/`.
 Set `COVELET_NATIVE_BROWSER=chrome` or `edge` to test the installed Windows
 binary in a fresh test-owned profile; omit it for bundled Chromium.
 For bounded local runs, set `COVELET_QA_SHARD` to `1`, `2`, then `3` and run
@@ -29,7 +37,7 @@ retain snapshots, screenshots and sources. Near-cap metrics separate native
 textarea fill, preview generation and actual file-picker import.
 
 The upgrade spec requires the official `covelet-0.5.1.zip` at
-`output/0.6.0-upgrade/baseline/` and an unpacked 0.6.0 build. It checks the fixed
+`output/playwright/covelet/0.6.0/upgrade/baseline/` and an unpacked 0.6.0 build. It checks the fixed
 release SHA-256 before loading, keeps one temporary unpacked path/profile/ID
 through the upgrade, and retains actual UI backup downloads as evidence. It
 never downloads this prerequisite automatically or writes production profiles.
@@ -42,7 +50,7 @@ saved filters, privacy, editor/IME event ownership, explicit engine keywords and
 all eight languages at 390×540. The note cases compare exported records before
 and after transient search, verify far-down matches against every clipping
 ancestor, and cover append, cancellation, stale targets and size limits. Reports
-and screenshots go to `output/playwright/covelet/0.6-batches/` at the repository
+and screenshots go to `output/playwright/covelet/0.6.0/batches/` at the repository
 root; `COVELET_QA_BATCH=0.5.4` adds a separate batch subdirectory. This configuration
 does not replace the complete regression suite.
 
@@ -75,7 +83,7 @@ deselection, quoted front matter, filename collisions and encoded relative links
 A controlled HTTPS link reader validates browser path resolution independently
 of the app. The suite also uses simulated touch, real `chrome.tabs.setZoom(2)`
 and forced-colors emulation. It preserves a mixed ZIP for separate native
-Obsidian acceptance at `output/0.6.0-portability/exported/Covelet-library.zip`.
+Obsidian acceptance at `output/playwright/covelet/0.6.0/portability/exported/Covelet-library.zip`.
 
 The note-capture cases grant only `https://capture.example/*` in a temporary test
 copy and intercept that page and its exact icon probes. The actual browser

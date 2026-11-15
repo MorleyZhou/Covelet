@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const batch = process.env.COVELET_QA_BATCH || '';
 if (batch && !/^\d+\.\d+\.\d+(?:-(?:chromium|chrome|edge))?$/u.test(batch)) throw Error('COVELET_QA_BATCH must be a version-shaped batch name with an optional browser suffix.');
-const output = fileURLToPath(new URL(`../../output/playwright/covelet/0.6-batches/${batch ? `${batch}/` : ''}`, import.meta.url));
+const output = fileURLToPath(new URL(`../../output/playwright/covelet/0.6.0/batches/${batch ? `${batch}/` : ''}`, import.meta.url));
 export default defineConfig(base, {
   testDir: './playwright',
   testMatch: /(?:command-query|note-workflows|widget-pins|reading-filters|import-metadata|desktop-appearance-export)\.spec\.mjs$/,
