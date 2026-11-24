@@ -117,7 +117,7 @@ test('sync history retains only the latest twenty terminal attempts for the acti
 test('all namespaces, extension records and a Blob exceeding the old document limit cross devices without plaintext or repeat upload', async () => {
   const cloud = remote(), bytes = new Uint8Array(650 * 1024).map((_, index) => index % 251);
   const initial = [record('owntab.local.v1', { state: { entries: [{ id: 'site-with-local-asset' }] } }),
-    record('covelet.tools.v1', { notes: [{ body: 'PRIVATE-NOTE-SENTINEL' }], snapshots: [{ tabs: ['private.example'] }], trash: [] }),
+    record('covelet.tools.v1', { notes: [{ id: 'note-sentinel', body: 'PRIVATE-NOTE-SENTINEL' }], snapshots: [{ id: 'history-sentinel', tabs: ['private.example'] }], trash: [] }),
     record('covelet.clock.v1.widget-1', { elapsed: 1234 }), record('covelet.github.calendar.v1', { calendar: [1, 2, 3] }),
     record('covelet.desktop-templates.v1', { templates: [] }), record('covelet.recovery-point.v1', { previous: 'recovery sentinel' }),
     record('custom-image', { blob: new Blob([bytes], { type: 'image/png' }), empty: new Blob([]) }, 'assets'),

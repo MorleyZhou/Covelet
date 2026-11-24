@@ -10,6 +10,7 @@ export default function WhatsNew() {
         <li>{tr('稍后读可批量整理标签和日期，动态清单支持任一与排除条件。')}</li>
         <li>{tr('从 Raindrop 和 OneTab 文件迁入，明确选择重复项的标签与备注合并。')}</li>
         <li>{tr('每个桌面可设置独立外观，网站、稍后读和便笺可导出为 Markdown 资料库。')}</li>
+        <li>{tr('同步冲突可逐条预览并合并，支持撤销上次合并。图片同步支持中断后重试。')}</li>
       </ul>
     </Disclosure>
     <Disclosure title={tr('{0} 更新内容', ['0.5.1'])}>

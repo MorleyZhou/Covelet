@@ -9,10 +9,12 @@ import { validateCloudConfig, cloudOrigin } from '../lib/cloud-providers.js';
 import { cloudProviderLabel, SYNC_PROVIDERS, finishCloudSetup, requireCloudSyncSuccess } from '../lib/cloud-connection.js';
 import { validateCloudPassword } from '../lib/cloud-crypto.js';
 import { userErrorMessage } from '../lib/user-error.js';
+import { conflictRecordPreview } from '../lib/cloud-conflict-preview.js';
 import { requestSiteAccess } from '../lib/site-info.js';
 import {
   loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, useLocalOnlyCloudSync,
   supportsCloudSync, getCloudSyncStatus, subscribeCloudSyncStatus, acceptBackgroundCloudSyncStatus, getCloudSyncRuns,
+  previewCloudSyncMerge, applyCloudSyncMerge, undoCloudSyncMerge, getCloudSyncMergeRecovery,
 } from '../lib/cloud-sync.js';
 import './cloud-sync.css';
 import { Button } from './ui/button.jsx';
@@ -79,6 +81,10 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
   const [draftTest, setDraftTest] = useState(null);
   const [connectionTestFailed, setConnectionTestFailed] = useState(false);
   const [runs, setRuns] = useState([]);
+  const [mergePreview, setMergePreview] = useState(null), [mergeChoices, setMergeChoices] = useState({});
+  const [mergePage, setMergePage] = useState(0), [mergeRecovery, setMergeRecovery] = useState(false);
+  const [mergeRecoveryError, setMergeRecoveryError] = useState(false);
+  const mergeRequest = useRef(0);
   const [step, setStep] = useState(demo ? 1 : null), [loaded, setLoaded] = useState(demo);
   const wasUnlocked = useRef(status.unlocked);
   const previousPhase = useRef(status.phase);
@@ -102,6 +108,9 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     function refreshSyncResults() {
       const id = ++refreshId;
       getCloudSyncRuns().then(items => { if (active && id === refreshId) setRuns(items); }).catch(() => {});
+      getCloudSyncMergeRecovery().then(value => {
+        if (active && id === refreshId) { setMergeRecovery(Boolean(value)); setMergeRecoveryError(false); }
+      }).catch(() => { if (active && id === refreshId) setMergeRecoveryError(true); });
     }
     loadCloudSyncSettings().then((value) => {
       if (!active) return;
@@ -121,12 +130,17 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
         setStatus(value);
         if (wasUnlocked.current && !value.unlocked) { setDraftTest(null); setConnectionTestFailed(false); }
         wasUnlocked.current = value.unlocked;
+        if (!value.unlocked) { mergeRequest.current++; setMergePreview(null); setMergeChoices({}); }
         refreshSyncResults();
       }
     });
-    return () => { active = false; off(); };
+    return () => { active = false; mergeRequest.current++; off(); };
   }, [demo]);
-  function resetTest() { setDraftTest(null); setFeedback(null); }
+  useEffect(() => {
+    mergeRequest.current++;
+    if (presentation.active) { setMergePreview(null); setMergeChoices({}); }
+  }, [presentation.active]);
+  function resetTest() { mergeRequest.current++; setDraftTest(null); setFeedback(null); setMergePreview(null); setMergeChoices({}); }
   function patch(value) { resetTest(); setDraft((current) => ({ ...current, ...value })); }
   function showFailure(reason, operation) {
     const message = userErrorMessage(reason, tr('同步操作未完成，本机数据已保留。'));
@@ -224,20 +238,69 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
   const passwordOnlyUnlock = !configuring && !status.unlocked && saved?.credentialsStored;
   const hasConflicts = status.phase === 'conflict' || status.conflicts > 0;
   const conflictRun = hasConflicts ? runs.find(run => run.outcome === 'conflict' || run.newConflictCount > 0) : null;
-  function resolveConflicts(choice) {
+  function previewMerge() {
     if (busy || !status.unlocked || !connectionMatches || !hasConflicts || presentationActive.current) return;
-    run(async () => syncMessage(await backgroundSync(choice)), { progress: tr('正在同步…'), operation: 'sync' });
+    const request = ++mergeRequest.current;
+    run(async () => {
+      const preview = await previewCloudSyncMerge();
+      if (request !== mergeRequest.current || presentationActive.current || !getCloudSyncStatus().unlocked) return;
+      setMergePreview(preview); setMergeChoices({}); setMergePage(0);
+    }, { progress: tr('正在读取合并预览…'), operation: 'preview' });
   }
-  const conflictChoice = <div className="cloud-sync-choice" role="group" aria-label={tr('选择同步版本')}>
+  function applyMerge() {
+    if (busy || !mergePreview || !status.unlocked || !connectionMatches || presentationActive.current) return;
+    run(async () => {
+      await applyCloudSyncMerge({ token: mergePreview.token, choices: mergeChoices });
+      setMergePreview(null); setMergeChoices({}); setMergeRecovery(true);
+      return syncMessage(await backgroundSync());
+    }, { progress: tr('正在应用合并…'), operation: 'sync' });
+  }
+  function undoMerge() {
+    if (busy || !status.unlocked || !connectionMatches || presentationActive.current) return;
+    run(async () => {
+      await undoCloudSyncMerge();
+      setMergePreview(null); setMergeChoices({});
+      setMergeRecovery(Boolean(await getCloudSyncMergeRecovery()));
+      return syncMessage(await backgroundSync());
+    }, { progress: tr('正在撤销合并…'), operation: 'sync' });
+  }
+  function retryMergeRecovery() {
+    if (busy) return;
+    run(async () => {
+      setMergeRecovery(Boolean(await getCloudSyncMergeRecovery())); setMergeRecoveryError(false);
+    });
+  }
+  const previewPageCount = mergePreview ? Math.max(1, Math.ceil(mergePreview.rows.length / 50)) : 1;
+  const mergeStatus = status => status === 'both' ? tr('两侧都改了') : status === 'deleted' ? tr('一边删了') : tr('仅一边改了');
+  const previewText = value => value === undefined ? tr('此侧没有这条记录。') : conflictRecordPreview(value);
+  const conflictChoice = <div className="cloud-sync-choice" role="group" aria-label={tr('合并同步记录')}>
     {presentation.active ? <Button variant="secondary" type="button" disabled={busy} onClick={presentation.requestUnlock}>{tr('解锁隐藏内容')}</Button>
-      : !status.unlocked ? <p className="hint">{tr('输入同步密码后，可选择要保留的版本。')}</p> : <>
-        <p className="hint">{draft.provider === 'github'
-          ? tr('以本地为准会替换 GitHub 上的同步数据。其他设备需更新 Covelet 后才能继续同步。')
-          : tr('选择保留整份本机或云端数据。另一端的同步内容会被替换。')}</p>
-        <div>
-          <Button variant="secondary" type="button" disabled={busy || !connectionMatches} onClick={() => resolveConflicts('local')}>{tr('以本地为准')}</Button>
-          <Button variant="secondary" type="button" disabled={busy || !connectionMatches} onClick={() => resolveConflicts('remote')}>{tr('以云端为准')}</Button>
-        </div>
+      : !status.unlocked ? <p className="hint">{tr('输入同步密码后，可预览合并。')}</p> : <>
+        <p className="hint">{tr('逐条检查两侧的修改，再一起应用。应用前会保留恢复前副本。')}</p>
+        <Button variant="secondary" type="button" disabled={busy || !connectionMatches} onClick={previewMerge}>{tr('预览合并')}</Button>
+        {mergePreview && <section className="cloud-merge-preview" aria-label={tr('合并预览')}>
+          <div className="cloud-merge-heading"><strong>{tr('合并预览')}</strong><span>{tr('共 {0} 条', [mergePreview.rows.length])}</span></div>
+          <ol className="cloud-merge-rows" start={mergePage * 50 + 1}>
+            {mergePreview.rows.slice(mergePage * 50, (mergePage + 1) * 50).map(row => <li key={row.id} className="cloud-merge-row" data-merge-row-id={row.id}>
+              <div className="cloud-merge-row-heading"><strong>{row.label}</strong><span>{mergeStatus(row.status)}</span></div>
+              <label className="cloud-merge-selection">{tr('保留方式')}<select aria-label={tr('{0}：保留方式', [row.label])} value={mergeChoices[row.id] || row.choice} disabled={busy}
+                onChange={event => setMergeChoices(current => ({ ...current, [row.id]: event.target.value }))}>
+                <option value="merged">{tr('合并结果')}</option><option value="local">{tr('保留本机')}</option><option value="remote">{tr('保留云端')}</option>
+              </select></label>
+              <details className="cloud-merge-details"><summary>{tr('查看两侧内容')}</summary>
+                <div className="cloud-merge-values"><div><strong>{tr('本机')}</strong><pre>{previewText(row.local)}</pre></div><div><strong>{tr('云端')}</strong><pre>{previewText(row.remote)}</pre></div></div>
+                <div className="cloud-merge-result"><strong>{tr('合并结果')}</strong><pre>{previewText((mergeChoices[row.id] || row.choice) === 'local' ? row.local : (mergeChoices[row.id] || row.choice) === 'remote' ? row.remote : row.merged)}</pre></div>
+              </details>
+            </li>)}
+          </ol>
+          {previewPageCount > 1 && <nav className="cloud-merge-pagination" aria-label={tr('合并预览分页')}>
+            <Button variant="ghost" type="button" disabled={busy || mergePage === 0} onClick={() => setMergePage(current => current - 1)}>{tr('上一页')}</Button>
+            <span>{tr('第 {0} / {1} 页', [mergePage + 1, previewPageCount])}</span>
+            <Button variant="ghost" type="button" disabled={busy || mergePage + 1 >= previewPageCount} onClick={() => setMergePage(current => current + 1)}>{tr('下一页')}</Button>
+          </nav>}
+          <div className="cloud-merge-actions"><Button variant="ghost" type="button" disabled={busy} onClick={() => { setMergePreview(null); setMergeChoices({}); }}>{tr('取消')}</Button>
+            <Button variant="default" type="button" disabled={busy || !connectionMatches} onClick={applyMerge}>{tr('应用合并')}</Button></div>
+        </section>}
       </>}
   </div>;
   function localOnly() {
@@ -363,8 +426,10 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
           {status.pending > 0 && <span>{tr('待同步：{0} 项', [status.pending])}</span>}
         </div>}
         {saved.autoSync && <p className="hint">{tr('自动同步已开启。')}</p>}
+        {mergeRecovery && <div className="cloud-sync-choice"><Button variant="secondary" type="button" disabled={busy || !status.unlocked || !connectionMatches || presentation.active} onClick={undoMerge}>{tr('撤销上次合并')}</Button></div>}
+        {mergeRecoveryError && <div className="cloud-settings-row"><p className="hint" role="status">{tr('恢复前副本暂时无法读取。')}</p><Button variant="ghost" type="button" disabled={busy} onClick={retryMergeRecovery}>{tr('重试')}</Button></div>}
         {(runs.length > 0 || hasConflicts) && <Disclosure className="context-help cloud-sync-run-history" title={tr('同步记录')} defaultOpen>
-          <ul className="cloud-sync-runs">
+          <ul className={`cloud-sync-runs${mergePreview ? ' has-merge-preview' : ''}`}>
             {hasConflicts && !conflictRun && <li><strong>{tr('有冲突待处理')}</strong>{conflictChoice}</li>}
             {runs.map(run => <li key={run.id} data-sync-run-id={run.id}>
               <time dateTime={new Date(run.startedAt).toISOString()}>{new Date(run.startedAt).toLocaleString(getLocale())}</time>

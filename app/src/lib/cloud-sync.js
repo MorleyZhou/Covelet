@@ -706,6 +706,19 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       if (fullSync) return fullSync.resolveFullDataConflicts(choice, options);
       throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
     },
+    async previewCloudSyncMerge() {
+      if (fullSync) return fullSync.previewFullDataMerge();
+      throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
+    },
+    async applyCloudSyncMerge(options) {
+      if (fullSync) return fullSync.applyFullDataMerge(options);
+      throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
+    },
+    async undoCloudSyncMerge() {
+      if (fullSync) return fullSync.undoFullDataMerge();
+      throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
+    },
+    async getCloudSyncMergeRecovery() { return fullSync ? fullSync.getFullDataMergeRecovery() : false; },
     async previewCloudSyncConflict(id) {
       if (fullData) return fullSync.previewFullDataConflict(id);
       throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
@@ -856,5 +869,6 @@ const cloud = createCloudSync();
 export const { loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, useLocalOnlyCloudSync, syncCloudNow, getCloudSyncStatus,
   subscribeCloudSyncStatus, startCloudSync, stopCloudSync, getCloudSyncRuns, getCloudSyncConflicts, previewCloudSyncConflict, restoreCloudSyncConflict,
   getCloudSyncTarget, acceptBackgroundCloudSyncStatus, resolveCloudSyncConflicts,
+  previewCloudSyncMerge, applyCloudSyncMerge, undoCloudSyncMerge, getCloudSyncMergeRecovery,
   listCloudHistory, previewCloudHistory, restoreCloudHistory, clearCloudHistoryPreview,
   loadToolSyncSettings, setToolSyncEnabled, getToolSyncStatus, subscribeToolSyncStatus, getToolSyncConflicts, useToolSyncConflict, syncToolCloudNow } = cloud;

@@ -74,3 +74,21 @@
 .revision-field-values pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.7 ui-monospace, monospace; margin: 0; max-height: 140px; overflow: auto; color: var(--muted); }
 .revision-field-values del { text-decoration: none; color: #b54545; background: #bb55551a; }
 .revision-field-values ins { text-decoration: none; color: #27824d; background: #3b99551a; }
+
+.cloud-merge-preview { display: flex; flex-direction: column; gap: 12px; min-width: 0; width: 100%; }
+.cloud-merge-heading, .cloud-merge-row-heading, .cloud-merge-pagination, .cloud-merge-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cloud-merge-heading > span, .cloud-merge-row-heading > span, .cloud-merge-pagination > span { color: var(--muted); font-size: 11px; flex-shrink: 0; }
+.cloud-merge-rows { list-style: none; margin: 0; padding: 0; max-height: 430px; overflow: auto; overscroll-behavior: contain; }
+.cloud-sync-runs.has-merge-preview { max-height: none; overflow: visible; }
+.cloud-merge-row { padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: 0; }
+.cloud-merge-row-heading > strong { font-size: 13px; overflow-wrap: anywhere; min-width: 0; }
+.cloud-sync-form .cloud-merge-selection { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; }
+.cloud-merge-selection select { min-width: 130px; max-width: 65%; border: 1px solid var(--line); border-radius: 7px; padding: 7px; background: var(--surface); color: var(--ink); font: inherit; }
+.cloud-merge-details { color: var(--muted); font-size: 11px; min-width: 0; }
+.cloud-merge-details > summary { cursor: pointer; padding: 3px 0; }
+.cloud-merge-values { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 10px; }
+.cloud-merge-values > div, .cloud-merge-result { min-width: 0; }
+.cloud-merge-details pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.7 ui-monospace, monospace; max-height: 170px; overflow: auto; margin: 6px 0 0; }
+.cloud-merge-result { margin-top: 12px; }
+.cloud-merge-actions { justify-content: flex-end; }
+@media (max-width: 480px) { .cloud-merge-values { grid-template-columns: minmax(0, 1fr); } }

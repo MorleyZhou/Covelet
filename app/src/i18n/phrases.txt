@@ -1783,3 +1783,28 @@ Markdown 导入预览|Markdown import preview|Markdown 匯入預覽|Markdown 読
 便笺已移除|Note removed|便箋已移除|メモは削除されました|메모가 삭제되었습니다|Notiz entfernt|Note supprimée|Заметка удалена
 在桌面查看动态清单，打开匹配的内容。|View a smart list on your desktop and open matching content.|在桌面檢視動態清單，開啟符合的內容。|デスクトップでスマートリストを表示し、一致するコンテンツを開けます。|데스크톱에서 스마트 목록을 보고 일치하는 콘텐츠를 엽니다.|Eine dynamische Liste auf dem Desktop ansehen und passende Inhalte öffnen.|Consultez une liste dynamique sur votre bureau et ouvrez le contenu correspondant.|Просматривайте умный список на главном экране и открывайте подходящее содержимое.
 已固定到桌面|Pinned to desktop|已固定至桌面|デスクトップに固定しました|데스크톱에 고정했습니다|Auf dem Desktop angeheftet|Épinglé sur le bureau|Закреплено на главном экране
+预览合并|Preview merge|預覽合併|統合をプレビュー|병합 미리 보기|Zusammenführung ansehen|Prévisualiser la fusion|Просмотреть объединение
+合并预览|Merge preview|合併預覽|統合プレビュー|병합 미리 보기|Vorschau der Zusammenführung|Aperçu de la fusion|Предварительный просмотр объединения
+两侧都改了|Changed on both sides|兩側都改了|両方で変更|양쪽에서 변경됨|Auf beiden Seiten geändert|Modifié des deux côtés|Изменено с обеих сторон
+仅一边改了|Changed on one side|僅一側改了|片方で変更|한쪽에서 변경됨|Auf einer Seite geändert|Modifié d’un seul côté|Изменено с одной стороны
+一边删了|Deleted on one side|一側已刪除|片方で削除|한쪽에서 삭제됨|Auf einer Seite gelöscht|Supprimé d’un côté|Удалено с одной стороны
+保留方式|Keep|保留方式|保持する内容|유지 방식|Beibehalten|Conserver|Сохранить
+{0}：保留方式|{0}: keep|{0}：保留方式|{0}：保持する内容|{0}: 유지 방식|{0}: beibehalten|{0} : conserver|{0}: сохранить
+保留本机|Keep this device|保留本機|この端末の内容を保持|이 기기 유지|Dieses Gerät beibehalten|Conserver cet appareil|Сохранить с устройства
+保留云端|Keep cloud storage|保留雲端|クラウドの内容を保持|클라우드 유지|Cloudspeicher beibehalten|Conserver le stockage distant|Сохранить из облака
+合并结果|Merged result|合併結果|統合結果|병합 결과|Zusammengeführtes Ergebnis|Résultat fusionné|Результат объединения
+共 {0} 条|{0} records|共 {0} 條|{0} 件|총 {0}개|{0} Einträge|{0} éléments|Записей: {0}
+第 {0} / {1} 页|Page {0} of {1}|第 {0} / {1} 頁|{1} ページ中 {0} ページ|{0} / {1} 페이지|Seite {0} von {1}|Page {0} sur {1}|Страница {0} из {1}
+合并同步记录|Merge synchronized records|合併同步記錄|同期データを統合|동기화 기록 병합|Synchronisierte Einträge zusammenführen|Fusionner les éléments synchronisés|Объединить синхронизированные записи
+合并预览分页|Merge preview pages|合併預覽分頁|統合プレビューのページ|병합 미리 보기 페이지|Seiten der Zusammenführungsvorschau|Pages de l’aperçu de fusion|Страницы предварительного просмотра
+输入同步密码后，可预览合并。|Enter your sync password to preview the merge.|輸入同步密碼後，可預覽合併。|同期パスワードを入力すると統合をプレビューできます。|동기화 비밀번호를 입력하면 병합을 미리 볼 수 있습니다.|Synchronisierungspasswort eingeben, um die Zusammenführung anzusehen.|Saisissez le mot de passe de synchronisation pour prévisualiser la fusion.|Введите пароль синхронизации для просмотра объединения.
+逐条检查两侧的修改，再一起应用。应用前会保留恢复前副本。|Review changes on both sides, then apply them together. A copy is saved before applying.|逐條檢查兩側的修改，再一起套用。套用前會保留復原前副本。|両方の変更を項目ごとに確認してまとめて適用します。適用前のコピーを保存します。|양쪽 변경 사항을 항목별로 확인한 후 함께 적용하세요. 적용 전 사본을 저장합니다.|Änderungen beider Seiten einzeln prüfen und gemeinsam anwenden. Zuvor wird eine Kopie gesichert.|Vérifiez chaque modification des deux côtés, puis appliquez-les ensemble. Une copie est enregistrée avant l’application.|Проверьте изменения с обеих сторон и примените их вместе. Перед применением сохраняется копия.
+正在读取合并预览…|Loading merge preview…|正在讀取合併預覽…|統合プレビューを読み込み中…|병합 미리 보기 로드 중…|Vorschau wird geladen…|Chargement de l’aperçu de fusion…|Загрузка предварительного просмотра…
+正在应用合并…|Applying merge…|正在套用合併…|統合を適用中…|병합 적용 중…|Zusammenführung wird angewendet…|Application de la fusion…|Применение объединения…
+正在撤销合并…|Undoing merge…|正在復原合併…|統合を元に戻しています…|병합 실행 취소 중…|Zusammenführung wird rückgängig gemacht…|Annulation de la fusion…|Отмена объединения…
+此侧没有这条记录。|This record is absent on this side.|此側沒有這條記錄。|こちら側にこの項目はありません。|이쪽에는 이 항목이 없습니다.|Auf dieser Seite ist der Eintrag nicht vorhanden.|Cet élément est absent de ce côté.|С этой стороны запись отсутствует.
+查看两侧内容|View both versions|檢視兩側內容|両方の内容を表示|양쪽 내용 보기|Beide Versionen ansehen|Voir les deux versions|Посмотреть обе версии
+应用合并|Apply merge|套用合併|統合を適用|병합 적용|Zusammenführung anwenden|Appliquer la fusion|Применить объединение
+撤销上次合并|Undo last merge|復原上次合併|前回の統合を元に戻す|마지막 병합 실행 취소|Letzte Zusammenführung rückgängig machen|Annuler la dernière fusion|Отменить последнее объединение
+恢复前副本暂时无法读取。|The pre-merge copy cannot be read right now.|復原前副本暫時無法讀取。|統合前のコピーを現在読み込めません。|병합 전 사본을 현재 읽을 수 없습니다.|Die Kopie vor der Zusammenführung kann derzeit nicht gelesen werden.|La copie précédant la fusion est momentanément illisible.|Сейчас не удалось прочитать копию до объединения.
+同步冲突可逐条预览并合并，支持撤销上次合并。图片同步支持中断后重试。|Preview and merge sync conflicts record by record, with undo for the last merge. Image sync can resume after an interruption.|同步衝突可逐條預覽並合併，支援復原上次合併。圖片同步支援中斷後重試。|同期の競合を項目ごとに確認して統合でき、前回の統合は元に戻せます。画像の同期は中断後に再試行できます。|동기화 충돌을 항목별로 미리 보고 병합할 수 있으며 마지막 병합을 실행 취소할 수 있습니다. 이미지 동기화는 중단 후 다시 시도할 수 있습니다.|Synchronisierungskonflikte einzeln prüfen und zusammenführen. Die letzte Zusammenführung lässt sich rückgängig machen. Die Bildsynchronisierung kann nach einer Unterbrechung fortgesetzt werden.|Prévisualisez et fusionnez chaque élément en conflit, avec possibilité d’annuler la dernière fusion. La synchronisation des images peut reprendre après une interruption.|Просматривайте и объединяйте конфликты по отдельным записям с возможностью отменить последнее объединение. Синхронизацию изображений можно повторить после прерывания.

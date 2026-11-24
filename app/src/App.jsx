@@ -61,6 +61,7 @@ import {
   getAssetUrl,
 } from "./lib/storage.js";
 import { submitWebSearch, resolveProviderKeyword } from "./lib/search.js";
+import { searchEnginePreference } from './lib/search-engine-preference.js';
 import { createWallpaperProvider, DEFAULT_WALLPAPER_INTERVAL, loadWallpaperInterval, loadWallpaperSource, saveWallpaperInterval, saveWallpaperSource, subscribeWallpaperInterval, subscribeWallpaperSource } from './lib/wallpaper.js';
 import { useIconDrag } from "./lib/use-icon-drag.js";
 import { canReadSite, supportsSiteInfo } from "./lib/site-info.js";
@@ -465,6 +466,18 @@ export function App() {
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [undo, setUndo] = useState(null);
+  useEffect(() => {
+    if (demo) return;
+    let mounted = true, changed = false;
+    const off = searchEnginePreference.subscribe((value) => {
+      changed = true;
+      if (mounted) setProvider(value);
+    });
+    searchEnginePreference.read().then((value) => {
+      if (mounted && !changed) setProvider(value);
+    }).catch((reason) => { if (mounted) setError(userErrorMessage(reason)); });
+    return () => { mounted = false; off(); };
+  }, []);
   const [siteInfo, setSiteInfo] = useState({ phase: "idle", message: "" });
   const [entryIconInfo, setEntryIconInfo] = useState({ phase: 'idle' }), [iconPreview, setIconPreview] = useState(null);
   const iconOperation = useRef(null);
@@ -1462,7 +1475,13 @@ export function App() {
               </Button></DropdownMenuTrigger>
               <DropdownMenuContent container={document.querySelector('.owntab') || document.body} className="search-engine-menu" align="start"
                 onCloseAutoFocus={(event) => { if (engineChoice.current) { event.preventDefault(); inputRef.current?.focus({ preventScroll: true }); } }}>
-                <DropdownMenuRadioGroup value={provider} onValueChange={(value) => { engineChoice.current = true; setProvider(value); setEngineMenu(false); }}>
+                <DropdownMenuRadioGroup value={provider} onValueChange={async (value) => {
+                  engineChoice.current = true; setEngineMenu(false);
+                  try {
+                    if (!demo) await searchEnginePreference.write(value);
+                    setProvider(value);
+                  } catch (reason) { notify(userErrorMessage(reason), 'error'); }
+                }}>
                   <DropdownMenuRadioItem value="browser">
                     <MagnifyingGlass className="provider-symbol" size={22} weight="light" aria-hidden="true" />
                     <span className="engine-name">{tr("浏览器默认搜索")}</span>

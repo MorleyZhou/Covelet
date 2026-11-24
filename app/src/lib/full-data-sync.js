@@ -3,10 +3,11 @@ import { isWebdavError } from './cloud-webdav.js';
 import { localData, createEncryptedStore } from './local-data.js';
 import { encryptCloudPayload, decryptCloudPayload, CLOUD_OBJECT_LIMIT } from './cloud-crypto.js';
 import { parseCloudSnapshotName, isCloudProviderError } from './cloud-providers.js';
-import { isSyncRecord } from './sync-data-rules.js';
+import { isSyncRecord, validateSyncValue } from './sync-data-rules.js';
 import { sameJson } from './json-equal.js';
 import { validateIconBytes } from './site-info.js';
 import { ICON_IMAGE_LIMIT } from './icon-image-format.js';
+import { mergeSyncRecord, countSyncSnapshotUnits } from './record-sync-merge.js';
 
 // The remote indexes are small immutable revisions. Typed values and documents
 // are separately encrypted, content-addressed chunks so images/recovery points
@@ -101,6 +102,7 @@ const messages = {
 function safeError(reason) {
   if (isWebdavError(reason) || isCloudProviderError(reason)) return reason;
   const code = own(messages, reason?.code) ? reason.code : ['CLOUD_CAPACITY', 'CLOUD_LIMIT'].includes(reason?.code) ? 'DATA_SYNC_CAPACITY'
+    : reason?.code === 'LOCAL_DATA_INVALID' ? 'DATA_SYNC_INVALID'
     : ['LOCAL_DATA_CONFLICT', 'LOCAL_DATA_REVISION', 'DATA_SYNC_STALE'].includes(reason?.code) ? 'REVISION_CONFLICT' : 'DATA_SYNC_REQUEST';
   return Object.assign(new Error(messages[code]), { code });
 }
@@ -275,7 +277,7 @@ function retainLocalConflicts(view, local) {
 export function createFullDataSync({ access, currentTarget, snapshotStore, store = snapshotStore?.syncMetadataStore || defaultStore(), historyStore = defaultStore(HISTORY_KEY), pendingStore = createEncryptedStore('full-data-pending'),
   signer, crypto = globalThis.crypto, uuid = () => crypto.randomUUID(), now = () => Date.now(), locks = globalThis.navigator?.locks,
   seed, autoDelay = 15000, pullInterval = 60000, eventWindow = globalThis.window, eventDocument = globalThis.document } = {}) {
-  let conflictPreview;
+  let conflictPreview, mergePreview;
   let serial = Promise.resolve(), flight, started = false, applying = false, timer, interval, unsubscribe;
   const listeners = new Set();
   let status = { phase: 'idle', pending: 0, conflicts: 0, lastSync: 0, localChanges: false, code: null, message: '' };
@@ -305,11 +307,18 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
       if (own(m, 'cleanupOutcome')) keys.push('cleanupOutcome');
       if (own(m, 'gitEpoch')) keys.push('gitEpoch');
       if (own(m, 'gitReset')) keys.push('gitReset');
+      if (own(m, 'mergeBase')) keys.push('mergeBase', 'mergeFrontier');
       if (!fields(m, keys) || !hex(m.target) || own(m, 'resolutionId') && (!actorValid(m.resolutionId) || !Number.isSafeInteger(m.resolutionClock) || m.resolutionClock < 1)
         || !Number.isSafeInteger(m.publishedClock) || m.publishedClock < 0 || !Number.isFinite(m.lastSync) || m.lastSync < 0) fail();
       validateFullDataReplica(m.document); combine(m.documents, { [m.document.actor]: m.document });
       if (m.publishedClock > m.document.clock || m.resolutionClock > m.document.clock || !m.base || typeof m.base !== 'object' || Array.isArray(m.base) || Object.keys(m.base).length > MAX_RECORDS) fail();
       for (const [key, digest] of Object.entries(m.base)) { splitIdentity(key); if (!hex(digest)) fail(); }
+      if (own(m, 'mergeBase')) {
+        if (!m.mergeBase || typeof m.mergeBase !== 'object' || Array.isArray(m.mergeBase) || Object.keys(m.mergeBase).length > MAX_RECORDS
+          || !m.mergeFrontier || typeof m.mergeFrontier !== 'object' || Array.isArray(m.mergeFrontier) || Object.keys(m.mergeFrontier).length > MAX_ACTORS) fail();
+        for (const [key, reference] of Object.entries(m.mergeBase)) { splitIdentity(key); if (reference !== null) validateReference(reference); }
+        for (const [actor, clock] of Object.entries(m.mergeFrontier)) if (!actorValid(actor) || !Number.isSafeInteger(clock) || clock < 0) fail();
+      }
       if (m.pending) validatePending(m.pending, m.document);
       if (own(m, 'gitEpoch') && !parseCloudSnapshotName(m.gitEpoch)) fail();
       if (own(m, 'gitReset')) {
@@ -391,12 +400,14 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
     for (const document of documents) for (const operation of Object.values(document.records)) {
       for (const chunk of operation.value?.chunks || []) protectedNames.add(chunk.name);
     }
+    for (const reference of Object.values(config.metadata?.mergeBase || {})) for (const chunk of reference?.chunks || []) protectedNames.add(chunk.name);
     try {
       for (const [name] of await pendingStore.entries()) if (!protectedNames.has(name)) await pendingStore.remove(name);
     } catch { fail('DATA_SYNC_LOCAL'); }
   };
   const prepareSnapshot = async (snapshot, known, staged) => {
     if (!snapshot || snapshot.version !== 1 || !Array.isArray(snapshot.records) || snapshot.records.length > MAX_RECORDS) fail();
+    countSyncSnapshotUnits(snapshot);
     const values = new Map(); let total = 0;
     for (const record of snapshot.records) {
       if (!fields(record, ['namespace', 'key', 'value'])) fail();
@@ -498,7 +509,9 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
       total += reference.size; if (total > MAX_BYTES) fail('DATA_SYNC_CAPACITY');
       const [namespace, key] = splitIdentity(id); records.push({ namespace, key, value: decodeValue(await readBinary(reference)) });
     }
-    return { version: 1, records };
+    const snapshot = { version: 1, records };
+    countSyncSnapshotUnits(snapshot);
+    return snapshot;
   };
   async function finishIndexCleanup(config, connection, run) {
     const m = config.metadata, plan = m.cleanup;
@@ -611,8 +624,21 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
     const pin = await git.storage.pin(candidate);
     await refreshGithub(connection, pin, { layout: 'v2', epoch: git.epoch });
   }
-  const publish = async (config, connection, names = new Set()) => {
+  async function checkPublishCapacity(pending, connection, names) {
+    const indexes = names ? [...names] : (connection.git?.files.indexes || await list(connection.provider, connection)).map(item => item.name);
+    if (indexes.length > MAX_REVISIONS || !indexes.includes(pending.name) && indexes.length >= MAX_REVISIONS) fail('DATA_SYNC_CAPACITY');
+    if (connection.assetProvider.list || connection.git) {
+      const assets = connection.git?.files.blobs || await list(connection.assetProvider, connection);
+      if (!Array.isArray(assets) || assets.length > MAX_CHUNKS) fail('DATA_SYNC_CAPACITY');
+      const chunks = new Set(assets.map(item => item.name));
+      for (const chunk of pending.uploads) chunks.add(chunk.name);
+      if (chunks.size > MAX_CHUNKS) fail('DATA_SYNC_CAPACITY');
+    }
+  }
+  const publish = async (config, connection, names) => {
     const m = config.metadata, pending = m.pending; if (!pending) return;
+    await checkPublishCapacity(pending, connection, names);
+    names ||= new Set();
     // Verify the persisted index and each staged ciphertext before transmitting.
     const reader = makeReader(connection, connection.git?.pin.head, true);
     const document = await parseIndex(pending.name, encoder.encode(pending.body), connection, reader);
@@ -949,16 +975,26 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
       return 'conflict';
     }
     const next = await decodeRecords(merged.values, reader); await connection.check();
-    m.document = document; m.documents = combine(m.documents, { [document.actor]: document }); m.base = digests(actualValues); await persist(config);
+    // Retain only the authored local branch before CAS. This makes a failed
+    // legacy seed/import retryable without acknowledging any received clock.
+    m.document = document; m.documents = combine(m.documents, { [document.actor]: document }); m.base = digests(actualValues);
+    await persist(config);
+    m.document = document; m.documents = documents; m.base = digests(merged.values);
+    rememberMergeBase(m, merged.values, documents);
+    if (document.clock > m.publishedClock) m.pending = await stageRevision(document, known, staged, connection);
+    if (m.pending) await checkPublishCapacity(m.pending, connection, incoming.names);
+    if (encoder.encode(JSON.stringify(config)).length > MAX_METADATA) fail('DATA_SYNC_CAPACITY');
     // A full snapshot import is a single CAS operation supplied by the
     // encrypted persistence layer. No consumer sees a partial record set.
     applying = true;
-    try { await snapshotStore.apply(next, { expectedToken: actual.token }); } finally { applying = false; }
-    m.documents = documents; m.base = digests(merged.values); await persist(config);
+    try {
+      const atomic = snapshotStore.syncMetadataStore === store;
+      await snapshotStore.apply(next, { expectedToken: actual.token, ...(atomic && { syncMetadata: config, metadataCheckpoint: true }) });
+      if (!atomic) await persist(config);
+    } finally { applying = false; }
     run.after = new Set();
     if (document.clock > m.publishedClock) {
-      m.pending = await stageRevision(document, known, staged, connection);
-      await persist(config); await publish(config, connection);
+      await publish(config, connection);
     }
   }
 
@@ -1013,6 +1049,110 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
     run.postPublishCleanup = Boolean(m.cleanup);
     await finishIndexCleanup(config, connection, run);
   }
+  function rememberMergeBase(metadata, values, documents) {
+    metadata.mergeBase = Object.fromEntries(values);
+    metadata.mergeFrontier = Object.fromEntries(Object.values(documents).map(item => [item.actor, item.clock]));
+  }
+
+  // A cached local base is usable only when every competing branch observed
+  // it. Otherwise recover the common causal frontier from immutable v1 indexes.
+  // Missing old indexes mean "unknown", never proof of a deletion.
+  async function mergeAncestor(key, versions, metadata, incoming, connection, reader) {
+    const operations = versions.map(item => {
+      const operation = metadata.documents[item.actor]?.records[key];
+      if (!operation || operation.n !== item.clock) fail('DATA_SYNC_CONFLICT_STALE');
+      return { ...operation, actor: item.actor };
+    });
+    const seen = (operation, actor) => actor === operation.actor ? operation.n : operation.context?.[actor] || 0;
+    if (metadata.mergeBase && Object.entries(metadata.mergeFrontier).every(([actor, clock]) => operations.every(op => seen(op, actor) >= clock))) {
+      return { hasBase: true, reference: metadata.mergeBase[key] || null };
+    }
+    const actors = new Set(operations.flatMap(op => [op.actor, ...Object.keys(op.context || {})]));
+    const common = new Map([...actors].map(actor => [actor, Math.min(...operations.map(op => seen(op, actor)))]));
+    const ancestors = {};
+    for (const [actor, clock] of common) {
+      if (!clock) continue;
+      let prior;
+      for (const name of incoming.names) {
+        const parsed = parseCloudSnapshotName(name);
+        if (parsed.actor === actor && parsed.clock <= clock && (!prior || parsed.clock > prior.clock)) prior = { ...parsed, name };
+      }
+      if (!prior || prior.clock !== clock) return { hasBase: false };
+      ancestors[actor] = await parseIndex(prior.name, await connection.provider.read(prior.name, connection.git?.pin.head), connection, reader);
+    }
+    if (!Object.keys(ancestors).length) return { hasBase: false };
+    const base = materialize(ancestors);
+    if (base.conflicts.some(item => identity(item.namespace, item.key) === key)) return { hasBase: false };
+    return { hasBase: true, reference: base.values.get(key) || null };
+  }
+
+  async function planRecordMerge(config, connection, choices = {}) {
+    const m = config.metadata;
+    if (!m || m.target !== connection.target || m.pending || m.gitReset) fail('DATA_SYNC_TARGET');
+    if (m.gitEpoch !== (connection.git?.epoch || undefined)) fail('DATA_SYNC_CONFLICT_STALE');
+    const reader = makeReader(connection, connection.git?.pin.head, true);
+    const incoming = await fetchDocuments(connection, reader);
+    checkOwnRevision(m, incoming);
+    const actual = await snapshotStore.snapshot();
+    const known = knownReferences(combine(m.documents, incoming.documents, { [m.document.actor]: m.document }));
+    const staged = { password: connection.password, uploads: new Map() };
+    const local = await prepareSnapshot(actual, known, staged);
+    const authored = author(m.document, m.base, local, m.documents);
+    const documents = combine(m.documents, incoming.documents, { [authored.actor]: authored });
+    const view = materialize(documents);
+    if (!view.conflicts.length) fail('DATA_SYNC_CONFLICT_STALE');
+    await validateConflicts(view.conflicts, reader);
+    const visible = await decodeRecords(retainLocalConflicts(view, local), reader);
+    const next = new Map(visible.records.map(item => [identity(item.namespace, item.key), item]));
+    const actualRecords = new Map(actual.records.map(item => [identity(item.namespace, item.key), item]));
+    const rows = [], acceptedChoices = new Set();
+    const append = (storageKey, branch, result) => {
+      for (const row of result.rows) {
+        const id = JSON.stringify([storageKey, branch, row.id]);
+        acceptedChoices.add(id); rows.push({ ...row, id });
+      }
+      if (rows.length > MAX_RECORDS) fail('DATA_SYNC_CAPACITY');
+      if (result.value === undefined) next.delete(storageKey);
+      else { const [namespace, key] = splitIdentity(storageKey); next.set(storageKey, { namespace, key, value: result.value }); }
+    };
+    const merge = (storageKey, branch, args) => {
+      const [namespace, key] = splitIdentity(storageKey);
+      const projected = {};
+      for (const [id, choice] of Object.entries(choices)) {
+        let parts; try { parts = JSON.parse(id); } catch { fail('DATA_SYNC_CONFLICT_STALE'); }
+        if (parts[0] === storageKey && parts[1] === branch) projected[parts[2]] = choice;
+      }
+      append(storageKey, branch, mergeSyncRecord(namespace, key, { ...args, choices: projected }));
+    };
+    const conflictKeys = groupKeys(view.conflicts);
+    for (const storageKey of new Set([...view.values.keys(), ...actualRecords.keys()])) {
+      const original = actualRecords.get(storageKey)?.value;
+      if (!conflictKeys.has(storageKey)) {
+        const reference = view.values.get(storageKey);
+        if ((local.get(storageKey)?.digest || null) === (reference?.digest || null)) continue;
+        const remote = reference ? decodeValue(await reader(reference)) : undefined;
+        merge(storageKey, 'incoming', { base: original, local: original, remote, hasBase: true });
+        continue;
+      }
+      const versions = view.conflicts.filter(item => identity(item.namespace, item.key) === storageKey);
+      const ancestor = await mergeAncestor(storageKey, versions, { ...m, documents }, incoming, connection, reader);
+      const base = ancestor.reference ? decodeValue(await reader(ancestor.reference)) : undefined;
+      let value = original;
+      for (const version of versions.filter(item => item.actor !== m.document.actor).sort((a, b) => a.actor.localeCompare(b.actor))) {
+        const remote = version.reference ? decodeValue(await reader(version.reference)) : undefined;
+        merge(storageKey, version.actor, { base, local: value, remote, hasBase: ancestor.hasBase });
+        value = next.get(storageKey)?.value;
+      }
+    }
+    if (Object.keys(choices).some(id => !acceptedChoices.has(id)) || Object.values(choices).some(choice => !['local', 'remote', 'merged'].includes(choice))) fail('DATA_SYNC_CONFLICT_STALE');
+    const causalDigests = Object.fromEntries(Object.entries(documents).map(([actor, document]) => [actor, { ...document,
+      records: Object.fromEntries(Object.entries(document.records).map(([key, operation]) => [key, { ...operation,
+        value: operation.value ? { digest: operation.value.digest, size: operation.value.size } : null }])) }]));
+    const fingerprint = await hash(await encodeValue({ documents: causalDigests, names: [...incoming.names].sort(), epoch: connection.git?.epoch || null }));
+    await connection.check();
+    return { actual, next: { version: 1, records: [...next.values()] }, rows, documents, fingerprint, known, staged, incoming };
+  }
+
   const api = {
     getFullDataSyncStatus: () => copy(status),
     subscribeFullDataSyncStatus(listener) { listeners.add(listener); listener(copy(status)); return () => listeners.delete(listener); },
@@ -1041,7 +1181,85 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
       }
       catch (reason) { throw safeError(reason); }
     },
-    clearFullDataConflictPreview() { conflictPreview = undefined; },
+    clearFullDataConflictPreview() { conflictPreview = undefined; mergePreview = undefined; },
+    async previewFullDataMerge() {
+      try {
+        return await exclusive(async () => {
+          mergePreview = undefined;
+          const config = await read(), connection = await githubConnection(await access({ readOnly: true }));
+          const plan = await planRecordMerge(config, connection);
+          const token = uuid();
+          mergePreview = { token, target: connection.target, snapshotToken: plan.actual.token, fingerprint: plan.fingerprint, expiresAt: now() + 600000 };
+          return { token, rows: plan.rows };
+        });
+      } catch (reason) { throw safeError(reason); }
+    },
+    async applyFullDataMerge({ token, choices = {} } = {}) {
+      try {
+        return await exclusive(async () => {
+          const preview = mergePreview;
+          if (!preview || token !== preview.token || preview.expiresAt < now() || !choices || typeof choices !== 'object' || Array.isArray(choices)) fail('DATA_SYNC_CONFLICT_STALE');
+          const config = await read(), connection = await githubConnection(await access());
+          const plan = await planRecordMerge(config, connection, choices);
+          if (preview.target !== connection.target || preview.snapshotToken !== plan.actual.token || preview.fingerprint !== plan.fingerprint) fail('DATA_SYNC_CONFLICT_STALE');
+          // A union may violate a domain invariant (e.g. a deleted folder with
+          // a retained child, duplicate reading URL or renamed tag). Reject the
+          // complete plan; never "repair" it by dropping a user's records.
+          try { for (const item of plan.next.records) await validateSyncValue(item.namespace, item.key, item.value); }
+          catch { fail('DATA_SYNC_INVALID'); }
+          const selected = await prepareSnapshot(plan.next, plan.known, plan.staged);
+          const m = config.metadata, document = replaceReplica(m.document, selected, plan.documents);
+          const pending = await stageRevision(document, plan.known, plan.staged, connection);
+          await checkPublishCapacity(pending, connection, plan.incoming.names);
+          Object.assign(m, { document, documents: combine(plan.documents, { [document.actor]: document }), base: digests(selected), pending });
+          rememberMergeBase(m, selected, m.documents);
+          delete m.cleanup; delete m.cleanupOutcome; delete m.resolutionId; delete m.resolutionClock;
+          if (encoder.encode(JSON.stringify(config)).length > MAX_METADATA) fail('DATA_SYNC_CAPACITY');
+          await connection.check();
+          // The production store commits content, recovery and causal checkpoint
+          // together. Test/custom adapters may provide their own atomic boundary.
+          const atomic = snapshotStore.syncMetadataStore === store;
+          if (!atomic || !snapshotStore.readMergeRecovery) fail('DATA_SYNC_LOCAL');
+          applying = true;
+          let saved;
+          try { saved = await snapshotStore.apply(plan.next, { expectedToken: plan.actual.token, syncMetadata: config,
+            metadataCheckpoint: true, mergeRecovery: { target: connection.target } }); } finally { applying = false; }
+          mergePreview = undefined; conflictPreview = undefined;
+          await inspect(); schedule(); return saved;
+        });
+      } catch (reason) { throw safeError(reason); }
+    },
+    async getFullDataMergeRecovery() {
+      const point = await snapshotStore.readMergeRecovery?.();
+      return Boolean(point && point.target === await currentTarget());
+    },
+    async undoFullDataMerge() {
+      try {
+        return await exclusive(async () => {
+          const point = await snapshotStore.readMergeRecovery?.(), config = await read();
+          const m = config.metadata, connection = await githubConnection(await access());
+          if (!point || !m || point.target !== connection.target || m.target !== connection.target) fail('DATA_SYNC_CONFLICT_STALE');
+          const actual = await snapshotStore.snapshot();
+          if (actual.token !== point.appliedToken) fail('DATA_SYNC_CONFLICT_STALE');
+          const reader = makeReader(connection, connection.git?.pin.head, true), incoming = await fetchDocuments(connection, reader);
+          checkOwnRevision(m, incoming);
+          const documents = combine(m.documents, incoming.documents, { [m.document.actor]: m.document });
+          if (!same(documents, m.documents)) fail('DATA_SYNC_CONFLICT_STALE');
+          const known = knownReferences(documents), staged = { password: connection.password, uploads: new Map() };
+          const selected = await prepareSnapshot(point.snapshot, known, staged), document = replaceReplica(m.document, selected, documents);
+          const pending = await stageRevision(document, known, staged, connection);
+          await checkPublishCapacity(pending, connection, incoming.names);
+          Object.assign(m, { document, documents: combine(documents, { [document.actor]: document }), base: digests(selected), pending });
+          rememberMergeBase(m, selected, m.documents);
+          if (encoder.encode(JSON.stringify(config)).length > MAX_METADATA) fail('DATA_SYNC_CAPACITY');
+          await connection.check(); applying = true;
+          let saved;
+          try { saved = await snapshotStore.apply(point.snapshot, { expectedToken: actual.token, syncMetadata: config,
+            metadataCheckpoint: true, clearMergeRecovery: true }); } finally { applying = false; }
+          mergePreview = undefined; await inspect(); schedule(); return saved;
+        });
+      } catch (reason) { throw safeError(reason); }
+    },
     async previewFullDataConflict(id) {
       try {
         return await exclusive(async () => {

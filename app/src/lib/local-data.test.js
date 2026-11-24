@@ -290,6 +290,103 @@ test('whole cloud replacement commits the local data and sync checkpoint atomica
   await storage.close(); await restarted.close();
 });
 
+test('merge checkpoint stores the previous snapshot and actual result token atomically without exposing device preferences', async () => {
+  const storage = fixture(), { localData, syncDataStore, backend } = storage, target = 'a'.repeat(64);
+  try {
+    await localData.set({ 'covelet.future': { prior: true }, 'covelet.language.v1': 'ja', 'covelet.privacy.lock.v1': { verifier: 'private-device-password' },
+      'covelet.content.preferences.v1': { version: 1, revision: 2, presentation: true, aliases: {}, privateKeys: ['site:protected'] } });
+    await storage.createEncryptedStore('future-images').set('image', new Blob(['prior image']));
+    const before = await syncDataStore.snapshot();
+    const incoming = { version: 1, records: [
+      { namespace: 'preferences', key: 'covelet.future', value: { merged: true } },
+      { namespace: 'preferences', key: 'covelet.content.preferences.v1', value: { version: 1, revision: 0, aliases: {}, privateKeys: ['site:remote'] } },
+      { namespace: 'future-images', key: 'image', value: new Blob(['merged image']) },
+    ] };
+    const commit = backend.commit; let commits = 0;
+    backend.commit = async (values, ids) => { commits++; assert.equal(values.length, 5); return commit(values, ids); };
+    const applied = await syncDataStore.apply(incoming, { expectedToken: before.token, syncMetadata: { merged: true }, metadataCheckpoint: true, mergeRecovery: { target } });
+    assert.equal(commits, 1, 'Content, sync checkpoint and recovery copy use one commit.');
+    const recovery = await syncDataStore.readMergeRecovery();
+    assert.deepEqual(recovery, { version: 1, target, snapshot: before, appliedToken: applied.token });
+    assert.equal(recovery.appliedToken, (await syncDataStore.snapshot()).token);
+    assert.notEqual(recovery.appliedToken, before.token);
+    const portable = await syncDataStore.snapshot();
+    assert.deepEqual(portable.records.find((item) => item.key === 'covelet.content.preferences.v1').value.privateKeys, ['site:protected', 'site:remote'],
+      'The result token reflects privacy preservation rather than the proposed input.');
+    assert.ok(portable.records.every((item) => item.key !== 'covelet.data-sync.recovery.v1'));
+    assert.ok(recovery.snapshot.records.every((item) => !['covelet.language.v1', 'covelet.privacy.lock.v1'].includes(item.key)));
+    assert.equal(await recovery.snapshot.records.find((item) => item.namespace === 'future-images').value.text(), 'prior image');
+    assert.deepEqual(await syncDataStore.syncMetadataStore.read(), { merged: true });
+    assert.doesNotMatch(JSON.stringify([...backend.records.values()]), /prior image|merged image|private-device-password|covelet\.data-sync\.recovery/);
+    assert.equal((await localData.get('covelet.content.preferences.v1'))['covelet.content.preferences.v1'].presentation, true);
+    const restarted = fixture({ backend });
+    try { assert.deepEqual(await restarted.syncDataStore.readMergeRecovery(), recovery); } finally { await restarted.close(); }
+  } finally { await storage.close(); }
+});
+
+test('merge recovery CAS and failed commits leave content, recovery and metadata unchanged', async () => {
+  const storage = fixture(), { localData, syncDataStore, backend } = storage, target = 'b'.repeat(64);
+  try {
+    await localData.set({ 'covelet.future': { prior: true } });
+    await syncDataStore.syncMetadataStore.write({ pending: 'before' });
+    const before = await syncDataStore.snapshot(), incoming = { version: 1, records: [{ namespace: 'preferences', key: 'covelet.future', value: { merged: true } }] };
+    const options = { expectedToken: before.token, syncMetadata: { pending: 'merged' }, metadataCheckpoint: true, mergeRecovery: { target } };
+    const commit = backend.commit;
+    backend.commit = async () => { throw Error('Merge commit interrupted'); };
+    const originalRecords = structuredClone([...backend.records.entries()]);
+    await assert.rejects(syncDataStore.apply(incoming, options), /Merge commit interrupted/);
+    assert.deepEqual([...backend.records.entries()], originalRecords);
+    assert.equal(await syncDataStore.readMergeRecovery(), null);
+    assert.deepEqual(await syncDataStore.syncMetadataStore.read(), { pending: 'before' });
+    backend.commit = commit;
+    await localData.set({ 'covelet.racing-tab': 'later edit' });
+    const raced = structuredClone([...backend.records.entries()]);
+    await assert.rejects(syncDataStore.apply(incoming, options), { code: 'REVISION_CONFLICT' });
+    assert.deepEqual([...backend.records.entries()], raced);
+    assert.equal(await syncDataStore.readMergeRecovery(), null);
+  } finally { await storage.close(); }
+});
+
+test('undo removes its recovery copy in the same atomic commit as restored content and a new checkpoint', async () => {
+  const storage = fixture(), { localData, syncDataStore, backend } = storage;
+  try {
+    await localData.set({ 'covelet.future': { prior: true } });
+    const before = await syncDataStore.snapshot();
+    const merged = await syncDataStore.apply({ version: 1, records: [{ namespace: 'preferences', key: 'covelet.future', value: { merged: true } }] },
+      { expectedToken: before.token, metadataCheckpoint: true, syncMetadata: { clock: 2 }, mergeRecovery: { target: 'c'.repeat(64) } });
+    const recovery = await syncDataStore.readMergeRecovery(), commit = backend.commit;
+    backend.commit = async () => { throw Error('Undo commit interrupted'); };
+    const options = { expectedToken: merged.token, metadataCheckpoint: true, syncMetadata: { clock: 3 }, clearMergeRecovery: true };
+    await assert.rejects(syncDataStore.apply(recovery.snapshot, options), /Undo commit interrupted/);
+    assert.deepEqual(await syncDataStore.readMergeRecovery(), recovery);
+    assert.equal((await syncDataStore.snapshot()).token, merged.token);
+    assert.deepEqual(await syncDataStore.syncMetadataStore.read(), { clock: 2 });
+    backend.commit = commit;
+    const restored = await syncDataStore.apply(recovery.snapshot, options);
+    assert.deepEqual(restored.records, before.records);
+    assert.equal(await syncDataStore.readMergeRecovery(), null);
+    assert.deepEqual(await syncDataStore.syncMetadataStore.read(), { clock: 3 });
+  } finally { await storage.close(); }
+});
+
+test('merge recovery and checkpoint options cannot bypass input validation or whole replacement privacy guards', async () => {
+  const storage = fixture(), { localData, syncDataStore } = storage;
+  try {
+    await localData.set({ 'covelet.content.preferences.v1': { version: 1, revision: 1, presentation: true, aliases: {}, privateKeys: ['site:protected'] } });
+    const before = await syncDataStore.snapshot();
+    await assert.rejects(syncDataStore.apply({ version: 1, records: [] }, { expectedToken: before.token, syncMetadata: {}, mergeRecovery: { target: 'd'.repeat(64) } }),
+      { code: 'LOCAL_DATA_PRIVACY_CONFLICT' });
+    for (const options of [{ metadataCheckpoint: 'true' }, { clearMergeRecovery: 1 }, { mergeRecovery: { target: 'bad' } },
+      { mergeRecovery: { target: 'd'.repeat(64) }, clearMergeRecovery: true }]) {
+      await assert.rejects(syncDataStore.apply(before, { expectedToken: before.token, ...options }), { code: 'LOCAL_DATA_INVALID' });
+    }
+    await assert.rejects(syncDataStore.apply({ version: 1, records: [{ namespace: 'preferences', key: 'covelet.data-sync.recovery.v1', value: { version: 1 } }] },
+      { expectedToken: before.token, metadataCheckpoint: true, syncMetadata: {} }), { code: 'LOCAL_DATA_INVALID' });
+    assert.equal((await syncDataStore.snapshot()).token, before.token);
+    assert.equal(await syncDataStore.readMergeRecovery(), null);
+  } finally { await storage.close(); }
+});
+
 test('sync imports rebase domain revisions without loops and cannot disable an active local privacy lock', async () => {
   const note = (title, revision) => ({ id: 'note-one', title, body: title, revision, pinned: false, createdAt: 1, updatedAt: 2 });
   const tools = (title, revision, noteRevision) => ({ version: 3, revision, notes: [note(title, noteRevision)], reading: [], snapshots: [], trash: [] });

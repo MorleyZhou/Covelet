@@ -18247,5 +18247,230 @@
     "de": "Auf dem Desktop angeheftet",
     "fr": "Épinglé sur le bureau",
     "ru": "Закреплено на главном экране"
+  },
+  "预览合并": {
+    "en": "Preview merge",
+    "zh-TW": "預覽合併",
+    "ja": "統合をプレビュー",
+    "ko": "병합 미리 보기",
+    "de": "Zusammenführung ansehen",
+    "fr": "Prévisualiser la fusion",
+    "ru": "Просмотреть объединение"
+  },
+  "合并预览": {
+    "en": "Merge preview",
+    "zh-TW": "合併預覽",
+    "ja": "統合プレビュー",
+    "ko": "병합 미리 보기",
+    "de": "Vorschau der Zusammenführung",
+    "fr": "Aperçu de la fusion",
+    "ru": "Предварительный просмотр объединения"
+  },
+  "两侧都改了": {
+    "en": "Changed on both sides",
+    "zh-TW": "兩側都改了",
+    "ja": "両方で変更",
+    "ko": "양쪽에서 변경됨",
+    "de": "Auf beiden Seiten geändert",
+    "fr": "Modifié des deux côtés",
+    "ru": "Изменено с обеих сторон"
+  },
+  "仅一边改了": {
+    "en": "Changed on one side",
+    "zh-TW": "僅一側改了",
+    "ja": "片方で変更",
+    "ko": "한쪽에서 변경됨",
+    "de": "Auf einer Seite geändert",
+    "fr": "Modifié d’un seul côté",
+    "ru": "Изменено с одной стороны"
+  },
+  "一边删了": {
+    "en": "Deleted on one side",
+    "zh-TW": "一側已刪除",
+    "ja": "片方で削除",
+    "ko": "한쪽에서 삭제됨",
+    "de": "Auf einer Seite gelöscht",
+    "fr": "Supprimé d’un côté",
+    "ru": "Удалено с одной стороны"
+  },
+  "保留方式": {
+    "en": "Keep",
+    "zh-TW": "保留方式",
+    "ja": "保持する内容",
+    "ko": "유지 방식",
+    "de": "Beibehalten",
+    "fr": "Conserver",
+    "ru": "Сохранить"
+  },
+  "{0}：保留方式": {
+    "en": "{0}: keep",
+    "zh-TW": "{0}：保留方式",
+    "ja": "{0}：保持する内容",
+    "ko": "{0}: 유지 방식",
+    "de": "{0}: beibehalten",
+    "fr": "{0} : conserver",
+    "ru": "{0}: сохранить"
+  },
+  "保留本机": {
+    "en": "Keep this device",
+    "zh-TW": "保留本機",
+    "ja": "この端末の内容を保持",
+    "ko": "이 기기 유지",
+    "de": "Dieses Gerät beibehalten",
+    "fr": "Conserver cet appareil",
+    "ru": "Сохранить с устройства"
+  },
+  "保留云端": {
+    "en": "Keep cloud storage",
+    "zh-TW": "保留雲端",
+    "ja": "クラウドの内容を保持",
+    "ko": "클라우드 유지",
+    "de": "Cloudspeicher beibehalten",
+    "fr": "Conserver le stockage distant",
+    "ru": "Сохранить из облака"
+  },
+  "合并结果": {
+    "en": "Merged result",
+    "zh-TW": "合併結果",
+    "ja": "統合結果",
+    "ko": "병합 결과",
+    "de": "Zusammengeführtes Ergebnis",
+    "fr": "Résultat fusionné",
+    "ru": "Результат объединения"
+  },
+  "共 {0} 条": {
+    "en": "{0} records",
+    "zh-TW": "共 {0} 條",
+    "ja": "{0} 件",
+    "ko": "총 {0}개",
+    "de": "{0} Einträge",
+    "fr": "{0} éléments",
+    "ru": "Записей: {0}"
+  },
+  "第 {0} / {1} 页": {
+    "en": "Page {0} of {1}",
+    "zh-TW": "第 {0} / {1} 頁",
+    "ja": "{1} ページ中 {0} ページ",
+    "ko": "{0} / {1} 페이지",
+    "de": "Seite {0} von {1}",
+    "fr": "Page {0} sur {1}",
+    "ru": "Страница {0} из {1}"
+  },
+  "合并同步记录": {
+    "en": "Merge synchronized records",
+    "zh-TW": "合併同步記錄",
+    "ja": "同期データを統合",
+    "ko": "동기화 기록 병합",
+    "de": "Synchronisierte Einträge zusammenführen",
+    "fr": "Fusionner les éléments synchronisés",
+    "ru": "Объединить синхронизированные записи"
+  },
+  "合并预览分页": {
+    "en": "Merge preview pages",
+    "zh-TW": "合併預覽分頁",
+    "ja": "統合プレビューのページ",
+    "ko": "병합 미리 보기 페이지",
+    "de": "Seiten der Zusammenführungsvorschau",
+    "fr": "Pages de l’aperçu de fusion",
+    "ru": "Страницы предварительного просмотра"
+  },
+  "输入同步密码后，可预览合并。": {
+    "en": "Enter your sync password to preview the merge.",
+    "zh-TW": "輸入同步密碼後，可預覽合併。",
+    "ja": "同期パスワードを入力すると統合をプレビューできます。",
+    "ko": "동기화 비밀번호를 입력하면 병합을 미리 볼 수 있습니다.",
+    "de": "Synchronisierungspasswort eingeben, um die Zusammenführung anzusehen.",
+    "fr": "Saisissez le mot de passe de synchronisation pour prévisualiser la fusion.",
+    "ru": "Введите пароль синхронизации для просмотра объединения."
+  },
+  "逐条检查两侧的修改，再一起应用。应用前会保留恢复前副本。": {
+    "en": "Review changes on both sides, then apply them together. A copy is saved before applying.",
+    "zh-TW": "逐條檢查兩側的修改，再一起套用。套用前會保留復原前副本。",
+    "ja": "両方の変更を項目ごとに確認してまとめて適用します。適用前のコピーを保存します。",
+    "ko": "양쪽 변경 사항을 항목별로 확인한 후 함께 적용하세요. 적용 전 사본을 저장합니다.",
+    "de": "Änderungen beider Seiten einzeln prüfen und gemeinsam anwenden. Zuvor wird eine Kopie gesichert.",
+    "fr": "Vérifiez chaque modification des deux côtés, puis appliquez-les ensemble. Une copie est enregistrée avant l’application.",
+    "ru": "Проверьте изменения с обеих сторон и примените их вместе. Перед применением сохраняется копия."
+  },
+  "正在读取合并预览…": {
+    "en": "Loading merge preview…",
+    "zh-TW": "正在讀取合併預覽…",
+    "ja": "統合プレビューを読み込み中…",
+    "ko": "병합 미리 보기 로드 중…",
+    "de": "Vorschau wird geladen…",
+    "fr": "Chargement de l’aperçu de fusion…",
+    "ru": "Загрузка предварительного просмотра…"
+  },
+  "正在应用合并…": {
+    "en": "Applying merge…",
+    "zh-TW": "正在套用合併…",
+    "ja": "統合を適用中…",
+    "ko": "병합 적용 중…",
+    "de": "Zusammenführung wird angewendet…",
+    "fr": "Application de la fusion…",
+    "ru": "Применение объединения…"
+  },
+  "正在撤销合并…": {
+    "en": "Undoing merge…",
+    "zh-TW": "正在復原合併…",
+    "ja": "統合を元に戻しています…",
+    "ko": "병합 실행 취소 중…",
+    "de": "Zusammenführung wird rückgängig gemacht…",
+    "fr": "Annulation de la fusion…",
+    "ru": "Отмена объединения…"
+  },
+  "此侧没有这条记录。": {
+    "en": "This record is absent on this side.",
+    "zh-TW": "此側沒有這條記錄。",
+    "ja": "こちら側にこの項目はありません。",
+    "ko": "이쪽에는 이 항목이 없습니다.",
+    "de": "Auf dieser Seite ist der Eintrag nicht vorhanden.",
+    "fr": "Cet élément est absent de ce côté.",
+    "ru": "С этой стороны запись отсутствует."
+  },
+  "查看两侧内容": {
+    "en": "View both versions",
+    "zh-TW": "檢視兩側內容",
+    "ja": "両方の内容を表示",
+    "ko": "양쪽 내용 보기",
+    "de": "Beide Versionen ansehen",
+    "fr": "Voir les deux versions",
+    "ru": "Посмотреть обе версии"
+  },
+  "应用合并": {
+    "en": "Apply merge",
+    "zh-TW": "套用合併",
+    "ja": "統合を適用",
+    "ko": "병합 적용",
+    "de": "Zusammenführung anwenden",
+    "fr": "Appliquer la fusion",
+    "ru": "Применить объединение"
+  },
+  "撤销上次合并": {
+    "en": "Undo last merge",
+    "zh-TW": "復原上次合併",
+    "ja": "前回の統合を元に戻す",
+    "ko": "마지막 병합 실행 취소",
+    "de": "Letzte Zusammenführung rückgängig machen",
+    "fr": "Annuler la dernière fusion",
+    "ru": "Отменить последнее объединение"
+  },
+  "恢复前副本暂时无法读取。": {
+    "en": "The pre-merge copy cannot be read right now.",
+    "zh-TW": "復原前副本暫時無法讀取。",
+    "ja": "統合前のコピーを現在読み込めません。",
+    "ko": "병합 전 사본을 현재 읽을 수 없습니다.",
+    "de": "Die Kopie vor der Zusammenführung kann derzeit nicht gelesen werden.",
+    "fr": "La copie précédant la fusion est momentanément illisible.",
+    "ru": "Сейчас не удалось прочитать копию до объединения."
+  },
+  "同步冲突可逐条预览并合并，支持撤销上次合并。图片同步支持中断后重试。": {
+    "en": "Preview and merge sync conflicts record by record, with undo for the last merge. Image sync can resume after an interruption.",
+    "zh-TW": "同步衝突可逐條預覽並合併，支援復原上次合併。圖片同步支援中斷後重試。",
+    "ja": "同期の競合を項目ごとに確認して統合でき、前回の統合は元に戻せます。画像の同期は中断後に再試行できます。",
+    "ko": "동기화 충돌을 항목별로 미리 보고 병합할 수 있으며 마지막 병합을 실행 취소할 수 있습니다. 이미지 동기화는 중단 후 다시 시도할 수 있습니다.",
+    "de": "Synchronisierungskonflikte einzeln prüfen und zusammenführen. Die letzte Zusammenführung lässt sich rückgängig machen. Die Bildsynchronisierung kann nach einer Unterbrechung fortgesetzt werden.",
+    "fr": "Prévisualisez et fusionnez chaque élément en conflit, avec possibilité d’annuler la dernière fusion. La synchronisation des images peut reprendre après une interruption.",
+    "ru": "Просматривайте и объединяйте конфликты по отдельным записям с возможностью отменить последнее объединение. Синхронизацию изображений можно повторить после прерывания."
   }
 }
