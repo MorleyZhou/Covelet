@@ -1,7 +1,7 @@
 import { tr } from '../i18n/index.js';
 import { isWebdavError } from './cloud-webdav.js';
 import { localData, createEncryptedStore } from './local-data.js';
-import { encryptCloudPayload, decryptCloudPayload, CLOUD_OBJECT_LIMIT } from './cloud-crypto.js';
+import { encryptCloudPayload, decryptCloudPayload, validateCloudPassword, CLOUD_OBJECT_LIMIT } from './cloud-crypto.js';
 import { parseCloudSnapshotName, isCloudProviderError } from './cloud-providers.js';
 import { isSyncRecord, validateSyncValue } from './sync-data-rules.js';
 import { sameJson } from './json-equal.js';
@@ -86,6 +86,8 @@ function equalPreviewImage(left, right) {
     && left.bytes.every((byte, index) => byte === right.bytes[index]);
 }
 const messages = {
+  get CLOUD_PASSWORD_CHANGED() { return tr('同步密码已更换，请使用新密码并在需要时重新填写存储访问凭据。'); },
+  get CLOUD_ROTATION_PENDING() { return tr('密码更换尚未完成，请使用新密码解锁以继续。'); },
   get LOCAL_DATA_PRIVACY_CONFLICT() { return tr('此删除版本会移除当前隐藏内容的标记，请先在本机解除隐藏，再重新选择。'); },
   get DATA_SYNC_CONFLICT_STALE() { return tr('冲突已变化，请同步后重试。'); },
   get DATA_SYNC_INVALID() { return tr('同步数据无效，本机数据已保留。'); },
@@ -307,6 +309,7 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
       if (own(m, 'cleanupOutcome')) keys.push('cleanupOutcome');
       if (own(m, 'gitEpoch')) keys.push('gitEpoch');
       if (own(m, 'gitReset')) keys.push('gitReset');
+      if (own(m, 'passwordEpoch')) keys.push('passwordEpoch');
       if (own(m, 'mergeBase')) keys.push('mergeBase', 'mergeFrontier');
       if (!fields(m, keys) || !hex(m.target) || own(m, 'resolutionId') && (!actorValid(m.resolutionId) || !Number.isSafeInteger(m.resolutionClock) || m.resolutionClock < 1)
         || !Number.isSafeInteger(m.publishedClock) || m.publishedClock < 0 || !Number.isFinite(m.lastSync) || m.lastSync < 0) fail();
@@ -320,6 +323,7 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
         for (const [actor, clock] of Object.entries(m.mergeFrontier)) if (!actorValid(actor) || !Number.isSafeInteger(clock) || clock < 0) fail();
       }
       if (m.pending) validatePending(m.pending, m.document);
+      if (own(m, 'passwordEpoch') && !actorValid(m.passwordEpoch)) fail();
       if (own(m, 'gitEpoch') && !parseCloudSnapshotName(m.gitEpoch)) fail();
       if (own(m, 'gitReset')) {
         const plan = m.gitReset;
@@ -439,8 +443,11 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
     return { digest: await hash(bytes), size: bytes.length, chunks };
   }
   const makeReader = (connection, ref, allowStaged = ref === undefined) => {
-    const cache = new Map(); let total = 0;
+    const cache = new Map(), bindings = new Map(); let total = 0;
     const piece = async (chunk) => {
+      const bound = bindings.get(chunk.name);
+      if (bound && (bound.hash !== chunk.hash || bound.size !== chunk.size)) fail();
+      bindings.set(chunk.name, { hash: chunk.hash, size: chunk.size });
       if (cache.has(chunk.name)) return cache.get(chunk.name);
       const work = (async () => {
         await connection.check();
@@ -935,7 +942,7 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
       return result;
     }).catch(async (reason) => {
       const safe = safeError(reason); try { await inspect(); } catch {}
-      return report({ phase: safe.code === 'CLOUD_LOCKED' ? 'locked' : 'error', code: safe.code, message: safe.message });
+      return report({ phase: ['CLOUD_LOCKED', 'CLOUD_PASSWORD_CHANGED', 'CLOUD_ROTATION_PENDING'].includes(safe.code) ? 'locked' : 'error', code: safe.code, message: safe.message });
     }).finally(() => { flight = undefined; });
     return flight;
   }
@@ -950,6 +957,10 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
       if (connection.git?.epoch) config.metadata.gitEpoch = connection.git.epoch;
     }
     const m = config.metadata;
+    if (connection.passwordEpoch) {
+      if (!actorValid(connection.passwordEpoch) || m.passwordEpoch && m.passwordEpoch !== connection.passwordEpoch) fail('DATA_SYNC_TARGET');
+      m.passwordEpoch = connection.passwordEpoch;
+    }
     checkOwnRevision(m, incoming);
     const received = combine(m.documents, incoming.documents, { [m.document.actor]: m.document });
     const receivedView = materialize(received); await decodeRecords(receivedView.values, reader); await validateConflicts(receivedView.conflicts, reader);
@@ -1153,7 +1164,214 @@ export function createFullDataSync({ access, currentTarget, snapshotStore, store
     return { actual, next: { version: 1, records: [...next.values()] }, rows, documents, fingerprint, known, staged, incoming };
   }
 
+  async function readRotationReference(reference, reader, cache) {
+    // Equal plaintext hashes do not prove that two different remote references
+    // both have all their declared chunks. Validate each framing at least once.
+    cache.checked ||= new Set();
+    const framing = JSON.stringify(reference);
+    if (!cache.checked.has(framing)) {
+      const bytes = await reader(reference);
+      cache.set(reference.digest, bytes); cache.checked.add(framing);
+    }
+    const bytes = cache.get(reference.digest);
+    if (!bytes || bytes.length !== reference.size) fail();
+    return bytes;
+  }
+  async function validateRotationDocument(document, reader, cache) {
+    const records = [];
+    for (const [key, operation] of Object.entries(document.records)) if (operation.value) {
+      const bytes = await readRotationReference(operation.value, reader, cache);
+      const [namespace, recordKey] = splitIdentity(key), value = decodeValue(bytes);
+      // Accept old language history as input but never materialize or carry its
+      // value into the newly encrypted generation.
+      await validateSyncValue(namespace, recordKey, value);
+      if (!legacyDeviceRecord(namespace, recordKey)) records.push({ namespace, key: recordKey, value });
+    }
+    countSyncSnapshotUnits({ version: 1, records });
+  }
+  async function currentRotationNames(connection) {
+    if (connection.git) {
+      // Candidate uploads may advance the same repository branch. Re-pin that
+      // live branch and compare just the retired generation's immutable files.
+      const storage = connection.git.storage, pin = await storage.pin(), layout = await storage.readLayout(pin);
+      if (layout.layout !== connection.git.layout || layout.epoch !== connection.git.epoch) fail('DATA_SYNC_CONFLICT_STALE');
+      return (await storage.files(pin, layout.layout)).indexes.map(item => item.name).sort();
+    }
+    return (await list(connection.provider, connection)).map(item => item.name).sort();
+  }
+  async function validateRotationCandidate(plan, destination) {
+    const reader = makeReader(destination, undefined, false), cache = new Map();
+    const documents = {};
+    for (const index of plan.indexes) {
+      const header = await parseIndexHeader(index.name, await destination.provider.read(index.name), destination);
+      const document = await readIndexDocument(header, reader);
+      await validateRotationDocument(document, reader, cache);
+      const previous = documents[document.actor];
+      if (!previous || document.clock > previous.clock) documents[document.actor] = document;
+    }
+    const actual = materialize(combine(documents));
+    if (actual.conflicts.length || !same(digests(actual.values), plan.metadata.metadata.base)) fail('DATA_SYNC_INVALID');
+    await decodeRecords(actual.values, reader);
+  }
+  async function uploadRotationCandidate(plan, destination) {
+    if (!destination || !hex(destination.target) || destination.target !== plan.metadata.metadata.target
+      || !destination.provider || !destination.assetProvider || typeof destination.check !== 'function') fail();
+    validateCloudPassword(destination.password);
+    const expectedIndexes = new Set(plan.indexes.map(item => item.name)), expectedChunks = new Set(plan.uploads.map(item => item.name));
+    const presentIndexes = await list(destination.provider, destination), presentChunks = await list(destination.assetProvider, destination);
+    if (presentIndexes.length > MAX_REVISIONS || presentChunks.length > MAX_CHUNKS
+      || presentIndexes.some(item => !expectedIndexes.has(item.name)) || presentChunks.some(item => !expectedChunks.has(item.name))) fail('DATA_SYNC_CONFLICT_STALE');
+    const alreadyUploaded = new Set(presentChunks.map(item => item.name));
+    for (const chunk of plan.uploads) {
+      await destination.check();
+      if (alreadyUploaded.has(chunk.name)) continue;
+      const stored = await pendingStore.get(chunk.name);
+      if (!stored || typeof stored.body !== 'string') fail('DATA_SYNC_LOCAL');
+      const bytes = encoder.encode(stored.body);
+      if (await hash(bytes) !== parseCloudSnapshotName(chunk.name).digest) fail();
+      await destination.assetProvider.write(chunk.name, bytes);
+    }
+    const alreadyIndexed = new Set(presentIndexes.map(item => item.name));
+    for (const index of plan.indexes) {
+      await destination.check();
+      if (alreadyIndexed.has(index.name)) continue;
+      const bytes = encoder.encode(index.body);
+      if (await hash(bytes) !== parseCloudSnapshotName(index.name).digest) fail();
+      await destination.provider.write(index.name, bytes);
+    }
+    // Never let the staging store satisfy a readback proof.
+    await validateRotationCandidate(plan, destination);
+  }
+  function checkRotationPlan(plan) {
+    if (!plan || !actorValid(plan.epoch) || plan.oldEpoch !== null && !actorValid(plan.oldEpoch)
+      || !['v1', 'v2'].includes(plan.oldLayout)
+      || typeof plan.snapshotToken !== 'string' || !plan.snapshotToken.length
+      || !plan.metadata || plan.metadata.version !== 1 || !plan.metadata.metadata
+      || plan.metadata.metadata.passwordEpoch !== plan.epoch || plan.metadata.metadata.pending !== null
+      || !hex(plan.metadata.metadata.target) || !Array.isArray(plan.indexes) || !plan.indexes.length || plan.indexes.length > MAX_REVISIONS
+      || !Array.isArray(plan.uploads) || plan.uploads.length > MAX_CHUNKS
+      || !Array.isArray(plan.oldNames) || plan.oldNames.length > MAX_REVISIONS
+      || new Set(plan.oldNames).size !== plan.oldNames.length || plan.oldNames.some(name => !parseCloudSnapshotName(name))) fail();
+    validateFullDataReplica(plan.metadata.metadata.document);
+    combine(plan.metadata.metadata.documents, { [plan.metadata.metadata.document.actor]: plan.metadata.metadata.document });
+    const indexes = new Set(), chunks = new Set();
+    for (const item of plan.indexes) {
+      if (!item || !parseCloudSnapshotName(item.name) || typeof item.body !== 'string' || !item.body.length
+        || encoder.encode(item.body).length > CLOUD_OBJECT_LIMIT || indexes.has(item.name)) fail();
+      indexes.add(item.name);
+    }
+    for (const chunk of plan.uploads) {
+      validateReference({ digest: chunk.hash, size: chunk.size, chunks: [chunk] }, CHUNK);
+      if (chunks.has(chunk.name)) fail(); chunks.add(chunk.name);
+    }
+    if (!plan.guard || !parseCloudSnapshotName(plan.guard.name) || typeof plan.guard.body !== 'string'
+      || encoder.encode(plan.guard.body).length > CLOUD_OBJECT_LIMIT || parseCloudSnapshotName(plan.guard.name).actor !== plan.epoch) fail();
+    if (encoder.encode(JSON.stringify(plan.metadata)).length > MAX_METADATA) fail('DATA_SYNC_CAPACITY');
+  }
+  async function finishPasswordRotation(plan, { destination, ensure, commit, finalize }, oldConnection) {
+    checkRotationPlan(plan);
+    if (typeof commit !== 'function' || typeof finalize !== 'function') fail();
+    if (ensure !== undefined) { if (typeof ensure !== 'function') fail(); await ensure(copy(plan)); }
+    await uploadRotationCandidate(plan, destination);
+    const actual = await snapshotStore.snapshot();
+    if (actual.token !== plan.snapshotToken) fail('REVISION_CONFLICT');
+    if (oldConnection && !same(await currentRotationNames(oldConnection), [...plan.oldNames].sort())) fail('DATA_SYNC_CONFLICT_STALE');
+    await destination.check();
+    await commit(copy(plan), oldConnection);
+    // These are encrypted transport caches, not the device's business data.
+    // The new generation is fully published; no old-password pending body may
+    // survive to be uploaded by the next ordinary synchronization.
+    if (typeof pendingStore.entries !== 'function') fail('DATA_SYNC_LOCAL');
+    try { for (const [name] of await pendingStore.entries()) await pendingStore.remove(name); }
+    catch { fail('DATA_SYNC_LOCAL'); }
+    await finalize(copy(plan));
+    conflictPreview = undefined; mergePreview = undefined;
+    await inspect();
+    return { epoch: plan.epoch, indexes: plan.indexes.length, chunks: plan.uploads.length };
+  }
+  async function preparePasswordRotation(newPassword, { destination, prepare, ensure, commit, finalize, epoch } = {}) {
+    validateCloudPassword(newPassword);
+    if (!actorValid(epoch) || typeof prepare !== 'function' || typeof commit !== 'function' || typeof finalize !== 'function') fail();
+    const config = await read(), m = config.metadata;
+    const connection = await githubConnection(await access({ readOnly: true }));
+    if (!m || m.target !== connection.target || newPassword === connection.password || destination?.password !== newPassword
+      || destination?.target !== connection.target || m.pending || m.gitReset || m.document.clock > m.publishedClock
+      || materialize(m.documents).conflicts.length) fail('DATA_SYNC_TARGET');
+    const actual = await snapshotStore.snapshot(), local = new Map();
+    countSyncSnapshotUnits(actual);
+    for (const record of actual.records) {
+      await validateSyncValue(record.namespace, record.key, record.value);
+      local.set(identity(record.namespace, record.key), { digest: await hash(await encodeValue(record.value)) });
+    }
+    if (countPending(m, local)) fail('DATA_SYNC_TARGET');
+    const reader = makeReader(connection, connection.git?.pin.head, false), incoming = await fetchDocuments(connection, reader);
+    checkOwnRevision(m, incoming);
+    const current = materialize(incoming.documents);
+    if (!incoming.names.size || current.conflicts.length || !same(digests(current.values), digests(local))) fail('DATA_SYNC_TARGET');
+    const cache = new Map(), retained = [], clocks = new Set();
+    // Complete old-generation validation precedes even local ciphertext staging.
+    for (const name of [...incoming.names].sort()) {
+      const header = await parseIndexHeader(name, await connection.provider.read(name, connection.git?.pin.head), connection);
+      const identity = `${header.actor}:${header.clock}`;
+      if (clocks.has(identity)) fail(); clocks.add(identity);
+      const document = await readIndexDocument(header, reader);
+      await validateRotationDocument(document, reader, cache);
+      retained.push({ header, document });
+    }
+    await validateRotationDocument(m.document, reader, cache);
+    for (const document of Object.values(m.documents)) await validateRotationDocument(document, reader, cache);
+    for (const [key, reference] of Object.entries(m.mergeBase || {})) if (reference) {
+      const [namespace, recordKey] = splitIdentity(key);
+      const bytes = await readRotationReference(reference, reader, cache);
+      if (!legacyDeviceRecord(namespace, recordKey)) await validateSyncValue(namespace, recordKey, decodeValue(bytes));
+    }
+    await connection.check();
+    const known = new Map(), references = new Map(), staged = { password: newPassword, uploads: new Map() };
+    const rewriteReference = async (reference) => {
+      if (!reference) return null;
+      if (references.has(reference.digest)) return references.get(reference.digest);
+      const bytes = cache.get(reference.digest); if (!bytes || bytes.length !== reference.size) fail();
+      const result = await stageBinary(bytes, known, staged); references.set(reference.digest, result); return result;
+    };
+    const rewriteDocument = async (input) => {
+      const document = copy(input);
+      for (const [key, operation] of Object.entries(document.records)) operation.value = legacyDeviceRecord(...splitIdentity(key)) ? null : await rewriteReference(operation.value);
+      return validateFullDataReplica(document);
+    };
+    const indexes = [];
+    for (const { header, document: before } of retained) {
+      const document = await rewriteDocument(before), reference = await stageBinary(encoder.encode(JSON.stringify(document)), known, staged);
+      const encrypted = await encryptCloudPayload(encoder.encode(JSON.stringify({ ...header, document: reference })), newPassword, { crypto });
+      indexes.push({ name: `covelet-${document.actor}-${document.clock}-${await hash(encrypted)}.json`, body: decoder.decode(encrypted) });
+    }
+    const next = copy(config), metadata = next.metadata;
+    metadata.document = await rewriteDocument(m.document); metadata.documents = {};
+    for (const [actor, document] of Object.entries(m.documents)) metadata.documents[actor] = await rewriteDocument(document);
+    metadata.documents = combine(metadata.documents, { [metadata.document.actor]: metadata.document });
+    if (m.mergeBase) {
+      metadata.mergeBase = {};
+      for (const [key, reference] of Object.entries(m.mergeBase)) if (!legacyDeviceRecord(...splitIdentity(key))) metadata.mergeBase[key] = await rewriteReference(reference);
+    }
+    metadata.base = digests(local); metadata.pending = null; metadata.passwordEpoch = epoch;
+    delete metadata.gitEpoch; delete metadata.gitReset; delete metadata.cleanup; delete metadata.cleanupOutcome; delete metadata.resolutionId; delete metadata.resolutionClock;
+    const guardBytes = await encryptCloudPayload(encoder.encode(JSON.stringify({ format: 'covelet-password-retired', version: 1, epoch })), newPassword, { crypto });
+    const plan = { metadata: next, epoch, snapshotToken: actual.token, indexes, uploads: [...staged.uploads.values()],
+      oldNames: [...incoming.names].sort(), oldEpoch: connection.passwordEpoch || m.passwordEpoch || null, oldLayout: connection.git?.layout || 'v1',
+      guard: { name: `covelet-${epoch}-1-${await hash(guardBytes)}.json`, body: decoder.decode(guardBytes) } };
+    checkRotationPlan(plan);
+    await prepare(copy(plan));
+    return finishPasswordRotation(plan, { destination, ensure, commit, finalize }, connection);
+  }
+
   const api = {
+    async rotateFullDataPassword(newPassword, options) {
+      try { return await exclusive(() => preparePasswordRotation(newPassword, options)); }
+      catch (reason) { throw safeError(reason); }
+    },
+    async resumeFullDataPasswordRotation(plan, options) {
+      try { return await exclusive(() => finishPasswordRotation(copy(plan), options)); }
+      catch (reason) { throw safeError(reason); }
+    },
     getFullDataSyncStatus: () => copy(status),
     subscribeFullDataSyncStatus(listener) { listeners.add(listener); listener(copy(status)); return () => listeners.delete(listener); },
     async loadFullDataSyncSettings() { try { await inspect(); return { configured: Boolean((await read()).metadata) }; } catch (reason) { throw safeError(reason); } },

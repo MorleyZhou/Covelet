@@ -18472,5 +18472,158 @@
     "de": "Synchronisierungskonflikte einzeln prüfen und zusammenführen. Die letzte Zusammenführung lässt sich rückgängig machen. Die Bildsynchronisierung kann nach einer Unterbrechung fortgesetzt werden.",
     "fr": "Prévisualisez et fusionnez chaque élément en conflit, avec possibilité d’annuler la dernière fusion. La synchronisation des images peut reprendre après une interruption.",
     "ru": "Просматривайте и объединяйте конфликты по отдельным записям с возможностью отменить последнее объединение. Синхронизацию изображений можно повторить после прерывания."
+  },
+  "修改同步密码": {
+    "en": "Change sync password",
+    "zh-TW": "修改同步密碼",
+    "ja": "同期パスワードを変更",
+    "ko": "동기화 비밀번호 변경",
+    "de": "Synchronisierungspasswort ändern",
+    "fr": "Modifier le mot de passe de synchronisation",
+    "ru": "Изменить пароль синхронизации"
+  },
+  "更新同步密码": {
+    "en": "Update sync password",
+    "zh-TW": "更新同步密碼",
+    "ja": "同期パスワードを更新",
+    "ko": "동기화 비밀번호 업데이트",
+    "de": "Synchronisierungspasswort aktualisieren",
+    "fr": "Mettre à jour le mot de passe de synchronisation",
+    "ru": "Обновить пароль синхронизации"
+  },
+  "当前同步密码": {
+    "en": "Current sync password",
+    "zh-TW": "目前同步密碼",
+    "ja": "現在の同期パスワード",
+    "ko": "현재 동기화 비밀번호",
+    "de": "Aktuelles Synchronisierungspasswort",
+    "fr": "Mot de passe de synchronisation actuel",
+    "ru": "Текущий пароль синхронизации"
+  },
+  "新同步密码": {
+    "en": "New sync password",
+    "zh-TW": "新同步密碼",
+    "ja": "新しい同期パスワード",
+    "ko": "새 동기화 비밀번호",
+    "de": "Neues Synchronisierungspasswort",
+    "fr": "Nouveau mot de passe de synchronisation",
+    "ru": "Новый пароль синхронизации"
+  },
+  "确认新同步密码": {
+    "en": "Confirm new sync password",
+    "zh-TW": "確認新同步密碼",
+    "ja": "新しい同期パスワードを確認",
+    "ko": "새 동기화 비밀번호 확인",
+    "de": "Neues Synchronisierungspasswort bestätigen",
+    "fr": "Confirmer le nouveau mot de passe de synchronisation",
+    "ru": "Подтвердить новый пароль синхронизации"
+  },
+  "两次输入的新同步密码不一致。": {
+    "en": "The new sync passwords do not match.",
+    "zh-TW": "兩次輸入的新同步密碼不一致。",
+    "ja": "新しい同期パスワードが一致しません。",
+    "ko": "입력한 새 동기화 비밀번호가 일치하지 않습니다.",
+    "de": "Die neuen Synchronisierungspasswörter stimmen nicht überein.",
+    "fr": "Les nouveaux mots de passe de synchronisation ne correspondent pas.",
+    "ru": "Новые пароли синхронизации не совпадают."
+  },
+  "新同步密码须与当前密码不同。": {
+    "en": "The new sync password must differ from the current password.",
+    "zh-TW": "新同步密碼須與目前密碼不同。",
+    "ja": "新しい同期パスワードは現在のものと異なる必要があります。",
+    "ko": "새 동기화 비밀번호는 현재 비밀번호와 달라야 합니다.",
+    "de": "Das neue Synchronisierungspasswort muss sich vom aktuellen unterscheiden.",
+    "fr": "Le nouveau mot de passe de synchronisation doit être différent de l’actuel.",
+    "ru": "Новый пароль синхронизации должен отличаться от текущего."
+  },
+  "同步密码已更新。请用新密码重新解锁。": {
+    "en": "Sync password updated. Unlock again with the new password.",
+    "zh-TW": "同步密碼已更新。請用新密碼重新解鎖。",
+    "ja": "同期パスワードを更新しました。新しいパスワードで再度ロックを解除してください。",
+    "ko": "동기화 비밀번호가 업데이트되었습니다. 새 비밀번호로 다시 잠금을 해제하세요.",
+    "de": "Synchronisierungspasswort aktualisiert. Mit dem neuen Passwort erneut entsperren.",
+    "fr": "Mot de passe de synchronisation mis à jour. Déverrouillez à nouveau avec le nouveau mot de passe.",
+    "ru": "Пароль синхронизации обновлён. Разблокируйте снова с новым паролем."
+  },
+  "正在检查并更新同步密码…": {
+    "en": "Checking and updating the sync password…",
+    "zh-TW": "正在檢查並更新同步密碼…",
+    "ja": "同期パスワードを確認・更新中…",
+    "ko": "동기화 비밀번호 확인 및 업데이트 중…",
+    "de": "Synchronisierungspasswort wird geprüft und aktualisiert…",
+    "fr": "Vérification et mise à jour du mot de passe de synchronisation…",
+    "ru": "Проверка и обновление пароля синхронизации…"
+  },
+  "密码修改未完成": {
+    "en": "Password change not completed",
+    "zh-TW": "密碼修改未完成",
+    "ja": "パスワードの変更が完了していません",
+    "ko": "비밀번호 변경이 완료되지 않았습니다",
+    "de": "Passwortänderung nicht abgeschlossen",
+    "fr": "Modification du mot de passe non terminée",
+    "ru": "Изменение пароля не завершено"
+  },
+  "会更新当前云端同步数据。其他设备需用新密码重新解锁；已下载的副本不受影响。备份文件的密码需要单独设置。": {
+    "en": "Updates the current cloud sync data. Other devices must unlock again with the new password; downloaded copies are unaffected. Backup file passwords are set separately.",
+    "zh-TW": "會更新目前雲端同步資料。其他裝置需用新密碼重新解鎖；已下載的副本不受影響。備份檔案的密碼需要另外設定。",
+    "ja": "現在のクラウド同期データを更新します。他の端末では新しいパスワードで再度ロック解除が必要です。ダウンロード済みのコピーには影響しません。バックアップファイルのパスワードは別途設定します。",
+    "ko": "현재 클라우드 동기화 데이터를 업데이트합니다. 다른 기기는 새 비밀번호로 다시 잠금을 해제해야 하며 다운로드한 사본은 영향을 받지 않습니다. 백업 파일 비밀번호는 별도로 설정합니다.",
+    "de": "Aktualisiert die aktuellen Cloud-Synchronisierungsdaten. Andere Geräte müssen mit dem neuen Passwort erneut entsperrt werden. Heruntergeladene Kopien bleiben unverändert. Passwörter für Sicherungsdateien werden separat festgelegt.",
+    "fr": "Met à jour les données de synchronisation actuelles dans le cloud. Les autres appareils devront être déverrouillés avec le nouveau mot de passe. Les copies téléchargées ne sont pas modifiées. Les mots de passe des sauvegardes sont définis séparément.",
+    "ru": "Обновляет текущие данные синхронизации в облаке. На других устройствах потребуется разблокировка с новым паролем. Скачанные копии не изменятся. Пароли резервных копий задаются отдельно."
+  },
+  "旧版导航历史仅供查看。": {
+    "en": "Legacy navigation history is read-only.",
+    "zh-TW": "舊版導覽歷史僅供檢視。",
+    "ja": "旧バージョンのナビゲーション履歴は閲覧専用です。",
+    "ko": "이전 버전 탐색 기록은 읽기 전용입니다.",
+    "de": "Der bisherige Navigationsverlauf kann nur angesehen werden.",
+    "fr": "L’ancien historique de navigation est en lecture seule.",
+    "ru": "История навигации старой версии доступна только для просмотра."
+  },
+  "重新填写访问凭据": {
+    "en": "Re-enter access credentials",
+    "zh-TW": "重新填寫存取憑證",
+    "ja": "アクセス認証情報を再入力",
+    "ko": "접근 자격 증명 다시 입력",
+    "de": "Zugangsdaten erneut eingeben",
+    "fr": "Ressaisir les identifiants d’accès",
+    "ru": "Повторно ввести данные доступа"
+  },
+  "同步密码已更换，请使用新密码并在需要时重新填写存储访问凭据。": {
+    "en": "The sync password has changed. Use the new password and re-enter storage access credentials if needed.",
+    "zh-TW": "同步密碼已更換，請使用新密碼並在需要時重新填寫儲存空間存取憑證。",
+    "ja": "同期パスワードが変更されました。新しいパスワードを使用し、必要に応じてストレージの認証情報を再入力してください。",
+    "ko": "동기화 비밀번호가 변경되었습니다. 새 비밀번호를 사용하고 필요한 경우 저장소 접근 자격 증명을 다시 입력하세요.",
+    "de": "Das Synchronisierungspasswort wurde geändert. Das neue Passwort verwenden und bei Bedarf die Zugangsdaten für den Speicher erneut eingeben.",
+    "fr": "Le mot de passe de synchronisation a changé. Utilisez le nouveau mot de passe et ressaisissez les identifiants du stockage si nécessaire.",
+    "ru": "Пароль синхронизации изменён. Используйте новый пароль и при необходимости повторно введите данные доступа к хранилищу."
+  },
+  "请先完成同步并处理冲突，再修改同步密码。": {
+    "en": "Finish synchronization and resolve conflicts before changing the sync password.",
+    "zh-TW": "請先完成同步並處理衝突，再修改同步密碼。",
+    "ja": "同期を完了し競合を解決してから、同期パスワードを変更してください。",
+    "ko": "동기화를 완료하고 충돌을 해결한 후 동기화 비밀번호를 변경하세요.",
+    "de": "Vor dem Ändern des Synchronisierungspassworts die Synchronisierung abschließen und Konflikte lösen.",
+    "fr": "Terminez la synchronisation et résolvez les conflits avant de modifier le mot de passe de synchronisation.",
+    "ru": "Завершите синхронизацию и разрешите конфликты перед изменением пароля синхронизации."
+  },
+  "密码更换尚未完成，请使用新密码解锁以继续。": {
+    "en": "The password change is not complete. Unlock with the new password to continue.",
+    "zh-TW": "密碼更換尚未完成，請使用新密碼解鎖以繼續。",
+    "ja": "パスワードの変更はまだ完了していません。新しいパスワードでロックを解除して続行してください。",
+    "ko": "비밀번호 변경이 완료되지 않았습니다. 새 비밀번호로 잠금을 해제하여 계속하세요.",
+    "de": "Die Passwortänderung ist noch nicht abgeschlossen. Zum Fortfahren mit dem neuen Passwort entsperren.",
+    "fr": "Le changement de mot de passe n’est pas terminé. Déverrouillez avec le nouveau mot de passe pour continuer.",
+    "ru": "Изменение пароля ещё не завершено. Для продолжения разблокируйте с новым паролем."
+  },
+  "此存储服务不支持安全更换同步密码，本机和云端数据已保留。": {
+    "en": "This storage service does not support safely changing the sync password. Local and cloud data have been preserved.",
+    "zh-TW": "此儲存服務不支援安全更換同步密碼，本機與雲端資料已保留。",
+    "ja": "このストレージサービスでは同期パスワードを安全に変更できません。端末内とクラウドのデータは保持されています。",
+    "ko": "이 저장소 서비스는 동기화 비밀번호의 안전한 변경을 지원하지 않습니다. 로컬 및 클라우드 데이터는 보존되었습니다.",
+    "de": "Dieser Speicherdienst unterstützt keine sichere Änderung des Synchronisierungspassworts. Lokale und Cloud-Daten bleiben erhalten.",
+    "fr": "Ce service de stockage ne permet pas de modifier le mot de passe de synchronisation en toute sécurité. Les données locales et distantes sont conservées.",
+    "ru": "Это хранилище не поддерживает безопасное изменение пароля синхронизации. Локальные и облачные данные сохранены."
   }
 }

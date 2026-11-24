@@ -59,13 +59,20 @@ async function removeOwnedProfile(profile, output) {
 
 // The caller MUST close() in finally. Exported to support the live two-profile
 // test while retaining its authentication entirely inside the test process.
-export async function startRecordMergeBrowser(browserName, { headless = true, output = acceptanceOutput, extensionRoot = path.join(appRoot, 'dist', 'extension') } = {}) {
+export async function startRecordMergeBrowser(browserName, { headless = true, output = acceptanceOutput, extensionRoot = path.join(appRoot, 'dist', 'extension'), existingProfile, preserveProfile = false } = {}) {
   const executable = browserPaths[browserName];
   if (!executable) throw Error('Unknown acceptance browser');
   const extension = await realpath(extensionRoot);
   const manifest = JSON.parse(await readFile(path.join(extension, 'manifest.json'), 'utf8'));
   await mkdir(output, { recursive: true });
-  const profile = await mkdtemp(path.join(output, `raw-record-merge-profile-${browserName}-`));
+  const profile = existingProfile ? await realpath(existingProfile) : await mkdtemp(path.join(output, `raw-record-merge-profile-${browserName}-`));
+  if (existingProfile) {
+    const relative = path.relative(await realpath(output), profile);
+    if (!relative || relative.startsWith('..') || path.isAbsolute(relative) || !path.basename(profile).startsWith(`raw-record-merge-profile-${browserName}-`)) throw Error('Unsafe acceptance profile reuse path');
+    // The old endpoint file survives a normal browser exit. Read only the new
+    // process's endpoint, after validating this test-owned profile path.
+    await rm(path.join(profile, 'DevToolsActivePort'), { force: true });
+  }
   const process = spawn(executable, [
     ...(headless ? ['--headless=new'] : []), '--no-first-run', '--no-default-browser-check',
     '--disable-background-networking', '--disable-component-update', '--disable-sync', '--disable-default-apps',
@@ -85,19 +92,25 @@ export async function startRecordMergeBrowser(browserName, { headless = true, ou
     if (process.pid && process.exitCode === null) {
       try { execFileSync('taskkill.exe', ['/PID', String(process.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' }); } catch { /* It may already have exited. */ }
     }
-    await removeOwnedProfile(profile, output);
+    if (!preserveProfile) await removeOwnedProfile(profile, output);
   };
   try {
-    let port;
+    let port, version;
     for (let attempt = 0; attempt < 200; attempt++) {
       if (launchError) throw launchError;
       if (process.exitCode !== null) throw Error(`${browserName} exited before opening its debugging endpoint`);
-      try { port = (await readFile(path.join(profile, 'DevToolsActivePort'), 'utf8')).split('\n')[0]; if (/^\d+$/u.test(port)) break; } catch { /* Starting. */ }
+      try {
+        const candidate = (await readFile(path.join(profile, 'DevToolsActivePort'), 'utf8')).split('\n')[0];
+        if (/^\d+$/u.test(candidate)) {
+          const response = await fetch(`http://127.0.0.1:${candidate}/json/version`, { signal: AbortSignal.timeout(1000) });
+          const info = await response.json();
+          if (response.ok && typeof info.webSocketDebuggerUrl === 'string') { port = candidate; version = info; break; }
+        }
+      } catch { /* Starting. */ }
       await delay(100);
     }
     if (!port) throw Error(`${browserName} did not open a debugging endpoint`);
     const endpoint = `http://127.0.0.1:${port}`;
-    const version = await (await fetch(`${endpoint}/json/version`)).json();
     const protocol = await (await fetch(`${endpoint}/json/protocol`)).json();
     const extensions = protocol.domains.find((domain) => domain.domain === 'Extensions');
     if (!extensions?.commands.some((command) => command.name === 'loadUnpacked')) throw Error(`${browserName} does not advertise Extensions.loadUnpacked`);

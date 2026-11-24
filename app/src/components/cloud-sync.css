@@ -2,6 +2,9 @@
 .cloud-settings-group { display: flex; flex-direction: column; gap: 8px; }
 .cloud-settings-group + .cloud-settings-group { border-top: 1px solid var(--line); padding-top: 12px; }
 .cloud-settings-group > h3 { font-size: 14px; margin: 0; }
+.cloud-password-change h3 { font-size: 14px; margin: 0; }
+.cloud-password-change > label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.cloud-password-change-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .cloud-settings-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; min-height: 28px; }
 .cloud-settings-row > div { min-width: 0; }
 .cloud-settings-row > .button { min-height: 44px; }
@@ -63,7 +66,7 @@
 .revision-changes { max-height: 430px; overflow: auto; overscroll-behavior: contain; }
 .revision-change { border-bottom: 1px solid var(--line); padding-block: 10px; min-width: 0; }
 .revision-change-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.cloud-history .revision-change-heading > label { display: flex; flex-direction: row; align-items: center; gap: 9px; flex: 1; min-width: 0; cursor: pointer; }
+.cloud-history .revision-change-label { display: flex; flex-direction: row; align-items: center; gap: 9px; flex: 1; min-width: 0; }
 .revision-change-heading strong { color: var(--ink); font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .revision-change-heading small { flex-shrink: 0; margin-left: auto; font-size: 10px; color: var(--muted); }
 .revision-change-heading small.revision-action-remove { color: #bf5959; }

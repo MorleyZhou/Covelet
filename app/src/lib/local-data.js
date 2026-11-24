@@ -377,17 +377,48 @@ export function createLocalData(options = {}) {
     return acquire(0);
   }
   const syncMetadataKey = 'covelet.data-sync.v1', mergeRecoveryKey = 'covelet.data-sync.recovery.v1';
+  const passwordRotationKeys = new Set(['covelet.cloud.local.v1', 'covelet.cloud.rotation.v1', syncMetadataKey, 'covelet.data-sync.archived.v1']);
   const syncMetadataStore = {
     async read() { return (await localData.get(syncMetadataKey))[syncMetadataKey] || null; },
     async write(value) { await localData.set({ [syncMetadataKey]: value }); },
   };
   const syncDataStore = {
     syncMetadataStore,
+    async readPasswordRotation() { return (await localData.get('covelet.cloud.rotation.v1'))['covelet.cloud.rotation.v1'] || null; },
     async readMergeRecovery() { return (await localData.get(mergeRecoveryKey))[mergeRecoveryKey] || null; },
     snapshot: () => exclusive(async () => {
       const encryptionKey = await key(); await migrate('preferences', null, encryptionKey);
       return makeSnapshot(await allDecoded(encryptionKey));
     }),
+    commitPasswordRotation: ({ expectedToken, writes } = {}) => withSyncLocks({ version: 1, records: [] }, () => exclusive(async () => {
+      if (typeof expectedToken !== 'string' || !/^[a-f0-9]{64}$/.test(expectedToken) || !writes || Object.getPrototypeOf(writes) !== Object.prototype
+        || Object.getOwnPropertySymbols(writes).length) throw invalid('Invalid password rotation checkpoint.');
+      const descriptors = Object.getOwnPropertyDescriptors(writes), names = Object.keys(descriptors);
+      if (names.some((name) => !passwordRotationKeys.has(name) || !own(descriptors[name], 'value'))) throw invalid('Password rotation may update device-only checkpoints only.');
+      const encryptionKey = await key(); await migrate('preferences', null, encryptionKey);
+      const snapshot = await makeSnapshot(await allDecoded(encryptionKey));
+      if (snapshot.token !== expectedToken) throw fail('REVISION_CONFLICT', 'Local extension data changed while changing the sync password.');
+      const records = [], removals = [], changes = []; let bytes = 0;
+      for (const name of names) {
+        const { id } = await identity('preferences', name), previous = await backend.get(id);
+        const before = await decrypt('preferences', previous, encryptionKey, name), value = descriptors[name].value;
+        if (value === undefined) {
+          if (previous) { removals.push(id); changes.push({ key: name, oldValue: before.value, newValue: undefined, oldRecord: previous }); }
+        } else {
+          const encrypted = await encrypt('preferences', name, value, encryptionKey);
+          bytes += encrypted.plain.byteLength;
+          if (bytes > MAX_BYTES) throw invalid('Password rotation checkpoints exceed local capacity.');
+          records.push(encrypted.record);
+          changes.push({ key: name, oldValue: before?.value, newValue: unpack(encrypted.plain)[2], oldRecord: previous, newRecord: encrypted.record });
+        }
+      }
+      if (records.length || removals.length) {
+        if (!backend.commit) throw fail('LOCAL_DATA_WRITE_FAILED', 'Atomic password rotation checkpoints are unavailable.');
+        await backend.commit(records, removals);
+        announce('preferences', changes[0].newRecord?.space || changes[0].oldRecord.space, changes);
+      }
+      return snapshot;
+    })),
     apply: (snapshot, { expectedToken, wholeRecord, syncMetadata, metadataCheckpoint = false, mergeRecovery, clearMergeRecovery = false } = {}) => withSyncLocks(snapshot, () => exclusive(async () => {
       if (!snapshot || Object.getPrototypeOf(snapshot) !== Object.prototype || snapshot.version !== 1 || !Array.isArray(snapshot.records)
         || snapshot.records.length > MAX_SYNC_RECORDS || typeof expectedToken !== 'string' || !/^[a-f0-9]{64}$/.test(expectedToken)

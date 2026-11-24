@@ -15,6 +15,7 @@ import {
   loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, useLocalOnlyCloudSync,
   supportsCloudSync, getCloudSyncStatus, subscribeCloudSyncStatus, acceptBackgroundCloudSyncStatus, getCloudSyncRuns,
   previewCloudSyncMerge, applyCloudSyncMerge, undoCloudSyncMerge, getCloudSyncMergeRecovery,
+  changeCloudSyncPassword,
 } from '../lib/cloud-sync.js';
 import './cloud-sync.css';
 import { Button } from './ui/button.jsx';
@@ -75,6 +76,9 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
   presentationActive.current = presentation.active;
   const [draft, setDraft] = useState(blank), [secrets, setSecrets] = useState(emptySecrets);
   const [password, setPassword] = useState(''), [autoSync, setAutoSync] = useState(false);
+  const [passwordChangeOpen, setPasswordChangeOpen] = useState(false);
+  const [credentialReentry, setCredentialReentry] = useState(false);
+  const [currentSyncPassword, setCurrentSyncPassword] = useState(''), [nextSyncPassword, setNextSyncPassword] = useState(''), [confirmedSyncPassword, setConfirmedSyncPassword] = useState('');
   const [saved, setSaved] = useState(null), [status, setStatus] = useState(() => getCloudSyncStatus());
   const [operationBusy, setBusy] = useState(false), [feedback, setFeedback] = useState(null);
   const busy = operationBusy || status.phase === 'syncing';
@@ -128,9 +132,10 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
         }
         previousPhase.current = value.phase;
         setStatus(value);
-        if (wasUnlocked.current && !value.unlocked) { setDraftTest(null); setConnectionTestFailed(false); }
+        if (wasUnlocked.current && !value.unlocked) { setDraftTest(null); setConnectionTestFailed(false); setCredentialReentry(false); }
+        if (value.unlocked) setCredentialReentry(false);
         wasUnlocked.current = value.unlocked;
-        if (!value.unlocked) { mergeRequest.current++; setMergePreview(null); setMergeChoices({}); }
+        if (!value.unlocked) { mergeRequest.current++; setMergePreview(null); setMergeChoices({}); closePasswordChange(); }
         refreshSyncResults();
       }
     });
@@ -140,12 +145,15 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     mergeRequest.current++;
     if (presentation.active) { setMergePreview(null); setMergeChoices({}); }
   }, [presentation.active]);
-  function resetTest() { mergeRequest.current++; setDraftTest(null); setFeedback(null); setMergePreview(null); setMergeChoices({}); }
+  function closePasswordChange() {
+    setPasswordChangeOpen(false); setCurrentSyncPassword(''); setNextSyncPassword(''); setConfirmedSyncPassword('');
+  }
+  function resetTest() { mergeRequest.current++; setDraftTest(null); setFeedback(null); setMergePreview(null); setMergeChoices({}); closePasswordChange(); }
   function patch(value) { resetTest(); setDraft((current) => ({ ...current, ...value })); }
   function showFailure(reason, operation) {
     const message = userErrorMessage(reason, tr('同步操作未完成，本机数据已保留。'));
     setFeedback({ tone: 'error', message, operation, code: reason?.code });
-    if (operation) onNotice({ kind: 'error', text: operation === 'test' ? tr('测试失败') : tr('同步失败'), detail: message });
+    if (operation) onNotice({ kind: 'error', text: operation === 'test' ? tr('测试失败') : operation === 'password' ? tr('密码修改未完成') : tr('同步失败'), detail: message });
   }
   async function run(action, { progress, operation } = {}) {
     const blocksPage = operation !== 'sync';
@@ -235,9 +243,24 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       maxLength={key === 'sessionToken' ? 8192 : 2048} onChange={(event) => { resetTest(); setSecrets((current) => ({ ...current, [key]: event.target.value })); }} disabled={busy || demo} /></label>;
   }
   const configuring = step !== null;
-  const passwordOnlyUnlock = !configuring && !status.unlocked && saved?.credentialsStored;
+  const passwordOnlyUnlock = !configuring && !status.unlocked && saved?.credentialsStored && !credentialReentry;
   const hasConflicts = status.phase === 'conflict' || status.conflicts > 0;
   const conflictRun = hasConflicts ? runs.find(run => run.outcome === 'conflict' || run.newConflictCount > 0) : null;
+  function changePassword() {
+    if (busy || demo || !available || !status.unlocked || !connectionMatches || hasConflicts) return;
+    try {
+      validateCloudPassword(currentSyncPassword); validateCloudPassword(nextSyncPassword);
+      if (nextSyncPassword !== confirmedSyncPassword) throw new Error(tr('两次输入的新同步密码不一致。'));
+      if (nextSyncPassword === currentSyncPassword) throw new Error(tr('新同步密码须与当前密码不同。'));
+    } catch (reason) { showFailure(reason, 'password'); return; }
+    run(async () => {
+      await changeCloudSyncPassword(currentSyncPassword, nextSyncPassword);
+      closePasswordChange(); setPassword(''); setSecrets(emptySecrets); setDraftTest(null);
+      mergeRequest.current++; setMergePreview(null); setMergeChoices({});
+      setSaved(await loadCloudSyncSettings());
+      return tr('同步密码已更新。请用新密码重新解锁。');
+    }, { progress: tr('正在检查并更新同步密码…'), operation: 'password' });
+  }
   function previewMerge() {
     if (busy || !status.unlocked || !connectionMatches || !hasConflicts || presentationActive.current) return;
     const request = ++mergeRequest.current;
@@ -320,13 +343,13 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
     if (busy || !connectionMatches) return;
     run(async () => {
       setSaved(await unlockCloudSync(passwordOnlyUnlock ? undefined : secrets, password));
-      setDraftTest(null); setSecrets(emptySecrets); setPassword('');
+      setDraftTest(null); setSecrets(emptySecrets); setPassword(''); setCredentialReentry(false);
     }, { progress: tr('正在解锁…') });
   }
   const connectionTest = configuring || !status.unlocked ? draftTest : saved?.connectionTest;
   let visibleFeedback = feedback;
   if (!configuring && status.unlocked) {
-    if (status.phase === 'syncing') visibleFeedback = { tone: 'progress', message: tr('正在同步…') };
+    if (status.phase === 'syncing' && !passwordChangeOpen) visibleFeedback = { tone: 'progress', message: tr('正在同步…') };
     else if (!feedback && status.phase === 'conflict') visibleFeedback = { tone: 'info', message: tr('有冲突待处理') };
     else if (!feedback && status.phase === 'error') visibleFeedback = { tone: 'error', message: status.message, operation: 'sync', code: status.code };
     else if (!feedback && observedSync.current && status.phase === 'saved') visibleFeedback = { tone: 'success', message: syncComplete(status.lastSync) };
@@ -343,7 +366,8 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
       if (step === 1) setStep(2);
       else if (step === 2 && draftTest) { setStep(3); setFeedback(null); }
       else if (step === 3) saveConnection(true);
-    } else if (!status.unlocked) unlock();
+    } else if (passwordChangeOpen) changePassword();
+    else if (!status.unlocked) unlock();
   }}>
     <div ref={fieldsRef} className="settings-scroll cloud-sync-fields">
       {introduction}
@@ -361,6 +385,7 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
           {!(failedOperation && editAfterError) && <Button variant="ghost" type="button" className="button quiet" disabled={busy} onClick={() => editConnection()}>{tr('修改配置')}</Button>}
         </div>
         <p className="connection-state">{status.unlocked ? tr('已解锁') : tr('同步已锁定')}</p>
+        {passwordOnlyUnlock && <Button variant="ghost" type="button" disabled={busy} onClick={() => { setCredentialReentry(true); setSecrets(emptySecrets); setPassword(''); setFeedback(null); }}>{tr('重新填写访问凭据')}</Button>}
         <div className="cloud-settings-row">
           <span>{draft.provider === 'webdav' ? tr('目录读取') : isGitStorage ? tr('仓库访问') : tr('存储桶访问')}</span>
           <span className="cloud-settings-value">{connectionTest ? tr('已通过') : connectionTestFailed ? tr('未通过') : tr('待测试')}</span>
@@ -438,6 +463,18 @@ export default function CloudSyncSettings({ demo = false, onBusyChange = () => {
             </li>)}
           </ul>
         </Disclosure>}
+      </section>}
+      {saved?.profile && !configuring && status.unlocked && <section className="cloud-settings-group cloud-password-change" aria-labelledby="cloud-password-change-heading">
+        <div className="cloud-settings-row"><h3 id="cloud-password-change-heading">{tr('同步密码')}</h3>
+          {!passwordChangeOpen && <Button variant="ghost" type="button" disabled={busy || demo || !available || !connectionMatches || hasConflicts} onClick={() => { setFeedback(null); setPasswordChangeOpen(true); }}>{tr('修改同步密码')}</Button>}</div>
+        {passwordChangeOpen && <>
+          <p className="hint" id="cloud-password-change-help">{tr('会更新当前云端同步数据。其他设备需用新密码重新解锁；已下载的副本不受影响。备份文件的密码需要单独设置。')}</p>
+          <label>{tr('当前同步密码')}<Input type="password" autoComplete="current-password" value={currentSyncPassword} maxLength={1024} disabled={busy} aria-describedby="cloud-password-change-help" onChange={event => { setCurrentSyncPassword(event.target.value); setFeedback(null); }} /></label>
+          <label>{tr('新同步密码')}<Input type="password" autoComplete="new-password" value={nextSyncPassword} maxLength={1024} disabled={busy} onChange={event => { setNextSyncPassword(event.target.value); setFeedback(null); }} /></label>
+          <label>{tr('确认新同步密码')}<Input type="password" autoComplete="new-password" value={confirmedSyncPassword} maxLength={1024} disabled={busy} onChange={event => { setConfirmedSyncPassword(event.target.value); setFeedback(null); }} /></label>
+          <p className="hint">{tr('至少 12 个字符。其他设备使用同一密码。密码无法找回。')}</p>
+          <div className="cloud-password-change-actions"><Button variant="ghost" type="button" disabled={busy} onClick={closePasswordChange}>{tr('取消')}</Button><Button variant="default" type="button" disabled={busy || hasConflicts || !connectionMatches} onClick={changePassword}>{tr('更新同步密码')}</Button></div>
+        </>}
       </section>}
       {(step === 3 || saved?.profile && !configuring) && <Disclosure className="context-help" title={tr('同步内容与隐私')}>
         <p className="hint">{tr('导航、设置、便笺和图片等数据用同步密码加密后，上传到所选存储。')}</p>

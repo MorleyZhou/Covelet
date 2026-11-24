@@ -10,6 +10,7 @@ const MAX_RESPONSE_BYTES = 1024 * 1024;
 const MAX_OBJECTS = 5000;
 const GITHUB_DIRECTORY_LIMIT = 1000;
 const GITHUB_SEAL = 'Covelet sync layout 2\n';
+const PASSWORD_EPOCH_FILE = 'password-epoch-v1.json', PASSWORD_EPOCH_LIMIT = 64 * 1024;
 const NAME = /^covelet-([a-f0-9]{32})-([1-9][0-9]{0,15})-([a-f0-9]{64})\.json$/;
 const safeErrors = new WeakSet();
 const ownError = (message, code = 'CLOUD_INVALID_CONFIG') => {
@@ -212,6 +213,19 @@ function base64(bytes) {
   return btoa(result);
 }
 
+function passwordEpochBytes(input) {
+  if (!(input instanceof Uint8Array) || !input.length || input.length > PASSWORD_EPOCH_LIMIT) throw capacityError();
+  let value;
+  try { value = JSON.parse(decoder.decode(input)); } catch { throw badResponse(); }
+  if (!value || typeof value !== 'object' || Array.isArray(value)
+    || Object.keys(value).sort().join(',') !== 'format,next,previous,proof,version'
+    || value.format !== 'covelet-password-epoch' || value.version !== 1
+    || value.previous !== null && (typeof value.previous !== 'string' || !/^[a-f0-9]{32}$/.test(value.previous))
+    || typeof value.next !== 'string' || !/^[a-f0-9]{32}$/.test(value.next) || value.next === value.previous
+    || typeof value.proof !== 'string' || !value.proof.length) throw badResponse();
+  return new Uint8Array(input);
+}
+
 export function createCloudProvider(input, secrets, options = {}) {
   const profile = validateCloudConfig(input);
   if (profile.provider === 'webdav') return createWebdavProvider(profile, secrets, options);
@@ -381,6 +395,79 @@ export function createCloudProvider(input, secrets, options = {}) {
     if (optional && result.response.status === 404) return null;
     if (result.response.status !== 200) throw statusError(result.response.status, result.response.headers, 'file');
     return bytesOf(result.bytes);
+  }
+
+  function requirePasswordEpochRoot() {
+    if (!profile.prefix.endsWith('/all-data-v1')) throw invalid();
+  }
+  function passwordEpochUrl(read = true) {
+    const controlKey = `${profile.prefix.slice(0, -'/all-data-v1'.length)}/${PASSWORD_EPOCH_FILE}`;
+    if (profile.provider === 'github') {
+      const url = new URL(`${githubBase}/contents/${encodedPath(controlKey)}`);
+      if (read) url.search = queryOf({ ref: profile.branch });
+      return url;
+    }
+    if (profile.provider === 'gitlab') {
+      const url = new URL(`${origin}/api/v4/projects/${encode(profile.project)}/repository/files/${encode(controlKey)}${read ? '/raw' : ''}`);
+      if (read) url.search = queryOf({ ref: profile.branch });
+      return url;
+    }
+    return new URL(`${origin}${profile.provider === 'r2' ? `/${encode(profile.bucket)}` : ''}/${encodedPath(controlKey)}`);
+  }
+  async function readPasswordEpochRaw(request) {
+    const extras = profile.provider === 'github' ? { accept: 'application/vnd.github.raw+json' }
+      : profile.provider === 'gitlab' ? { accept: 'application/octet-stream' } : undefined;
+    const result = await request('GET', passwordEpochUrl(), undefined, extras);
+    if (result.response.status === 404) return null;
+    if (result.response.status !== 200) throw statusError(result.response.status, result.response.headers, 'file');
+    if (!result.bytes.length || result.bytes.length > PASSWORD_EPOCH_LIMIT) throw capacityError();
+    return result.bytes;
+  }
+  async function readPasswordEpoch() {
+    requirePasswordEpochRoot();
+    const bytes = await operation(readPasswordEpochRaw);
+    return bytes === null ? null : passwordEpochBytes(bytes);
+  }
+  async function createPasswordEpoch(input) {
+    requirePasswordEpochRoot();
+    // Copy before the first await. Only this fixed control path bypasses the
+    // immutable snapshot-name validator; callers cannot supply an object name.
+    const bytes = passwordEpochBytes(input);
+    const existing = await operation(readPasswordEpochRaw);
+    if (existing) { if (!equalBytes(existing, bytes)) throw conflictError(); return; }
+    let failed;
+    try {
+      await operation(async (request) => {
+        if (profile.provider === 'oss') {
+          const versioning = await request('GET', new URL(`${origin}/?versioning`));
+          if ([401, 403].includes(versioning.response.status)) throw ownError(tr('无法读取 OSS Bucket 版本状态，请检查凭据和 GetBucketVersioning 权限。'), 'CLOUD_OSS_VERSIONING_CHECK');
+          if (versioning.response.status !== 200) throw statusError(versioning.response.status, versioning.response.headers);
+          requireUnversionedOssBucket(versioning.bytes);
+        }
+        let result;
+        if (profile.provider === 'github') {
+          const body = encoder.encode(JSON.stringify({ message: 'Covelet encrypted password epoch', content: base64(bytes), branch: profile.branch }));
+          result = await request('PUT', passwordEpochUrl(false), body, { 'content-type': 'application/json' });
+        } else if (profile.provider === 'gitlab') {
+          const body = encoder.encode(JSON.stringify({ branch: profile.branch, encoding: 'base64', content: base64(bytes), commit_message: 'Covelet encrypted password epoch' }));
+          result = await request('POST', passwordEpochUrl(false), body, { 'content-type': 'application/json' });
+        } else {
+          const headers = { 'content-type': 'application/json', ...(profile.provider === 'r2' ? { 'if-none-match': '*' } : { 'x-oss-forbid-overwrite': 'true' }) };
+          result = await request('PUT', passwordEpochUrl(false), bytes, headers);
+        }
+        const status = result.response.status;
+        if (status === (usesToken ? 201 : 200)) return;
+        if ([405, 501].includes(status) || status === 400 && /<Code>\s*NotImplemented\s*<\/Code>/.test(decoder.decode(result.bytes)))
+          throw ownError(tr('云存储请求未成功，请检查服务配置后重试。'), 'CLOUD_EPOCH_UNSUPPORTED');
+        throw statusError(status, result.response.headers, 'file');
+      });
+    } catch (cause) { failed = cause; }
+    // A lost response may have committed. Use a fresh bounded operation because
+    // the write's timeout/abort cannot be reused for reconciliation.
+    const actual = await operation(readPasswordEpochRaw);
+    if (actual) { if (!equalBytes(actual, bytes)) throw conflictError(); return; }
+    if (failed) throw failed;
+    throw badResponse();
   }
 
   function checkedName(name) {
@@ -597,6 +684,8 @@ export function createCloudProvider(input, secrets, options = {}) {
   }
 
   return {
+    readPasswordEpoch,
+    createPasswordEpoch,
     list(ref) {
       if (ref !== undefined) githubSha(ref);
       return operation(async (request) => {

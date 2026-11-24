@@ -12,9 +12,13 @@ import { isWebdavError } from './cloud-webdav.js';
 import { probeCloudConnection } from './cloud-connection.js';
 import { createFullDataSync } from './full-data-sync.js';
 import { sameJson } from './json-equal.js';
+import { resolvePasswordEpoch, createPasswordEpoch, epochPrefix } from './cloud-password-epoch.js';
 
 const LOCAL_KEY = 'covelet.cloud.local.v1';
 const SESSION_KEY = 'covelet.cloud.session.v1';
+const ROTATION_KEY = 'covelet.cloud.rotation.v1';
+const FULL_KEY = 'covelet.data-sync.v1';
+const ARCHIVE_KEY = 'covelet.data-sync.archived.v1';
 const LOCK = 'covelet.cloud.sync.v1';
 const MAX_OBJECTS = 2000;
 const MAX_ACTORS = 100;
@@ -28,6 +32,10 @@ const same = sameJson;
 const failure = (message, code = 'CLOUD_INVALID') => Object.assign(new Error(message), { code });
 const empty = () => ({ version: 1, profile: null, autoSync: false, metadata: null });
 const messages = {
+  get CLOUD_PASSWORD_CHANGED() { return tr('同步密码已更换，请使用新密码并在需要时重新填写存储访问凭据。'); },
+  get CLOUD_ROTATION_REQUIRED() { return tr('请先完成同步并处理冲突，再修改同步密码。'); },
+  get CLOUD_ROTATION_PENDING() { return tr('密码更换尚未完成，请使用新密码解锁以继续。'); },
+  get CLOUD_EPOCH_UNSUPPORTED() { return tr('此存储服务不支持安全更换同步密码，本机和云端数据已保留。'); },
   get CLOUD_LOCKED() { return tr('同步连接已锁定，请先解锁。'); },
   get CLOUD_CREDENTIAL_UNLOCK() { return tr('无法解锁本机保存的访问凭据，请检查同步密码。'); },
   get CLOUD_CREDENTIALS_REQUIRED() { return tr('请填写访问凭据和同步密码。'); },
@@ -67,7 +75,9 @@ function providerSecrets(profile, input) {
 
 function publicError(cause) {
   if (isWebdavError(cause) || isCloudProviderError(cause)) return cause;
-  const code = Object.hasOwn(messages, cause?.code) ? cause.code : 'CLOUD_REQUEST';
+  const mapped = { DATA_SYNC_INVALID: 'CLOUD_INTEGRITY', DATA_SYNC_CAPACITY: 'CLOUD_CAPACITY', DATA_SYNC_TARGET: 'CLOUD_ROTATION_REQUIRED',
+    DATA_SYNC_LOCAL: 'CLOUD_LOCAL', DATA_SYNC_CONFLICT_STALE: 'CLOUD_HISTORY_STALE' }[cause?.code];
+  const code = Object.hasOwn(messages, cause?.code) ? cause.code : mapped || 'CLOUD_REQUEST';
   return failure(messages[code] || tr("云服务请求失败，请检查授权、凭据、网络及服务权限；本地数据仍然保留。"), code);
 }
 
@@ -179,7 +189,8 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     const value = await configStore.read();
     if (!value) return empty();
     if (value.version !== 1 || typeof value.autoSync !== 'boolean'
-      || Object.keys(value).some(key => !['version', 'profile', 'autoSync', 'metadata', 'credentialEnvelope'].includes(key))) throw failure(tr("云同步本机设置无效。"));
+      || Object.keys(value).some(key => !['version', 'profile', 'autoSync', 'metadata', 'credentialEnvelope', 'passwordEpoch'].includes(key))) throw failure(tr("云同步本机设置无效。"));
+    if (value.passwordEpoch !== undefined && !/^[a-f0-9]{32}$/.test(value.passwordEpoch)) throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
     const profile = value.profile === null ? null : validateConfig(value.profile);
     const { credentialEnvelope } = value;
     if (credentialEnvelope !== undefined && (!profile || typeof credentialEnvelope !== 'string'
@@ -197,7 +208,8 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
         || Object.keys(metadata.pending).some((key) => !['name', 'body'].includes(key)))) throw failure(tr("本机待上传版本无效。"));
       metadata = { ...clone(metadata), document, documents, base: portableState(metadata.base) };
     }
-    return { version: 1, profile, autoSync: value.autoSync, metadata, ...(credentialEnvelope === undefined ? {} : { credentialEnvelope }) };
+    return { version: 1, profile, autoSync: value.autoSync, metadata, ...(credentialEnvelope === undefined ? {} : { credentialEnvelope }),
+      ...(value.passwordEpoch && { passwordEpoch: value.passwordEpoch }) };
   };
   const persist = async (config) => {
     try { await configStore.write(clone(config)); } catch { throw failure(tr("无法保存本机云同步状态。"), 'CLOUD_LOCAL'); }
@@ -315,11 +327,26 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       checkLockGeneration(generation);
     };
     await check();
-    if (!readOnly) {
+    if (await snapshotStore.readPasswordRotation?.()) throw failure(messages.CLOUD_ROTATION_PENDING, 'CLOUD_ROTATION_PENDING');
+    const at = (base, suffix) => providerFactory(validateConfig({ ...config.profile, prefix: `${base}/${suffix}` }), session.secrets, { signer, beforeRequest: check });
+    let route;
+    try { route = await resolvePasswordEpoch({ root: config.profile.prefix, providerAt: base => at(base, 'all-data-v1'), target, password: session.password, crypto }); }
+    catch (cause) { if (cause?.code === 'CLOUD_PASSWORD_CHANGED') await invalidatePasswordSession(); throw cause; }
+    if ((config.passwordEpoch || null) !== route.epoch) {
+      const prior = await (fullSyncStore || snapshotStore.syncMetadataStore)?.read();
+      if (config.passwordEpoch || prior?.metadata?.target === target) {
+        await invalidatePasswordSession(); throw failure(messages.CLOUD_PASSWORD_CHANGED, 'CLOUD_PASSWORD_CHANGED');
+      }
+      // First connection to an already-rotated directory: the supplied password
+      // has authenticated its active proof, and there is no old branch to rebase.
+      config = { ...config, passwordEpoch: route.epoch };
+      await persist(config);
+    }
+    if (!readOnly && !route.epoch) {
       await flushLegacyPending(config, session);
       config = await read();
     }
-    const providerAt = (suffix) => providerFactory(validateConfig({ ...config.profile, prefix: `${config.profile.prefix}/${suffix}` }), session.secrets, { signer, beforeRequest: check });
+    const providerAt = suffix => at(route.prefix, suffix);
     // Legacy sessions have no local password verifier. Remember their secrets
     // only after successful sync, with the same session and target still active.
     const afterSync = readOnly || config.credentialEnvelope ? undefined : () => exclusive(async () => {
@@ -328,7 +355,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     const provider = providerAt('all-data-v1');
     const githubV2 = provider.githubStorage ? { provider: providerAt('all-data-v2'), assetProvider: providerAt('all-data-v2/blobs') } : null;
     return { target, password: session.password, autoSync: config.autoSync, check,
-      provider, assetProvider: providerAt('all-data-v1/blobs'), githubV2, afterSync };
+      provider, assetProvider: providerAt('all-data-v1/blobs'), githubV2, afterSync, passwordEpoch: route.epoch };
   };
   // The first upgraded device imports the old formats without asking old
   // clients to understand the new protocol. Once an all-data manifest exists,
@@ -501,6 +528,66 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
     config.metadata.pending = null;
     await persist(config);
   };
+  const rotationConnection = async (config, credentials, password, epoch, generation, expectedSession) => {
+    const target = await targetOf(config.profile);
+    const check = async () => {
+      checkLockGeneration(generation);
+      const current = await read();
+      if (!same(current.profile, config.profile) || !await hasPermission(originOf(config.profile))
+        || !same(await currentSession(target), expectedSession)) throw failure(messages.CLOUD_LOCKED, 'CLOUD_LOCKED');
+    };
+    const prefix = epochPrefix(config.profile.prefix, epoch);
+    const at = suffix => providerFactory(validateConfig({ ...config.profile, prefix: `${prefix}/${suffix}` }), credentials, { signer, beforeRequest: check });
+    await check();
+    return { target, password, passwordEpoch: epoch, provider: at('all-data-v1'), assetProvider: at('all-data-v1/blobs'), check };
+  };
+  const writeRotationLocal = async (writes, expectedToken) => {
+    if (!snapshotStore.commitPasswordRotation) throw failure(messages.CLOUD_LOCAL, 'CLOUD_LOCAL');
+    return snapshotStore.commitPasswordRotation({ expectedToken: expectedToken || (await snapshotStore.snapshot()).token, writes });
+  };
+  const invalidatePasswordSession = async () => {
+    lockGeneration++; clearTimeout(timer); historyPreview = undefined; lastConnectionTest = undefined;
+    fullSync?.clearFullDataConflictPreview(); await sessionStore.clear();
+    report({ phase: 'locked', unlocked: false, message: messages.CLOUD_LOCKED });
+  };
+  async function rotationCallbacks(journal, credentials, password, generation, expectedSession) {
+    const config = journal.cloud, target = await targetOf(config.profile);
+    if (target !== journal.target || !/^[a-f0-9]{32}$/.test(journal.epoch) || journal.version !== 1) throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
+    const destination = await rotationConnection(config, credentials, password, journal.epoch, generation, expectedSession);
+    const previous = await rotationConnection(config, credentials, password, journal.previous, generation, expectedSession);
+    const rootProvider = providerFactory(validateConfig({ ...config.profile, prefix: `${config.profile.prefix}/all-data-v1` }), credentials,
+      { signer, beforeRequest: destination.check });
+    return { destination,
+      async ensure() { await rootProvider.ensurePasswordEpochDirectory?.(journal.epoch); },
+      async commit(plan, oldConnection = previous) {
+        if (!previous.provider.createPasswordEpoch || !previous.provider.readPasswordEpoch) throw failure(messages.CLOUD_EPOCH_UNSUPPORTED, 'CLOUD_EPOCH_UNSUPPORTED');
+        const bytes = encoder.encode(journal.link);
+        if (plan.oldLayout === 'v2' && oldConnection === previous) {
+          const prefix = epochPrefix(config.profile.prefix, journal.previous);
+          oldConnection = { ...previous, provider: providerFactory(validateConfig({ ...config.profile, prefix: `${prefix}/all-data-v2` }), credentials,
+            { signer, beforeRequest: previous.check }) };
+        }
+        const existing = await previous.provider.readPasswordEpoch();
+        if (!existing) {
+          const names = (await oldConnection.provider.list()).map(item => item.name).sort();
+          if (!same(names, [...plan.oldNames].sort())) throw failure(messages.CLOUD_ROTATION_REQUIRED, 'CLOUD_ROTATION_REQUIRED');
+        }
+        try { await previous.provider.createPasswordEpoch(bytes); }
+        catch (cause) {
+          const readback = await previous.provider.readPasswordEpoch();
+          if (!readback || readback.length !== bytes.length || !readback.every((byte, index) => byte === bytes[index])) throw cause;
+        }
+        // A valid snapshot name makes old clients include this fence, instead
+        // of silently ignoring an unknown control filename.
+        await oldConnection.provider.write(plan.guard.name, encoder.encode(plan.guard.body));
+        const guard = await oldConnection.provider.read(plan.guard.name);
+        if (decoder.decode(guard) !== plan.guard.body) throw failure(messages.CLOUD_INTEGRITY, 'CLOUD_INTEGRITY');
+      },
+      async finalize(plan) {
+        await writeRotationLocal({ [LOCAL_KEY]: config, [FULL_KEY]: plan.metadata, [ROTATION_KEY]: undefined }, plan.snapshotToken);
+      },
+    };
+  }
   const api = {
     loadToolSyncSettings: toolSync.loadToolSyncSettings,
     setToolSyncEnabled: toolSync.setToolSyncEnabled,
@@ -552,6 +639,8 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
         await exclusive(async () => {
           const previous = await read();
           const target = await targetOf(checked);
+          if (fullData && !onlyIfCurrent && await snapshotStore.readPasswordRotation?.())
+            throw failure(messages.CLOUD_ROTATION_PENDING, 'CLOUD_ROTATION_PENDING');
           if (onlyIfCurrent) {
             const session = await currentSession(target);
             if (!session || !same(previous.profile, checked) || session.password !== password || !same(session.secrets, secrets)) {
@@ -560,6 +649,11 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
             checkLockGeneration(generation);
             await persist({ ...previous, autoSync });
             return;
+          }
+          if (fullData && previous.profile && await targetOf(previous.profile) === target && previous.credentialEnvelope) {
+            const active = await currentSession(target);
+            if (active && active.password !== password) throw failure(messages.CLOUD_ROTATION_REQUIRED, 'CLOUD_ROTATION_REQUIRED');
+            if (!active) await openCredentials(previous, target, password);
           }
           const guard = fullData ? (action) => fullSync.guardFullDataTarget(target, action) : (action) => action();
           await guard(() => toolSync.guardToolTarget(target, async () => {
@@ -571,7 +665,8 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
               if (syncConflicts(previous.metadata.documents).length) throw failure(messages.CLOUD_TARGET_CONFLICTS, 'CLOUD_TARGET_CONFLICTS');
             }
             const credentialEnvelope = await sealCredentials(target, providerSecrets(checked, secrets), password);
-            const config = { version: 1, profile: checked, autoSync, metadata: previous.metadata, credentialEnvelope };
+            const config = { version: 1, profile: checked, autoSync, metadata: previous.metadata, credentialEnvelope,
+              ...(previous.passwordEpoch && previous.metadata?.target === target && { passwordEpoch: previous.passwordEpoch }) };
             config.metadata = await metadataFor(config);
             checkLockGeneration(generation);
             await persist(config);
@@ -588,21 +683,136 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
       try {
         validateCloudPassword(password);
         await exclusive(async () => {
-          const config = await read();
+          let config = await read();
           if (!config.profile) throw failure(tr("请先保存云同步配置。"));
           const target = await targetOf(config.profile);
-          let credentials;
-          if (config.credentialEnvelope) credentials = await openCredentials(config, target, password);
-          else {
+          let journal = fullData ? await snapshotStore.readPasswordRotation?.() : null;
+          let credentials, rebinding = false;
+          if (journal) {
+            if (journal.target !== target || !journal.cloud || !journal.plan) throw failure(messages.CLOUD_ROTATION_PENDING, 'CLOUD_ROTATION_PENDING');
+            try { credentials = await openCredentials(journal.cloud, target, password); }
+            catch (cause) {
+              // Before the cutover only, entering the still-current old
+              // password may abandon an interrupted candidate. Never undo an
+              // already committed remote generation or discard business data.
+              let oldCredentials;
+              try { oldCredentials = await openCredentials(config, target, password); }
+              catch {
+                // A concurrent winning rotation (or a later successor) may
+                // use a different password than this device's candidate.
+                // Explicit provider credentials plus the authenticated active
+                // proof authorize abandoning only our device-local journal.
+                const supplied = providerSecrets(config.profile, secrets);
+                if (!Object.keys(supplied).length) throw cause;
+                const providerAt = base => providerFactory(validateConfig({ ...config.profile, prefix: `${base}/all-data-v1` }), supplied, { signer,
+                  beforeRequest: async () => { checkLockGeneration(generation); if (!await hasPermission(originOf(config.profile))) throw failure(messages.CLOUD_PERMISSION, 'CLOUD_PERMISSION'); } });
+                const active = await resolvePasswordEpoch({ root: config.profile.prefix, providerAt, target, password, crypto });
+                if (!active.epoch) throw cause;
+                await writeRotationLocal({ [ROTATION_KEY]: undefined });
+                credentials = supplied; rebinding = true; journal = null;
+              }
+              if (oldCredentials) {
+              const prefix = epochPrefix(config.profile.prefix, journal.previous);
+              const previous = providerFactory(validateConfig({ ...config.profile, prefix: `${prefix}/all-data-v1` }), oldCredentials, { signer,
+                beforeRequest: async () => { checkLockGeneration(generation); if (!await hasPermission(originOf(config.profile))) throw failure(messages.CLOUD_PERMISSION, 'CLOUD_PERMISSION'); } });
+              const existing = await previous.readPasswordEpoch();
+              if (existing && decoder.decode(existing) === journal.link) throw cause;
+              await writeRotationLocal({ [ROTATION_KEY]: undefined });
+              credentials = oldCredentials; journal = null;
+              }
+            }
+          }
+          if (journal) {
+            const temporary = { id: crypto.randomUUID(), target, secrets: credentials, password, rotation: true };
+            await writeSession(temporary, generation);
+            try {
+              const callbacks = await rotationCallbacks(journal, credentials, password, generation, temporary);
+              const actual = await snapshotStore.snapshot();
+              // Recovery updates only device metadata. Preserve edits made
+              // since interruption; their differences remain pending against
+              // the verified generation's baseline on the next normal sync.
+              const plan = { ...journal.plan, snapshotToken: actual.token };
+              await writeRotationLocal({ [ROTATION_KEY]: { ...journal, plan } }, actual.token);
+              await fullSync.resumeFullDataPasswordRotation(plan, callbacks);
+              config = await read();
+            } catch (cause) { await sessionStore.clear(); throw cause; }
+          } else if (!credentials && config.credentialEnvelope) {
+            try { credentials = await openCredentials(config, target, password); }
+            catch (cause) {
+              if (!fullData) throw cause;
+              const supplied = providerSecrets(config.profile, secrets);
+              if (!Object.keys(supplied).length) throw cause;
+              providerFactory(config.profile, supplied, { signer }); credentials = supplied; rebinding = true;
+            }
+          }
+          else if (!credentials) {
             if (!secrets) throw failure(messages.CLOUD_CREDENTIALS_REQUIRED, 'CLOUD_CREDENTIALS_REQUIRED');
             providerFactory(config.profile, secrets, { signer });
             credentials = clone(secrets);
+          }
+          if (fullData) {
+            const providerAt = base => providerFactory(validateConfig({ ...config.profile, prefix: `${base}/all-data-v1` }), credentials, { signer,
+              beforeRequest: async () => { checkLockGeneration(generation); if (!await hasPermission(originOf(config.profile))) throw failure(messages.CLOUD_PERMISSION, 'CLOUD_PERMISSION'); } });
+            const route = await resolvePasswordEpoch({ root: config.profile.prefix, providerAt, target, password, crypto });
+            if (config.passwordEpoch && !route.lineage.includes(config.passwordEpoch)) throw failure(messages.CLOUD_PASSWORD_CHANGED, 'CLOUD_PASSWORD_CHANGED');
+            if (rebinding && !route.epoch) throw failure(messages.CLOUD_CREDENTIAL_UNLOCK, 'CLOUD_CREDENTIAL_UNLOCK');
+            if ((config.passwordEpoch || null) !== route.epoch) {
+              const fullStore = fullSyncStore || snapshotStore.syncMetadataStore, previous = await fullStore?.read();
+              config = { ...config, credentialEnvelope: await sealCredentials(target, credentials, password), ...(route.epoch ? { passwordEpoch: route.epoch } : {}) };
+              if (!route.epoch) delete config.passwordEpoch;
+              // A new branch identity prevents an older device clock from
+              // colliding with the same actor already copied into the epoch.
+              // Its actual local records remain present for conservative merge.
+              const document = { version: 1, actor: crypto.randomUUID().replaceAll('-', '').toLowerCase(), clock: 0, records: {} };
+              const rebased = { version: 1, metadata: { target, document, documents: {}, base: {}, pending: null, publishedClock: 0, lastSync: 0,
+                ...(route.epoch && { passwordEpoch: route.epoch }) } };
+              await writeRotationLocal({ [LOCAL_KEY]: config, [FULL_KEY]: rebased,
+                [ARCHIVE_KEY]: { version: 1, target, metadata: previous, reason: 'password-epoch-change' } });
+            }
           }
           const fingerprint = await hash({ profile: config.profile, secrets: credentials });
           await writeSession({ id: crypto.randomUUID(), target, secrets: credentials, password,
             connectionTest: lastConnectionTest?.fingerprint === fingerprint ? clone(lastConnectionTest.result) : null }, generation);
         });
         const settings = await inspectSettings({ clearError: true }); schedule(); return settings;
+      } catch (cause) {
+        if (cause?.code === 'CLOUD_PASSWORD_CHANGED') await invalidatePasswordSession();
+        throw publicError(cause);
+      }
+    },
+    async changeCloudSyncPassword(currentPassword, newPassword) {
+      const generation = lockGeneration;
+      try {
+        validateCloudPassword(currentPassword); validateCloudPassword(newPassword);
+        if (currentPassword === newPassword || !fullSync) throw failure(messages.CLOUD_INVALID, 'CLOUD_INVALID');
+        if (flight) await flight;
+        return await exclusive(async () => {
+          const config = await read(), target = config.profile && await targetOf(config.profile), session = target && await currentSession(target);
+          if (!session || session.password !== currentPassword) throw failure(messages.CLOUD_CREDENTIAL_UNLOCK, 'CLOUD_CREDENTIAL_UNLOCK');
+          if (await snapshotStore.readPasswordRotation?.()) throw failure(messages.CLOUD_ROTATION_PENDING, 'CLOUD_ROTATION_PENDING');
+          if (config.metadata?.pending) throw failure(messages.CLOUD_ROTATION_REQUIRED, 'CLOUD_ROTATION_REQUIRED');
+          if (config.credentialEnvelope) await openCredentials(config, target, currentPassword);
+          const credentials = providerSecrets(config.profile, session.secrets);
+          const providerAt = base => providerFactory(validateConfig({ ...config.profile, prefix: `${base}/all-data-v1` }), session.secrets, { signer, beforeRequest: () => checkAccess(config, session) });
+          const route = await resolvePasswordEpoch({ root: config.profile.prefix, providerAt, target, password: currentPassword, crypto });
+          if (!route.provider.createPasswordEpoch || !route.provider.readPasswordEpoch) throw failure(messages.CLOUD_EPOCH_UNSUPPORTED, 'CLOUD_EPOCH_UNSUPPORTED');
+          const epoch = uuid().replaceAll('-', '').toLowerCase();
+          const cloud = { ...config, passwordEpoch: epoch, credentialEnvelope: await sealCredentials(target, credentials, newPassword) };
+          const journal = { version: 1, target, previous: route.epoch, epoch, cloud,
+            link: decoder.decode(await createPasswordEpoch(route.epoch, epoch, target, newPassword, crypto)) };
+          const callbacks = await rotationCallbacks(journal, credentials, newPassword, generation, session);
+          let prepared = false;
+          try {
+            await fullSync.rotateFullDataPassword(newPassword, { ...callbacks, epoch,
+              async prepare(plan) {
+                journal.plan = plan;
+                if (encoder.encode(JSON.stringify(journal)).length > 16 * 1024 * 1024) throw failure(messages.CLOUD_CAPACITY, 'CLOUD_CAPACITY');
+                await writeRotationLocal({ [ROTATION_KEY]: journal }, plan.snapshotToken); prepared = true;
+              },
+            });
+          } finally { if (prepared) await invalidatePasswordSession(); }
+          return { requiresUnlock: true, unlocked: false };
+        });
       } catch (cause) { throw publicError(cause); }
     },
     async lockCloudSync() {
@@ -867,6 +1077,7 @@ export function createCloudSync({ stateStore = navigationStorage, configStore = 
 
 const cloud = createCloudSync();
 export const { loadCloudSyncSettings, testCloudConnection, saveCloudSyncSettings, unlockCloudSync, lockCloudSync, useLocalOnlyCloudSync, syncCloudNow, getCloudSyncStatus,
+  changeCloudSyncPassword,
   subscribeCloudSyncStatus, startCloudSync, stopCloudSync, getCloudSyncRuns, getCloudSyncConflicts, previewCloudSyncConflict, restoreCloudSyncConflict,
   getCloudSyncTarget, acceptBackgroundCloudSyncStatus, resolveCloudSyncConflicts,
   previewCloudSyncMerge, applyCloudSyncMerge, undoCloudSyncMerge, getCloudSyncMergeRecovery,

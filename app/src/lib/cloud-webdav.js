@@ -7,6 +7,7 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
 const MAX_BODY = 768 * 1024;
 const MAX_RESPONSE = 1024 * 1024;
+const PASSWORD_EPOCH_FILE = 'password-epoch-v1.json', PASSWORD_EPOCH_LIMIT = 64 * 1024;
 const MAX_SCAN = 2000;
 const NAME = /^covelet-([a-f0-9]{32})-([1-9][0-9]{0,15})-([a-f0-9]{64})\.json$/;
 const safeErrors = new WeakSet();
@@ -24,6 +25,19 @@ const conflict = () => error(tr("云端存在同名但内容不同的快照，�
 const encode = value => encodeURIComponent(value).replace(/[!'()*]/g, char => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
 const encodedPath = value => value.split('/').map(encode).join('/');
 const hex = bytes => Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+
+function passwordEpochBytes(input) {
+  if (!(input instanceof Uint8Array) || !input.length || input.length > PASSWORD_EPOCH_LIMIT) throw limit();
+  let value;
+  try { value = JSON.parse(decoder.decode(input)); } catch { throw badResponse(); }
+  if (!value || typeof value !== 'object' || Array.isArray(value)
+    || Object.keys(value).sort().join(',') !== 'format,next,previous,proof,version'
+    || value.format !== 'covelet-password-epoch' || value.version !== 1
+    || value.previous !== null && (typeof value.previous !== 'string' || !/^[a-f0-9]{32}$/.test(value.previous))
+    || typeof value.next !== 'string' || !/^[a-f0-9]{32}$/.test(value.next) || value.next === value.previous
+    || typeof value.proof !== 'string' || !value.proof.length) throw badResponse();
+  return new Uint8Array(input);
+}
 
 function snapshotName(name) {
   const match = typeof name === 'string' && NAME.exec(name);
@@ -299,6 +313,10 @@ function listObjects(bytes, directory) {
 export function createWebdavProvider(input, secrets, options = {}) {
   const profile = validateWebdavConfig(input);
   const directory = new URL(`${encodedPath(profile.prefix)}/`, profile.endpoint);
+  // The sibling control must remain accessible when Git-compatible layouts
+  // replace all-data-v1 itself with a seal, and never accepts a caller path.
+  const passwordEpochUrl = profile.prefix.endsWith('/all-data-v1')
+    ? new URL(`${encodedPath(profile.prefix.slice(0, -'/all-data-v1'.length))}/${PASSWORD_EPOCH_FILE}`, profile.endpoint) : null;
   const origin = directory.origin, authorization = checkedSecrets(secrets);
   const fetcher = options.fetcher || ((...args) => globalThis.fetch(...args));
   const signer = options.signer;
@@ -320,7 +338,7 @@ export function createWebdavProvider(input, secrets, options = {}) {
     return value;
   };
   const objectUrl = name => new URL(encode(name), directory);
-  async function operation(action) {
+  async function operation(action, allowedDirectories = []) {
     const controller = new AbortController();
     let timer, expired = false;
     const timeout = () => error(tr('连接超时。请稍后重试。'), 'CLOUD_TIMEOUT');
@@ -329,8 +347,10 @@ export function createWebdavProvider(input, secrets, options = {}) {
     });
     async function request(method, url, body, extras = {}) {
       if (controller.signal.aborted) throw timeout();
+      const generationDirectory = ['MKCOL', 'PROPFIND'].includes(method) && allowedDirectories.includes(url.href);
+      const epochControl = ['GET', 'PUT'].includes(method) && passwordEpochUrl?.href === url.href;
       if (url.origin !== origin || url.protocol !== 'https:' || url.username || url.password || url.search || url.hash
-        || !url.pathname.startsWith(directory.pathname)) throw invalid();
+        || !url.pathname.startsWith(directory.pathname) && !generationDirectory && !epochControl) throw invalid();
       try { await options.beforeRequest?.(); }
       catch (cause) {
         if (cause?.code === 'CLOUD_LOCKED') throw error(tr("自定义同步已锁定，已停止网络请求。"), 'CLOUD_LOCKED');
@@ -372,7 +392,65 @@ export function createWebdavProvider(input, secrets, options = {}) {
     if (response.status !== 200) throw statusError(response.status, 'GET');
     return checkedBody(bytes);
   }
+  function requirePasswordEpochRoot() {
+    if (!profile.prefix.endsWith('/all-data-v1')) throw invalid();
+  }
+  async function readPasswordEpochRaw(request) {
+    const { response, bytes } = await request('GET', passwordEpochUrl);
+    if (response.status === 404) return null;
+    if (response.status !== 200) throw statusError(response.status, 'GET');
+    if (!bytes.length || bytes.length > PASSWORD_EPOCH_LIMIT) throw limit();
+    return bytes;
+  }
+  async function readPasswordEpoch() {
+    requirePasswordEpochRoot();
+    const bytes = await operation(readPasswordEpochRaw);
+    return bytes === null ? null : passwordEpochBytes(bytes);
+  }
+  async function createPasswordEpoch(input) {
+    requirePasswordEpochRoot();
+    const bytes = passwordEpochBytes(input), same = (value) => value.length === bytes.length && value.every((byte, index) => byte === bytes[index]);
+    const existing = await operation(readPasswordEpochRaw);
+    if (existing) { if (!same(existing)) throw conflict(); return; }
+    let failed;
+    try {
+      await operation(async (request) => {
+        const { response } = await request('PUT', passwordEpochUrl, bytes, { 'content-type': 'application/json', 'if-none-match': '*' });
+        if ([200, 201, 204].includes(response.status)) return;
+        if ([405, 501].includes(response.status)) throw error(tr('WebDAV 请求未成功，请检查服务配置后重试。'), 'CLOUD_EPOCH_UNSUPPORTED');
+        throw statusError(response.status, 'PUT');
+      });
+    } catch (cause) { failed = cause; }
+    const actual = await operation(readPasswordEpochRaw);
+    if (actual) { if (!same(actual)) throw conflict(); return; }
+    if (failed) throw failed;
+    throw badResponse();
+  }
   return {
+    readPasswordEpoch,
+    createPasswordEpoch,
+    ensurePasswordEpochDirectory(id) {
+      requirePasswordEpochRoot();
+      if (typeof id !== 'string' || !/^[a-f0-9]{32}$/.test(id)) throw invalid();
+      const base = profile.prefix.slice(0, -'/all-data-v1'.length), generation = `${base}/key-${id}`;
+      const directories = [generation, `${generation}/all-data-v1`, `${generation}/all-data-v1/blobs`]
+        .map((prefix) => new URL(`${encodedPath(prefix)}/`, profile.endpoint));
+      return operation(async (request) => {
+        for (const target of directories) {
+          const { response } = await request('MKCOL', target);
+          if (response.status === 201) continue;
+          if (response.status === 405) {
+            const body = encoder.encode('<?xml version="1.0" encoding="UTF-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/><d:getcontentlength/></d:prop></d:propfind>');
+            const result = await request('PROPFIND', target, body, { depth: '0', 'content-type': 'application/xml; charset=utf-8' });
+            if (result.response.status !== 207) throw statusError(result.response.status);
+            listObjects(result.bytes, target); continue;
+          }
+          if (response.status === 409) throw error(tr('WebDAV 父目录不存在，请先建立所选保存目录。'), 'CLOUD_NOT_FOUND');
+          if (response.status === 501) throw error(tr('WebDAV 请求未成功，请检查服务配置后重试。'), 'CLOUD_EPOCH_UNSUPPORTED');
+          throw statusError(response.status);
+        }
+      }, directories.map((target) => target.href));
+    },
     testConnection() {
       // Read-only authentication/path probe: never publish data or create a
       // directory. A successful result does not certify PUT or the sync password.

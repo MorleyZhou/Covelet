@@ -512,3 +512,68 @@ test('explicit whole-record conflict choices replace portable privacy fields wit
   assert.deepEqual(await storage.syncDataStore.snapshot(), current, 'blocked deletion leaves the whole snapshot untouched');
   await storage.close();
 });
+
+test('password rotation finalizes device checkpoints and removes its journal in one encrypted commit without changing business data or device key', async () => {
+  const storage = fixture(), { localData, syncDataStore, backend } = storage;
+  try {
+    await localData.set({ 'covelet.future': { retained: true }, 'covelet.cloud.local.v1': { credentialEnvelope: 'old-envelope' },
+      'covelet.cloud.rotation.v1': { candidate: 'encrypted-journal' }, 'covelet.data-sync.v1': { clock: 1 } });
+    assert.deepEqual(await syncDataStore.readPasswordRotation(), { candidate: 'encrypted-journal' });
+    const before = await syncDataStore.snapshot(), originalDeviceKey = await backend.getKey(), commits = [], changes = [];
+    const commit = backend.commit;
+    backend.commit = async (values, ids) => { commits.push({ writes: values.length, removals: ids.length }); return commit(values, ids); };
+    const stop = localData.subscribe((value) => changes.push(value));
+    const writes = { 'covelet.cloud.local.v1': { credentialEnvelope: 'new-envelope' }, 'covelet.data-sync.v1': { clock: 2 },
+      'covelet.cloud.rotation.v1': undefined, 'covelet.data-sync.archived.v1': { previousClock: 1 } };
+    const result = await syncDataStore.commitPasswordRotation({ expectedToken: before.token, writes });
+    stop();
+    assert.deepEqual(result, before); assert.deepEqual(await syncDataStore.snapshot(), before);
+    assert.deepEqual(commits, [{ writes: 3, removals: 1 }]);
+    assert.equal(await backend.getKey(), originalDeviceKey);
+    assert.deepEqual((await localData.get('covelet.future'))['covelet.future'], { retained: true });
+    const persisted = await localData.get(['covelet.cloud.local.v1', 'covelet.cloud.rotation.v1', 'covelet.data-sync.v1', 'covelet.data-sync.archived.v1']);
+    assert.equal(persisted['covelet.cloud.rotation.v1'], undefined);
+    assert.equal(await syncDataStore.readPasswordRotation(), null);
+    assert.deepEqual(persisted['covelet.cloud.local.v1'], writes['covelet.cloud.local.v1']);
+    assert.deepEqual(persisted['covelet.data-sync.v1'], writes['covelet.data-sync.v1']);
+    assert.deepEqual(persisted['covelet.data-sync.archived.v1'], writes['covelet.data-sync.archived.v1']);
+    assert.equal(changes.length, 1, 'Subscribers see the committed checkpoint together.');
+    assert.doesNotMatch(JSON.stringify([...backend.records.values()]), /old-envelope|new-envelope|encrypted-journal|previousClock/);
+  } finally { await storage.close(); }
+});
+
+test('password rotation checkpoint CAS and commit failure preserve the existing encrypted journal and configuration', async () => {
+  const storage = fixture(), { localData, syncDataStore, backend } = storage;
+  try {
+    await localData.set({ 'covelet.future': 'before', 'covelet.cloud.local.v1': { retained: true }, 'covelet.cloud.rotation.v1': { pending: true } });
+    const before = await syncDataStore.snapshot(), original = structuredClone([...backend.records.entries()]);
+    const writes = { 'covelet.cloud.local.v1': { replaced: true }, 'covelet.cloud.rotation.v1': undefined };
+    const commit = backend.commit; backend.commit = async () => { throw Error('Rotation checkpoint interrupted'); };
+    await assert.rejects(syncDataStore.commitPasswordRotation({ expectedToken: before.token, writes }), /Rotation checkpoint interrupted/);
+    assert.deepEqual([...backend.records.entries()], original);
+    backend.commit = commit;
+    await localData.set({ 'covelet.future': 'later local change' });
+    const raced = structuredClone([...backend.records.entries()]);
+    await assert.rejects(syncDataStore.commitPasswordRotation({ expectedToken: before.token, writes }), { code: 'REVISION_CONFLICT' });
+    assert.deepEqual([...backend.records.entries()], raced);
+  } finally { await storage.close(); }
+});
+
+test('password rotation checkpoints exclude new journals from sync and reject business keys, sessions and unsafe input before commit', async () => {
+  const storage = fixture(), { localData, syncDataStore, backend } = storage;
+  try {
+    await localData.set({ 'covelet.future': 'retained' });
+    const before = await syncDataStore.snapshot();
+    await syncDataStore.commitPasswordRotation({ expectedToken: before.token, writes: { 'covelet.cloud.rotation.v1': { pending: true }, 'covelet.data-sync.archived.v1': { old: true } } });
+    assert.deepEqual(await syncDataStore.snapshot(), before);
+    const original = structuredClone([...backend.records.entries()]);
+    const accessor = {}; Object.defineProperty(accessor, 'covelet.cloud.local.v1', { enumerable: true, get() { assert.fail('Do not invoke checkpoint getters.'); } });
+    for (const writes of [{ 'covelet.future': 'forbidden' }, { 'covelet.cloud.session.v1': { password: 'forbidden' } }, { 'covelet.privacy.lock.v1': { forbidden: true } }, accessor, [], null]) {
+      await assert.rejects(syncDataStore.commitPasswordRotation({ expectedToken: before.token, writes }), { code: 'LOCAL_DATA_INVALID' });
+      assert.deepEqual([...backend.records.entries()], original);
+    }
+    await assert.rejects(syncDataStore.apply({ version: 1, records: [{ namespace: 'preferences', key: 'covelet.cloud.rotation.v1', value: {} }] }, { expectedToken: before.token }),
+      { code: 'LOCAL_DATA_INVALID' });
+    assert.deepEqual([...backend.records.entries()], original);
+  } finally { await storage.close(); }
+});

@@ -21,6 +21,7 @@ const engineSource = `
     reset(legacy) {
       this.runs = legacy ? [] : [conflictRun];
       this.choices = []; this.gate = null; this.previewGate = null; this.syncs = 0; this.previews = 0; this.recovery = false; this.undo = 0; this.recoveryError = false;
+      this.passwordChanges = []; this.passwordChangeError = null; this.unlockAttempts = []; this.unlockError = null;
       this.rows = [
         { id: 'note-1', label: 'Shared note', status: 'both', local: { body: 'this device' }, remote: { body: 'cloud' }, merged: { body: 'this device' }, choice: 'local', conflict: true },
         { id: 'note-2', label: 'Local note', status: 'one', local: { body: 'unique' }, remote: undefined, merged: { body: 'unique' }, choice: 'merged', conflict: false },
@@ -41,7 +42,7 @@ const engineSource = `
   };
   export const subscribeBackgroundCloudSyncStatus = subscribeCloudSyncStatus;
   export const getBackgroundCloudSyncStatus = getCloudSyncStatus;
-  export const loadCloudSyncSettings = async () => ({ profile: { ...profile }, autoSync: false });
+  export const loadCloudSyncSettings = async () => ({ profile: { ...profile }, autoSync: false, credentialsStored: true, unlocked: engine.status.unlocked });
   export const getCloudSyncRuns = async () => engine.runs.slice();
   export const getCloudSyncConflicts = async () => engine.status.conflicts ? [
     { id: 'notes', namespace: 'preferences', key: 'covelet.tools.v1' },
@@ -56,6 +57,19 @@ const engineSource = `
   }
   export async function undoCloudSyncMerge() { engine.undo++; engine.recovery = false; }
   export const getCloudSyncMergeRecovery = async () => { if (engine.recoveryError) throw Error('Read failure'); return engine.recovery; };
+  export async function changeCloudSyncPassword(currentPassword, newPassword) {
+    engine.passwordChanges.push({ currentPassword, newPassword });
+    await engine.gate;
+    if (engine.passwordChangeError) throw engine.passwordChangeError;
+    engine.update({ phase: 'locked', unlocked: false, message: '同步连接已锁定' });
+    return { requiresUnlock: true, unlocked: false };
+  }
+  export async function unlockCloudSync(secrets, password) {
+    engine.unlockAttempts.push({ secrets, password });
+    if (engine.unlockError) throw engine.unlockError;
+    engine.update({ phase: 'idle', unlocked: true, message: '' });
+    return loadCloudSyncSettings();
+  }
   export async function requestBackgroundCloudSync() {
     engine.syncs++;
     engine.update({ phase: 'syncing', message: '正在同步…' });
@@ -64,7 +78,7 @@ const engineSource = `
     return engine.status;
   }
   const unexpected = () => { throw Error('Unexpected sync I/O in conflict UI test'); };
-  export const testCloudConnection = unexpected, saveCloudSyncSettings = unexpected, unlockCloudSync = unexpected,
+  export const testCloudConnection = unexpected, saveCloudSyncSettings = unexpected,
     lockCloudSync = unexpected, useLocalOnlyCloudSync = unexpected, syncCloudNow = unexpected;
 `;
 
@@ -130,6 +144,14 @@ test('sync settings preview record choices and apply them together', async (t) =
     assert.ok(control, 'expected a real rendered button');
     assert.equal(control.disabled, false, 'the action must be enabled');
     await act(async () => { control.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true })); });
+  }
+  async function fill(label, value) {
+    const field = [...document.querySelectorAll('label')].find(element => element.textContent.trim() === label)?.querySelector('input');
+    assert.ok(field, 'expected password input: ' + label);
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value').set.call(field, value);
+      field.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+    });
   }
 
   for (const side of ['local', 'remote', 'merged']) {
@@ -240,11 +262,104 @@ test('sync settings preview record choices and apply them together', async (t) =
       assert.deepEqual(engine.choices, [{ token: 'preview-1', choices: { 'row-0': 'local' } }]);
     } finally { await ui.close(); }
   });
+
+  await t.test('password change is disabled until current conflicts are handled', async () => {
+    const ui = await fixture(false);
+    try {
+      assert.equal(button('修改同步密码', document).disabled, true);
+      assert.equal(button('更新同步密码', document), undefined);
+      assert.deepEqual(engine.passwordChanges, []);
+    } finally { await ui.close(); }
+  });
+
+  await t.test('password change validates locally, locks after success, and requires a new explicit unlock', async () => {
+    const ui = await fixture(false);
+    const oldPassword = 'old sync password 123', newPassword = 'new sync password 456';
+    let release;
+    try {
+      await act(async () => engine.update({ phase: 'saved', conflicts: 0 }));
+      await click(button('修改同步密码', document));
+      assert.match(document.body.textContent, /其他设备需用新密码重新解锁/);
+      assert.match(document.body.textContent, /已下载的副本不受影响/);
+      assert.match(document.body.textContent, /备份文件的密码需要单独设置/);
+      await fill('当前同步密码', oldPassword);
+      await fill('新同步密码', 'short');
+      await fill('确认新同步密码', 'short');
+      await click(button('更新同步密码', document));
+      assert.deepEqual(engine.passwordChanges, []);
+      await fill('新同步密码', newPassword);
+      await fill('确认新同步密码', 'a different long password');
+      await click(button('更新同步密码', document));
+      assert.match(document.body.textContent, /两次输入的新同步密码不一致/);
+      assert.deepEqual(engine.passwordChanges, []);
+      await fill('确认新同步密码', newPassword);
+      engine.gate = new Promise(resolve => { release = resolve; });
+      await click(button('更新同步密码', document));
+      assert.deepEqual(engine.passwordChanges, [{ currentPassword: oldPassword, newPassword }]);
+      assert.equal(button('更新同步密码', document).disabled, true);
+      await act(async () => release());
+      assert.equal(button('更新同步密码', document), undefined);
+      assert.ok(button('解锁', document));
+      assert.deepEqual(engine.unlockAttempts, [], 'success never automatically unlocks with the new password');
+      assert.equal(document.querySelectorAll('input[type=password]').length, 1);
+      assert.equal(document.querySelector('input[type=password]').value, '');
+      assert.match(document.body.textContent, /请用新密码重新解锁/);
+      await fill('同步密码', newPassword);
+      await act(async () => document.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })));
+      assert.deepEqual(engine.unlockAttempts, [{ secrets: undefined, password: newPassword }]);
+      assert.ok(button('修改同步密码', document));
+    } finally { release?.(); await ui.close(); }
+  });
+
+  await t.test('cancel and an external lock clear password change drafts', async () => {
+    const ui = await fixture(false);
+    try {
+      await act(async () => engine.update({ phase: 'saved', conflicts: 0 }));
+      await click(button('修改同步密码', document));
+      await fill('当前同步密码', 'current password 123');
+      await fill('新同步密码', 'new password 456');
+      await click(button('取消', document));
+      await click(button('修改同步密码', document));
+      assert.ok([...document.querySelectorAll('.cloud-password-change input')].every(input => input.value === ''));
+      await fill('当前同步密码', 'current password 123');
+      await act(async () => engine.update({ phase: 'locked', unlocked: false }));
+      await act(async () => engine.update({ phase: 'idle', unlocked: true }));
+      await click(button('修改同步密码', document));
+      assert.ok([...document.querySelectorAll('.cloud-password-change input')].every(input => input.value === ''));
+      assert.deepEqual(engine.passwordChanges, []);
+    } finally { await ui.close(); }
+  });
+
+  await t.test('a stale device can explicitly re-enter credentials and unlock without reconfiguring', async () => {
+    const ui = await fixture(false);
+    const newPassword = 'new device sync password 123';
+    try {
+      await act(async () => engine.update({ phase: 'locked', unlocked: false, conflicts: 0 }));
+      assert.equal([...document.querySelectorAll('label')].some(label => label.textContent.trim() === '用户名'), false);
+      engine.unlockError = Object.assign(new Error('无法解锁本机保存的访问凭据，请检查同步密码。'), { code: 'CLOUD_CREDENTIAL_UNLOCK' });
+      await fill('同步密码', newPassword);
+      await act(async () => document.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })));
+      assert.deepEqual(engine.unlockAttempts, [{ secrets: undefined, password: newPassword }]);
+      await click(button('重新填写访问凭据', document));
+      await fill('用户名', 'synthetic-user');
+      await fill('应用密码', 'synthetic-access-password');
+      await fill('同步密码', newPassword);
+      engine.unlockError = null;
+      await act(async () => document.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })));
+      assert.equal(engine.unlockAttempts.length, 2);
+      assert.equal(engine.unlockAttempts[1].password, newPassword);
+      assert.equal(engine.unlockAttempts[1].secrets.username, 'synthetic-user');
+      assert.equal(engine.unlockAttempts[1].secrets.appPassword, 'synthetic-access-password');
+      assert.equal(button('重新填写访问凭据', document), undefined);
+      assert.equal(document.querySelectorAll('input[type=password]').length, 0);
+    } finally { await ui.close(); }
+  });
 });
 
 test('record merge UI strings have translations in every packaged language', async () => {
   const source = await readFile(new URL('../components/CloudSyncSettings.jsx', import.meta.url), 'utf8');
-  const keys = [...source.matchAll(/tr\(['"]([^'"]*(?:合并|两侧|一边|保留方式|保留本机|保留云端|这条记录)[^'"]*)['"]/g)].map(match => match[1]);
+  const keys = [...source.matchAll(/tr\(['"]([^'"]*(?:合并|两侧|一边|保留方式|保留本机|保留云端|这条记录|新同步密码|修改同步密码|当前同步密码|更新同步密码|密码修改未完成|其他设备需用新密码|重新填写访问凭据)[^'"]*)['"]/g)].map(match => match[1]);
+  keys.push('同步密码已更换，请使用新密码并在需要时重新填写存储访问凭据。', '请先完成同步并处理冲突，再修改同步密码。', '密码更换尚未完成，请使用新密码解锁以继续。', '此存储服务不支持安全更换同步密码，本机和云端数据已保留。');
   assert.ok(keys.length >= 15);
   for (const key of keys) for (const { value: language } of LANGUAGES.filter(item => item.value !== 'zh-CN')) {
     assert.equal(typeof catalog[key]?.[language], 'string', language + ': ' + key);
