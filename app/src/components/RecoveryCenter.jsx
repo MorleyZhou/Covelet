@@ -5,6 +5,7 @@ import { isEncryptedBackup } from '../lib/password-backup.js';
 import { userErrorMessage } from '../lib/user-error.js';
 import { Button } from './ui/button.jsx';
 import { Input } from './ui/input.jsx';
+import ScheduledBackupSettings from './ScheduledBackupSettings.jsx';
 import './recovery-center.css';
 
 const incomplete = point => point && ['applying', 'needs-recovery'].includes(point.status);
@@ -154,5 +155,6 @@ export default function RecoveryCenter({ beforeOperation, onBusyChange, onRestor
     </section>}
     {message && <p role="status">{message}</p>}
     {error && <p className="form-error" role="alert">{error}</p>}
+    <ScheduledBackupSettings disabled={disabled || busy || Boolean(passwordFlow) || Boolean(preview)} beforeOperation={beforeOperation} onBusyChange={onBusyChange} />
   </div>;
 }

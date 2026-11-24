@@ -1,0 +1,19 @@
+.scheduled-backup-settings { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding-top: 18px; border-top: 1px solid var(--line); }
+.scheduled-backup-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.scheduled-backup-heading h3 { margin: 0; font-size: 14px; }
+.scheduled-backup-settings .hint { margin: 0; line-height: 1.65; }
+.scheduled-backup-form { display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.scheduled-backup-form > label { display: flex; flex-direction: column; gap: 7px; font-size: 12px; color: var(--muted); }
+.scheduled-backup-form input { min-width: 0; width: 100%; }
+.scheduled-backup-form select { min-width: 0; width: 100%; border: 1px solid var(--line); border-radius: 7px; padding: 9px; background: var(--surface); color: var(--ink); font: inherit; }
+.scheduled-backup-directory { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.scheduled-backup-directory > span { font-size: 12px; overflow-wrap: anywhere; }
+.scheduled-backup-status { display: flex; flex-direction: column; gap: 7px; margin: 0; font-size: 12px; }
+.scheduled-backup-status > div { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+.scheduled-backup-status dt { color: var(--muted); flex-shrink: 0; }
+.scheduled-backup-status dd { margin: 0; overflow-wrap: anywhere; text-align: end; }
+.scheduled-backup-files { color: var(--muted); font-size: 12px; min-width: 0; }
+.scheduled-backup-files summary { cursor: pointer; }
+.scheduled-backup-files ul { list-style: none; margin: 10px 0 0; padding: 0; }
+.scheduled-backup-files li { display: flex; flex-direction: column; gap: 3px; padding-block: 5px; overflow-wrap: anywhere; }
+.scheduled-backup-files time { font-size: 11px; }

@@ -20,9 +20,9 @@ export function validateBackupPassword(password) {
   }
   if (!valid) fail('密码须为 8–256 个字符，且不能包含无效字符。', 'INVALID_BACKUP_PASSWORD');
 }
-function cryptoAPI() {
-  if (!globalThis.crypto?.subtle || !globalThis.crypto?.getRandomValues) fail('当前浏览器不支持备份加密。', 'BACKUP_CRYPTO_UNAVAILABLE');
-  return globalThis.crypto;
+function cryptoAPI(api = globalThis.crypto) {
+  if (!api?.subtle || !api?.getRandomValues) fail('当前浏览器不支持备份加密。', 'BACKUP_CRYPTO_UNAVAILABLE');
+  return api;
 }
 const hasMagic = (bytes) => bytes.length >= MAGIC.length && MAGIC.every((byte, index) => bytes[index] === byte);
 export async function isEncryptedBackup(file) {
@@ -36,8 +36,8 @@ function checkedHeader(bytes, size) {
     || length < 1 || length > PASSWORD_BACKUP_LIMITS.plaintext || size !== length + PASSWORD_BACKUP_LIMITS.overhead) invalid();
   return length;
 }
-async function deriveKey(passwordBytes, header, signal, operation) {
-  const api = cryptoAPI(); let material;
+async function deriveKey(passwordBytes, header, signal, operation, api = cryptoAPI()) {
+  let material;
   try {
     throwIfBackupCancelled(signal);
     material = await api.subtle.importKey('raw', passwordBytes, 'PBKDF2', false, ['deriveKey']);
@@ -48,6 +48,50 @@ async function deriveKey(passwordBytes, header, signal, operation) {
   } finally { material = null; }
 }
 const parameters = (header) => ({ name: 'AES-GCM', iv: header.subarray(36, 48), additionalData: header, tagLength: 128 });
+
+// The scheduled job retains only this nonextractable encryption capability.
+// Its salt remains in every portable profile-1 file, so the existing password
+// restore flow works on another browser/device without this CryptoKey.
+export async function prepareScheduledBackupKey(password, { signal, crypto } = {}) {
+  throwIfBackupCancelled(signal); validateBackupPassword(password);
+  const api = cryptoAPI(crypto), header = new Uint8Array(PASSWORD_BACKUP_LIMITS.header);
+  api.getRandomValues(header.subarray(20, 36));
+  let passwordBytes, key;
+  try {
+    passwordBytes = new TextEncoder().encode(password);
+    key = await deriveKey(passwordBytes, header, signal, 'encrypt', api);
+    throwIfBackupCancelled(signal);
+    return { key, salt: header.slice(20, 36) };
+  } finally { passwordBytes?.fill(0); header.fill(0); key = null; password = ''; }
+}
+
+function checkedScheduledBackupMaterial(material) {
+  const key = material?.key, salt = material?.salt;
+  const native = typeof globalThis.CryptoKey === 'function' ? key instanceof globalThis.CryptoKey
+    : Object.prototype.toString.call(key) === '[object CryptoKey]';
+  if (!native || key.type !== 'secret' || key.extractable !== false || key.algorithm?.name !== 'AES-GCM' || key.algorithm.length !== 256
+    || key.usages.length !== 1 || key.usages[0] !== 'encrypt' || !(salt instanceof Uint8Array) || salt.length !== 16)
+    fail('自动备份密钥无效，请重新设置自动备份。', 'INVALID_SCHEDULED_BACKUP_KEY');
+  return { key, salt: salt.slice() };
+}
+
+export async function encryptScheduledBackup(blob, material, { signal, crypto } = {}) {
+  throwIfBackupCancelled(signal);
+  const { key, salt } = checkedScheduledBackupMaterial(material);
+  if (!(blob instanceof Blob) || blob.size < 1 || blob.size > PASSWORD_BACKUP_LIMITS.plaintext) invalid();
+  const api = cryptoAPI(crypto), header = new Uint8Array(PASSWORD_BACKUP_LIMITS.header), data = new DataView(header.buffer);
+  header.set(MAGIC); header[8] = 1; header[9] = 1;
+  data.setUint32(12, PASSWORD_BACKUP_LIMITS.iterations); data.setUint32(16, blob.size);
+  header.set(salt, 20); api.getRandomValues(header.subarray(36, 48));
+  let plain, cipher;
+  try {
+    throwIfBackupCancelled(signal); plain = new Uint8Array(await blob.arrayBuffer()); throwIfBackupCancelled(signal);
+    if (plain.length !== blob.size) invalid();
+    cipher = new Uint8Array(await api.subtle.encrypt(parameters(header), key, plain));
+    throwIfBackupCancelled(signal);
+    return new Blob([header, cipher], { type: 'application/octet-stream' });
+  } finally { plain?.fill(0); cipher?.fill(0); header.fill(0); salt.fill(0); }
+}
 
 export async function encryptCompleteBackup(blob, password, { signal } = {}) {
   throwIfBackupCancelled(signal); validateBackupPassword(password);

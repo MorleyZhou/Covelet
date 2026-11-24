@@ -12,12 +12,15 @@ import { validateSavedDesktopTemplates } from '../src/lib/desktop-templates.js';
 import { validateContributionDays } from '../src/lib/github-contributions.js';
 import { validateNavigationIconRecord } from '../src/lib/icon-image-record.js';
 import { validateIconBytes } from '../src/lib/site-info.js';
+import { scheduledBackups } from '../src/lib/scheduled-backup.js';
+import { startScheduledBackupBackground } from '../src/lib/scheduled-backup-background.js';
 
 export default defineBackground({ type: 'module', main() {
   const languageReady = initializeLanguage();
   setWorkerSyncValidators({ migrateNavigationState, validatePersonalTools, validateContentPreferences,
     validateSavedDesktopTemplates, validateContributionDays, validateNavigationIconRecord, validateIconBytes });
   startCloudSyncBackground(createCloudSync(), { ready: languageReady });
+  startScheduledBackupBackground(scheduledBackups, { ready: languageReady });
   const updateActionTitle = () => chrome.action.setTitle({ title: tr('添加到 Covelet') }).catch(() => {});
   subscribeLanguage(updateActionTitle);
   languageReady.then(updateActionTitle);
