@@ -1,5 +1,6 @@
 // Semantic merging sits inside the existing authenticated all-data-v1 records.
 // It neither changes their wire identities nor decides causal ordering.
+import { NOTE_HISTORY_KEY, validateNoteHistory, mergeNoteHistories } from './note-history-core.js';
 const MAX_ROWS = 12000;
 const copy = (value) => value === undefined ? undefined : structuredClone(value);
 const object = (value) => value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Blob);
@@ -77,7 +78,7 @@ export function mergeSyncRecord(namespace, key, { base, local, remote, hasBase =
     const choice = own(choices, id) ? choices[id] : defaultChoice;
     if (!['local', 'remote', 'merged'].includes(choice)) fail();
     const value = choice === 'local' ? left : choice === 'remote' ? right : selected.value;
-    const label = left?.name || left?.title || right?.name || right?.title || path.at(-1) || key;
+    const label = left?.name || left?.title || right?.name || right?.title || left?.record?.title || right?.record?.title || path.at(-1) || key;
     rows.push({ id, label: String(label), kind, status, local: copy(left), remote: copy(right), merged: copy(selected.value), choice, conflict: selected.conflict });
     return copy(value);
   };
@@ -121,7 +122,28 @@ export function mergeSyncRecord(namespace, key, { base, local, remote, hasBase =
     return result;
   };
   let value;
-  if (namespace !== 'preferences' || !object(local) || !object(remote)) value = row([], 'record', base, local, remote);
+  if (namespace === 'preferences' && key === NOTE_HISTORY_KEY) {
+    // Historical versions are immutable records. Retention is deterministic,
+    // and a missing branch never deletes another device's unique version.
+    let left, right, before, joined;
+    try {
+      left = validateNoteHistory(local); right = validateNoteHistory(remote); before = validateNoteHistory(base);
+      joined = mergeNoteHistories(left, right);
+    } catch { fail(); }
+    value = copy(joined);
+    for (const [noteId, versions] of Object.entries(joined.notes)) {
+      const index = history => new Map((history.notes[noteId] || []).map(version => [version.id, version]));
+      const l = index(left), r = index(right), b = index(before), selected = [];
+      for (const version of versions) {
+        const retained = row(['notes', noteId, version.id], 'note-history', b.get(version.id), l.get(version.id), r.get(version.id),
+          (_base, a, other) => ({ value: copy(a || other), conflict: false }));
+        if (retained !== undefined) selected.push(retained);
+      }
+      if (selected.length) value.notes[noteId] = selected;
+      else delete value.notes[noteId];
+    }
+    try { value = validateNoteHistory(value); } catch { fail(); }
+  } else if (namespace !== 'preferences' || !object(local) || !object(remote)) value = row([], 'record', base, local, remote);
   else if (key === 'owntab.local.v1') {
     const placement = { coupled: [['groupId', 'parentId', 'page', 'position', 'order', 'detached']] };
     value = structure([], base, local, remote, {

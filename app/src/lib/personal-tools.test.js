@@ -1,16 +1,19 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { registerHooks } from 'node:module';
 import {
   PERSONAL_TRASH_LIMITS, validatePersonalTools, loadPersonalTools, loadPersonalToolsSnapshot, replacePersonalTools, mergePersonalTools,
   deletePersonalRecord, restoreTrashedPersonalRecord, permanentlyDeletePersonalTrash, emptyPersonalTrash,
   applySyncedPersonalTools, exportPersonalTools, importPersonalTools, saveReadingItem, bulkReadingItems,
-  appendNoteCapture,
+  appendNoteCapture, saveNote, restoreNoteVersion,
 } from './personal-tools.js';
 import { createContentTag, getContentMetadata, loadContentPreferences, saveContentMetadata, saveContentSettings, saveSavedView } from './content-preferences.js';
 import { localData } from './local-data.js';
 import { captureNoteDocument } from './note-capture.js';
 import { noteDocumentText } from './note-document.js';
 import { fromMarkdown } from '@futelab/folio/serialization';
+import { NOTE_HISTORY_KEY, createEmptyNoteHistory, captureNoteVersion } from './note-history-core.js';
 
 const key = 'covelet.tools.v1', values = new Map();
 const now = Date.now();
@@ -28,6 +31,15 @@ function installLocks(t) {
   } } });
   t.after(() => Object.defineProperty(globalThis, 'navigator', { configurable: true, value: originalNavigator }));
   return lockOrder;
+}
+function installActualToolsWasm(t) {
+  const wasm = new URL('../wasm/tools-core.wasm', import.meta.url);
+  const hooks = registerHooks({ resolve(specifier, context, next) {
+    if (specifier.endsWith('tools-core.wasm?url')) return { url: `data:text/javascript,${encodeURIComponent(`export default ${JSON.stringify(wasm.href)};`)}`, shortCircuit: true };
+    return next(specifier, context);
+  } });
+  t.after(() => hooks.deregister());
+  t.mock.method(globalThis, 'fetch', async (url) => { assert.equal(url, wasm.href); return new Response(await readFile(wasm)); });
 }
 beforeEach((t) => {
   values.clear();
@@ -86,7 +98,8 @@ test('captured append keeps note identity, title, rich prefix, tags and privacy 
   const write = t.mock.method(localData, 'set', async (patch) => { writes.push(Object.keys(patch)); return originalSet.call(localData, patch); });
   const saved = await appendNoteCapture({ id: original.id, revision: original.revision, document: addition }, { expectedPreferencesRevision: preferences.revision });
   write.mock.restore();
-  assert.deepEqual(writes, [[key]]); assert.deepEqual(lockOrder.slice(-2), ['covelet.content.preferences.v1', key]);
+  assert.deepEqual(writes, [[key, NOTE_HISTORY_KEY]]); assert.deepEqual(lockOrder.slice(-2), ['covelet.content.preferences.v1', key]);
+  assert.deepEqual(JSON.parse(values.get(NOTE_HISTORY_KEY)).notes[original.id][0].record, original);
   assert.equal(saved.id, original.id); assert.equal(saved.title, original.title); assert.equal(saved.createdAt, original.createdAt); assert.equal(saved.pinned, true);
   assert.equal(saved.revision, original.revision + 1); assert.equal(saved.body, `${original.body}\n${noteDocumentText(addition)}`);
   assert.deepEqual(saved.document.content.slice(0, document.content.length), document.content);
@@ -425,4 +438,67 @@ test('A+ retains legacy snapshot bytes for export but blocks import and record r
   await mergePersonalTools(state({ snapshots: [snapshot()], trash: [legacyTrash], notes: [note()] }));
   data = await loadPersonalTools();
   assert.deepEqual(data.snapshots, []); assert.deepEqual(data.trash, []); assert.equal(data.notes.length, 1);
+});
+
+test('saveNote captures prior content and metadata atomically while pinning, no-op saves and new notes add no historical versions', async (t) => {
+  installLocks(t); installActualToolsWasm(t);
+  const original = note(); await replacePersonalTools(state({ notes: [original] }));
+  const tag = await createContentTag('Saved metadata'), preferences = await loadContentPreferences();
+  const writes = [], set = localData.set;
+  t.mock.method(localData, 'set', async (patch) => { writes.push(Object.keys(patch)); return set(patch); });
+  let saved = await saveNote({ ...original, title: 'Changed title', body: 'Changed full body' }, {
+    metadata: { tagIds: [tag.id], description: '' }, expectedPreferencesRevision: preferences.revision,
+  });
+  assert.deepEqual(writes, [[key, 'covelet.content.preferences.v1', NOTE_HISTORY_KEY]]);
+  const history = JSON.parse(values.get(NOTE_HISTORY_KEY));
+  assert.equal(history.clock, 1); assert.deepEqual(history.notes[original.id][0].record, original);
+  const historicalBytes = values.get(NOTE_HISTORY_KEY);
+  saved = await saveNote({ ...saved, pinned: true });
+  saved = await saveNote(saved);
+  await saveNote({ title: 'Brand-new note', body: 'No prior version exists' });
+  assert.equal(values.get(NOTE_HISTORY_KEY), historicalBytes);
+});
+
+test('a failed note/history commit changes neither the current note nor its historical snapshot', async (t) => {
+  installLocks(t); installActualToolsWasm(t);
+  await replacePersonalTools(state({ notes: [note()] })); const before = new Map(values);
+  t.mock.method(localData, 'set', async () => { throw Error('Synthetic storage failure'); });
+  await assert.rejects(saveNote({ ...note(), body: 'New body that must remain a draft' }), /未能保存/);
+  assert.deepEqual(values, before);
+});
+
+test('history restore captures the current rich document before overwriting and preserves identity, pinning and privacy CAS', async (t) => {
+  installLocks(t);
+  const document = fromMarkdown('## Original\n\n**Full rich document**'), original = { ...note(), document, body: noteDocumentText(document) };
+  await replacePersonalTools(state({ notes: [original] }));
+  await appendNoteCapture({ id: original.id, revision: original.revision, document: captureNoteDocument({ body: 'Later captured text' }) }, { expectedPreferencesRevision: 0 });
+  let tools = JSON.parse(values.get(key)); tools.notes[0].pinned = true; values.set(key, JSON.stringify(tools));
+  const current = tools.notes[0], history = JSON.parse(values.get(NOTE_HISTORY_KEY)), target = history.notes[original.id][0];
+  const writes = [], set = localData.set;
+  t.mock.method(localData, 'set', async (patch) => { writes.push(Object.keys(patch)); return set(patch); });
+  const restored = await restoreNoteVersion(original.id, target.id, { expectedNoteRevision: current.revision, expectedHistoryRevision: history.revision, expectedPreferencesRevision: 0 });
+  assert.deepEqual(writes, [[key, NOTE_HISTORY_KEY]]);
+  assert.deepEqual(restored.document, original.document); assert.equal(restored.body, original.body); assert.equal(restored.id, original.id);
+  assert.equal(restored.createdAt, original.createdAt); assert.equal(restored.pinned, true); assert.equal(restored.revision, current.revision + 1);
+  const updated = JSON.parse(values.get(NOTE_HISTORY_KEY)); assert.deepEqual(updated.notes[original.id].at(-1).record, current);
+  let before = new Map(values);
+  await assert.rejects(restoreNoteVersion(original.id, target.id, { expectedNoteRevision: restored.revision, expectedHistoryRevision: history.revision, expectedPreferencesRevision: 0 }),
+    { code: 'REVISION_CONFLICT' }); assert.deepEqual(values, before);
+  values.set('covelet.content.preferences.v1', JSON.stringify({ version: 1, revision: 1, presentation: true, aliases: {}, privateKeys: [`note:${original.id}`] })); before = new Map(values);
+  await assert.rejects(restoreNoteVersion(original.id, target.id, { expectedNoteRevision: restored.revision, expectedHistoryRevision: updated.revision, expectedPreferencesRevision: 1 }),
+    { code: 'PRIVACY_LOCKED' }); assert.deepEqual(values, before);
+});
+
+test('permanently deleting a trashed note removes only its history in the same tools commit and retains the global clock', async (t) => {
+  installLocks(t);
+  const first = note('first'), second = note('second'); await replacePersonalTools(state({ notes: [first, second] }));
+  let history = captureNoteVersion(createEmptyNoteHistory(), first).history;
+  history = captureNoteVersion(history, second).history; values.set(NOTE_HISTORY_KEY, JSON.stringify(history));
+  await deletePersonalRecord('notes', first.id, first.revision);
+  assert.ok(JSON.parse(values.get(NOTE_HISTORY_KEY)).notes.first, 'The recoverable trash record still owns its history.');
+  const tools = JSON.parse(values.get(key)), trash = tools.trash.find((item) => item.record.id === first.id), writes = [], set = localData.set;
+  t.mock.method(localData, 'set', async (patch) => { writes.push(Object.keys(patch)); return set(patch); });
+  await permanentlyDeletePersonalTrash(trash.id);
+  assert.deepEqual(writes, [[key, NOTE_HISTORY_KEY]]);
+  const retained = JSON.parse(values.get(NOTE_HISTORY_KEY)); assert.equal(retained.notes.first, undefined); assert.ok(retained.notes.second); assert.equal(retained.clock, history.clock);
 });

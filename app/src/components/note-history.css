@@ -1,0 +1,20 @@
+.modal.wide.note-history-modal { display: flex; flex-direction: column; width: min(960px, calc(100vw - 32px)); height: min(650px, calc(100dvh - 32px)); overflow: hidden; }
+.note-history-panel { display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 0; min-height: 0; }
+.note-history-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+.note-history-panel .hint { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.65; }
+.note-history-workspace { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 18px; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
+.note-history-versions { display: flex; flex-direction: column; gap: 4px; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.note-history-versions > div { flex-shrink: 0; min-width: 0; }
+.note-history-versions button { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 10px; text-align: start; border-radius: 8px; min-width: 0; }
+.note-history-versions button:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.note-history-versions button[aria-pressed=true] { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.note-history-versions time { color: var(--muted); font-size: 11px; }
+.note-history-versions strong { color: var(--ink); font-size: 12px; font-weight: 500; overflow-wrap: anywhere; }
+.note-history-comparison { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.note-history-comparison article { min-width: 0; }
+.note-history-comparison h3 { margin: 0 0 10px; color: var(--muted); font-size: 12px; font-weight: 400; }
+.note-history-comparison strong { display: block; font-size: 15px; overflow-wrap: anywhere; }
+.note-history-comparison pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: 13px; line-height: 1.7; margin: 10px 0 0; }
+.note-history-empty { margin: auto; text-align: center; }
+.note-history-actions { display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+@media (max-width: 650px) { .note-history-workspace { grid-template-columns: 135px minmax(0, 1fr); gap: 12px; } .note-history-comparison { grid-template-columns: minmax(0, 1fr); } }

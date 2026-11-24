@@ -15,6 +15,7 @@ import { noteDocumentText } from './note-document.js';
 import { localData } from './local-data.js';
 import { resolveReferencedWidget } from './referenced-widgets.js';
 import { encryptCompleteBackup, decryptCompleteBackup, isEncryptedBackup, PASSWORD_BACKUP_LIMITS } from './password-backup.js';
+import { createEmptyNoteHistory, validateNoteHistory, captureNoteVersion, NOTE_HISTORY_KEY } from './note-history-core.js';
 
 const clone = (value) => structuredClone(value);
 const PNG = Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB0kAAAAASUVORK5CYII=', 'base64'));
@@ -23,7 +24,7 @@ const site = (id, url, iconUrl, order) => ({ id, url, iconUrl, order, type: 'sit
 const note = (body = 'before') => ({ id: 'note-a', revision: 1, createdAt: 1, updatedAt: 1, title: 'Private note', body, pinned: false });
 function harness() {
   let envelope = null, point = null, rejectPoint = false, pointWrites = 0;
-  let preferences, tools;
+  let preferences, tools, history;
   const icons = new Map(), assets = new Map(), hydrations = [], restoredImages = [], commits = [];
   const nav = createStorage({ initialState: createEmptyState, configStore: {
     read: async () => clone(envelope), write: async (value, records) => {
@@ -31,12 +32,14 @@ function harness() {
       const staged = incoming ? preferences.prepare(incoming, { expectedRevision: incoming.revision - 1 }) : null;
       const incomingTools = records?.['covelet.tools.v1'];
       const stagedTools = incomingTools ? tools.prepare(incomingTools, { expectedRevision: incomingTools.revision - 1 }) : null;
+      const incomingHistory = records?.[NOTE_HISTORY_KEY];
+      const stagedHistory = incomingHistory ? history.prepare(incomingHistory, { expectedRevision: incomingHistory.revision - 1 }) : null;
       if (staged && preferences.current().revision !== incoming.revision - 1) throw Object.assign(Error('conflict'), { code: 'REVISION_CONFLICT' });
-      envelope = clone(value); if (staged) preferences.commitPrepared(staged); if (stagedTools) tools.commitPrepared(stagedTools);
+      envelope = clone(value); if (staged) preferences.commitPrepared(staged); if (stagedTools) tools.commitPrepared(stagedTools); if (stagedHistory) history.commitPrepared(stagedHistory);
       commits.push({ navigationRevision: value.state.revision, preferencesRevision: staged?.revision, toolsRevision: stagedTools?.revision,
-        snapshot: clone({ state: value.state, preferences: preferences.current(), tools: tools.current() }) });
+        historyRevision: stagedHistory?.revision, snapshot: clone({ state: value.state, preferences: preferences.current(), tools: tools.current(), noteHistory: history.current() }) });
     }, subscribe: () => () => {},
-  }, personalTools: { read: () => tools.read(), prepare: preparePersonalToolsRestore },
+  }, personalTools: { read: () => tools.read(), prepare: preparePersonalToolsRestore }, noteHistory: { read: () => history.read() },
   assetStore: { get: async (id) => clone(assets.get(id)), add: async (record) => assets.set(record.id, clone(record)), delete: async (id) => assets.delete(id) },
   syncStore: null, imageTools: { validate: async () => ({ width: 1, height: 1 }) },
   privacy: async (run) => run(await preferences.read(), (_keys, { replacePreferences, expectedRevision } = {}) => {
@@ -65,10 +68,11 @@ function harness() {
     };
   };
   tools = domain(validatePersonalTools, null); const templates = domain(validateSavedDesktopTemplates, null);
+  history = domain(validateNoteHistory, createEmptyNoteHistory());
   preferences = domain(validateContentPreferences, null);
   const points = { read: async () => clone(point), async write(value) { if (rejectPoint) throw Error('checkpoint quota'); pointWrites++; point = clone(value); } };
-  const center = createRecoveryCenter({ nav, tools, preferences, templates, points, locks: { request: (_key, action) => action() } });
-  return { center, nav, tools, preferences, templates, points, icons, assets, commits, hydrations, restoredImages, get pointWrites() { return pointWrites; }, failPoint() { rejectPoint = true; } };
+  const center = createRecoveryCenter({ nav, tools, preferences, templates, history, points, locks: { request: (_key, action) => action() } });
+  return { center, nav, tools, history, preferences, templates, points, icons, assets, commits, hydrations, restoredImages, get pointWrites() { return pointWrites; }, failPoint() { rejectPoint = true; } };
 }
 
 function singleNavigation(id, url, { privateFolder = false } = {}) {
@@ -78,6 +82,123 @@ function singleNavigation(id, url, { privateFolder = false } = {}) {
     page: 0, order: 0, icon: { kind: 'letter', value: 'P' } }, { ...item, parentId: 'private-folder' }] : [item];
   return state;
 }
+
+function noteHistory(records, prefix = 'test') {
+  let history = createEmptyNoteHistory(), sequence = 0;
+  for (const record of records) history = captureNoteVersion(history, record, { now: () => 100 + sequence,
+    uuid: () => `${prefix}-version-${++sequence}` }).history;
+  return history;
+}
+
+test('complete backup v2 carries validated note history through JSON and the unchanged portable encrypted wrapper', async () => {
+  const source = harness(), target = harness(), plainTarget = harness();
+  source.tools.change({ notes: [note('Source current body')] });
+  source.history.change(noteHistory([note('Source prior body')], 'source'));
+  const file = await source.center.exportCompleteBackup(), data = JSON.parse(await file.text());
+  assert.equal(data.version, 2); assert.equal(data.noteHistory.notes['note-a'][0].record.body, 'Source prior body');
+  const encrypted = await source.center.exportEncryptedBackup('History-portable-password');
+  assert.equal(JSON.parse(await (await decryptCompleteBackup(encrypted, 'History-portable-password')).text()).version, 2);
+  target.tools.change({ notes: [note('Target before restore')] });
+  target.history.change(noteHistory([note('Target older body')], 'target'));
+  const before = await target.history.read(), writes = target.commits.length;
+  await target.center.restore(await target.center.previewEncryptedBackup(encrypted, 'History-portable-password'), { selected: ['notes'] });
+  assert.equal((await target.tools.read()).notes[0].body, 'Source current body');
+  const versions = (await target.history.read()).notes['note-a'];
+  for (const body of ['Source prior body', 'Target older body', 'Target before restore']) assert.ok(versions.some((version) => version.record.body === body));
+  const atomic = target.commits.slice(writes); assert.equal(atomic.length, 1);
+  assert.equal(atomic[0].snapshot.tools.notes[0].body, 'Source current body');
+  assert.ok(atomic[0].snapshot.noteHistory.notes['note-a'].some((version) => version.record.body === 'Target before restore'));
+  const recovery = await target.center.previewRecoveryPoint();
+  assert.deepEqual(recovery.noteHistory, before); assert.equal(recovery.tools.notes[0].body, 'Target before restore');
+  await plainTarget.center.restore(await plainTarget.center.preview(file), { selected: ['notes'] });
+  assert.equal((await plainTarget.history.read()).notes['note-a'][0].record.body, 'Source prior body');
+});
+
+test('old 0.6.0 complete v1 JSON and encrypted files upgrade without losing existing history or the overwritten current note', async () => {
+  const source = harness(); source.tools.change({ notes: [note('Old backup body')] });
+  const data = JSON.parse(await (await source.center.exportCompleteBackup()).text()); data.version = 1; delete data.noteHistory;
+  for (const encrypted of [false, true]) {
+    const target = harness(); target.tools.change({ notes: [note('Before legacy restore')] });
+    target.history.change(noteHistory([note('Existing local past')], `legacy-${encrypted}`));
+    const file = new Blob([JSON.stringify(data)]);
+    const plan = encrypted ? await target.center.previewEncryptedBackup(await encryptCompleteBackup(file, 'Old-format-password'), 'Old-format-password') : await target.center.preview(file);
+    assert.deepEqual(plan.noteHistory, createEmptyNoteHistory());
+    await target.center.restore(plan, { selected: ['notes'] });
+    assert.equal((await target.tools.read()).notes[0].body, 'Old backup body');
+    const versions = (await target.history.read()).notes['note-a'];
+    assert.ok(versions.some((version) => version.record.body === 'Existing local past'));
+    assert.ok(versions.some((version) => version.record.body === 'Before legacy restore'));
+  }
+});
+
+test('complete history formats reject missing v2 history, unknown fields and versions before recovery writes', async () => {
+  const source = harness(), target = harness(), input = JSON.parse(await (await source.center.exportCompleteBackup()).text());
+  const missing = clone(input); delete missing.noteHistory;
+  const legacyExtra = { ...input, version: 1 };
+  for (const data of [missing, legacyExtra, { ...input, version: 3 }, { ...input, extra: true }, { ...input, noteHistory: { ...input.noteHistory, extra: true } }])
+    await assert.rejects(target.center.preview(new Blob([JSON.stringify(data)])));
+  assert.equal(target.commits.length, 0); assert.equal(target.pointWrites, 0);
+});
+
+test('append imports history only for actually added note IDs and never attaches a skipped source record or orphan history', async () => {
+  const source = harness(), target = harness(), added = { ...note('Added source current'), id: 'added-note' };
+  source.tools.change({ notes: [note('Skipped source current'), added] });
+  source.history.change(noteHistory([note('Foreign skipped history'), { ...added, body: 'Added source history' }, { ...note('Foreign orphan history'), id: 'orphan-note' }], 'source'));
+  target.tools.change({ notes: [note('Retained current local')] });
+  target.history.change(noteHistory([note('Retained older local')], 'target'));
+  await target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { selected: ['notes'], mode: 'append' });
+  assert.equal((await target.tools.read()).notes.find((record) => record.id === 'note-a').body, 'Retained current local');
+  const history = await target.history.read();
+  assert.ok(history.notes['note-a'].some((version) => version.record.body === 'Retained older local'));
+  assert.ok(!history.notes['note-a'].some((version) => version.record.body === 'Foreign skipped history'));
+  assert.equal(history.notes['added-note'][0].record.body, 'Added source history'); assert.equal(history.notes['orphan-note'], undefined);
+});
+
+test('history preview CAS and atomic history preparation reject stale updates without publishing incoming notes', async () => {
+  for (const duringCommit of [false, true]) {
+    const source = harness(), target = harness(); source.tools.change({ notes: [note('Incoming body')] });
+    target.tools.change({ notes: [note('Current local body')] });
+    const plan = await target.center.preview(await source.center.exportCompleteBackup()), writes = target.commits.length;
+    const concurrent = () => target.history.change(noteHistory([note('Concurrent history must survive')], 'concurrent'));
+    if (duringCommit) target.history.beforeWrite(concurrent); else concurrent();
+    await assert.rejects(target.center.restore(plan, { selected: ['notes'] }), { code: 'REVISION_CONFLICT' });
+    assert.equal((await target.tools.read()).notes[0].body, 'Current local body');
+    assert.equal((await target.history.read()).notes['note-a'][0].record.body, 'Concurrent history must survive');
+    assert.equal(target.commits.length, writes);
+    if (!duringCommit) assert.equal(target.pointWrites, 0);
+  }
+});
+
+test('failed history writes expose neither the replacement note nor partial history and late rollback restores both', async () => {
+  for (const late of [false, true]) {
+    const source = harness(), target = harness(); source.tools.change({ notes: [note('Incoming body')] });
+    target.tools.change({ notes: [note('Original current')] }); target.history.change(noteHistory([note('Original past')], 'original'));
+    const before = await target.history.read(), writes = target.commits.length;
+    if (late) target.templates.failWrites(); else target.history.failWrites();
+    await assert.rejects(target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { selected: ['notes', 'templates'] }), /本次更改已撤销/u);
+    assert.equal((await target.tools.read()).notes[0].body, 'Original current');
+    assert.deepEqual((await target.history.read()).notes, before.notes);
+    assert.equal((await target.center.getRecoveryPoint()).status, 'rolled-back');
+    if (!late) assert.equal(target.commits.length, writes);
+    else for (const commit of target.commits.slice(writes)) if (commit.snapshot.tools.notes[0].body === 'Incoming body')
+      assert.ok(commit.snapshot.noteHistory.notes['note-a'].some((version) => version.record.body === 'Original current'));
+  }
+});
+
+test('a concurrent history edit after paired apply prevents rollback from overwriting its newer history', async () => {
+  const source = harness(), target = harness(); source.tools.change({ notes: [note('Incoming body')] }); target.tools.change({ notes: [note('Original current')] });
+  target.templates.beforeWrite(() => target.history.change(noteHistory([note('New concurrent history')], 'newer'))); target.templates.failWrites();
+  await assert.rejects(target.center.restore(await target.center.preview(await source.center.exportCompleteBackup()), { selected: ['notes', 'templates'] }), { code: 'RECOVERY_REQUIRED' });
+  assert.equal((await target.history.read()).notes['note-a'][0].record.body, 'New concurrent history');
+  assert.equal((await target.center.getRecoveryPoint()).status, 'needs-recovery');
+});
+
+test('backup capture retries when history changes during navigation resource export', async () => {
+  const source = harness(), original = source.nav.exportBackup; let captures = 0;
+  source.nav.exportBackup = async (...args) => { if (++captures === 1) source.history.change(noteHistory([note('Concurrent captured history')], 'capture')); return original(...args); };
+  const data = JSON.parse(await (await source.center.exportCompleteBackup()).text());
+  assert.equal(captures, 2); assert.equal(data.noteHistory.notes['note-a'][0].record.body, 'Concurrent captured history');
+});
 
 test('password-encrypted full backup remains readonly until explicit restore and retains navigation trash, images, rich notes, dates, views and metadata', async () => {
   const source = harness(), target = harness(), navigation = singleNavigation('encrypted-site', 'https://encrypted.test/');

@@ -2,6 +2,8 @@ import { tr, getLocale } from "../i18n/index.js";
 import { Inflate, zipSync, strToU8 } from 'fflate';
 import { createEmptyState, createInitialState, validateState, migrateNavigationState } from './model.js';
 import { localData, createEncryptedStore } from './local-data.js';
+import { loadNoteHistory } from './note-history.js';
+import { NOTE_HISTORY_KEY, validateNoteHistory } from './note-history-core.js';
 import { migrateLegacyIndexedDb } from './legacy-indexed-data.js';
 import { normalizeIconAddress, siteIconAddress } from './site-icons.js';
 import { readNavigationIconResource, restoreNavigationIconResource, retainNavigationIconResources } from './navigation-icon-cache.js';
@@ -310,7 +312,7 @@ function parseJson(bytes) {
 }
 
 // Adapters make backup and transaction tests independent of a real browser database.
-export function createStorage({ configStore, assetStore, privacy = withNavigationPrivacy, personalTools = { read: loadPersonalToolsSnapshot, prepare: preparePersonalToolsRestore }, iconResources = { read: readNavigationIconResource, restore: restoreNavigationIconResource,
+export function createStorage({ configStore, assetStore, privacy = withNavigationPrivacy, personalTools = { read: loadPersonalToolsSnapshot, prepare: preparePersonalToolsRestore }, noteHistory = { read: loadNoteHistory }, iconResources = { read: readNavigationIconResource, restore: restoreNavigationIconResource,
   prepare: prepareImportedNavigationIcons, retain: retainNavigationIconResources }, locks, initialState = createEmptyState, imageTools = browserImages, uuid = () => crypto.randomUUID() } = {}) {
   let config;
   let assets;
@@ -363,10 +365,19 @@ export function createStorage({ configStore, assetStore, privacy = withNavigatio
         committedTools = await personalTools.prepare(await personalTools.read(), pair.tools, { expectedRevision: pair.expectedToolsRevision });
         records['covelet.tools.v1'] = committedTools;
       }
+      let committedHistory;
+      if (pair.noteHistory !== undefined) {
+        const previous = validateNoteHistory(await noteHistory.read()), incoming = validateNoteHistory(pair.noteHistory);
+        if (!Number.isSafeInteger(pair.expectedHistoryRevision) || previous.revision !== pair.expectedHistoryRevision
+          || previous.revision >= Number.MAX_SAFE_INTEGER) fail(tr('恢复期间数据已更新，请重新预览。'), 'REVISION_CONFLICT');
+        committedHistory = validateNoteHistory({ ...incoming, revision: previous.revision + 1, clock: Math.max(previous.clock, incoming.clock) });
+        records[NOTE_HISTORY_KEY] = committedHistory;
+      }
       const state = await writeState(next, currentRevision, records);
-      return { state, preferences: committedPreferences, ...(committedTools ? { tools: committedTools } : {}) };
+      return { state, preferences: committedPreferences, ...(committedTools ? { tools: committedTools } : {}),
+        ...(committedHistory ? { noteHistory: committedHistory } : {}) };
     };
-    if (pair.tools === undefined) return commit();
+    if (pair.tools === undefined && pair.noteHistory === undefined) return commit();
     const manager = locks || globalThis.navigator?.locks;
     if (manager?.request) return manager.request('covelet.tools.v1', { mode: 'exclusive' }, commit);
     if (getConfig().requireLocks) fail(tr('无法开始恢复，当前数据未改变。请稍后重试。'), 'LOCK_UNAVAILABLE');
@@ -615,15 +626,15 @@ export function createStorage({ configStore, assetStore, privacy = withNavigatio
         throw error;
       } finally { releaseIcons?.(); }
     },
-    restoreBackupWithPreferences(plan, { expectedNavigationRevision, expectedPreferencesRevision, preferences, tools, expectedToolsRevision, ...options } = {}) {
-      const pair = { preferences, expectedPreferencesRevision, tools, expectedToolsRevision };
+    restoreBackupWithPreferences(plan, { expectedNavigationRevision, expectedPreferencesRevision, preferences, tools, expectedToolsRevision, noteHistory, expectedHistoryRevision, ...options } = {}) {
+      const pair = { preferences, expectedPreferencesRevision, tools, expectedToolsRevision, noteHistory, expectedHistoryRevision };
       return api.restoreBackup(plan, expectedNavigationRevision, { ...options, pairedPreferences: pair });
     },
-    async restoreContentWithPreferences({ expectedNavigationRevision, expectedPreferencesRevision, preferences, tools, expectedToolsRevision } = {}) {
+    async restoreContentWithPreferences({ expectedNavigationRevision, expectedPreferencesRevision, preferences, tools, expectedToolsRevision, noteHistory, expectedHistoryRevision } = {}) {
       // Content-only recovery also uses the navigation CAS. No assets or layout
       // are replaced, but live pins cannot observe tools and privacy separately.
       return writeRecoveryPair(await api.loadState(), expectedNavigationRevision,
-        { preferences, expectedPreferencesRevision, tools, expectedToolsRevision });
+        { preferences, expectedPreferencesRevision, tools, expectedToolsRevision, noteHistory, expectedHistoryRevision });
     },
     async restoreSnapshot(expectedRevision, options = {}) {
       const envelope = await readEnvelope();

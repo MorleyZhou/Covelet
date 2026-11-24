@@ -8,6 +8,7 @@ import { userErrorMessage } from './user-error.js';
 import { validateRevisitOn } from './reading-revisit.js';
 import { appendCapturedDocument } from './note-capture.js';
 import { privateContentKeys } from './presentation.js';
+import { NOTE_HISTORY_KEY, loadNoteHistory, captureNoteVersion, noteHistoryError } from './note-history.js';
 
 const loadToolsCore = () => import('./tools-core.js').then((module) => module.loadToolsCore());
 
@@ -111,18 +112,44 @@ export function subscribePersonalTools(callback) {
   return () => { listeners.delete(receive); off(); };
 }
 let queue = Promise.resolve();
-async function mutate(update, { expectedRevision, extraRecords, shouldWrite } = {}) {
+async function mutate(update, { expectedRevision, extraRecords, shouldWrite, captureHistory = false, expectedHistoryRevision, pruneRemovedHistory = false } = {}) {
   const run = async () => {
     const current = await readPersonalTools();
     if (expectedRevision !== undefined && (!Number.isSafeInteger(expectedRevision) || current.revision !== expectedRevision)) {
       const error = Error(tr('内容已在其他页面更新，请重新打开后重试。')); error.code = 'REVISION_CONFLICT'; throw error;
     }
+    const history = captureHistory || pruneRemovedHistory ? await loadNoteHistory() : null;
+    if (expectedHistoryRevision !== undefined && history?.revision !== expectedHistoryRevision) throw revisionConflict();
     const next = pruneTrash(copy(current));
-    const result = await update(next);
+    const result = await update(next, history);
     if (shouldWrite && !shouldWrite(result)) return copy(result);
     next.revision = current.revision + 1;
     const checked = check(next);
     const additional = extraRecords ? extraRecords(result) : {};
+    let updatedHistory = history;
+    if (captureHistory) {
+      const following = new Map(checked.notes.map((record) => [record.id, record]));
+      let updated = history; const protectedIds = [];
+      for (const previous of current.notes) {
+        const after = following.get(previous.id);
+        if (!after || sameJson({ title: previous.title, body: previous.body, document: previous.document },
+          { title: after.title, body: after.body, document: after.document })) continue;
+        const captured = captureNoteVersion(updated, previous, { protectIds: protectedIds });
+        updated = captured.history; protectedIds.push(captured.version.id);
+      }
+      updatedHistory = updated;
+    }
+    if (pruneRemovedHistory) {
+      const retained = new Set([...checked.notes.map((record) => record.id), ...checked.trash.filter((item) => item.kind === 'notes').map((item) => item.record.id)]);
+      const removed = current.trash.filter((item) => item.kind === 'notes' && !retained.has(item.record.id) && updatedHistory.notes[item.record.id]).map((item) => item.record.id);
+      if (removed.length) {
+        updatedHistory = copy(updatedHistory);
+        for (const noteId of removed) delete updatedHistory.notes[noteId];
+        if (updatedHistory.revision >= Number.MAX_SAFE_INTEGER) throw noteHistoryError('NOTE_HISTORY_CAPACITY');
+        updatedHistory.revision++;
+      }
+    }
+    if (updatedHistory !== history) additional[NOTE_HISTORY_KEY] = updatedHistory;
     try { await localData.set({ [KEY]: checked, ...additional }); }
     catch (reason) { throw Error(/quota|storage.*full/i.test(reason.message) ? tr("存储空间已满，请先备份，再清理便笺、稍后读或回收站。") : userErrorMessage(reason, tr("内容未能保存，请重试。"))); }
     for (const listener of listeners) listener(checked);
@@ -211,14 +238,14 @@ function checkContentVisible(preferences, kind, id) {
     throw Object.assign(Error(tr('请先输入密码解除隐藏。')), { code: 'PRIVACY_LOCKED' });
   }
 }
-function saveContentRecord(kind, update, { metadata, expectedPreferencesRevision, expectedMetadata, expectedRevision } = {}) {
+function saveContentRecord(kind, update, { metadata, expectedPreferencesRevision, expectedMetadata, expectedRevision, captureHistory = false, expectedHistoryRevision } = {}) {
   return withNavigationPrivacy((preferences, prepare) => {
     checkPreferencesRevision(preferences, expectedPreferencesRevision);
-    return mutate((data) => {
-      const record = update(data, preferences);
+    return mutate((data, history) => {
+      const record = update(data, preferences, history);
       checkContentVisible(preferences, kind, record.id);
       return record;
-    }, { expectedRevision,
+    }, { expectedRevision, captureHistory, expectedHistoryRevision,
       ...(metadata === undefined ? {} : { extraRecords: (record) => prepare([], {
         metadata: [{ ...metadata, key: `${kind}:${record.id}`, expectedMetadata }], expectedRevision: expectedPreferencesRevision,
       }) }),
@@ -235,7 +262,7 @@ export async function saveNote({ id, revision, title: name, body, document, pinn
     if (document !== undefined) note.document = copy(document);
     if (!id) data.notes.push(note);
     return note;
-  }, options);
+  }, { ...options, captureHistory: true });
 }
 export async function appendNoteCapture({ id, revision, document }, { expectedPreferencesRevision } = {}) {
   if (!Number.isSafeInteger(revision) || revision < 1 || !Number.isSafeInteger(expectedPreferencesRevision) || expectedPreferencesRevision < 0) throw revisionConflict();
@@ -249,7 +276,21 @@ export async function appendNoteCapture({ id, revision, document }, { expectedPr
     Object.assign(note, { document: combined, body: text(noteDocumentText(combined), 60000, tr('便笺')),
       updatedAt: Math.max(Date.now(), note.updatedAt), revision: note.revision + 1 });
     return note;
-  }, { expectedPreferencesRevision });
+  }, { expectedPreferencesRevision, captureHistory: true });
+}
+
+export async function restoreNoteVersion(noteId, versionId, { expectedNoteRevision, expectedHistoryRevision, expectedPreferencesRevision } = {}) {
+  if (!Number.isSafeInteger(expectedNoteRevision) || expectedNoteRevision < 1 || !Number.isSafeInteger(expectedHistoryRevision) || expectedHistoryRevision < 0
+    || !Number.isSafeInteger(expectedPreferencesRevision) || expectedPreferencesRevision < 0) throw revisionConflict();
+  return saveContentRecord('note', (data, preferences, history) => {
+    checkContentVisible(preferences, 'note', noteId);
+    const note = recordFor(data.notes, noteId, expectedNoteRevision), version = history.notes[noteId]?.find((item) => item.id === versionId);
+    if (!version) throw noteHistoryError('NOTE_HISTORY_STALE');
+    note.title = version.record.title; note.body = version.record.body;
+    if (Object.hasOwn(version.record, 'document')) note.document = copy(version.record.document); else delete note.document;
+    note.revision++; note.updatedAt = Math.max(Date.now(), note.updatedAt);
+    return note;
+  }, { captureHistory: true, expectedHistoryRevision, expectedPreferencesRevision });
 }
 export function deletePersonalRecord(kind, id, revision, { expectedPreferencesRevision, expectedRevision } = {}) {
   if (!activeKinds.includes(kind)) fail(tr("记录类型无效。"));
@@ -275,7 +316,7 @@ export function permanentlyDeletePersonalTrash(trashId, options = {}) {
   return mutate((data) => {
     if (!data.trash.some((item) => item.id === trashId)) fail(tr('这条回收站记录已移除或过期。'));
     data.trash = data.trash.filter((item) => item.id !== trashId); return true;
-  }, options);
+  }, { ...options, pruneRemovedHistory: true });
 }
 export function emptyPersonalTrash({ expectedRevision, ids } = {}) {
   let selected = null;
@@ -293,7 +334,7 @@ export function emptyPersonalTrash({ expectedRevision, ids } = {}) {
     if (count !== selected.size) fail(tr('这条回收站记录已移除或过期。'));
     data.trash = data.trash.filter((item) => !selected.has(item.id));
     return count;
-  }, { expectedRevision });
+  }, { expectedRevision, pruneRemovedHistory: true });
 }
 export async function saveReadingItem({ id, revision, url, title: name, status = 'unread', revisitOn }, options = {}) {
   const address = normalizeUrl(url);

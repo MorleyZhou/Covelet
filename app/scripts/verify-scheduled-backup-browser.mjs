@@ -52,7 +52,8 @@ async function makeBridge() {
     const qa={directory,pickerCalls:0,hiddenId:null,verifier:null,
       async seed(){
         await localData.set({'covelet.language.v1':'zh-CN'});
-        const hidden=await saveNote({title:'Hidden scheduled backup note',body:'QA_HIDDEN_BACKUP_BODY',pinned:false});this.hiddenId=hidden.id;
+        const prior=await saveNote({title:'Hidden scheduled backup note',body:'QA_HIDDEN_PRIOR_BACKUP_BODY',pinned:false});
+        const hidden=await saveNote({id:prior.id,revision:prior.revision,title:prior.title,body:'QA_HIDDEN_BACKUP_BODY',pinned:false});this.hiddenId=hidden.id;
         await saveNote({title:'Public scheduled backup note',body:'QA_PUBLIC_BACKUP_BODY',pinned:false});
         const state=await loadState();state.entries.push({id:'qa-scheduled-site',type:'site',name:'Scheduled backup navigation',url:'https://example.com/qa-scheduled',groupId:state.groups[0].id,parentId:null,order:state.entries.filter(e=>e.parentId===null).length,icon:{kind:'letter',value:'Q'}});await saveState(state,state.revision);
         const credential=await createPrivacyCredential('QA_HIDDEN_PASSWORD_ONLY');this.verifier=credential.verifier;
@@ -64,19 +65,21 @@ async function makeBridge() {
       runWorker:()=>chrome.runtime.sendMessage({type:'covelet:backup:run'}),
       async audit(password){
         const settings=await scheduledBackups.getSettings(),raw=await scheduledBackupStore.read();
-        const files=[],ivs=[],salts=[];let hiddenIncluded=true,navigationIncluded=true,secretsExcluded=true,encryptedOnly=true,flagsIncluded=true;
+        const files=[],ivs=[],salts=[];let hiddenIncluded=true,navigationIncluded=true,secretsExcluded=true,encryptedOnly=true,flagsIncluded=true,historyIncluded=true,completeV2=true;
         for await(const [name,handle]of directory.entries()){
           if(handle.kind!=='file'){encryptedOnly=false;continue;}
           const file=await handle.getFile(),bytes=new Uint8Array(await file.arrayBuffer());
           const text=new TextDecoder().decode(bytes);encryptedOnly&&=name.endsWith('.covelet')&&new TextDecoder().decode(bytes.slice(0,8))==='CVLTBAK\\0'&&!text.includes('QA_HIDDEN_BACKUP_BODY');
           const decoded=await decryptCompleteBackup(file,password),plain=await decoded.text(),data=JSON.parse(plain);
           hiddenIncluded&&=data.tools.notes.some(n=>n.id===this.hiddenId&&n.body==='QA_HIDDEN_BACKUP_BODY');flagsIncluded&&=data.preferences.privateKeys.includes('note:'+this.hiddenId);
+          completeV2&&=data.format==='covelet-complete-backup'&&data.version===2;
+          historyIncluded&&=data.noteHistory?.version===1&&data.noteHistory.notes[this.hiddenId]?.some(v=>v.record.body==='QA_HIDDEN_PRIOR_BACKUP_BODY');
           secretsExcluded&&=!['QA_ACCESS_CREDENTIAL_ONLY','QA_HIDDEN_PASSWORD_ONLY',this.verifier].some(value=>plain.includes(value));
           const zip=new Blob([Uint8Array.from(atob(data.navigation),c=>c.charCodeAt(0))]);const navigation=await inspectBackup(zip);navigationIncluded&&=navigation.state.entries.some(e=>e.id==='qa-scheduled-site');
           const hex=values=>[...values].map(b=>b.toString(16).padStart(2,'0')).join('');ivs.push(hex(bytes.slice(36,48)));salts.push(hex(bytes.slice(20,36)));files.push({name,size:file.size});
         }
         return {files,managedCount:settings.files.length,phase:settings.phase,lastSuccess:settings.lastSuccess,lastError:settings.lastError?.code||null,
-          hiddenIncluded,flagsIncluded,navigationIncluded,secretsExcluded,encryptedOnly,freshIVs:new Set(ivs).size===files.length,sameConfiguredSalt:new Set(salts).size===1,
+          hiddenIncluded,flagsIncluded,navigationIncluded,secretsExcluded,encryptedOnly,completeV2,historyIncluded,freshIVs:new Set(ivs).size===files.length,sameConfiguredSalt:new Set(salts).size===1,
           passwordStored:JSON.stringify(raw).includes(password),nativeKey:raw.key instanceof CryptoKey&&raw.key.extractable===false&&raw.key.usages.length===1&&raw.key.usages[0]==='encrypt',nativeDirectory:raw.directory instanceof FileSystemDirectoryHandle,pickerCalls:this.pickerCalls};
       },
       async makeDue(){const state=await scheduledBackupStore.read();state.nextDue=Date.now()-1;await scheduledBackupStore.write(state);await chrome.alarms.create('covelet:backup:due',{when:Date.now()+1000});return true;},
@@ -121,7 +124,7 @@ try {
   }
   const firstAudit = await browser.evaluate(`globalThis.__scheduledBackupQA.audit(${JSON.stringify(password)})`);
   assert.equal(firstAudit.files.length, 3); assert.equal(firstAudit.managedCount, 3);
-  for (const key of ['hiddenIncluded', 'flagsIncluded', 'navigationIncluded', 'secretsExcluded', 'encryptedOnly', 'freshIVs', 'sameConfiguredSalt', 'nativeKey', 'nativeDirectory']) assert.equal(firstAudit[key], true, key);
+  for (const key of ['hiddenIncluded', 'flagsIncluded', 'navigationIncluded', 'secretsExcluded', 'encryptedOnly', 'completeV2', 'historyIncluded', 'freshIVs', 'sameConfiguredSalt', 'nativeKey', 'nativeDirectory']) assert.equal(firstAudit[key], true, key);
   assert.equal(firstAudit.passwordStored, false); assert.equal(firstAudit.pickerCalls, 1); assert.equal(firstAudit.phase, 'saved');
   await browser.screenshot('four-worker-backups.png');
   at('stop-worker-and-wake-with-real-alarm');
@@ -190,7 +193,7 @@ try {
   const finalAudit = await browser.evaluate(`globalThis.__scheduledBackupQA.audit(${JSON.stringify(password)})`);
   assert.equal(finalAudit.files.length, 3); assert.equal(finalAudit.managedCount, 3); assert.equal(finalAudit.pickerCalls, 0);
   assert.equal(finalAudit.nativeKey, true); assert.equal(finalAudit.nativeDirectory, true); assert.equal(finalAudit.passwordStored, false);
-  assert.equal(finalAudit.hiddenIncluded && finalAudit.flagsIncluded && finalAudit.navigationIncluded && finalAudit.secretsExcluded && finalAudit.encryptedOnly && finalAudit.freshIVs, true);
+  assert.equal(finalAudit.hiddenIncluded && finalAudit.flagsIncluded && finalAudit.navigationIncluded && finalAudit.secretsExcluded && finalAudit.encryptedOnly && finalAudit.completeV2 && finalAudit.historyIncluded && finalAudit.freshIVs, true);
   assert.ok(finalAudit.files.some((file) => !firstAudit.files.some((old) => old.name === file.name)));
   receipt.result = 'passed'; receipt.firstAudit = firstAudit; receipt.finalAudit = finalAudit;
   receipt.workerRestart = { oldTargetTerminated: true, newWorkerTarget: true, realAlarmCreatedNewBackup: true,

@@ -12,6 +12,8 @@ import { remapNavigationPreferences, preserveInvalidViewReferences } from './nav
 import { privateContentKeys } from './presentation.js';
 import { remapWidgetContentReferences } from './referenced-widgets.js';
 import { encryptCompleteBackup, decryptCompleteBackup, throwIfBackupCancelled, validateBackupPassword } from './password-backup.js';
+import { loadNoteHistory } from './note-history.js';
+import { createEmptyNoteHistory, validateNoteHistory, captureNoteVersion, mergeNoteHistories } from './note-history-core.js';
 
 const FORMAT = 'covelet-complete-backup';
 const MAX_BYTES = 50 * 1024 * 1024;
@@ -51,12 +53,13 @@ const summary = (data) => ({
 export function createRecoveryCenter({ nav = navigation, tools = { read: loadPersonalToolsSnapshot, validate: validatePersonalTools, write: replacePersonalTools },
   preferences = { read: loadContentPreferences, validate: validateContentPreferences, write: replaceContentPreferences },
   templates = { read: loadDesktopTemplateEnvelope, validate: validateSavedDesktopTemplates, write: replaceDesktopTemplates },
+  history = { read: loadNoteHistory, validate: validateNoteHistory },
   points = checkpointStore, locks = globalThis.navigator?.locks } = {}) {
   const readDomains = async () => {
-    const [state, toolData, prefs, schemes] = await Promise.all([nav.loadState(), tools.read(), preferences.read(), templates.read()]);
-    return { state, tools: toolData, preferences: prefs, templates: schemes };
+    const [state, toolData, prefs, schemes, noteHistory] = await Promise.all([nav.loadState(), tools.read(), preferences.read(), templates.read(), history.read()]);
+    return { state, tools: toolData, preferences: prefs, templates: schemes, noteHistory: history.validate(noteHistory) };
   };
-  const versions = (value) => ({ navigation: value.state.revision, tools: value.tools.revision, preferences: value.preferences.revision, templates: value.templates.revision });
+  const versions = (value) => ({ navigation: value.state.revision, tools: value.tools.revision, preferences: value.preferences.revision, templates: value.templates.revision, noteHistory: value.noteHistory.revision });
   const pointRecord = (point) => { const { previous: _previous, ...value } = point; return value; };
   const findPoint = (point, id) => !id || point?.id === id ? point : point?.previous?.id === id ? point.previous : null;
   const pointInfo = (point) => point ? { id: point.id, createdAt: point.createdAt, status: point.status } : null;
@@ -68,9 +71,10 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       const after = await readDomains(); throwIfBackupCancelled(signal);
       if (JSON.stringify(versions(before)) !== JSON.stringify(versions(after))) continue;
       const bytes = new Uint8Array(await blob.arrayBuffer()); throwIfBackupCancelled(signal);
-      const data = { format: FORMAT, version: 1, createdAt: new Date().toISOString(),
+      const data = { format: FORMAT, version: 2, createdAt: new Date().toISOString(),
         navigation: toBase64(bytes),
-        tools: tools.validate(before.tools), preferences: preferences.validate({ ...before.preferences, presentation: false }), templates: templates.validate(before.templates) };
+        tools: tools.validate(before.tools), preferences: preferences.validate({ ...before.preferences, presentation: false }), templates: templates.validate(before.templates),
+        noteHistory: history.validate(before.noteHistory) };
       if (encodedBytes(data) > MAX_BYTES) fail(tr('完整备份超过 50 MiB，请先清理不需要的内容。'));
       return { data, current: before };
     }
@@ -82,7 +86,7 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     const prefix = new Uint8Array(await file.slice(0, 4).arrayBuffer()); throwIfBackupCancelled(signal);
     if (prefix[0] === 80 && prefix[1] === 75) {
       const plan = await nav.inspectBackup(file); throwIfBackupCancelled(signal);
-      return { format: 'legacy-navigation', createdAt: null, navigation: plan, tools: null, templates: null, preferences: null,
+      return { format: 'legacy-navigation', createdAt: null, navigation: plan, tools: null, templates: null, preferences: null, noteHistory: null,
         categories: ['navigation'], summary: summary({ navigation: plan }), source: null };
     }
     let input;
@@ -96,16 +100,17 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
     if (input?.format === 'covelet-personal-tools') {
       const parsed = inspectPersonalToolsBackup(input), checked = tools.validate(parsed.data);
       const result = { format: 'legacy-tools', createdAt: typeof input.exportedAt === 'string' && Number.isFinite(Date.parse(input.exportedAt)) ? input.exportedAt : null, navigation: null,
-        tools: checked, preferences: parsed.preferences, templates: null, categories: ['notes', 'reading', 'trash', ...(parsed.preferences ? ['preferences'] : [])], source: null };
+        tools: checked, preferences: parsed.preferences, templates: null, noteHistory: createEmptyNoteHistory(), categories: ['notes', 'reading', 'trash', ...(parsed.preferences ? ['preferences'] : [])], source: null };
       return { ...result, summary: summary(result) };
     }
-    const required = ['format', 'version', 'createdAt', 'navigation', 'tools', 'preferences', 'templates'];
-    if (!fields(input, required) || required.some((key) => !Object.hasOwn(input, key) || input[key] == null) || input.format !== FORMAT || input.version !== 1
+    const required = ['format', 'version', 'createdAt', 'navigation', 'tools', 'preferences', 'templates', ...(input?.version === 2 ? ['noteHistory'] : [])];
+    if (!fields(input, required) || required.some((key) => !Object.hasOwn(input, key) || input[key] == null) || input.format !== FORMAT || ![1, 2].includes(input.version)
       || typeof input.createdAt !== 'string' || !Number.isFinite(Date.parse(input.createdAt))) fail(tr('完整备份格式或版本不受支持。'));
     const navigation = await nav.inspectBackup(new Blob([fromBase64(input.navigation)], { type: 'application/zip' })); throwIfBackupCancelled(signal);
     const result = { format: FORMAT, createdAt: input.createdAt, source: copy(input),
       navigation,
       tools: tools.validate(input.tools), preferences: preferences.validate(input.preferences), templates: templates.validate(input.templates),
+      noteHistory: input.version === 2 ? history.validate(input.noteHistory) : createEmptyNoteHistory(),
       categories: RECOVERY_CATEGORIES };
     return { ...result, summary: summary(result) };
   }
@@ -238,6 +243,21 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       if (selected.some((key) => ['notes', 'reading', 'trash'].includes(key))) {
         restoredTools = selectedTools(before.tools, plan.tools, selected, mode); next.tools = restoredTools.data;
       }
+      if (selected.includes('notes')) {
+        if (plan.noteHistory == null) fail(tr('完整备份格式或版本不受支持。'));
+        // History follows only notes which were actually imported. Appending a
+        // same-ID note must not attach another note's past to the local record.
+        let incoming = mergeNoteHistories(before.noteHistory, history.validate(plan.noteHistory),
+          { noteIds: [...restoredTools.noteIdMap.keys()] });
+        const protectIds = [];
+        // The import is a new local edit. Preserve every current note before
+        // publishing its replacement, even when the source is a v1 backup.
+        for (const note of before.tools.notes) {
+          const captured = captureNoteVersion(incoming, note, { protectIds }); incoming = captured.history;
+          if (captured.version) protectIds.push(captured.version.id);
+        }
+        next.noteHistory = incoming;
+      }
       if (selected.includes('templates')) {
         const list = mode === 'append' ? [...before.templates.templates, ...plan.templates.templates.filter((item) => !before.templates.templates.some((old) => old.id === item.id))] : plan.templates.templates;
         next.templates = templates.validate({ ...before.templates, templates: list });
@@ -301,6 +321,11 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       if (next.tools && !next.preferences) next.preferences = before.preferences;
       // Validation includes archive resources before the checkpoint and writes.
       if (next.navigation) next.navigation = await nav.validateBackupPlan(next.navigation);
+      const paired = next.navigation && next.preferences && typeof nav.restoreBackupWithPreferences === 'function';
+      const contentPair = !next.navigation && next.tools && next.preferences && typeof nav.restoreContentWithPreferences === 'function';
+      const pairedTools = Boolean(next.tools && (paired || contentPair));
+      const pairedHistory = Boolean(next.noteHistory && pairedTools);
+      if (next.noteHistory && !pairedHistory) fail(tr('无法开始恢复，当前数据未改变。请稍后重试。'));
       const point = { version: 1, id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: 'applying', data: snapshot.data, selected, mode,
         ...(sourcePoint || existingPoint ? { previous: pointRecord(sourcePoint || existingPoint) } : {}) };
       await points.write(point); // Failure here means nothing has changed.
@@ -309,9 +334,6 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
       const existingIds = new Set(before.state.entries.map((entry) => entry.id));
       const iconOptions = { onIconProgress, preserveContentReferences: true, onIconResult: (report) => { iconReport = report; onIconResult?.(report); },
         ...(mode === 'append' && next.navigation ? { iconEntryIds: next.navigation.state.entries.filter((entry) => !existingIds.has(entry.id)).map((entry) => entry.id) } : {}) };
-      const paired = next.navigation && next.preferences && typeof nav.restoreBackupWithPreferences === 'function';
-      const contentPair = !next.navigation && next.tools && next.preferences && typeof nav.restoreContentWithPreferences === 'function';
-      const pairedTools = Boolean(next.tools && (paired || contentPair));
       try {
         for (const domain of ['navigation', 'tools', 'templates', 'preferences']) {
           if (!next[domain]) continue;
@@ -320,14 +342,16 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
           if (paired && domain === 'navigation') {
             const result = await nav.restoreBackupWithPreferences(next.navigation, { ...iconOptions,
               expectedNavigationRevision: expected.navigation, expectedPreferencesRevision: expected.preferences, preferences: next.preferences,
-              ...(pairedTools ? { tools: next.tools, expectedToolsRevision: expected.tools } : {}) });
-            saved.navigation = result.state; saved.preferences = result.preferences; if (result.tools) saved.tools = result.tools;
+              ...(pairedTools ? { tools: next.tools, expectedToolsRevision: expected.tools } : {}),
+              ...(pairedHistory ? { noteHistory: next.noteHistory, expectedHistoryRevision: expected.noteHistory } : {}) });
+            saved.navigation = result.state; saved.preferences = result.preferences; if (result.tools) saved.tools = result.tools; if (result.noteHistory) saved.noteHistory = result.noteHistory;
             completed.push('navigation-preferences'); applyingDomain = null; continue;
           }
           if (contentPair && domain === 'tools') {
             const result = await nav.restoreContentWithPreferences({ expectedNavigationRevision: expected.navigation,
-              expectedPreferencesRevision: expected.preferences, preferences: next.preferences, tools: next.tools, expectedToolsRevision: expected.tools });
-            saved.navigation = result.state; saved.preferences = result.preferences; saved.tools = result.tools;
+              expectedPreferencesRevision: expected.preferences, preferences: next.preferences, tools: next.tools, expectedToolsRevision: expected.tools,
+              ...(pairedHistory ? { noteHistory: next.noteHistory, expectedHistoryRevision: expected.noteHistory } : {}) });
+            saved.navigation = result.state; saved.preferences = result.preferences; saved.tools = result.tools; if (result.noteHistory) saved.noteHistory = result.noteHistory;
             completed.push('tools-preferences'); applyingDomain = null; continue;
           }
           saved[domain] = domain === 'navigation' ? await nav.restoreBackup(next.navigation, expected.navigation, iconOptions)
@@ -343,7 +367,7 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
           try {
             const changed = applyingDomain === 'navigation-preferences' || applyingDomain === 'tools-preferences'
               ? (await nav.loadState()).revision !== expected.navigation || (await preferences.read()).revision !== expected.preferences
-                || pairedTools && (await tools.read()).revision !== expected.tools
+                || pairedTools && (await tools.read()).revision !== expected.tools || pairedHistory && (await history.read()).revision !== expected.noteHistory
               : applyingDomain === 'navigation' ? (await nav.loadState()).revision !== expected.navigation
                 : (await ({ tools, templates, preferences })[applyingDomain].read()).revision !== expected[applyingDomain];
             if (changed) rollbackFailed.push(applyingDomain);
@@ -358,11 +382,13 @@ export function createRecoveryCenter({ nav = navigation, tools = { read: loadPer
               const original = await nav.inspectBackup(new Blob([fromBase64(snapshot.data.navigation)]));
               await nav.restoreBackupWithPreferences(original, { expectedNavigationRevision: saved.navigation.revision,
                 expectedPreferencesRevision: saved.preferences.revision, preferences: before.preferences, hydrateIcons: false, preserveContentReferences: true,
-                ...(pairedTools ? { tools: before.tools, expectedToolsRevision: saved.tools.revision } : {}) });
+                ...(pairedTools ? { tools: before.tools, expectedToolsRevision: saved.tools.revision } : {}),
+                ...(pairedHistory ? { noteHistory: before.noteHistory, expectedHistoryRevision: saved.noteHistory.revision } : {}) });
             } else if (domain === 'tools-preferences') {
               if (rollbackFailed.length) conflict();
               await nav.restoreContentWithPreferences({ expectedNavigationRevision: saved.navigation.revision,
-                expectedPreferencesRevision: saved.preferences.revision, preferences: before.preferences, tools: before.tools, expectedToolsRevision: saved.tools.revision });
+                expectedPreferencesRevision: saved.preferences.revision, preferences: before.preferences, tools: before.tools, expectedToolsRevision: saved.tools.revision,
+                ...(pairedHistory ? { noteHistory: before.noteHistory, expectedHistoryRevision: saved.noteHistory.revision } : {}) });
             } else if (domain === 'navigation') {
               const original = await nav.inspectBackup(new Blob([fromBase64(snapshot.data.navigation)]));
               await nav.restoreBackup(original, saved.navigation.revision, { hydrateIcons: false, preserveContentReferences: true });

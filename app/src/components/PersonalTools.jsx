@@ -29,6 +29,7 @@ import { isReadingDue, isDateKey } from '../lib/reading-revisit.js';
 import { useLocalDateKey } from '../lib/use-local-date.js';
 import { inspectMarkdownNotes, importMarkdownNotes, exportMarkdownNotes } from '../lib/markdown-notes.js';
 import PinToDesktopDialog from './PinToDesktopDialog.jsx';
+import NoteHistory from './NoteHistory.jsx';
 
 const newest = (items) => [...items].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
 const stop = (event) => event.stopPropagation();
@@ -159,6 +160,7 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
   const [editorKey, setEditorKey] = useState(() => crypto.randomUUID());
   const [noteSearch, setNoteSearch] = useState(null);
   const [pinning, setPinning] = useState(null), [pinBusy, setPinBusy] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false), [historyBusy, setHistoryBusy] = useState(false);
   const fileInput = useRef(null), [markdownPreview, setMarkdownPreview] = useState(null), [markdownStatus, setMarkdownStatus] = useState('');
   const [selectionMode, setSelectionMode] = useState(false), [selected, setSelected] = useState({});
   const hidden = (key) => locked && (presentation.hiddenKeys.has(key) || preferences.privateKeys.includes(key));
@@ -168,14 +170,14 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
   const visibleTags = getContentTags({ ...preferences, presentation: locked }, { hiddenKeys: presentation.hiddenKeys });
   const changedElsewhere = draft.id && (!latest || latest.revision !== draft.revision
     || contentPreferences.ready && !draftHidden && !sameMetadata(metadataFor(`note:${draft.id}`), originalMetadata));
-  const busy = action.busy || unlocking || metadataBusy || pinBusy;
+  const busy = action.busy || unlocking || metadataBusy || pinBusy || historyBusy;
   useEffect(() => { onDirtyChange(dirty); }, [dirty, onDirtyChange]);
   useEffect(() => { onBusyChange?.(busy); }, [busy, onBusyChange]);
   const select = (note) => {
     const nextMetadata = note ? metadataFor(`note:${note.id}`) : emptyMetadata();
     setEditorKey(note?.id || crypto.randomUUID()); setDraft(note ? { ...note } : { title: '', body: '', pinned: false });
     setMetadata(nextMetadata); setOriginalMetadata(nextMetadata);
-    setDirty(false); setPreview(false); setPending(null); setDeleting(false); setNoteSearch(null); action.setError('');
+    setDirty(false); setPreview(false); setPending(null); setDeleting(false); setNoteSearch(null); setHistoryOpen(false); action.setError('');
   };
   const selectedInitial = useRef(null);
   useEffect(() => {
@@ -304,6 +306,9 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
       <div className="note-editor-actions"><Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={draft.pinned} onClick={() => patch({ pinned: !draft.pinned })}><PushPin size={16} weight={draft.pinned ? 'fill' : 'regular'} />{tr("置顶")}</Button>
         <Button type="button" variant="ghost" size="sm" disabled={busy || dirty || changedElsewhere || draftHidden || !draft.id || !contentPreferences.ready}
           onClick={() => setPinning({ id: draft.id, revision: draft.revision })}><SquaresFour size={16} />{tr('固定到桌面')}</Button>
+        {draft.id && <Button type="button" variant="ghost" size="sm" disabled={busy || dirty || changedElsewhere || draftHidden || !contentPreferences.ready}
+          aria-label={tr('便笺历史')} title={dirty ? tr('保存修改后可查看历史。') : changedElsewhere ? tr('重新打开便笺后可查看历史。') : tr('便笺历史')}
+          onClick={() => { if (!dirty && !draftHidden && !changedElsewhere && !busy) setHistoryOpen(true); }}>{tr('历史')}</Button>}
         <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-pressed={preview} onClick={() => setPreview(!preview)}>{preview ? tr("编辑") : tr("预览")}</Button>
         <Button variant="ghost" type="button" className="button quiet" disabled={!draft.body || busy} onClick={() => action.run(async () => { try { await navigator.clipboard.writeText(draft.document ? noteDocumentText(draft.document) : draft.body); } catch { throw Error(tr("无法复制，请手动选择文字。")); } })} aria-label={tr("复制便笺")}><Copy size={16} /></Button></div>
       <ContentMetadataEditor preferences={preferences} contentKey={draft.id ? `note:${draft.id}` : undefined} value={metadata}
@@ -319,6 +324,9 @@ function NotesTools({ Dialog, onDirtyChange, onBusyChange, initialRecordId, sear
       </fieldset>
     </form></PrivateEditor></div>
     {pinning && <PinToDesktopDialog kind="note" record={pinning} preferences={preferences} Dialog={Dialog} onClose={() => setPinning(null)} onBusyChange={setPinBusy} />}
+    {historyOpen && draft.id && <NoteHistory key={draft.id} note={draft} preferencesRevision={preferences.revision} Dialog={Dialog}
+      dirty={dirty} stale={Boolean(changedElsewhere)} hidden={draftHidden} disabled={action.busy || unlocking || metadataBusy || pinBusy || selectionMode || editorLoading}
+      onClose={() => setHistoryOpen(false)} onBusyChange={setHistoryBusy} onRestored={saved => { select(saved); setEditorKey(`${saved.id}-${crypto.randomUUID()}`); }} />}
   </div>;
 }
 

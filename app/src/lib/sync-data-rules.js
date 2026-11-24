@@ -7,12 +7,13 @@ const DEVICE_KEYS = new Set(['covelet.cloud.local.v1', 'covelet.cloud.rotation.v
 const PREFERENCES = 'covelet.content.preferences.v1';
 const NAVIGATION = 'owntab.local.v1';
 const TOOLS = 'covelet.tools.v1';
+const NOTE_HISTORY = 'covelet.note-history.v1';
 const TEMPLATES = 'covelet.desktop-templates.v1';
 export const isSyncRecord = (namespace, key) => namespace !== 'full-data-pending' && (namespace !== 'wallpaper' || key !== 'commons')
   && (namespace !== 'preferences' || !DEVICE_KEYS.has(key) && !key.startsWith('covelet.app.v1.'));
 const clone = (value) => structuredClone(value);
 const object = (value) => value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Blob);
-const revisioned = (namespace, key) => namespace === 'preferences' && (key === PREFERENCES || key === TOOLS || key === TEMPLATES || key.startsWith('covelet.clock.v1.'));
+const revisioned = (namespace, key) => namespace === 'preferences' && (key === PREFERENCES || key === TOOLS || key === NOTE_HISTORY || key === TEMPLATES || key.startsWith('covelet.clock.v1.'));
 const fail = () => { throw Object.assign(Error('Synchronized extension data is invalid; local data was preserved.'), { code: 'LOCAL_DATA_INVALID' }); };
 function canonical(value) {
   if (value instanceof Blob || value === null || typeof value !== 'object') return value;
@@ -88,6 +89,8 @@ export async function validateSyncValue(namespace, key, value) {
       for (const state of value.snapshots) migrateNavigationState(state);
     } else if (key === TOOLS) {
       const { validatePersonalTools } = workerValidators || await import('./personal-tools.js'); validatePersonalTools(value);
+    } else if (key === NOTE_HISTORY) {
+      const { validateNoteHistory } = workerValidators || await import('./note-history-core.js'); validateNoteHistory(value);
     } else if (key === PREFERENCES) {
       const { validateContentPreferences } = workerValidators || await import('./content-preferences.js'); validateContentPreferences(value);
     } else if (key === TEMPLATES) {

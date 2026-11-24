@@ -18985,5 +18985,203 @@
     "de": "Die letzte automatische Sicherung wurde nicht abgeschlossen und wird im Hintergrund erneut versucht.",
     "fr": "La dernière sauvegarde automatique n’a pas abouti. Elle sera réessayée en arrière-plan.",
     "ru": "Последнее автоматическое резервное копирование не завершено. Попытка будет повторена в фоне."
+  },
+  "历史": {
+    "en": "History",
+    "zh-TW": "歷史",
+    "ja": "履歴",
+    "ko": "기록",
+    "de": "Verlauf",
+    "fr": "Historique",
+    "ru": "История"
+  },
+  "便笺历史": {
+    "en": "Note history",
+    "zh-TW": "便箋歷史",
+    "ja": "メモの履歴",
+    "ko": "메모 기록",
+    "de": "Notizverlauf",
+    "fr": "Historique de la note",
+    "ru": "История заметки"
+  },
+  "便笺历史版本": {
+    "en": "Note history versions",
+    "zh-TW": "便箋歷史版本",
+    "ja": "メモの過去のバージョン",
+    "ko": "메모 이전 버전",
+    "de": "Frühere Notizversionen",
+    "fr": "Versions antérieures de la note",
+    "ru": "Прошлые версии заметки"
+  },
+  "便笺版本对比": {
+    "en": "Compare note versions",
+    "zh-TW": "便箋版本比較",
+    "ja": "メモのバージョンを比較",
+    "ko": "메모 버전 비교",
+    "de": "Notizversionen vergleichen",
+    "fr": "Comparer les versions de la note",
+    "ru": "Сравнение версий заметки"
+  },
+  "当前版本": {
+    "en": "Current version",
+    "zh-TW": "目前版本",
+    "ja": "現在のバージョン",
+    "ko": "현재 버전",
+    "de": "Aktuelle Version",
+    "fr": "Version actuelle",
+    "ru": "Текущая версия"
+  },
+  "历史版本": {
+    "en": "Previous version",
+    "zh-TW": "歷史版本",
+    "ja": "過去のバージョン",
+    "ko": "이전 버전",
+    "de": "Frühere Version",
+    "fr": "Version antérieure",
+    "ru": "Предыдущая версия"
+  },
+  "当前便笺内容": {
+    "en": "Current note content",
+    "zh-TW": "目前便箋內容",
+    "ja": "現在のメモ内容",
+    "ko": "현재 메모 내용",
+    "de": "Aktueller Notizinhalt",
+    "fr": "Contenu actuel de la note",
+    "ru": "Текущее содержимое заметки"
+  },
+  "历史便笺内容": {
+    "en": "Previous note content",
+    "zh-TW": "歷史便箋內容",
+    "ja": "過去のメモ内容",
+    "ko": "이전 메모 내용",
+    "de": "Früherer Notizinhalt",
+    "fr": "Contenu antérieur de la note",
+    "ru": "Прежнее содержимое заметки"
+  },
+  "每条便笺最多保留 20 个版本，空间不足时清理最旧历史。": {
+    "en": "Keeps up to 20 versions per note. The oldest history is removed when space runs low.",
+    "zh-TW": "每則便箋最多保留 20 個版本，空間不足時清理最舊歷史。",
+    "ja": "各メモの履歴を最大20バージョン保持します。空き容量が不足すると古い履歴を削除します。",
+    "ko": "메모마다 최대 20개 버전을 유지하며 공간이 부족하면 가장 오래된 기록을 삭제합니다.",
+    "de": "Bewahrt bis zu 20 Versionen je Notiz auf. Bei Platzmangel wird der älteste Verlauf entfernt.",
+    "fr": "Conserve jusqu’à 20 versions par note. Les plus anciennes sont supprimées si l’espace manque.",
+    "ru": "Хранит до 20 версий каждой заметки. При нехватке места удаляется самая старая история."
+  },
+  "刷新历史": {
+    "en": "Refresh history",
+    "zh-TW": "重新整理歷史",
+    "ja": "履歴を更新",
+    "ko": "기록 새로 고침",
+    "de": "Verlauf aktualisieren",
+    "fr": "Actualiser l’historique",
+    "ru": "Обновить историю"
+  },
+  "正在读取便笺历史…": {
+    "en": "Loading note history…",
+    "zh-TW": "正在讀取便箋歷史…",
+    "ja": "メモの履歴を読み込み中…",
+    "ko": "메모 기록 불러오는 중…",
+    "de": "Notizverlauf wird geladen…",
+    "fr": "Chargement de l’historique de la note…",
+    "ru": "Загрузка истории заметки…"
+  },
+  "便笺历史已更新，请刷新后重新选择。": {
+    "en": "Note history changed. Refresh and select a version again.",
+    "zh-TW": "便箋歷史已更新，請重新整理後再選擇。",
+    "ja": "メモの履歴が更新されました。履歴を更新してバージョンを選び直してください。",
+    "ko": "메모 기록이 변경되었습니다. 새로 고친 후 버전을 다시 선택하세요.",
+    "de": "Der Notizverlauf hat sich geändert. Aktualisieren und erneut eine Version wählen.",
+    "fr": "L’historique de la note a changé. Actualisez-le et sélectionnez à nouveau une version.",
+    "ru": "История заметки изменилась. Обновите её и выберите версию заново."
+  },
+  "便笺历史未能读取，请重试。": {
+    "en": "Could not load note history. Try again.",
+    "zh-TW": "便箋歷史未能讀取，請重試。",
+    "ja": "メモの履歴を読み込めません。再試行してください。",
+    "ko": "메모 기록을 불러올 수 없습니다. 다시 시도하세요.",
+    "de": "Der Notizverlauf konnte nicht geladen werden. Erneut versuchen.",
+    "fr": "Impossible de charger l’historique de la note. Réessayez.",
+    "ru": "Не удалось загрузить историю заметки. Повторите попытку."
+  },
+  "暂无便笺历史": {
+    "en": "No note history yet",
+    "zh-TW": "暫無便箋歷史",
+    "ja": "メモの履歴はまだありません",
+    "ko": "아직 메모 기록 없음",
+    "de": "Noch kein Notizverlauf",
+    "fr": "Aucun historique pour le moment",
+    "ru": "Истории заметки пока нет"
+  },
+  "选择一个历史版本查看对比。": {
+    "en": "Select a previous version to compare.",
+    "zh-TW": "選擇一個歷史版本查看比較。",
+    "ja": "過去のバージョンを選択して比較します。",
+    "ko": "이전 버전을 선택해 비교하세요.",
+    "de": "Eine frühere Version zum Vergleichen wählen.",
+    "fr": "Sélectionnez une version antérieure à comparer.",
+    "ru": "Выберите предыдущую версию для сравнения."
+  },
+  "恢复前会把当前便笺保存为一个历史版本。": {
+    "en": "The current note is saved as a history version before restoring.",
+    "zh-TW": "還原前會把目前便箋儲存為一個歷史版本。",
+    "ja": "復元する前に、現在のメモを履歴のバージョンとして保存します。",
+    "ko": "복원하기 전에 현재 메모를 이전 버전으로 저장합니다.",
+    "de": "Vor dem Wiederherstellen wird die aktuelle Notiz als Verlaufsversion gespeichert.",
+    "fr": "La note actuelle est conservée dans l’historique avant la restauration.",
+    "ru": "Перед восстановлением текущая заметка сохраняется в истории."
+  },
+  "保存修改后可查看历史。": {
+    "en": "Save your changes to view history.",
+    "zh-TW": "儲存修改後可檢視歷史。",
+    "ja": "変更を保存すると履歴を表示できます。",
+    "ko": "변경 사항을 저장한 후 기록을 볼 수 있습니다.",
+    "de": "Änderungen speichern, um den Verlauf anzusehen.",
+    "fr": "Enregistrez vos modifications pour consulter l’historique.",
+    "ru": "Сохраните изменения, чтобы просмотреть историю."
+  },
+  "重新打开便笺后可查看历史。": {
+    "en": "Reopen the note to view history.",
+    "zh-TW": "重新開啟便箋後可檢視歷史。",
+    "ja": "メモを開き直すと履歴を表示できます。",
+    "ko": "메모를 다시 열면 기록을 볼 수 있습니다.",
+    "de": "Die Notiz erneut öffnen, um den Verlauf anzusehen.",
+    "fr": "Rouvrez la note pour consulter l’historique.",
+    "ru": "Откройте заметку заново, чтобы просмотреть историю."
+  },
+  "便笺历史无效，当前便笺已保留。": {
+    "en": "Note history is invalid. The current note was preserved.",
+    "zh-TW": "便箋歷史無效，目前便箋已保留。",
+    "ja": "メモの履歴が無効です。現在のメモは保持されています。",
+    "ko": "메모 기록이 잘못되었습니다. 현재 메모는 보존되었습니다.",
+    "de": "Der Notizverlauf ist ungültig. Die aktuelle Notiz bleibt erhalten.",
+    "fr": "L’historique de la note est invalide. La note actuelle est conservée.",
+    "ru": "История заметки недействительна. Текущая заметка сохранена."
+  },
+  "便笺历史超出容量限制，当前便笺已保留。": {
+    "en": "Note history exceeds its size limit. The current note was preserved.",
+    "zh-TW": "便箋歷史超出容量限制，目前便箋已保留。",
+    "ja": "メモの履歴が容量制限を超えています。現在のメモは保持されています。",
+    "ko": "메모 기록이 용량 제한을 초과했습니다. 현재 메모는 보존되었습니다.",
+    "de": "Der Notizverlauf überschreitet die Speichergrenze. Die aktuelle Notiz bleibt erhalten.",
+    "fr": "L’historique de la note dépasse la limite de taille. La note actuelle est conservée.",
+    "ru": "История заметки превышает ограничение размера. Текущая заметка сохранена."
+  },
+  "同一便笺历史版本存在不同内容，已停止合并。": {
+    "en": "The same note history version has different content. Merging was stopped.",
+    "zh-TW": "同一便箋歷史版本存在不同內容，已停止合併。",
+    "ja": "同じメモ履歴バージョンの内容が一致しないため、統合を停止しました。",
+    "ko": "동일한 메모 기록 버전의 내용이 달라 병합을 중지했습니다.",
+    "de": "Dieselbe Notizversion enthält unterschiedliche Inhalte. Die Zusammenführung wurde gestoppt.",
+    "fr": "Une même version de l’historique contient des données différentes. La fusion a été arrêtée.",
+    "ru": "Одна версия истории заметки содержит разные данные. Объединение остановлено."
+  },
+  "便笺或历史已在其他页面更新，请重新打开历史。": {
+    "en": "The note or its history changed in another tab. Reopen history.",
+    "zh-TW": "便箋或歷史已在其他頁面更新，請重新開啟歷史。",
+    "ja": "別のタブでメモまたは履歴が更新されました。履歴を開き直してください。",
+    "ko": "다른 탭에서 메모나 기록이 변경되었습니다. 기록을 다시 여세요.",
+    "de": "Die Notiz oder ihr Verlauf wurde in einem anderen Tab geändert. Den Verlauf erneut öffnen.",
+    "fr": "La note ou son historique a été modifié dans un autre onglet. Rouvrez l’historique.",
+    "ru": "Заметка или её история изменена в другой вкладке. Откройте историю заново."
   }
 }
