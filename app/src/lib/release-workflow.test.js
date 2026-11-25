@@ -90,6 +90,12 @@ test('AMO is independently opt-in with environment secrets confined to submissio
   assert(body.includes('^[a-f0-9]{40}$'));
   assert(body.includes('prepare-firefox-amo-source.mjs'));
   assert(body.includes('submit-firefox-amo.mjs'));
+  assert(body.includes('ref: ${{ github.workflow_sha }}'));
+  assert(body.includes('path: candidate'));
+  assert(body.includes('path: release-automation'));
+  assert(body.includes('cp release-automation/app/scripts/submit-firefox-amo.mjs candidate/app/dist/submission-tools/'));
+  assert(body.includes('--verify-prepared "$RUNNER_TEMP/amo-package"'));
+  assert(body.includes('inputs.amo_resume_run_id'));
   assert(body.includes('--source "$RUNNER_TEMP/amo-package/covelet-${RELEASE_TAG#v}-amo-source.zip"'));
   const build = body.slice(0, body.indexOf('- name: Upload and submit Firefox to AMO'));
   assert(!build.includes('secrets.AMO_JWT'), 'Build/install dependencies never receive signing credentials.');

@@ -322,24 +322,42 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.FIREFOX_SOURCE_REF }}
+          path: candidate
           fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: release-automation
+          sparse-checkout: |
+            app/scripts/prepare-firefox-amo-source.mjs
+            app/scripts/submit-firefox-amo.mjs
+          sparse-checkout-cone-mode: false
           persist-credentials: false
 
       - name: Verify the Firefox candidate belongs to main
         run: |
           set -euo pipefail
-          [[ "$(git rev-parse HEAD)" == "$FIREFOX_SOURCE_REF" ]]
-          git merge-base --is-ancestor "$FIREFOX_SOURCE_REF" refs/remotes/origin/main
+          [[ "$(git -C candidate rev-parse HEAD)" == "$FIREFOX_SOURCE_REF" ]]
+          git -C candidate merge-base --is-ancestor "$FIREFOX_SOURCE_REF" refs/remotes/origin/main
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: app/package-lock.json
+          cache-dependency-path: candidate/app/package-lock.json
 
       - name: Install locked Firefox build and submission dependencies
-        working-directory: app
+        working-directory: candidate/app
         run: npm ci
+
+      - name: Use current submission tools without modifying candidate inputs
+        run: |
+          set -euo pipefail
+          mkdir -p candidate/app/dist/submission-tools
+          cp release-automation/app/scripts/prepare-firefox-amo-source.mjs candidate/app/dist/submission-tools/
+          cp release-automation/app/scripts/submit-firefox-amo.mjs candidate/app/dist/submission-tools/
 
       - name: Locate a recoverable immutable AMO payload
         id: recovery
@@ -375,12 +393,12 @@ jobs:
       - name: Verify restored source, version and all payload digests
         if: steps.recovery.outputs.available == 'true'
         run: |
-          node app/scripts/prepare-firefox-amo-source.mjs --root "$GITHUB_WORKSPACE" \
+          node candidate/app/dist/submission-tools/prepare-firefox-amo-source.mjs --root "$GITHUB_WORKSPACE/candidate" \
             --tag "$RELEASE_TAG" --verify-prepared "$RUNNER_TEMP/amo-package"
 
       - name: Build the version-matched Firefox consent candidate
         if: steps.recovery.outputs.available != 'true'
-        working-directory: app
+        working-directory: candidate/app
         run: |
           set -euo pipefail
           npm run build:firefox
@@ -389,7 +407,7 @@ jobs:
         if: steps.recovery.outputs.available != 'true'
         run: |
           set -euo pipefail
-          node app/scripts/prepare-firefox-amo-source.mjs --root "$GITHUB_WORKSPACE" \
+          node candidate/app/dist/submission-tools/prepare-firefox-amo-source.mjs --root "$GITHUB_WORKSPACE/candidate" \
             --tag "$RELEASE_TAG" --output-dir "$RUNNER_TEMP/amo-package"
 
       - name: Upload and submit Firefox to AMO
@@ -406,7 +424,7 @@ jobs:
             echo "::error::Missing amo-addons environment secrets: ${missing[*]}."
             exit 1
           fi
-          node app/scripts/submit-firefox-amo.mjs \
+          node candidate/app/dist/submission-tools/submit-firefox-amo.mjs \
             --zip "$RUNNER_TEMP/amo-package/covelet-${RELEASE_TAG#v}-firefox.zip" \
             --source "$RUNNER_TEMP/amo-package/covelet-${RELEASE_TAG#v}-amo-source.zip" \
             --metadata "$RUNNER_TEMP/amo-package/amo-metadata.json" \

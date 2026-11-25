@@ -5,21 +5,22 @@ import { readFile } from 'node:fs/promises';
 import { zipSync, strToU8 } from 'fflate';
 import { createAmoJwt, inspectAmoInputs, submitFirefoxAmo, runAmoCli } from '../../scripts/submit-firefox-amo.mjs';
 
-const guid = 'covelet@morleyzhou.github.io', versionString = '0.7.0', uploadId = '12345678-1234-1234-1234-123456789012';
+// Production AMO FileUploadSerializer declares UUIDField(format='hex').
+const guid = 'covelet@morleyzhou.github.io', versionString = '0.7.0', uploadId = '1234567812344234a234123456789012';
 const metadata = { addon: { name: { 'en-US': 'Covelet' }, summary: { 'en-US': 'Private new tab' }, default_locale: 'en-US', categories: { firefox: ['tabs', 'bookmarks'] }, support_url: { 'en-US': 'https://github.com/MorleyZhou/Covelet/issues' } },
   version: { license: 'MIT', compatibility: ['firefox'], release_notes: { 'en-US': 'Record merge and Firefox.' }, approval_notes: 'Build instructions in source.' }, policy: { privacy_policy: { 'en-US': 'Local data. No account, telemetry, ads or server.' } } };
 function inputs() {
   return { zip: zipSync({ 'manifest.json': strToU8(JSON.stringify({ version: versionString, browser_specific_settings: { gecko: { id: guid } } })) }),
     source: zipSync({ 'app/package.json': strToU8('{"version":"0.7.0"}'), 'README.md': strToU8('Reproducible source') }), metadata: structuredClone(metadata), issuer: 'user:123:45', secret: 'fixture-secret-never-print' };
 }
-function fixture({ existing = false, listedVersion = false } = {}) {
+function fixture({ existing = false, listedVersion = false, uploadUuid = uploadId } = {}) {
   const input = inputs(), calls = [], receipts = [];
   let addon = existing ? addonValue() : null, ver = listedVersion ? versionValue(true) : null;
   const hooks = { onRequest: null, lostCreate: false, sourceFailure: false, policyFailure: false, invalidUpload: false, neverProcessed: false };
   function addonValue() { return { id: 101, guid, status: 'nominated', url: 'https://addons.mozilla.org/en-US/firefox/addon/covelet/' }; }
   function versionValue(hasSource) { return { id: 202, version: versionString, channel: 'listed', source: hasSource ? 'https://addons.mozilla.org/private-source/?private=not-for-receipts' : null,
     is_source_editable: true, edit_url: 'https://addons.mozilla.org/en-US/developers/addon/covelet/versions/202', file: { status: 'unreviewed', hash: `sha256:${inspectAmoInputs(input.zip, input.source, input.metadata).zipSha256}` } }; }
-  function upload(processed = true) { return { uuid: uploadId, processed, valid: !hooks.invalidUpload, submitted: false, version: versionString, channel: 'listed', validation: { errors: hooks.invalidUpload ? 1 : 0, warnings: 2, messages: [{ type: 'warning', message: input.secret }] } }; }
+  function upload(processed = true) { return { uuid: uploadUuid, processed, valid: !hooks.invalidUpload, submitted: false, version: versionString, channel: 'listed', validation: { errors: hooks.invalidUpload ? 1 : 0, warnings: 2, messages: [{ type: 'warning', message: input.secret }] } }; }
   const reply = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
   async function fetch(url, options) {
     const path = new URL(url).pathname.replace('/api/v5/', ''), method = options.method;
@@ -28,9 +29,9 @@ function fixture({ existing = false, listedVersion = false } = {}) {
     assert.match(options.headers.Authorization, /^JWT [A-Za-z0-9_.-]+$/u);
     if (hooks.onRequest) { const intercepted = await hooks.onRequest({ path, options, reply }); if (intercepted) return intercepted; }
     if (path === 'addons/upload/' && method === 'POST') return reply(upload(false), 201);
-    if (path === `addons/upload/${uploadId}/`) return reply(upload(!hooks.neverProcessed));
+    if (path === `addons/upload/${uploadUuid}/`) return reply(upload(!hooks.neverProcessed));
     if (path === 'addons/addon/' && method === 'POST') {
-      const body = JSON.parse(options.body); assert.equal(body.version.upload, uploadId); assert.equal(body.version.source, undefined);
+      const body = JSON.parse(options.body); assert.equal(body.version.upload, uploadUuid); assert.equal(body.version.source, undefined);
       addon = addonValue(); ver = versionValue(false);
       if (hooks.lostCreate) throw new Error(`lost response ${input.secret}`);
       return reply({ ...addon, version: ver }, 201);
@@ -41,7 +42,7 @@ function fixture({ existing = false, listedVersion = false } = {}) {
       return reply(addon);
     }
     if (path === 'addons/addon/101/versions/' && method === 'POST') {
-      assert(options.body instanceof FormData); assert.equal(options.body.get('upload'), uploadId); assert.equal(options.body.get('license'), 'MIT');
+      assert(options.body instanceof FormData); assert.equal(options.body.get('upload'), uploadUuid); assert.equal(options.body.get('license'), 'MIT');
       assert.deepEqual(new Uint8Array(await options.body.get('source').arrayBuffer()), input.source);
       ver = versionValue(true); return reply(ver, 201);
     }
@@ -96,6 +97,36 @@ test('first listed addon validates, separately PATCHes source and policy, and re
   assert(sourceIndex > 0 && policyIndex > sourceIndex);
   const receipts = JSON.stringify(f.receipts); assert(!receipts.includes(f.input.secret)); assert(!receipts.includes('private-source')); assert(!receipts.includes('signature='));
   const tokens = f.calls.map(call => call.headers.Authorization); assert.equal(new Set(tokens).size, tokens.length);
+});
+
+test('production 32-hex and canonical UUID upload IDs both poll and submit unchanged', async () => {
+  for (const value of [uploadId, '12345678-1234-4234-a234-123456789012']) {
+    const f = fixture({ uploadUuid: value }), result = await f.run();
+    assert.equal(result.completed, true); assert.equal(result.uploadUuid, value);
+    assert(f.calls.some(call => call.path === `addons/upload/${value}/` && call.method === 'GET'));
+  }
+});
+
+test('a retained production 32-hex upload is polled without another upload POST', async () => {
+  const f = fixture(); f.hooks.invalidUpload = true;
+  let error; try { await f.run(); } catch (value) { error = value; }
+  assert.equal(error.receipt.uploadUuid, uploadId); assert.equal(error.receipt.versionId, null);
+  f.hooks.invalidUpload = false;
+  const before = f.calls.length, result = await f.run({ previousReceipt: error.receipt });
+  assert.equal(result.completed, true);
+  assert(!f.calls.slice(before).some(call => call.path === 'addons/upload/' && call.method === 'POST'));
+});
+
+test('invalid upload UUIDs expose only bounded known keys, type and length diagnostics', async () => {
+  for (const value of ['-'.repeat(36), 'g'.repeat(32), '1234567-12345-4234-a234-123456789012', null, 42, ['not-a-uuid']]) {
+    const f = fixture();
+    f.hooks.onRequest = ({ path, options, reply }) => path === 'addons/upload/' && options.method === 'POST' ? reply({ uuid: value, channel: 'listed', processed: false, url: `https://private.example/?token=${f.input.secret}`, [f.input.secret]: f.input.secret }) : null;
+    let error; try { await f.run(); } catch (failure) { error = failure; }
+    assert.equal(error.code, 'AMO_UPLOAD_INVALID'); assert.equal(error.receipt.addonId, null); assert.equal(error.receipt.versionId, null);
+    assert.deepEqual(error.receipt.diagnostics.uploadResponseShape, { keys: ['uuid', 'channel', 'processed', 'url'], unrecognizedKeyCount: 1, uuidType: typeof value, uuidLength: typeof value === 'string' || Array.isArray(value) ? value.length : null });
+    const text = JSON.stringify(error.receipt); assert(!text.includes(f.input.secret)); assert(!text.includes('private.example')); assert(!text.includes('not-a-uuid'));
+    assert(!f.calls.some(call => call.path === 'addons/addon/' && call.method === 'POST'));
+  }
 });
 
 test('existing addon uses multipart upload/source/license then JSON complex version metadata', async () => {

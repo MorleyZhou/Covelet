@@ -12,7 +12,9 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const fail = code => { const error = new Error(code); error.code = code; throw error; };
 const id = value => Number.isSafeInteger(value) && value > 0;
-const uuid = value => typeof value === 'string' && /^[a-f0-9-]{36}$/iu.test(value);
+// AMO FileUploadSerializer uses UUIDField(format='hex'), i.e. 32 hex digits.
+// Also accept the canonical UUID spelling used by older clients/receipts.
+const uuid = value => typeof value === 'string' && /^(?:[a-f0-9]{32}|[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})$/iu.test(value);
 const segment = value => encodeURIComponent(String(value));
 const safeStatus = value => ['public', 'deleted', 'disabled', 'rejected', 'nominated', 'incomplete', 'unreviewed'].includes(value) ? value : 'unknown';
 function publicUrl(value) {
@@ -103,6 +105,12 @@ function safeDiagnostics(value, secrets) {
     if (!seen.has(identity)) { seen.add(identity); messages.push(item); }
   }
   return { fields: [...fields], messages };
+}
+function uploadResponseShape(value) {
+  const knownKeys = ['uuid', 'channel', 'manifest_data', 'processed', 'submitted', 'url', 'valid', 'validation', 'version'];
+  const keys = object(value) ? Object.keys(value) : [];
+  return { keys: keys.filter(key => knownKeys.includes(key)), unrecognizedKeyCount: keys.filter(key => !knownKeys.includes(key)).length,
+    uuidType: typeof value?.uuid, uuidLength: typeof value?.uuid === 'string' || Array.isArray(value?.uuid) ? value.uuid.length : null };
 }
 async function responseJson(response) {
   if (Number(response.headers?.get('content-length')) > MAX_JSON) fail('AMO_RESPONSE_INVALID');
@@ -204,7 +212,10 @@ export async function submitFirefoxAmo({ zip, source, metadata, issuer, secret, 
       let upload;
       if (priorMatches && uuid(previousReceipt.uploadUuid)) upload = await request(`addons/upload/${segment(previousReceipt.uploadUuid)}/`);
       else upload = await request('addons/upload/', { method: 'POST', body: multipart({ upload: zip, channel: 'listed' }) });
-      if (!uuid(upload?.uuid)) fail('AMO_UPLOAD_INVALID');
+      if (!uuid(upload?.uuid)) {
+        receipt.diagnostics = { ...(receipt.diagnostics || { fields: [], messages: [] }), uploadResponseShape: uploadResponseShape(upload) };
+        fail('AMO_UPLOAD_INVALID');
+      }
       receipt.uploadUuid = upload.uuid;
       await save('validating');
       for (let attempt = 0; ; attempt++) {

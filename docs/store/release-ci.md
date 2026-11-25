@@ -22,6 +22,8 @@ Firefox 默认为本次 workflow 的精确提交；`firefox_source_ref` 可提�
 
 `firefox-amo-submission` artifact 保留原始 ZIP、源码 ZIP、上架资料、准备摘要与脱敏提交回执。重跑同一次运行时尝试恢复它们；跨运行可显式指定 `amo_resume_run_id`，并提供原候选 `firefox_source_ref`。恢复必须核对版本、源码 SHA 及三份输入摘要，不重新打包后冒充同一候选。artifact 失效或同版本无法证明属于本候选时明确停止，不盲重传或覆盖已有版本。AMO 的已签名摘要可能与上传前摘要不同，因此不能以签名后的文件摘要作为新的未签名候选证明。
 
+候选源码检出到 `candidate/`，提交工具从当前 workflow 的固定提交单独检出到 `release-automation/`。工具在被忽略的 `candidate/app/dist/submission-tools/` 中执行，复用锁定依赖，不改动候选源文件。这样可修复 API 客户端后恢复旧候选的原始 payload，无需移动 tag、重建候选或把工具修复误当作新的商店版本。
+
 例如只提交本次 Firefox 候选，使用 `tag=v0.7.0`、`submit_firefox=true`，保留 `submit_stores=false`。若 Chrome 单独失败而 Edge 已提交，只重跑原运行的失败 Chrome job，避免再次提交 Edge。
 
 ## 开发批次与正式版本
