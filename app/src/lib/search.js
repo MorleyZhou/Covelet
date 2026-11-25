@@ -1,5 +1,6 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { getExtensionApi } from './extension-api.js';
+import { isFirefoxDataConsentRuntime, requireFirefoxDataConsent } from './firefox-data-consent.js';
 import { buildProviderUrl } from "./model.js";
 
 // Submission priority belongs to the caller. Matching never changes an engine
@@ -26,8 +27,9 @@ export async function submitWebSearch(
 ) {
   const query = text.trim();
   if (!query) return;
+  const api = options.api ?? getExtensionApi();
+  if (isFirefoxDataConsentRuntime({ api })) await requireFirefoxDataConsent('search', { api });
   if (providerId === "browser") {
-    const api = options.api ?? getExtensionApi();
     if (!api?.search?.query && !api?.search?.search)
       throw new Error(
         tr("浏览器默认搜索需要在 Covelet 扩展中使用。预览中可临时选择其他引擎。"),

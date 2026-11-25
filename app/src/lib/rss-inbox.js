@@ -1,4 +1,5 @@
 import { tr } from '../i18n/index.js';
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 import { getExtensionApi } from './extension-api.js';
 import { localData } from './local-data.js';
 import { loadPersonalToolsSnapshot, saveReadingItem } from './personal-tools.js';
@@ -198,7 +199,7 @@ async function readBody(response) {
   const result = new Uint8Array(length); let offset = 0; for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.length; } return result;
 }
 
-export function createRssInbox({ store = defaultStore, fetcher = (...args) => globalThis.fetch(...args), hasPermission = defaultPermission,
+export function createRssInbox({ store = defaultStore, fetcher = (...args) => fetchWithFirefoxDataConsent('rss', ...args), hasPermission = defaultPermission,
   saveReading = saveReadingItem, readReading = async () => (await loadPersonalToolsSnapshot()).reading,
   alarms = getExtensionApi()?.alarms, now = () => Date.now(), crypto = globalThis.crypto, uuid = () => crypto.randomUUID(), locks = globalThis.navigator?.locks,
   timeoutMs = RSS_LIMITS.timeoutMs } = {}) {

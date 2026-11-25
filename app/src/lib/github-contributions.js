@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 import { normalizeGitHubUsername } from './widget-model.js';
 import { canReadSite, requestSiteAccess } from './site-info.js';
 import { createEncryptedStore, localData } from './local-data.js';
@@ -74,7 +75,7 @@ function cacheStore() {
 
 export function migrateGitHubCalendarCache() { return localData.get(CACHE_KEY); }
 
-export function createGitHubProvider({ request = (...args) => globalThis.fetch(...args), store = cacheStore(), now = () => Date.now(),
+export function createGitHubProvider({ request = (...args) => fetchWithFirefoxDataConsent('github', ...args), store = cacheStore(), now = () => Date.now(),
   canRead = () => preview ? Promise.resolve(true) : canReadSite(GITHUB_ORIGIN), isPreview = preview, timeout = 12000 } = {}) {
   const flights = new Map();
   let revision = 0;

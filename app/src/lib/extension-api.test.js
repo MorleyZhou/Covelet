@@ -47,7 +47,7 @@ test('Firefox exact-origin grants use Promise APIs immediately in the initiating
 });
 
 test('Firefox search and background messages await native Promises and keep safe rejection handling', async t => {
-  const calls = [], api = firefox({ search: { query: async options => { calls.push(options); } } });
+  const calls = [], api = firefox({ permissions: { getAll: async () => ({ data_collection: ['searchTerms'] }) }, search: { query: async options => { calls.push(options); } } });
   api.runtime.sendMessage = async () => { throw Error('No background receiver'); };
   globals(t, { chrome: { runtime: { id: api.runtime.id, sendMessage() { assert.fail('callback namespace'); } }, search: { query() { assert.fail('callback namespace'); } } }, browser: api });
   await submitWebSearch('中文 & private=1', 'browser', [], { newTab: true, navigate() { assert.fail('Unexpected URL fallback'); } });

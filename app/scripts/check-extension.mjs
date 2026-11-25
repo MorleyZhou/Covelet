@@ -23,7 +23,10 @@ assert.match(manifest.version, /^\d+\.\d+\.\d+$/, 'Extension version must use th
 if (browser === 'chrome') assert.equal(manifest.minimum_chrome_version, '120');
 else {
   assert.equal(manifest.minimum_chrome_version, undefined);
-  assert.deepEqual(manifest.browser_specific_settings, { gecko: { id: FIREFOX_ID, strict_min_version: FIREFOX_MIN_VERSION } });
+  assert.deepEqual(manifest.browser_specific_settings, { gecko: {
+    id: FIREFOX_ID, strict_min_version: FIREFOX_MIN_VERSION,
+    data_collection_permissions: { required: ['none'], optional: ['searchTerms', 'browsingActivity', 'websiteContent', 'authenticationInfo', 'personallyIdentifyingInfo', 'technicalAndInteraction'] },
+  } });
 }
 assert.equal(manifest.default_locale, "en");
 assert.equal(manifest.description, "__MSG_extensionDescription__");
@@ -255,6 +258,12 @@ const navigationIconBridge = path.join(appRoot, 'src', 'lib', 'navigation-icon-c
 const toolsWasmBridge = path.join(appRoot, 'src', 'lib', 'tools-core.js');
 const readingBridge = path.join(appRoot, 'src', 'lib', 'reading-extraction.js');
 const rssBridge = path.join(appRoot, 'src', 'lib', 'rss-inbox.js');
+const consentBridge = path.join(appRoot, 'src', 'lib', 'firefox-data-consent.js');
+const consentSource = readFileSync(consentBridge, 'utf8');
+assert.match(consentSource, /requireFirefoxDataConsent\(required, \{ api \}\)/u, 'Firefox HTTP requests must check current data permission.');
+assert.match(consentSource, /permissions\?\.getAll\?\.\(\)/u, 'Firefox data grants must be read from the browser.');
+assert.match(consentSource, /onRemoved/u, 'Firefox requests must observe permission revocation.');
+assert.match(consentSource, /controller\.signal\.aborted/u, 'Firefox requests must stop after cancellation or revocation.');
 const readingSource = readFileSync(readingBridge, 'utf8'), rssSource = readFileSync(rssBridge, 'utf8');
 for (const [name, source] of [['reader', readingSource], ['RSS', rssSource]]) {
   assert.match(source, /credentials:\s*'omit'/, `${name} requests must omit cookies.`);
@@ -327,7 +336,7 @@ function checkSourceNetworking(directory) {
       assert(!/\b(?:XMLHttpRequest|WebSocket|EventSource)\b/.test(source), `Unexpected source network API in ${absolute}`);
       const calls = [...source.matchAll(/(?:(?<![\w$.])fetch\s*\(|\bglobalThis\s*\.\s*fetch\s*\()/g)];
       if (calls.length) {
-        assert([wallpaperBridge, siteInfoBridge, visualImageBridge, visualWasmBridge, cloudBridge, webdavBridge, syncWasmBridge, faviconBridge, githubBridge, githubWasmBridge, clockWasmBridge, hdIconBridge, navigationIconBridge, toolsWasmBridge, readingBridge, rssBridge].includes(absolute), `Fetch must remain in reviewed network or fixed local-resource bridges: ${absolute}`);
+        assert([consentBridge, visualWasmBridge, syncWasmBridge, githubWasmBridge, clockWasmBridge, navigationIconBridge, toolsWasmBridge].includes(absolute), `Fetch must remain in the consent bridge or reviewed fixed local-resource bridges: ${absolute}`);
         assert(calls.every((match) => /^globalThis\s*\.\s*fetch/.test(match[0])), "Only the reviewed globalThis.fetch bridge is allowed.");
         sourceFetchCalls += calls.length;
       }
@@ -335,7 +344,7 @@ function checkSourceNetworking(directory) {
   }
 }
 checkSourceNetworking(path.join(appRoot, "src"));
-assert.equal(sourceFetchCalls, 17, 'Expected seventeen reviewed fetch call sites including local reading and RSS.');
+assert.equal(sourceFetchCalls, 7, 'Expected one consent-aware network bridge and six fixed local-resource fetch sites.');
 
 console.log(`Extension static checks passed: ${files.length} files, ${htmlCount} HTML, ${jsCount} JS, ${cssCount} CSS.`);
 console.log("Checked Covelet branding/version, four PNG icon sizes, manifest scope, fixed Bing host, optional per-site access/CSP, packaged resources, common remote-code/network patterns and source search/wallpaper/site metadata bridges.");

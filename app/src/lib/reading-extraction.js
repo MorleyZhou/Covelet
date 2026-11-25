@@ -1,5 +1,6 @@
 import { canReadSite, validateIconBytes } from './site-info.js';
 import { getExtensionApi } from './extension-api.js';
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 
 export const READING_EXTRACTION_LIMITS = Object.freeze({ htmlBytes: 2 * 1024 * 1024, textBytes: 256 * 1024, blocks: 4000, images: 100, timeoutMs: 10000, imageBytes: 2 * 1024 * 1024 });
 const encoder = new TextEncoder();
@@ -126,7 +127,7 @@ async function boundedBody(response, limit) {
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
   return bytes;
 }
-async function fetchBounded(url, { fetchImpl = (...args) => globalThis.fetch(...args), api = getExtensionApi(), signal, timeoutMs = READING_EXTRACTION_LIMITS.timeoutMs, image = false } = {}) {
+async function fetchBounded(url, { fetchImpl = (...args) => fetchWithFirefoxDataConsent('reading', ...args), api = getExtensionApi(), signal, timeoutMs = READING_EXTRACTION_LIMITS.timeoutMs, image = false } = {}) {
   const address = safeReadingUrl(url); if (!address || !await canReadSite(address, { api })) fail('READING_ACCESS_REQUIRED');
   const target = new URL(address); target.hash = ''; const networkUrl = target.href;
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > READING_EXTRACTION_LIMITS.timeoutMs) fail();

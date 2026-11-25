@@ -4,6 +4,7 @@ import { cloudOrigin } from '../lib/cloud-providers.js';
 import { loadCloudSyncSettings, subscribeCloudSyncStatus } from '../lib/cloud-sync.js';
 import { readPrivacyPermissions, permissionLabel, permissionPurpose } from '../lib/privacy-checkup.js';
 import { Disclosure } from './ui/disclosure.jsx';
+import FirefoxDataConsent from './FirefoxDataConsent.jsx';
 import './privacy-checkup.css';
 
 export default function PrivacyCheckup({ demo = false }) {
@@ -31,6 +32,7 @@ export default function PrivacyCheckup({ demo = false }) {
   const origins = permissions ? [...new Set([...permissions.requiredOrigins, ...permissions.grantedOrigins])] : [];
   const grantLabel = (granted) => !permissions.grantsKnown ? tr('授权状态未知') : granted ? tr('已授予') : tr('未授予');
   return <div className="privacy-checkup form-stack">
+    <FirefoxDataConsent disabled={demo} />
     <section aria-labelledby="privacy-network-title">
       <h3 id="privacy-network-title">{tr('联网功能')}</h3>
       <p>{tr('扩展不收集使用统计，也不自动上传日志。')}</p>

@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 const iconPresentation = new WeakMap();
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_EDGE = 8192;
@@ -114,7 +115,7 @@ function canvasAt(width, height) {
   return Object.assign(document.createElement('canvas'), { width, height });
 }
 
-function defaultFetch(url, options) { return globalThis.fetch(url, options); }
+function defaultFetch(url, options) { return fetchWithFirefoxDataConsent('site', url, options); }
 
 export async function decodeVisualImage(url, { signal, detailEdge = 0, baseUrl = globalThis.location?.href, fetcher = defaultFetch, createBitmap = (...args) => globalThis.createImageBitmap(...args), makeCanvas = canvasAt } = {}) {
   url = validateLocalVisualUrl(url, baseUrl);

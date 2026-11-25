@@ -1,5 +1,6 @@
 import { siteOrigin, validateIconBytes, convertIcon } from './site-info.js';
 import { sniffIconMime } from './icon-image-format.js';
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 
 const LIMIT = 1024 * 1024;
 const SIZE = '256';
@@ -26,7 +27,7 @@ export function supportsBrowserFavicons(api = globalThis.chrome) {
   return Boolean(endpointFor(api));
 }
 
-function defaultFetch(url, options) { return globalThis.fetch(url, options); }
+function defaultFetch(url, options) { return fetchWithFirefoxDataConsent('site', url, options); }
 
 function iconUrl(endpoint, page) {
   const url = new URL(endpoint.href);

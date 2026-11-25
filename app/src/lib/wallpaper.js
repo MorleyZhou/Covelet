@@ -1,4 +1,5 @@
 import { tr } from '../i18n/index.js';
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 import { getExtensionApi } from './extension-api.js';
 import { createEncryptedStore, localData } from './local-data.js';
 import { subscribeSyncedData } from './use-synced-data.js';
@@ -103,7 +104,7 @@ function defaultFetch(url, options) {
   // removed from the extension build; production requests Bing directly.
   const original = new URL(url);
   const target = DEVELOPMENT && original.origin === BING_ORIGIN ? `/__bing${original.pathname}${original.search}` : url;
-  return globalThis.fetch(target, options);
+  return fetchWithFirefoxDataConsent('wallpaper', target, options);
 }
 
 async function defaultSourceAccess(origin) {

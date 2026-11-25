@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { extensionBrowser, extensionDirectory, extensionOutputDirectory, extensionManifest } from '../../scripts/extension-target.mjs';
+import { FIREFOX_DATA_COLLECTION_TYPES } from './firefox-data-consent.js';
 
 const baseline = JSON.parse(readFileSync(new URL('../../extension.manifest.json', import.meta.url), 'utf8'));
 test('Chrome target preserves its exact reviewed manifest and fixed extension identity path', () => {
@@ -21,7 +22,8 @@ test('Firefox MV3 target only removes unavailable Chrome capabilities and substi
   assert.deepEqual(result.host_permissions, ['https://www.bing.com/*']);
   assert.deepEqual(result.optional_host_permissions, baseline.optional_host_permissions);
   assert.deepEqual(result.content_security_policy, baseline.content_security_policy);
-  assert.deepEqual(result.browser_specific_settings.gecko, { id: 'covelet@morleyzhou.github.io', strict_min_version: '140.0' });
+  assert.deepEqual(result.browser_specific_settings.gecko, { id: 'covelet@morleyzhou.github.io', strict_min_version: '140.0',
+    data_collection_permissions: { required: ['none'], optional: [...FIREFOX_DATA_COLLECTION_TYPES] } });
   assert.equal(extensionDirectory('firefox'), 'extension-firefox');
 });
 test('browser selection is explicit and refuses conflicting or unsupported targets before building', () => {

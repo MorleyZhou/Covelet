@@ -20533,5 +20533,284 @@
     "de": "Die Suchmaschinenauswahl wird auf diesem Gerät gespeichert.",
     "fr": "Le moteur de recherche choisi est enregistré sur cet appareil.",
     "ru": "Выбранная поисковая система сохраняется на этом устройстве."
+  },
+  "网页搜索": {
+    "en": "Web search",
+    "zh-TW": "網頁搜尋",
+    "ja": "ウェブ検索",
+    "ko": "웹 검색",
+    "de": "Websuche",
+    "fr": "Recherche web",
+    "ru": "Поиск в интернете"
+  },
+  "向你选择的搜索引擎发送搜索词。": {
+    "en": "Send search terms to the search engine you choose.",
+    "zh-TW": "向你選擇的搜尋引擎傳送搜尋詞。",
+    "ja": "選択した検索エンジンに検索語を送信します。",
+    "ko": "선택한 검색 엔진에 검색어를 보냅니다.",
+    "de": "Sendet Suchbegriffe an die gewählte Suchmaschine.",
+    "fr": "Envoyer les termes de recherche au moteur choisi.",
+    "ru": "Отправка поисковых запросов выбранной поисковой системе."
+  },
+  "网站、阅读与 RSS": {
+    "en": "Sites, reading and RSS",
+    "zh-TW": "網站、閱讀與 RSS",
+    "ja": "サイト・閲覧・RSS",
+    "ko": "사이트, 읽기 및 RSS",
+    "de": "Websites, Lesen und RSS",
+    "fr": "Sites, lecture et RSS",
+    "ru": "Сайты, чтение и RSS"
+  },
+  "向你选择的网站、图片或订阅来源发送请求，读取网页、图片和订阅内容。": {
+    "en": "Request pages, images and feed content from sources you choose.",
+    "zh-TW": "向你選擇的網站、圖片或訂閱來源傳送請求，讀取網頁、圖片與訂閱內容。",
+    "ja": "選択したサイト・画像・フィードの配信元にリクエストし、ページ・画像・フィード内容を取得します。",
+    "ko": "선택한 사이트, 이미지 또는 구독 출처에 요청하여 페이지, 이미지와 피드 내용을 읽습니다.",
+    "de": "Ruft Seiten, Bilder und Feeds von gewählten Quellen ab.",
+    "fr": "Demander les pages, images et flux aux sources choisies.",
+    "ru": "Запрос страниц, изображений и лент у выбранных вами источников."
+  },
+  "向你配置的存储发送加密内容、认证信息及所需连接信息。": {
+    "en": "Send encrypted content, authentication details and necessary connection information to your configured storage.",
+    "zh-TW": "向你設定的儲存服務傳送加密內容、認證資訊與必要連線資訊。",
+    "ja": "設定したストレージに暗号化コンテンツ、認証情報、必要な接続情報を送信します。",
+    "ko": "설정한 저장소에 암호화된 콘텐츠, 인증 정보와 필요한 연결 정보를 보냅니다.",
+    "de": "Sendet verschlüsselte Inhalte, Anmeldedaten und nötige Verbindungsdaten an den eingerichteten Speicher.",
+    "fr": "Envoyer le contenu chiffré, les identifiants et les informations de connexion nécessaires au stockage configuré.",
+    "ru": "Отправка зашифрованного содержимого, данных аутентификации и необходимых сведений о соединении в настроенное хранилище."
+  },
+  "向 GitHub 发送所选用户名，读取公开贡献日历。": {
+    "en": "Send the selected username to GitHub to read its public contribution calendar.",
+    "zh-TW": "向 GitHub 傳送所選使用者名稱，讀取公開貢獻日曆。",
+    "ja": "選択したユーザー名をGitHubに送信し、公開の貢献カレンダーを取得します。",
+    "ko": "선택한 사용자 이름을 GitHub에 보내 공개 기여 달력을 읽습니다.",
+    "de": "Sendet den gewählten Benutzernamen an GitHub, um den öffentlichen Beitragskalender zu lesen.",
+    "fr": "Envoyer le nom d’utilisateur choisi à GitHub pour lire son calendrier public de contributions.",
+    "ru": "Отправка выбранного имени пользователя в GitHub для чтения открытого календаря вкладов."
+  },
+  "向所选壁纸来源请求图片及授权信息。": {
+    "en": "Request images and license information from the selected wallpaper source.",
+    "zh-TW": "向所選桌布來源請求圖片與授權資訊。",
+    "ja": "選択した壁紙の配信元に画像とライセンス情報をリクエストします。",
+    "ko": "선택한 배경화면 출처에 이미지와 라이선스 정보를 요청합니다.",
+    "de": "Ruft Bilder und Lizenzangaben von der gewählten Hintergrundquelle ab.",
+    "fr": "Demander les images et licences à la source de fonds d’écran choisie.",
+    "ru": "Запрос изображений и сведений о лицензии у выбранного источника обоев."
+  },
+  "搜索词": {
+    "en": "Search terms",
+    "zh-TW": "搜尋詞",
+    "ja": "検索語",
+    "ko": "검색어",
+    "de": "Suchbegriffe",
+    "fr": "Termes de recherche",
+    "ru": "Поисковые запросы"
+  },
+  "网站地址": {
+    "en": "Website addresses",
+    "zh-TW": "網站位址",
+    "ja": "サイトのアドレス",
+    "ko": "웹사이트 주소",
+    "de": "Website-Adressen",
+    "fr": "Adresses des sites",
+    "ru": "Адреса сайтов"
+  },
+  "网页与图片内容": {
+    "en": "Page and image content",
+    "zh-TW": "網頁與圖片內容",
+    "ja": "ページと画像の内容",
+    "ko": "페이지 및 이미지 콘텐츠",
+    "de": "Seiten- und Bildinhalte",
+    "fr": "Contenu des pages et images",
+    "ru": "Содержимое страниц и изображений"
+  },
+  "认证信息": {
+    "en": "Authentication details",
+    "zh-TW": "認證資訊",
+    "ja": "認証情報",
+    "ko": "인증 정보",
+    "de": "Anmeldedaten",
+    "fr": "Informations d’authentification",
+    "ru": "Данные аутентификации"
+  },
+  "用户名等身份信息": {
+    "en": "Identity details such as usernames",
+    "zh-TW": "使用者名稱等身分資訊",
+    "ja": "ユーザー名などの識別情報",
+    "ko": "사용자 이름 등의 식별 정보",
+    "de": "Identitätsangaben wie Benutzernamen",
+    "fr": "Données d’identité comme les noms d’utilisateur",
+    "ru": "Идентификационные данные, например имена пользователей"
+  },
+  "连接与技术信息": {
+    "en": "Connection and technical information",
+    "zh-TW": "連線與技術資訊",
+    "ja": "接続情報と技術情報",
+    "ko": "연결 및 기술 정보",
+    "de": "Verbindungs- und technische Daten",
+    "fr": "Informations techniques et de connexion",
+    "ru": "Технические сведения и данные соединения"
+  },
+  "Firefox 联网授权": {
+    "en": "Firefox network consent",
+    "zh-TW": "Firefox 連網授權",
+    "ja": "Firefoxのネットワーク同意",
+    "ko": "Firefox 네트워크 동의",
+    "de": "Firefox-Netzwerkzustimmung",
+    "fr": "Consentement réseau Firefox",
+    "ru": "Согласие на сетевые функции Firefox"
+  },
+  "联网功能需要你选择授权，本机功能可直接使用。": {
+    "en": "Choose which network features to allow. Local features are ready to use.",
+    "zh-TW": "連網功能需由你選擇授權，本機功能可直接使用。",
+    "ja": "利用するネットワーク機能を選んで許可してください。ローカル機能はそのまま使えます。",
+    "ko": "허용할 네트워크 기능을 선택하세요. 로컬 기능은 바로 사용할 수 있습니다.",
+    "de": "Wählen Sie erlaubte Netzwerkfunktionen. Lokale Funktionen sind sofort nutzbar.",
+    "fr": "Choisissez les fonctions réseau à autoriser. Les fonctions locales sont utilisables directement.",
+    "ru": "Выберите разрешённые сетевые функции. Локальные функции доступны сразу."
+  },
+  "管理 Firefox 联网授权": {
+    "en": "Manage Firefox network consent",
+    "zh-TW": "管理 Firefox 連網授權",
+    "ja": "Firefoxのネットワーク同意を管理",
+    "ko": "Firefox 네트워크 동의 관리",
+    "de": "Firefox-Netzwerkzustimmung verwalten",
+    "fr": "Gérer le consentement réseau Firefox",
+    "ru": "Настроить сетевое согласие Firefox"
+  },
+  "未授予此项授权；本机内容、便笺和手动备份仍可使用。": {
+    "en": "Permission was not granted. Local content, notes and manual backups remain available.",
+    "zh-TW": "未授予此項權限；本機內容、便箋和手動備份仍可使用。",
+    "ja": "許可されませんでした。ローカルのコンテンツ・メモ・手動バックアップは引き続き利用できます。",
+    "ko": "권한이 허용되지 않았습니다. 로컬 콘텐츠, 메모와 수동 백업은 계속 사용할 수 있습니다.",
+    "de": "Keine Zustimmung erteilt. Lokale Inhalte, Notizen und manuelle Sicherungen bleiben nutzbar.",
+    "fr": "Autorisation non accordée. Le contenu local, les notes et les sauvegardes manuelles restent disponibles.",
+    "ru": "Разрешение не предоставлено. Локальное содержимое, заметки и ручные резервные копии по-прежнему доступны."
+  },
+  "按需要选择联网功能。拒绝授权不会影响本机内容、便笺和手动备份。": {
+    "en": "Choose network features as needed. Declining does not affect local content, notes or manual backups.",
+    "zh-TW": "依需要選擇連網功能。拒絕授權不影響本機內容、便箋和手動備份。",
+    "ja": "必要なネットワーク機能を選択してください。同意しなくてもローカルのコンテンツ・メモ・手動バックアップには影響しません。",
+    "ko": "필요한 네트워크 기능을 선택하세요. 동의하지 않아도 로컬 콘텐츠, 메모와 수동 백업에는 영향이 없습니다.",
+    "de": "Wählen Sie Netzwerkfunktionen nach Bedarf. Eine Ablehnung beeinträchtigt lokale Inhalte, Notizen oder manuelle Sicherungen nicht.",
+    "fr": "Choisissez les fonctions réseau nécessaires. Un refus n’affecte pas le contenu local, les notes ni les sauvegardes manuelles.",
+    "ru": "Выбирайте нужные сетевые функции. Отказ не влияет на локальное содержимое, заметки и ручные резервные копии."
+  },
+  "这些数据用于你选择的功能，不用于广告或使用统计。Firefox 按数据类型授权，不同功能可能共用授权；网站访问权限仍需另外授予。": {
+    "en": "Data is used for your chosen features, not ads or usage statistics. Firefox grants access by data type, so features may share a grant. Site access still needs separate permission.",
+    "zh-TW": "這些資料用於你選擇的功能，不用於廣告或使用統計。Firefox 依資料類型授權，不同功能可能共用授權；網站存取仍需另外授權。",
+    "ja": "これらのデータは選択した機能に使用し、広告や利用統計には使用しません。Firefoxはデータの種類ごとに許可するため、複数の機能で許可を共有する場合があります。サイトへのアクセスは別途許可が必要です。",
+    "ko": "데이터는 선택한 기능에만 사용되며 광고나 사용 통계에는 사용되지 않습니다. Firefox는 데이터 유형별로 허용하므로 기능 간 권한을 공유할 수 있습니다. 사이트 접근은 별도로 허용해야 합니다.",
+    "de": "Die Daten dienen gewählten Funktionen, nicht Werbung oder Nutzungsstatistiken. Firefox erlaubt Datentypen, daher können Funktionen eine Zustimmung teilen. Website-Zugriff benötigt eine separate Berechtigung.",
+    "fr": "Les données servent aux fonctions choisies, sans publicité ni statistiques d’usage. Firefox autorise des types de données : plusieurs fonctions peuvent partager un accord. L’accès aux sites demande une autorisation distincte.",
+    "ru": "Данные используются для выбранных функций, а не рекламы или статистики. Firefox разрешает типы данных, поэтому функции могут использовать общее согласие. Доступ к сайтам требует отдельного разрешения."
+  },
+  "正在读取 Firefox 数据授权…": {
+    "en": "Reading Firefox data permissions…",
+    "zh-TW": "正在讀取 Firefox 資料授權…",
+    "ja": "Firefoxのデータ権限を確認中…",
+    "ko": "Firefox 데이터 권한 확인 중…",
+    "de": "Firefox-Datenberechtigungen werden gelesen…",
+    "fr": "Lecture des autorisations de données Firefox…",
+    "ru": "Чтение разрешений на данные Firefox…"
+  },
+  "当前 Firefox 无法管理数据授权，请更新浏览器。本机功能仍可使用。": {
+    "en": "This Firefox version cannot manage data consent. Update the browser. Local features remain available.",
+    "zh-TW": "目前 Firefox 無法管理資料授權，請更新瀏覽器。本機功能仍可使用。",
+    "ja": "このFirefoxではデータの同意を管理できません。ブラウザーを更新してください。ローカル機能は引き続き利用できます。",
+    "ko": "현재 Firefox에서는 데이터 동의를 관리할 수 없습니다. 브라우저를 업데이트하세요. 로컬 기능은 계속 사용할 수 있습니다.",
+    "de": "Diese Firefox-Version kann die Datenzustimmung nicht verwalten. Aktualisieren Sie den Browser. Lokale Funktionen bleiben nutzbar.",
+    "fr": "Cette version de Firefox ne peut pas gérer le consentement aux données. Mettez le navigateur à jour. Les fonctions locales restent disponibles.",
+    "ru": "Эта версия Firefox не поддерживает управление согласием на данные. Обновите браузер. Локальные функции доступны."
+  },
+  "涉及：{0}": {
+    "en": "Data involved: {0}",
+    "zh-TW": "涉及：{0}",
+    "ja": "対象データ：{0}",
+    "ko": "관련 데이터: {0}",
+    "de": "Betroffene Daten: {0}",
+    "fr": "Données concernées : {0}",
+    "ru": "Используемые данные: {0}"
+  },
+  "允许 {0} 联网": {
+    "en": "Allow network access for {0}",
+    "zh-TW": "允許 {0} 連網",
+    "ja": "{0}のネットワーク利用を許可",
+    "ko": "{0} 네트워크 접근 허용",
+    "de": "Netzwerkzugriff für {0} erlauben",
+    "fr": "Autoriser le réseau pour {0}",
+    "ru": "Разрешить сетевой доступ для {0}"
+  },
+  "正在请求授权…": {
+    "en": "Requesting permission…",
+    "zh-TW": "正在請求授權…",
+    "ja": "許可をリクエスト中…",
+    "ko": "권한 요청 중…",
+    "de": "Zustimmung wird angefragt…",
+    "fr": "Demande d’autorisation…",
+    "ru": "Запрос разрешения…"
+  },
+  "已允许": {
+    "en": "Allowed",
+    "zh-TW": "已允許",
+    "ja": "許可済み",
+    "ko": "허용됨",
+    "de": "Erlaubt",
+    "fr": "Autorisé",
+    "ru": "Разрешено"
+  },
+  "允许此功能联网": {
+    "en": "Allow this network feature",
+    "zh-TW": "允許此功能連網",
+    "ja": "この機能のネットワーク利用を許可",
+    "ko": "이 네트워크 기능 허용",
+    "de": "Diese Netzwerkfunktion erlauben",
+    "fr": "Autoriser cette fonction réseau",
+    "ru": "Разрешить эту сетевую функцию"
+  },
+  "可在 Firefox 的 about:addons → Covelet → 权限中撤销数据授权。": {
+    "en": "Revoke data permissions in Firefox at about:addons → Covelet → Permissions.",
+    "zh-TW": "可在 Firefox 的 about:addons → Covelet → 權限中撤銷資料授權。",
+    "ja": "Firefoxのabout:addons → Covelet → 権限でデータの許可を取り消せます。",
+    "ko": "Firefox의 about:addons → Covelet → 권한에서 데이터 권한을 철회할 수 있습니다.",
+    "de": "Datenberechtigungen können in Firefox unter about:addons → Covelet → Berechtigungen widerrufen werden.",
+    "fr": "Révoquez les autorisations dans Firefox : about:addons → Covelet → Permissions.",
+    "ru": "Отозвать разрешения можно в Firefox: about:addons → Covelet → Разрешения."
+  },
+  "请先在隐私检查中允许此功能联网。": {
+    "en": "Allow this network feature in Privacy Checkup first.",
+    "zh-TW": "請先在隱私檢查中允許此功能連網。",
+    "ja": "先にプライバシーチェックでこの機能のネットワーク利用を許可してください。",
+    "ko": "먼저 개인정보 점검에서 이 네트워크 기능을 허용하세요.",
+    "de": "Erlauben Sie diese Netzwerkfunktion zuerst in der Datenschutzprüfung.",
+    "fr": "Autorisez d’abord cette fonction réseau dans le contrôle de confidentialité.",
+    "ru": "Сначала разрешите эту сетевую функцию в проверке конфиденциальности."
+  },
+  "远程图片需联网授权，原图信息已保留。": {
+    "en": "Remote images require network consent. Original image details are preserved.",
+    "zh-TW": "遠端圖片需連網授權，原圖資訊已保留。",
+    "ja": "外部画像にはネットワークの同意が必要です。元の画像情報は保持されています。",
+    "ko": "원격 이미지는 네트워크 동의가 필요합니다. 원본 이미지 정보는 보존됩니다.",
+    "de": "Externe Bilder benötigen Netzwerkzustimmung. Die ursprünglichen Bildangaben bleiben erhalten.",
+    "fr": "Les images distantes nécessitent un consentement réseau. Les informations d’origine sont conservées.",
+    "ru": "Для удалённых изображений нужно сетевое согласие. Исходные данные изображений сохранены."
+  },
+  "未授权时仅显示本机图片；文字仍可编辑，粘贴使用纯文本。": {
+    "en": "Until consent is granted, only local images are shown. Text remains editable; pasted content uses plain text.",
+    "zh-TW": "未授權時僅顯示本機圖片；文字仍可編輯，貼上使用純文字。",
+    "ja": "同意前はローカル画像のみ表示します。テキストは編集でき、貼り付けはプレーンテキストになります。",
+    "ko": "동의 전에는 로컬 이미지만 표시합니다. 텍스트는 편집할 수 있으며 붙여넣기는 일반 텍스트로 처리됩니다.",
+    "de": "Ohne Zustimmung werden nur lokale Bilder angezeigt. Text bleibt bearbeitbar; Einfügen verwendet Klartext.",
+    "fr": "Sans consentement, seules les images locales sont affichées. Le texte reste modifiable et le collage utilise du texte brut.",
+    "ru": "До получения согласия показываются только локальные изображения. Текст можно редактировать; вставка выполняется как обычный текст."
+  },
+  "允许便笺图片联网": {
+    "en": "Allow network images in notes",
+    "zh-TW": "允許便箋圖片連網",
+    "ja": "メモの外部画像を許可",
+    "ko": "메모의 네트워크 이미지 허용",
+    "de": "Externe Bilder in Notizen erlauben",
+    "fr": "Autoriser les images distantes des notes",
+    "ru": "Разрешить сетевые изображения в заметках"
   }
 }

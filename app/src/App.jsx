@@ -85,6 +85,7 @@ import { subscribeBackgroundCloudSyncStatus } from './lib/cloud-sync-background.
 import ExtensionCenter from "./components/ExtensionCenter.jsx";
 import CloudSyncSettings from './components/CloudSyncSettings.jsx';
 import PrivacyCheckup from './components/PrivacyCheckup.jsx';
+import { FirefoxDataConsentNotice } from './components/FirefoxDataConsent.jsx';
 import WhatsNew from './components/WhatsNew.jsx';
 import GitHubWidget from "./components/GitHubWidget.jsx";
 import DesktopPages from "./components/DesktopPages.jsx";
@@ -1457,6 +1458,7 @@ export function App() {
         </header>
         {presentationHint && <p className="presentation-status" role="status">{presentationHint}</p>}
         <section className="search-area" aria-label={tr("搜索")} inert={layoutEditor.editing || undefined}>
+          <FirefoxDataConsentNotice disabled={demo || busy || Boolean(modal) || Boolean(privacyDialog)} onOpen={() => setModal({ kind: 'firefox-data-consent' })} />
           {!settings.minimal && <HomeTime />}
           <form className="search-box" onSubmit={submit} role="search">
             <div className="engine-selector" data-popover>
@@ -1831,6 +1833,7 @@ export function App() {
             <p>{tr('当前内容尚未保存，放弃修改？')}</p>
           </PromptDialog>}
         </Modal>}
+        {modal?.kind === 'firefox-data-consent' && <Modal title={tr('隐私自查')} onClose={() => setModal(null)}><PrivacyCheckup demo={demo} /></Modal>}
         {modal?.kind === "settings" && (
           <Settings
             state={state}

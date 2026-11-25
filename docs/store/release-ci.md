@@ -1,10 +1,10 @@
 # GitHub 发布与可选商店提交 CI
 
-Firefox AMO 签名/送审尚未接入。接入时使用 GitHub Secrets `AMO_JWT_ISSUER`（API key / JWT issuer）和 `AMO_JWT_SECRET`（JWT secret）；已有密钥无需重新申请，值不写入仓库或聊天。`listed` 渠道提交 AMO 商店，`unlisted` 仅签名后自行分发。现有 Gecko ID 为 `covelet@morleyzhou.github.io`，不是 secret。
+Firefox AMO 已接入独立的 `firefox` job，使用 `amo-addons` 环境的 `AMO_JWT_ISSUER`（API key / JWT issuer）和 `AMO_JWT_SECRET`（JWT secret）。值不写入仓库或聊天，仅在提交步骤注入；依赖安装和构建步骤不接收这些密钥。该 job 固定使用 `listed` 提交 AMO 商店，Gecko ID 为 `covelet@morleyzhou.github.io`。
 
-首次上架还需 listing metadata（categories、summary、version.license）；本项目经构建打包，应提供匹配源码、lockfile 和构建说明，并按实际联网行为补齐 Firefox 数据声明。配置密钥不代表已经提交或上架。参见 [web-ext sign 官方参数](https://extensionworkshop.com/documentation/develop/web-ext-command-reference/)、[源码要求](https://extensionworkshop.com/documentation/publish/source-code-submission/)和[数据声明](https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/)。
+首次上架资料来自 [firefox-amo.json](firefox-amo.json)，包括八语摘要、分类、MIT、版本说明及中英政策正文。流程按 AMO API v5 上传并等待校验，再创建扩展或版本，附加匹配源码包和政策；收到提交回执不表示审核通过。源码包含 `.gitattributes`、应用源文件、Rust 与 npm 锁文件及[构建说明](firefox-amo-build.md)。Firefox 声明无必需传输、六类可选传输，实际请求与远程便笺图片均受同意门禁约束；技术类型仅用于用户开启的设置同步，无遥测。参见 [AMO 提交 API](https://mozilla.github.io/addons-server/topics/api/addons.html)、[源码要求](https://extensionworkshop.com/documentation/publish/source-code-submission/)和[数据声明](https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/)。
 
-推送 `v*` tag 会从同一源码构建 Chrome/Edge 与 Firefox 两份 ZIP、生成双文件校验清单，并创建或更新 GitHub Release。Chrome/Edge 商店送审由手动运行 `workflow_dispatch` 并显式设置 **`submit_stores=true`** 触发，默认值为 `false`。此工作流不上传或提交 Mozilla AMO。
+推送 `v*` tag 会从同一源码构建 Chrome/Edge 与 Firefox 两份 ZIP、生成双文件校验清单，并创建或更新 GitHub Release。Chrome/Edge 商店送审由手动运行 `workflow_dispatch` 并显式设置 **`submit_stores=true`** 触发；Firefox 由独立的 **`submit_firefox=true`** 触发。两者均默认 `false`。
 
 工作流：[release-stores.yml](../../.github/workflows/release-stores.yml)，Actions 名称为 **GitHub release and optional store submission**。审核通过后的上线时间由商店决定；CI 成功不代表商店已上线。
 
@@ -13,6 +13,16 @@ Firefox AMO 签名/送审尚未接入。接入时使用 GitHub Secrets `AMO_JWT_
 | 推送 `vX.Y.Z` tag | 构建并创建或更新 | 跳过 |
 | 手动运行，`submit_stores=false`（默认） | 构建并创建或更新 | 跳过 |
 | 手动运行，`submit_stores=true` | 构建并创建或更新 | 上传并提交审核 |
+
+Firefox-only 运行（`submit_firefox=true`、`submit_stores=false`）跳过 GitHub Release 更新与 Chrome/Edge 提交，不覆盖已有发行附件。两个开关同时为 true 时提交三家商店。
+
+## Firefox 固定源码与恢复
+
+Firefox 默认为本次 workflow 的精确提交；`firefox_source_ref` 可提供另一条完整 40 位 SHA，必须属于仓库 main 的历史。其 package、lockfile、manifest 与候选 ZIP 版本必须等于 `tag`。已发布的 `v0.7.0` 不移动，Chrome/Edge 继续使用该 tag 的包；Firefox 第一次上架使用包含浏览器内置同意机制的独立 0.7.0 候选提交。回执记录其 SHA，不把两个来源混为一份源码。
+
+`firefox-amo-submission` artifact 保留原始 ZIP、源码 ZIP、上架资料、准备摘要与脱敏提交回执。重跑同一次运行时尝试恢复它们；跨运行可显式指定 `amo_resume_run_id`，并提供原候选 `firefox_source_ref`。恢复必须核对版本、源码 SHA 及三份输入摘要，不重新打包后冒充同一候选。artifact 失效或同版本无法证明属于本候选时明确停止，不盲重传或覆盖已有版本。AMO 的已签名摘要可能与上传前摘要不同，因此不能以签名后的文件摘要作为新的未签名候选证明。
+
+例如只提交本次 Firefox 候选，使用 `tag=v0.7.0`、`submit_firefox=true`，保留 `submit_stores=false`。若 Chrome 单独失败而 Edge 已提交，只重跑原运行的失败 Chrome job，避免再次提交 Edge。
 
 ## 开发批次与正式版本
 
@@ -34,6 +44,7 @@ Firefox AMO 签名/送审尚未接入。接入时使用 GitHub Secrets `AMO_JWT_
 | --- | --- |
 | `chrome-web-store` | `CWS_SERVICE_ACCOUNT_JSON`、`CWS_PUBLISHER_ID` |
 | `edge-addons` | `EDGE_CLIENT_ID`、`EDGE_API_KEY`、`EDGE_PRODUCT_ID` |
+| `amo-addons` | `AMO_JWT_ISSUER`、`AMO_JWT_SECRET` |
 
 Chrome 沿用 **Chrome Web Store API v2 + Service Account**，扩展 ID 为 `clkholbmabommppnlpcnhdgmibibblgb`。服务账号须有对应发布者的商店访问权限，并启用所需 API；`CWS_SERVICE_ACCOUNT_JSON` 保存 JSON key，`CWS_PUBLISHER_ID` 保存发布者 ID。按 [Google auth action 的服务账号配置说明](https://github.com/google-github-actions/auth#inputs-service-account-key-json)配置生成访问令牌所需的 `roles/iam.serviceAccountTokenCreator` 权限。工作流使用 `https://www.googleapis.com/auth/chromewebstore` scope。
 

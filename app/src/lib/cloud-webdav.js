@@ -1,4 +1,5 @@
 import { tr } from "../i18n/index.js";
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 // Fixed packaged WebDAV transport for encrypted, content-addressed snapshots.
 // Only the user-selected directory is listed. Explicit sync setup may create
 // its fixed protocol children, never arbitrary parents; no directory is deleted,
@@ -318,7 +319,7 @@ export function createWebdavProvider(input, secrets, options = {}) {
   const passwordEpochUrl = profile.prefix.endsWith('/all-data-v1')
     ? new URL(`${encodedPath(profile.prefix.slice(0, -'/all-data-v1'.length))}/${PASSWORD_EPOCH_FILE}`, profile.endpoint) : null;
   const origin = directory.origin, authorization = checkedSecrets(secrets);
-  const fetcher = options.fetcher || ((...args) => globalThis.fetch(...args));
+  const fetcher = options.fetcher || ((...args) => fetchWithFirefoxDataConsent('cloud', ...args));
   const signer = options.signer;
   if (typeof fetcher !== 'function' || !signer || typeof signer.sha256 !== 'function') throw error(tr("本机同步计算模块尚未准备好。"), 'CLOUD_CRYPTO');
   if (options.beforeRequest !== undefined && typeof options.beforeRequest !== 'function') throw invalid();

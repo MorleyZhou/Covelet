@@ -17,6 +17,21 @@ on:
         type: boolean
         required: false
         default: false
+      submit_firefox:
+        description: Submit the Firefox candidate to Mozilla AMO (listed)
+        type: boolean
+        required: false
+        default: false
+      firefox_source_ref:
+        description: Optional exact Firefox candidate commit SHA; defaults to this workflow's commit
+        type: string
+        required: false
+        default: ''
+      amo_resume_run_id:
+        description: Optional previous run containing the immutable AMO payload and partial receipt
+        type: string
+        required: false
+        default: ''
 
 permissions: {}
 
@@ -138,6 +153,7 @@ jobs:
 
   github-release:
     needs: build
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.submit_firefox == true && inputs.submit_stores != true) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -281,6 +297,129 @@ jobs:
 
           cws_request publish POST "${item_url}:publish" \
             --header 'Content-Type: application/json' --data '{}'
+
+  firefox:
+    needs: build
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.submit_firefox == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: amo-addons
+    permissions:
+      contents: read
+      actions: read
+    env:
+      RELEASE_TAG: v${{ needs.build.outputs.version }}
+      FIREFOX_SOURCE_REF: ${{ inputs.firefox_source_ref || github.workflow_sha }}
+      AMO_RESUME_RUN_ID: ${{ inputs.amo_resume_run_id || (github.run_attempt > 1 && github.run_id) || '' }}
+      AMO_RESUME_EXPLICIT: ${{ inputs.amo_resume_run_id != '' }}
+    steps:
+      - name: Validate immutable Firefox candidate reference
+        run: |
+          set -euo pipefail
+          [[ "$FIREFOX_SOURCE_REF" =~ ^[a-f0-9]{40}$ ]] || { echo '::error::Firefox candidate reference must be an exact commit SHA.'; exit 1; }
+          [[ -z "$AMO_RESUME_RUN_ID" || "$AMO_RESUME_RUN_ID" =~ ^[0-9]+$ ]] || { echo '::error::AMO recovery run must be numeric.'; exit 1; }
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.FIREFOX_SOURCE_REF }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify the Firefox candidate belongs to main
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$FIREFOX_SOURCE_REF" ]]
+          git merge-base --is-ancestor "$FIREFOX_SOURCE_REF" refs/remotes/origin/main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install locked Firefox build and submission dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Locate a recoverable immutable AMO payload
+        id: recovery
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$AMO_RESUME_RUN_ID" ]]; then
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          available=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${AMO_RESUME_RUN_ID}/artifacts" \
+            --jq 'any(.artifacts[]; .name == "firefox-amo-submission" and .expired == false)')
+          if [[ "$available" == true ]]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+            echo "run_id=$AMO_RESUME_RUN_ID" >> "$GITHUB_OUTPUT"
+          elif [[ "$AMO_RESUME_EXPLICIT" == true ]]; then
+            echo '::error::The requested AMO recovery artifact is missing or expired.'
+            exit 1
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restore exact AMO payload and partial submission receipt
+        if: steps.recovery.outputs.available == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: firefox-amo-submission
+          path: ${{ runner.temp }}/amo-package/
+          run-id: ${{ steps.recovery.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Verify restored source, version and all payload digests
+        if: steps.recovery.outputs.available == 'true'
+        run: |
+          node app/scripts/prepare-firefox-amo-source.mjs --root "$GITHUB_WORKSPACE" \
+            --tag "$RELEASE_TAG" --verify-prepared "$RUNNER_TEMP/amo-package"
+
+      - name: Build the version-matched Firefox consent candidate
+        if: steps.recovery.outputs.available != 'true'
+        working-directory: app
+        run: |
+          set -euo pipefail
+          npm run build:firefox
+
+      - name: Prepare exact committed source and reviewer metadata
+        if: steps.recovery.outputs.available != 'true'
+        run: |
+          set -euo pipefail
+          node app/scripts/prepare-firefox-amo-source.mjs --root "$GITHUB_WORKSPACE" \
+            --tag "$RELEASE_TAG" --output-dir "$RUNNER_TEMP/amo-package"
+
+      - name: Upload and submit Firefox to AMO
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: |
+          set -euo pipefail
+          missing=()
+          for secret_name in AMO_JWT_ISSUER AMO_JWT_SECRET; do
+            if [[ -z "${!secret_name}" ]]; then missing+=("$secret_name"); fi
+          done
+          if (( ${#missing[@]} )); then
+            echo "::error::Missing amo-addons environment secrets: ${missing[*]}."
+            exit 1
+          fi
+          node app/scripts/submit-firefox-amo.mjs \
+            --zip "$RUNNER_TEMP/amo-package/covelet-${RELEASE_TAG#v}-firefox.zip" \
+            --source "$RUNNER_TEMP/amo-package/covelet-${RELEASE_TAG#v}-amo-source.zip" \
+            --metadata "$RUNNER_TEMP/amo-package/amo-metadata.json" \
+            --receipt "$RUNNER_TEMP/amo-package/submission.json"
+
+      - name: Retain sanitized AMO receipts and reviewer source
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-amo-submission
+          path: ${{ runner.temp }}/amo-package/
+          if-no-files-found: ignore
+          overwrite: true
 
   edge:
     needs: github-release

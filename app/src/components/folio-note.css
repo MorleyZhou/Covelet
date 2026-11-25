@@ -17,6 +17,10 @@
   --folio-shadow-focus: none;
 }
 .folio-note-area { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 180px; }
+.folio-image-consent-notice { padding: 4px 12px; font-size: 12px; }
+.folio-image-consent-notice p { margin: 4px 0; }
+.folio-image-consent-placeholder { display: block; padding: 8px; border: 1px dashed #80808066; font-size: 12px; overflow-wrap: anywhere; }
+.folio-image-consent-placeholder img { max-width: 100%; }
 .folio-note-edit-panel { display: flex; flex: 1; min-width: 0; min-height: 0; }
 .folio-note-edit-panel[hidden] { display: none; }
 .folio-note-editor.folio-editor { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; background: transparent; font-size: 14px; line-height: 1.8; }

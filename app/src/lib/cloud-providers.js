@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 // All executable code is bundled. These adapters transfer bounded, encrypted
 // snapshot data directly to the single origin explicitly chosen by the user.
 import { validateWebdavConfig, cloudWebdavOrigin, createWebdavProvider } from './cloud-webdav.js';
@@ -230,7 +231,7 @@ export function createCloudProvider(input, secrets, options = {}) {
   const profile = validateCloudConfig(input);
   if (profile.provider === 'webdav') return createWebdavProvider(profile, secrets, options);
   const origin = cloudOrigin(profile);
-  const fetcher = options.fetcher || ((...args) => globalThis.fetch(...args));
+  const fetcher = options.fetcher || ((...args) => fetchWithFirefoxDataConsent('cloud', ...args));
   const signer = options.signer;
   if (typeof fetcher !== 'function' || !signer || typeof signer.sha256 !== 'function' || typeof signer.hmacSha256 !== 'function') throw ownError(tr("本机同步计算模块尚未准备好。"), 'CLOUD_CRYPTO');
   if (options.beforeRequest !== undefined && typeof options.beforeRequest !== 'function') throw invalid();

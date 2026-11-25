@@ -1,5 +1,6 @@
 import { normalizeIconAddress, siteIconAddress } from './site-icons.js';
 import { getExtensionApi } from './extension-api.js';
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 import { bundledNavigationIconAddress } from './bundled-navigation-icons.js';
 import { validateIconBytes } from './site-info.js';
 import { ICON_IMAGE_LIMIT, ICON_SVG_LIMIT, normalizeIconBlob } from './icon-image-format.js';
@@ -251,7 +252,7 @@ async function load(url, revision, version, force, signal) {
     // An existing host grant or the site's CORS policy may allow this fetch.
     // Never request a new permission, send credentials, or use a proxy.
     active(signal);
-    const response = await globalThis.fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'follow', mode: 'cors', cache: force ? 'no-store' : 'default', signal: controller.signal });
+    const response = await fetchWithFirefoxDataConsent('site', url, { credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'follow', mode: 'cors', cache: force ? 'no-store' : 'default', signal: controller.signal });
     if (!response.ok) throw imageError('HTTP', { httpStatus: response.status });
     if (response.type === 'opaque' || response.type === 'opaqueredirect') throw imageError('NETWORK');
     if (response.url) {

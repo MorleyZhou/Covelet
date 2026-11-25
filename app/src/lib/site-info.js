@@ -1,5 +1,6 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { getExtensionApi } from './extension-api.js';
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 import { normalizeUrl } from './model.js';
 import { normalizeIconAddress } from './site-icons.js';
 import { normalizeIconBlob } from './icon-image-format.js';
@@ -170,7 +171,7 @@ async function metadataPrefix(response, limit) {
   return bytes;
 }
 
-function defaultFetch(url, options) { return globalThis.fetch(url, options); }
+function defaultFetch(url, options) { return fetchWithFirefoxDataConsent('site', url, options); }
 
 async function request(fetcher, url, limit, timeoutMs, accept, prefix = false) {
   const controller = new AbortController();

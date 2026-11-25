@@ -30,9 +30,13 @@ export function extensionManifest(baseline, browser) {
     delete manifest.minimum_chrome_version;
     manifest.permissions = manifest.permissions.filter(permission => permission !== 'favicon');
     manifest.background = { scripts: ['background.js'], type: 'module' };
-    manifest.browser_specific_settings = { gecko: { id: FIREFOX_ID, strict_min_version: FIREFOX_MIN_VERSION } };
-    // This unsigned compatibility package is not an AMO submission. Do not
-    // invent a "none" data-transmission declaration for user-enabled networks.
+    manifest.browser_specific_settings = { gecko: {
+      id: FIREFOX_ID, strict_min_version: FIREFOX_MIN_VERSION,
+      data_collection_permissions: {
+        required: ['none'],
+        optional: ['searchTerms', 'browsingActivity', 'websiteContent', 'authenticationInfo', 'personallyIdentifyingInfo', 'technicalAndInteraction'],
+      },
+    } };
   }
   return manifest;
 }

@@ -1,5 +1,6 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { getExtensionApi } from './extension-api.js';
+import { fetchWithFirefoxDataConsent } from './firefox-data-consent.js';
 import { canReadSite, siteOrigin } from './site-info.js';
 import { normalizeIconAddress, guessIconFit } from './site-icons.js';
 import { navigationIcon, readCachedNavigationIcon, getNavigationIconFailure } from './navigation-icon-cache.js';
@@ -33,7 +34,7 @@ async function readBounded(url, limit, signal, prefix = false) {
   const timer = setTimeout(abort, 7000); signal?.addEventListener('abort', abort, { once: true });
   try {
     if (signal?.aborted) throw new DOMException(tr("已取消"), 'AbortError');
-    const response = await globalThis.fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'error', signal: controller.signal });
+    const response = await fetchWithFirefoxDataConsent('site', url, { credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'error', signal: controller.signal });
     if (!response.ok || response.redirected || response.url && response.url !== url) throw Error(tr("无法读取网站图标信息。"));
     const reader = response.body?.getReader();
     if (!reader) {

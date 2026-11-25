@@ -1,0 +1,12 @@
+.firefox-data-notice { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 8px; margin: 8px auto; max-width: 640px; font-size: 12px; }
+.firefox-data-notice > span { opacity: .8; }
+.firefox-data-notice button { font-size: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.firefox-data-consent { min-width: 0; font-size: 13px; line-height: 1.7; }
+.firefox-data-consent h3 { margin: 0 0 12px; font-size: 15px; }
+.firefox-data-consent p { margin: 6px 0; overflow-wrap: anywhere; }
+.firefox-data-groups { display: flex; flex-direction: column; gap: 14px; margin: 14px 0; }
+.firefox-data-group { display: flex; align-items: start; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid #80808033; }
+.firefox-data-group > div { flex: 1; min-width: 0; }
+.firefox-data-group h4 { margin: 0; font-size: 13px; font-weight: 600; }
+.firefox-data-group > button { flex: none; max-width: 40%; white-space: normal; }
+@media (max-width: 480px) { .firefox-data-group { flex-direction: column; gap: 6px; } .firefox-data-group > button { max-width: 100%; } }

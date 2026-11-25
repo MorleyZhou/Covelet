@@ -52,7 +52,7 @@ test('missing Firefox bytes, wrong Firefox version and cross-browser background 
 });
 
 test('one exact tag checkout builds both targets and GitHub publishes both browser ZIPs', () => {
-  assert.equal((workflow.match(/uses: actions\/checkout@/gu) || []).length, 1);
+  assert.equal((job('build').match(/uses: actions\/checkout@/gu) || []).length, 1);
   assert(job('build').includes('ref: refs/tags/${{ env.RELEASE_TAG }}'));
   for (const command of ['npm run build:extension', 'npm run build:firefox', 'npm run check:firefox']) assert(job('build').includes(command));
   assert.equal((job('github-release').match(/gh release (?:create|upload) "\$RELEASE_TAG" "\$ZIP_NAME" "\$FIREFOX_ZIP_NAME" SHA256SUMS\.txt/gu) || []).length, 2);
@@ -70,7 +70,7 @@ test('every artifact consumer checks exact two-line digest binding and both ZIP 
   assert(!workflow.includes("printf '%s  %s\\n' \"$EXPECTED_SHA\" \"$ZIP_NAME\" | cmp -s - SHA256SUMS.txt"));
 });
 
-test('both stores remain separately opt-in, upload only Chrome ZIP and have no AMO publishing job', () => {
+test('Chrome and Edge remain opt-in and upload only the original tagged Chrome ZIP', () => {
   assert.match(workflow, /submit_stores:[\s\S]*?default: false/u);
   for (const name of ['chrome', 'edge']) {
     const body = job(name); assert(body.includes("github.event_name == 'workflow_dispatch' && inputs.submit_stores == true"));
@@ -78,5 +78,21 @@ test('both stores remain separately opt-in, upload only Chrome ZIP and have no A
     assert.equal((body.match(/--data-binary "@\$\{ZIP_NAME\}"/gu) || []).length, 1);
     assert(!body.includes('--data-binary "@${FIREFOX_ZIP_NAME}"'));
   }
-  assert(!/^  (?:amo|mozilla):/mu.test(workflow)); assert(!/web-ext sign|addons\.mozilla\.org|AMO_/u.test(workflow));
+  assert(!job('chrome').includes('AMO_JWT')); assert(!job('edge').includes('AMO_JWT'));
+});
+
+test('AMO is independently opt-in with environment secrets confined to submission and immutable source', () => {
+  const body = job('firefox'); assert(body);
+  assert.match(workflow, /submit_firefox:[\s\S]*?default: false/u);
+  assert(body.includes("github.event_name == 'workflow_dispatch' && inputs.submit_firefox == true"));
+  assert(body.includes('environment: amo-addons'));
+  assert(body.includes('inputs.firefox_source_ref || github.workflow_sha'));
+  assert(body.includes('^[a-f0-9]{40}$'));
+  assert(body.includes('prepare-firefox-amo-source.mjs'));
+  assert(body.includes('submit-firefox-amo.mjs'));
+  assert(body.includes('--source "$RUNNER_TEMP/amo-package/covelet-${RELEASE_TAG#v}-amo-source.zip"'));
+  const build = body.slice(0, body.indexOf('- name: Upload and submit Firefox to AMO'));
+  assert(!build.includes('secrets.AMO_JWT'), 'Build/install dependencies never receive signing credentials.');
+  for (const secret of ['AMO_JWT_ISSUER', 'AMO_JWT_SECRET']) assert(body.includes(secret + ': ${{ secrets.' + secret + ' }}'));
+  assert(body.includes('if: always()'));
 });
