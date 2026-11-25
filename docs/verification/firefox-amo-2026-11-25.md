@@ -6,11 +6,23 @@
 
 - `npm test`：**1,234 项通过，0 失败、0 跳过**。
 - Chrome / Firefox 正式构建、WASM 与扩展检查通过，各 57 个文件；本轮提交 Chrome/Edge 使用原 `v0.7.0` 包，不使用带新同意入口的本机重建 Chrome 包。
-- Firefox 使用 main 历史中的固定 40 位候选 SHA，版本保持 0.7.0；不移动已发布的 tag。构建和源码包均来自该精确、干净提交，不接受未提交的构建输入。
+- Firefox 使用 main 历史中的固定候选 `fb64bcd47efaf1eae115a215cfc444a302813339`，版本保持 0.7.0；不移动已发布的 tag。构建和源码包均来自该精确、干净提交，不接受未提交的构建输入。
 - 数据声明为 `required: ["none"]` 和六类 optional，搜索及所有默认 HTTP 请求在实际出站前检查当前授权；未授权、不支持或撤权均停止相应新请求。不存在全局 fetch monkeypatch。便笺原生远程图片的初次 DOM 序列化、插入、阅读和撤权均另有门禁，原文不被投影覆盖。
 - 单元回归覆盖真实 Folio/ProseMirror/React 的 image src 设置，未授权时 HTTP src 首次设置次数也为零；Chrome 不呈现此授权 UI，默认请求参数保持。
 - AMO 客户端使用固定生产 API v5 与短期 HS256 JWT，上传校验、创建或更新版本、源码及政策分步处理。同版未能绑定本候选时停止，已有源码不能绕过绑定。日志仅保留字段名或校验代码，不打印原始响应、URL、凭据或 JWT。
 - CI 在提交步骤才注入 Mozilla 密钥。原始候选、源码、metadata 与部分回执保存在 `firefox-amo-submission`；恢复核对源码 SHA 和全部输入摘要，使用原始 ZIP，不以重打包结果或签名后摘要冒充同一候选。单独提交 Firefox 不更新 GitHub Release 附件。
+
+## AMO 实时回执
+
+[提交工作流](https://github.com/MorleyZhou/Covelet/actions/runs/45558100082)及 [Firefox job](https://github.com/MorleyZhou/Covelet/actions/runs/45558100082/job/139015300775)均为 `success`。2026-11-25 14:07:15（上海时间）返回：
+
+```json
+{"result":"existing-version","addonId":3140764,"versionId":6759428,"fileStatus":"unreviewed","completed":true,"publication":"not-confirmed"}
+```
+
+`existing-version` 表示恢复并完成先前已创建、与原始候选绑定的版本；不是创建另一份 0.7.0。版本、匹配源码、说明和隐私政策的提交已完成；`unreviewed` 表示待审核，不是审核通过或已公开上线。同次运行 `github-release`、`chrome`、`edge` 均跳过，未重复提交另两个商店或替换 GitHub 附件。
+
+生产 API 返回的上传标识为 32 位十六进制，提交工具已兼容该格式及带连字符 UUID。遇到 HTTP 429 时按 `Retry-After` 有界退避，保留上传标识和候选摘要后恢复，避免重复创建版本。两项修正仅涉及提交工具和 CI，不改变已锁定的产品候选。提交工具、源码准备和工作流定向测试 **47 项通过**；修正后 main 的 `npm test` **1,247 项通过，0 失败、0 跳过**。候选提交时的产品构建与 1,234 项测试结果保持上述记录。
 
 ## 实际 Firefox 同意机制
 
