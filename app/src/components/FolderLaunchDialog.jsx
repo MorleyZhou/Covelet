@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { formatNumber, tr } from '../i18n/index.js';
 import { folderLaunchSites, launchFolderSites, MAX_FOLDER_LAUNCH } from '../lib/folder-launch.js';
+import { getExtensionApi } from '../lib/extension-api.js';
 import { Button } from './ui/button.jsx';
 import { Checkbox } from './ui/checkbox.jsx';
 import './folder-launch.css';
@@ -31,7 +32,7 @@ export default function FolderLaunchDialog({ Dialog, folderId, entries, hiddenKe
     opening.current = true;
     setBusy(true);
     setError('');
-    const { opened, failed } = await launchFolderSites(selection, (tab) => chrome.tabs.create(tab),
+    const { opened, failed } = await launchFolderSites(selection, (tab) => getExtensionApi().tabs.create(tab),
       (site) => currentChoices.current.some(({ id, url }) => id === site.id && url === site.url));
     opening.current = false;
     setBusy(false);

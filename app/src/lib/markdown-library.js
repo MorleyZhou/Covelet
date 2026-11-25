@@ -8,6 +8,7 @@ import { privateContentKeys } from './presentation.js';
 import { desktopPageName } from './desktop-pages.js';
 import { NOTE_LIMITS, validateNoteDocument } from './note-document.js';
 import { sameJson } from './json-equal.js';
+import { loadReadingLibrary, readingArticleMarkdown } from './reading-library.js';
 
 export const MARKDOWN_LIBRARY_LIMITS = Object.freeze({ files: 2701, fileBytes: 512 * 1024, expandedBytes: 80 * 1024 * 1024, archiveBytes: 30 * 1024 * 1024 });
 const TYPES = ['site', 'reading', 'note'], DIRECTORIES = { site: 'sites', reading: 'reading', note: 'notes' };
@@ -29,13 +30,13 @@ async function withSnapshot(action) {
   if (!locks?.request) fail('浏览器无法锁定本机内容，请重试。', 'LOCK_UNAVAILABLE');
   return locks.request('owntab.local.write.v1', { mode: 'exclusive' }, () => withNavigationPrivacy((preferences) =>
     locks.request('covelet.tools.v1', { mode: 'exclusive' }, async () => {
-      const [navigation, tools] = await Promise.all([loadState(), loadPersonalToolsSnapshot()]);
-      const snapshot = { navigation, tools, preferences: structuredClone(preferences) };
+      const [navigation, tools, readingLibrary] = await Promise.all([loadState(), loadPersonalToolsSnapshot(), loadReadingLibrary()]);
+      const snapshot = { navigation, tools, readingLibrary, preferences: structuredClone(preferences) };
       const result = await action(snapshot);
-      const [nextNavigation, nextTools, nextPreferences] = await Promise.all([loadState(), loadPersonalToolsSnapshot(), loadContentPreferences()]);
+      const [nextNavigation, nextTools, nextPreferences, nextReadingLibrary] = await Promise.all([loadState(), loadPersonalToolsSnapshot(), loadContentPreferences(), loadReadingLibrary()]);
       // Full canonical comparisons catch replacement/sync with recycled numeric
       // revisions as well as ordinary edits and changes to privacy inheritance.
-      if (!sameJson(navigation, nextNavigation) || !sameJson(tools, nextTools) || !sameJson(preferences, nextPreferences)) conflict();
+      if (!sameJson(navigation, nextNavigation) || !sameJson(tools, nextTools) || !sameJson(preferences, nextPreferences) || !sameJson(readingLibrary, nextReadingLibrary)) conflict();
       return result;
     })));
 }
@@ -134,6 +135,7 @@ function markdownFile(item) {
   if (item.record.url) body += `[${inline(item.record.url)}](<${item.record.url.replace(/</gu, '%3C').replace(/>/gu, '%3E')}>)\n\n`;
   if (item.metadata.description) body += `${paragraph(item.metadata.description)}\n\n`;
   if (item.type === 'note') body += noteMarkdown(item.record);
+  if (item.type === 'reading' && item.article) body += readingArticleMarkdown(item.article);
   return `---\n${Object.entries(properties).map(([key, value]) => `${key}: ${yaml(value)}`).join('\n')}\n---\n\n${body}${body.endsWith('\n') ? '' : '\n'}`;
 }
 function indexMarkdown(items) {
@@ -181,6 +183,10 @@ export async function inspectMarkdownLibrary(options = {}) {
         ...(record.parentId ? [folders.get(record.parentId).name] : [])] : [];
       const title = type === 'site' ? record.name : record.title;
       const item = { key, type, title, record, metadata, tagNames: tags, path, filename: `${DIRECTORIES[type]}/${exportName(title, used[type])}` };
+      if (type === 'reading') {
+        const article = snapshot.readingLibrary.articles[record.id];
+        if (article?.url === record.url) item.article = article;
+      }
       let bytes = null, issue;
       try {
         bytes = encoder.encode(markdownFile(item));
@@ -218,5 +224,23 @@ export async function exportMarkdownLibrary(plan, options = {}) {
     const bytes = zipSync(archive, { level: 6 });
     if (bytes.length > MARKDOWN_LIBRARY_LIMITS.archiveBytes) throw Object.assign(Error(limitIssue().message), { code: 'MARKDOWN_LIBRARY_LIMIT' });
     return { blob: new Blob([bytes], { type: 'application/zip' }), filename: 'Covelet-library.zip', count: items.length };
+  });
+}
+
+// A reader's explicit export uses the same locked privacy boundary as the
+// library. Hidden entries never reach the serializer, even after unlocking.
+export async function exportReadingMarkdown(id, { expectedReadingRevision, expectedArticleRevision, expectedPreferencesRevision } = {}) {
+  return withSnapshot((snapshot) => {
+    const { tools, navigation, preferences, readingLibrary } = snapshot;
+    if (typeof id !== 'string' || privateContentKeys(navigation, preferences).has(`reading:${id}`)) fail('请选择有效的导出条目。', 'MARKDOWN_LIBRARY_SELECTION');
+    const record = tools.reading.find((item) => item.id === id);
+    const article = readingLibrary.articles[id]?.url === record?.url ? readingLibrary.articles[id] : undefined;
+    if (!record || record.revision !== expectedReadingRevision || preferences.revision !== expectedPreferencesRevision
+      || article?.revision !== expectedArticleRevision) conflict();
+    const metadata = preferences.library?.items[`reading:${id}`] || { description: '', tagIds: [] };
+    const tagNames = (preferences.library?.tags || []).filter((tag) => metadata.tagIds.includes(tag.id)).map((tag) => tag.name);
+    const bytes = encoder.encode(markdownFile({ type: 'reading', title: record.title, record, article, metadata, tagNames, path: [] }));
+    if (bytes.length > MARKDOWN_LIBRARY_LIMITS.fileBytes) throw Object.assign(Error(limitIssue().message), { code: 'MARKDOWN_LIBRARY_LIMIT' });
+    return { blob: new Blob([bytes], { type: 'text/markdown;charset=utf-8' }), filename: exportName(record.title, new Set()) };
   });
 }

@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { loadPersonalTools, subscribePersonalTools } from './personal-tools.js';
 import { loadToolsCore } from './tools-core.js';
+import { loadReadingLibrary, subscribeReadingLibrary } from './reading-library.js';
 
 export default function usePersonalTools({ loadCore = true } = {}) {
   const [data, setData] = useState(null), [core, setCore] = useState(null), [error, setError] = useState('');
+  const [readingLibrary, setReadingLibrary] = useState(null);
   useEffect(() => {
     let active = true;
     const receive = (next) => { if (active) setData((current) => current?.revision > next.revision ? current : next); };
@@ -11,5 +13,15 @@ export default function usePersonalTools({ loadCore = true } = {}) {
     Promise.all([loadPersonalTools(), loadCore ? loadToolsCore() : null]).then(([value, kernel]) => { receive(value); if (active) setCore(kernel); }).catch((reason) => { if (active) setError(reason.message); });
     return () => { active = false; off(); };
   }, [loadCore]);
-  return { data, core, error };
+  useEffect(() => {
+    let active = true;
+    const receive = (next) => { if (active) setReadingLibrary((current) => current?.revision > next.revision ? current : next); };
+    const off = subscribeReadingLibrary(receive);
+    loadReadingLibrary().then(receive).catch((reason) => { if (active) setError(reason.message); });
+    return () => { active = false; off(); };
+  }, []);
+  // Enrich only the view model. Portable tool records keep their established
+  // schema and never include device-only reader material.
+  const presented = useMemo(() => data ? { ...data, readingLibrary } : data, [data, readingLibrary]);
+  return { data: presented, core, error };
 }

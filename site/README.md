@@ -29,8 +29,9 @@ The retained design uses white, black borders, hard shadows, large radii and
 `#B9FF66`. Both SVG assets remain unchanged. Copy puts everyday navigation,
 search and notes before data storage, optional sync and backup. Keep setup steps,
 connection-test limits and export exclusions in the extension's contextual help.
-The page retains the overall sync Beta label, explains local/remote version choice,
-and discloses unencrypted backups and hidden content.
+The page retains the overall sync Beta label and explains record-level conflict
+previews and merges. It distinguishes unencrypted JSON/ZIP exports from
+password-encrypted .covelet backups and discloses possible hidden content.
 
 For updates, check all eight dictionaries against the HTML bindings, preserve
 the Chrome/Edge destination URLs, and verify desktop/narrow layouts and language

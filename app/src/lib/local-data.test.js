@@ -231,6 +231,26 @@ test('full sync discovers future namespaces after restart, transfers Blob bytes 
   await source.close(); await reopened.close(); await destination.close();
 });
 
+test('encrypted reader, RSS and browser sessions stay local across outbound snapshots and inbound replacements', async () => {
+  const storage = fixture();
+  const values = { 'covelet.reading-library.v1': { privateBody: 'local-reader-sensitive-text' },
+    'covelet.rss.inbox.v1': { feeds: ['https://feed.example.test/private?token=never-upload'] },
+    'covelet.browser-sessions.v1': { version: 1, revision: 1, sessions: [{ id: 'private-session', revision: 1, title: 'Device session', createdAt: 1, updatedAt: 1,
+      tabs: [{ url: 'https://session.example.test/private?token=never-upload', title: 'Private tab title', pinned: false }] }] } };
+  await storage.localData.set(values);
+  assert.equal(JSON.stringify([...storage.backend.records.values()]).includes('local-reader-sensitive-text'), false);
+  assert.equal(JSON.stringify([...storage.backend.records.values()]).includes('session.example.test'), false);
+  const before = await storage.syncDataStore.snapshot();
+  assert.equal(before.records.length, 0);
+  await storage.syncDataStore.apply({ version: 1, records: [] }, { expectedToken: before.token });
+  assert.deepEqual(await storage.localData.get(Object.keys(values)), values);
+  for (const key of Object.keys(values)) {
+    await assert.rejects(storage.syncDataStore.apply({ version: 1, records: [{ namespace: 'preferences', key, value: { injected: true } }] }, { expectedToken: before.token }), { code: 'LOCAL_DATA_INVALID' });
+  }
+  assert.deepEqual(await storage.localData.get(Object.keys(values)), values);
+  await storage.close();
+});
+
 test('full sync CAS, complete validation and a failed atomic commit preserve all existing namespaces', async () => {
   const storage = fixture(); await storage.localData.set({ 'covelet.future': { keep: true } });
   await storage.createEncryptedStore('future-images').set('same', new Blob(['old']));

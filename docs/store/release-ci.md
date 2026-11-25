@@ -1,6 +1,6 @@
 # GitHub 发布与可选商店提交 CI
 
-推送 `v*` tag 会构建 ZIP、生成校验文件并创建或更新 GitHub Release。商店送审由手动运行 `workflow_dispatch` 并显式设置 **`submit_stores=true`** 触发，默认值为 `false`。
+推送 `v*` tag 会从同一源码构建 Chrome/Edge 与 Firefox 两份 ZIP、生成双文件校验清单，并创建或更新 GitHub Release。Chrome/Edge 商店送审由手动运行 `workflow_dispatch` 并显式设置 **`submit_stores=true`** 触发，默认值为 `false`。此工作流不上传或提交 Mozilla AMO。
 
 工作流：[release-stores.yml](../../.github/workflows/release-stores.yml)，Actions 名称为 **GitHub release and optional store submission**。审核通过后的上线时间由商店决定；CI 成功不代表商店已上线。
 
@@ -44,23 +44,32 @@ Edge 使用 **Add-ons API v1.1 API key**，请求头为 `Authorization: ApiKey .
 ## 发布一个版本
 
 1. 将 `app/package.json` 和 `app/extension.manifest.json` 的版本同时改为 `X.Y.Z`，按需更新 `app/package-lock.json` 的版本元数据，并编写 `docs/releases/X.Y.Z.md`；提交并确保提交已在远端。
-2. 在目标提交上创建并推送 annotated tag（例如 `v0.3.0`）：
+2. 在目标提交上创建并推送 annotated tag（例如 `v0.7.0`）：
 
    ```bash
    git tag -a vX.Y.Z -m "Release vX.Y.Z"
    git push origin vX.Y.Z
    ```
 
-3. 在 GitHub Actions 查看 **GitHub release and optional store submission**，核对 GitHub Release 附件与校验结果。tag 运行中的两个商店 job 应跳过。
+3. 在 GitHub Actions 查看 **GitHub release and optional store submission**，核对 GitHub Release 的 Chrome/Edge ZIP、Firefox ZIP 和校验文件。tag 运行中的两个商店 job 应跳过。
 
-构建 job 精确检出 tag，使用 Node.js 22 和 `npm ci`，执行 `build:extension` 及存在时的 `check:extension`。tag 必须是 `vX.Y.Z`，去掉 `v` 后必须与 package、源 manifest 以及 `app/dist/extension/manifest.json` 的版本一致，否则终止。
+构建 job 只检出一次指定 tag，使用 Node.js 22 和一次 `npm ci`，依次执行 Chrome 的 `build:extension` / `check:extension` 和 Firefox 的 `build:firefox` / `check:firefox`。两份包来自同一次 tag 检出，不分别取分支最新源码。tag 必须是 `vX.Y.Z`；去掉 `v` 后必须与 package、lockfile 及其根 package、源 manifest、两份构建 manifest 的版本一致，否则终止。
 
-工作流只分发本次构建的 `app/dist/covelet-X.Y.Z.zip`：计算 SHA256 后，将 ZIP、`SHA256SUMS.txt` 和 release notes 上传 Actions artifact。GitHub 发布及显式开启的商店 job 下载并校验同一 ZIP。发布正文读取 `docs/releases/X.Y.Z.md`，附上包名与 SHA256；缺少该说明时构建失败。GitHub Release 附件包含 ZIP 和 `SHA256SUMS.txt`；已存在则覆盖同名附件并更新正文。无需手动准备或上传 ZIP，也无需外部 ZIP 地址或固定校验值。不要将 ZIP 提交进 git。
+工作流分发本次构建的两份产物：
 
-只有手动运行并设置 `submit_stores=true` 时，GitHub Release 成功后才会运行 Chrome 与 Edge job；启用 Required reviewers 时还需批准对应环境。两个商店独立运行：Chrome 上传成功才提交，异步上传会轮询 `fetchStatus`；Edge 上传和提交都根据 `Location` 中的 operation ID 轮询，必须得到 `Succeeded`。网络、HTTP、处理失败、未知状态或轮询超时都会使对应 job 失败，不能视为成功提交。一个商店失败不阻止另一个商店提交，也不会撤销已创建的 GitHub Release。全流程使用 `release-stores` concurrency group，不取消正在执行的发布。
+| 产物 | 构建目录 | 用途 |
+| --- | --- | --- |
+| `covelet-X.Y.Z.zip` | `app/dist/extension` | Chrome / Edge；可用于两个现有商店 |
+| `covelet-X.Y.Z-firefox.zip` | `app/dist/extension-firefox` | Firefox 兼容性包；当前没有 AMO 签名，不表示可直接从 AMO 安装 |
+
+构建 job 分别计算 SHA256，将两份 ZIP、恰好两行的 `SHA256SUMS.txt` 和 release notes 上传同一个 Actions artifact。GitHub 发布及显式开启的两个商店 job 都下载该同一 artifact，将清单与本次构建输出的两组文件名/摘要逐行比较，再校验两份 ZIP 的实际摘要和包内 manifest。文件名必须对应同一 tag 版本，Chrome 包必须使用模块 service worker，Firefox 包必须使用模块后台脚本和固定 Gecko ID；单行旧清单、缺包、错版本或混用浏览器包都会停止发布。
+
+发布正文读取 `docs/releases/X.Y.Z.md`，附上两份包名与各自 SHA256；缺少说明时构建失败。GitHub Release 附件为两份 ZIP 与 `SHA256SUMS.txt`；已存在则覆盖同名附件并更新正文。无需手动准备或上传 ZIP，也无需外部 ZIP 地址或固定校验值。不要将 ZIP 提交进 git。Firefox 的 AMO 数据传输声明、签名与分发边界参见 [Firefox 兼容性结论](../firefox-compatibility.md)。
+
+只有手动运行并设置 `submit_stores=true` 时，GitHub Release 成功后才会运行 Chrome 与 Edge job；启用 Required reviewers 时还需批准对应环境。两个商店完成双文件验证后，**只上传 `covelet-X.Y.Z.zip`**，不会把 Firefox 包提交给 Chrome/Edge，也没有 AMO 上传步骤。两个商店独立运行：Chrome 上传成功才提交，异步上传会轮询 `fetchStatus`；Edge 上传和提交都根据 `Location` 中的 operation ID 轮询，必须得到 `Succeeded`。网络、HTTP、处理失败、未知状态或轮询超时都会使对应 job 失败，不能视为成功提交。一个商店失败不阻止另一个商店提交，也不会撤销已创建的 GitHub Release。全流程使用 `release-stores` concurrency group，不取消正在执行的发布。
 
 ## 手动重跑
 
-在 **Actions → GitHub release and optional store submission → Run workflow** 选择包含此工作流的分支，填写必需输入 **`tag`**（例如 `v0.3.0`），并保持 **`submit_stores=false`** 即可只重建和更新 GitHub Release。只有另行明确决定提交两个商店时才设为 `true`。即使选的是工作流分支，构建代码仍会精确检出输入的 tag，而不是分支最新提交。该工作流需要先合入默认分支，GitHub 才会提供手动运行入口。
+在 **Actions → GitHub release and optional store submission → Run workflow** 选择包含此工作流的分支，填写必需输入 **`tag`**（例如 `v0.7.0`），并保持 **`submit_stores=false`** 即可只重建和更新 GitHub Release 的双浏览器附件。只有另行明确决定提交两个商店时才设为 `true`。即使选的是工作流分支，构建代码仍会精确检出输入的 tag，而不是分支最新提交。该工作流需要先合入默认分支，GitHub 才会提供手动运行入口。
 
 手动重跑会重新构建并覆盖 GitHub Release 的同名附件和正文。**设置 `submit_stores=true` 会再次提交两个商店**，不会自动跳过已成功的商店；商店可能拒绝重复版本或正在审核中的提交，错误会直接失败。需要只重试失败的商店时，可在同一次已开启商店提交的运行中使用 GitHub 的 **Re-run failed jobs**，复用该运行仍未过期的 artifact。

@@ -1,4 +1,5 @@
 import { tr } from '../i18n/index.js';
+import { getExtensionApi } from './extension-api.js';
 
 export const SCHEDULED_BACKUP_ALARM = 'covelet:backup:due';
 const RUN = 'covelet:backup:run', REFRESH = 'covelet:backup:refresh';
@@ -28,7 +29,7 @@ function publicStatus(value) {
 // Register synchronously when the MV3 module starts. The initialization promise
 // gates work, never listener installation, so an event waking a fresh worker is
 // retained. Scheduler methods persist their own failure state before rejecting.
-export function startScheduledBackupBackground(controller, { extension = globalThis.chrome, ready = Promise.resolve(),
+export function startScheduledBackupBackground(controller, { extension = getExtensionApi(), ready = Promise.resolve(),
   reportError = ({ operation, code }) => console.error('Covelet scheduled backup worker failure', operation, code) } = {}) {
   let stopped = false, restoration;
   const report = (operation, cause) => {

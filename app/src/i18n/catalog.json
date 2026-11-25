@@ -19183,5 +19183,1355 @@
     "de": "Die Notiz oder ihr Verlauf wurde in einem anderen Tab geändert. Den Verlauf erneut öffnen.",
     "fr": "La note ou son historique a été modifié dans un autre onglet. Rouvrez l’historique.",
     "ru": "Заметка или её история изменена в другой вкладке. Откройте историю заново."
+  },
+  "阅读": {
+    "en": "Read",
+    "zh-TW": "閱讀",
+    "ja": "読む",
+    "ko": "읽기",
+    "de": "Lesen",
+    "fr": "Lire",
+    "ru": "Читать"
+  },
+  "打开原网页": {
+    "en": "Open original page",
+    "zh-TW": "開啟原網頁",
+    "ja": "元のページを開く",
+    "ko": "원본 웹페이지 열기",
+    "de": "Originalseite öffnen",
+    "fr": "Ouvrir la page d’origine",
+    "ru": "Открыть исходную страницу"
+  },
+  "字号": {
+    "en": "Text size",
+    "zh-TW": "字級",
+    "ja": "文字サイズ",
+    "ko": "글자 크기",
+    "de": "Textgröße",
+    "fr": "Taille du texte",
+    "ru": "Размер текста"
+  },
+  "行距": {
+    "en": "Line spacing",
+    "zh-TW": "行距",
+    "ja": "行間",
+    "ko": "줄 간격",
+    "de": "Zeilenabstand",
+    "fr": "Interligne",
+    "ru": "Межстрочный интервал"
+  },
+  "阅读外观": {
+    "en": "Reading appearance",
+    "zh-TW": "閱讀外觀",
+    "ja": "読書の表示設定",
+    "ko": "읽기 모양",
+    "de": "Leseansicht",
+    "fr": "Apparence de lecture",
+    "ru": "Оформление чтения"
+  },
+  "尚未授权读取此网页，请授权后重试。": {
+    "en": "Access to this page has not been granted. Allow access and try again.",
+    "zh-TW": "尚未授權讀取此網頁，請授權後重試。",
+    "ja": "このページへのアクセスが許可されていません。許可して再試行してください。",
+    "ko": "이 웹페이지에 대한 접근이 허용되지 않았습니다. 허용한 후 다시 시도하세요.",
+    "de": "Der Zugriff auf diese Seite wurde noch nicht erlaubt. Zugriff erlauben und erneut versuchen.",
+    "fr": "L’accès à cette page n’a pas été autorisé. Autorisez-le et réessayez.",
+    "ru": "Доступ к этой странице не разрешён. Разрешите доступ и повторите попытку."
+  },
+  "图片未能加载，请重试。": {
+    "en": "The image could not be loaded. Try again.",
+    "zh-TW": "圖片未能載入，請重試。",
+    "ja": "画像を読み込めませんでした。再試行してください。",
+    "ko": "이미지를 불러오지 못했습니다. 다시 시도하세요.",
+    "de": "Das Bild konnte nicht geladen werden. Erneut versuchen.",
+    "fr": "L’image n’a pas pu être chargée. Réessayez.",
+    "ru": "Не удалось загрузить изображение. Повторите попытку."
+  },
+  "正在加载图片…": {
+    "en": "Loading image…",
+    "zh-TW": "正在載入圖片…",
+    "ja": "画像を読み込み中…",
+    "ko": "이미지 불러오는 중…",
+    "de": "Bild wird geladen…",
+    "fr": "Chargement de l’image…",
+    "ru": "Загрузка изображения…"
+  },
+  "点击加载图片": {
+    "en": "Click to load image",
+    "zh-TW": "點擊載入圖片",
+    "ja": "クリックして画像を読み込む",
+    "ko": "클릭하여 이미지 불러오기",
+    "de": "Bild per Klick laden",
+    "fr": "Cliquer pour charger l’image",
+    "ru": "Нажмите, чтобы загрузить изображение"
+  },
+  "阅读内容未能保存，请重试。": {
+    "en": "Reading content could not be saved. Try again.",
+    "zh-TW": "閱讀內容未能儲存，請重試。",
+    "ja": "読書の内容を保存できませんでした。再試行してください。",
+    "ko": "읽기 콘텐츠를 저장하지 못했습니다. 다시 시도하세요.",
+    "de": "Der Leseinhalt konnte nicht gespeichert werden. Erneut versuchen.",
+    "fr": "Le contenu de lecture n’a pas pu être enregistré. Réessayez.",
+    "ru": "Не удалось сохранить содержимое для чтения. Повторите попытку."
+  },
+  "未能提取正文，链接仍保留。可打开原网页阅读。": {
+    "en": "Could not extract the article. The link is kept. Open the original page to read it.",
+    "zh-TW": "未能擷取正文，連結仍保留。可開啟原網頁閱讀。",
+    "ja": "本文を抽出できませんでした。リンクは保持されています。元のページで読むことができます。",
+    "ko": "본문을 추출하지 못했습니다. 링크는 유지됩니다. 원본 웹페이지에서 읽을 수 있습니다.",
+    "de": "Der Artikel konnte nicht extrahiert werden. Der Link bleibt erhalten. Zum Lesen die Originalseite öffnen.",
+    "fr": "Impossible d’extraire l’article. Le lien est conservé. Ouvrez la page d’origine pour le lire.",
+    "ru": "Не удалось извлечь статью. Ссылка сохранена. Для чтения откройте исходную страницу."
+  },
+  "所选文字过长，请缩小范围。": {
+    "en": "The selected text is too long. Select a shorter passage.",
+    "zh-TW": "所選文字過長，請縮小範圍。",
+    "ja": "選択したテキストが長すぎます。範囲を狭めてください。",
+    "ko": "선택한 텍스트가 너무 깁니다. 더 짧은 구절을 선택하세요.",
+    "de": "Der ausgewählte Text ist zu lang. Eine kürzere Passage auswählen.",
+    "fr": "Le texte sélectionné est trop long. Sélectionnez un passage plus court.",
+    "ru": "Выбранный текст слишком длинный. Выберите меньший фрагмент."
+  },
+  "正在读取本机正文…": {
+    "en": "Loading the saved article…",
+    "zh-TW": "正在讀取本機正文…",
+    "ja": "保存済みの本文を読み込み中…",
+    "ko": "저장된 본문 불러오는 중…",
+    "de": "Gespeicherter Artikel wird geladen…",
+    "fr": "Chargement de l’article enregistré…",
+    "ru": "Загрузка сохранённой статьи…"
+  },
+  "此链接尚未保存正文。": {
+    "en": "No article text is saved for this link yet.",
+    "zh-TW": "此連結尚未儲存正文。",
+    "ja": "このリンクの本文はまだ保存されていません。",
+    "ko": "이 링크의 본문이 아직 저장되지 않았습니다.",
+    "de": "Für diesen Link ist noch kein Artikeltext gespeichert.",
+    "fr": "Aucun texte n’est encore enregistré pour ce lien.",
+    "ru": "Текст этой статьи ещё не сохранён."
+  },
+  "正在提取正文…": {
+    "en": "Extracting article…",
+    "zh-TW": "正在擷取正文…",
+    "ja": "本文を抽出中…",
+    "ko": "본문 추출 중…",
+    "de": "Artikel wird extrahiert…",
+    "fr": "Extraction de l’article…",
+    "ru": "Извлечение статьи…"
+  },
+  "提取正文": {
+    "en": "Save article text",
+    "zh-TW": "擷取正文",
+    "ja": "本文を保存",
+    "ko": "본문 저장",
+    "de": "Artikeltext speichern",
+    "fr": "Enregistrer le texte",
+    "ru": "Сохранить текст статьи"
+  },
+  "只在你点击后读取原网页，并把正文保存到本机。": {
+    "en": "Only reads the original page when you click and saves the article on this device.",
+    "zh-TW": "僅在你點擊後讀取原網頁，並將正文儲存到本機。",
+    "ja": "クリックしたときだけ元のページを読み込み、本文をこの端末に保存します。",
+    "ko": "클릭한 경우에만 원본 웹페이지를 읽고 본문을 이 기기에 저장합니다.",
+    "de": "Liest die Originalseite erst nach einem Klick und speichert den Artikel auf diesem Gerät.",
+    "fr": "Lit la page d’origine uniquement après votre clic et enregistre l’article sur cet appareil.",
+    "ru": "Читает исходную страницу только после нажатия и сохраняет статью на устройстве."
+  },
+  "重新提取正文": {
+    "en": "Refresh article text",
+    "zh-TW": "重新擷取正文",
+    "ja": "本文を再取得",
+    "ko": "본문 다시 가져오기",
+    "de": "Artikeltext erneut laden",
+    "fr": "Actualiser le texte",
+    "ru": "Обновить текст статьи"
+  },
+  "高亮与批注": {
+    "en": "Highlights and notes",
+    "zh-TW": "螢光標記與批註",
+    "ja": "ハイライトとメモ",
+    "ko": "강조 표시 및 메모",
+    "de": "Markierungen und Notizen",
+    "fr": "Surlignages et notes",
+    "ru": "Выделения и заметки"
+  },
+  "批注": {
+    "en": "Note",
+    "zh-TW": "批註",
+    "ja": "メモ",
+    "ko": "메모",
+    "de": "Notiz",
+    "fr": "Note",
+    "ru": "Заметка"
+  },
+  "这条批注已更新，请重新选择。": {
+    "en": "This note has changed. Select it again.",
+    "zh-TW": "這則批註已更新，請重新選擇。",
+    "ja": "このメモは更新されました。選び直してください。",
+    "ko": "이 메모가 변경되었습니다. 다시 선택하세요.",
+    "de": "Diese Notiz wurde geändert. Erneut auswählen.",
+    "fr": "Cette note a été modifiée. Sélectionnez-la à nouveau.",
+    "ru": "Эта заметка изменилась. Выберите её заново."
+  },
+  "保存批注": {
+    "en": "Save note",
+    "zh-TW": "儲存批註",
+    "ja": "メモを保存",
+    "ko": "메모 저장",
+    "de": "Notiz speichern",
+    "fr": "Enregistrer la note",
+    "ru": "Сохранить заметку"
+  },
+  "保存高亮": {
+    "en": "Save highlight",
+    "zh-TW": "儲存螢光標記",
+    "ja": "ハイライトを保存",
+    "ko": "강조 표시 저장",
+    "de": "Markierung speichern",
+    "fr": "Enregistrer le surlignage",
+    "ru": "Сохранить выделение"
+  },
+  "编辑批注": {
+    "en": "Edit note",
+    "zh-TW": "編輯批註",
+    "ja": "メモを編集",
+    "ko": "메모 편집",
+    "de": "Notiz bearbeiten",
+    "fr": "Modifier la note",
+    "ru": "Изменить заметку"
+  },
+  "删除高亮": {
+    "en": "Delete highlight",
+    "zh-TW": "刪除螢光標記",
+    "ja": "ハイライトを削除",
+    "ko": "강조 표시 삭제",
+    "de": "Markierung löschen",
+    "fr": "Supprimer le surlignage",
+    "ru": "Удалить выделение"
+  },
+  "批注尚未保存，放弃修改？": {
+    "en": "The note has not been saved. Discard changes?",
+    "zh-TW": "批註尚未儲存，放棄修改？",
+    "ja": "メモはまだ保存されていません。変更を破棄しますか？",
+    "ko": "메모가 저장되지 않았습니다. 변경 사항을 버릴까요?",
+    "de": "Die Notiz wurde noch nicht gespeichert. Änderungen verwerfen?",
+    "fr": "La note n’a pas été enregistrée. Abandonner les modifications ?",
+    "ru": "Заметка не сохранена. Отменить изменения?"
+  },
+  "订阅收件箱": {
+    "en": "Feed inbox",
+    "zh-TW": "訂閱收件匣",
+    "ja": "フィード受信トレイ",
+    "ko": "피드 받은편지함",
+    "de": "Feed-Posteingang",
+    "fr": "Boîte de réception des flux",
+    "ru": "Входящие подписок"
+  },
+  "订阅来源": {
+    "en": "Feed",
+    "zh-TW": "訂閱來源",
+    "ja": "フィード",
+    "ko": "피드",
+    "de": "Feed",
+    "fr": "Flux",
+    "ru": "Подписка"
+  },
+  "全部来源": {
+    "en": "All feeds",
+    "zh-TW": "全部來源",
+    "ja": "すべてのフィード",
+    "ko": "모든 피드",
+    "de": "Alle Feeds",
+    "fr": "Tous les flux",
+    "ru": "Все подписки"
+  },
+  "更新订阅": {
+    "en": "Refresh feeds",
+    "zh-TW": "更新訂閱",
+    "ja": "フィードを更新",
+    "ko": "피드 새로 고침",
+    "de": "Feeds aktualisieren",
+    "fr": "Actualiser les flux",
+    "ru": "Обновить подписки"
+  },
+  "添加订阅": {
+    "en": "Add feed",
+    "zh-TW": "新增訂閱",
+    "ja": "フィードを追加",
+    "ko": "피드 추가",
+    "de": "Feed hinzufügen",
+    "fr": "Ajouter un flux",
+    "ru": "Добавить подписку"
+  },
+  "收件箱只保存标题、摘要和链接。保存到稍后读后，可提取正文并离线阅读。": {
+    "en": "The inbox stores titles, summaries and links only. Save an item to Read Later to keep its article for offline reading.",
+    "zh-TW": "收件匣僅儲存標題、摘要和連結。儲存到稍後讀後，可擷取正文並離線閱讀。",
+    "ja": "受信トレイにはタイトル、要約、リンクだけを保存します。「あとで読む」に保存すると本文を取得してオフラインで読めます。",
+    "ko": "받은편지함에는 제목, 요약, 링크만 저장됩니다. 나중에 읽기에 저장하면 본문을 가져와 오프라인에서 읽을 수 있습니다.",
+    "de": "Der Posteingang speichert nur Titel, Zusammenfassungen und Links. Einen Eintrag unter Später lesen speichern, um den Artikel offline zu lesen.",
+    "fr": "La boîte conserve uniquement les titres, résumés et liens. Enregistrez un élément dans À lire plus tard pour conserver son article hors ligne.",
+    "ru": "Во входящих сохраняются только заголовки, описания и ссылки. Добавьте запись в «Прочитать позже», чтобы сохранить статью для чтения без сети."
+  },
+  "订阅地址": {
+    "en": "Feed URL",
+    "zh-TW": "訂閱網址",
+    "ja": "フィードURL",
+    "ko": "피드 주소",
+    "de": "Feed-URL",
+    "fr": "Adresse du flux",
+    "ru": "Адрес подписки"
+  },
+  "订阅名称": {
+    "en": "Feed name",
+    "zh-TW": "訂閱名稱",
+    "ja": "フィード名",
+    "ko": "피드 이름",
+    "de": "Feed-Name",
+    "fr": "Nom du flux",
+    "ru": "Название подписки"
+  },
+  "更新间隔": {
+    "en": "Refresh interval",
+    "zh-TW": "更新間隔",
+    "ja": "更新間隔",
+    "ko": "새로 고침 간격",
+    "de": "Aktualisierungsintervall",
+    "fr": "Intervalle d’actualisation",
+    "ru": "Интервал обновления"
+  },
+  "每 15 分钟": {
+    "en": "Every 15 minutes",
+    "zh-TW": "每 15 分鐘",
+    "ja": "15分ごと",
+    "ko": "15분마다",
+    "de": "Alle 15 Minuten",
+    "fr": "Toutes les 15 minutes",
+    "ru": "Каждые 15 минут"
+  },
+  "每小时": {
+    "en": "Hourly",
+    "zh-TW": "每小時",
+    "ja": "1時間ごと",
+    "ko": "매시간",
+    "de": "Stündlich",
+    "fr": "Toutes les heures",
+    "ru": "Каждый час"
+  },
+  "每 6 小时": {
+    "en": "Every 6 hours",
+    "zh-TW": "每 6 小時",
+    "ja": "6時間ごと",
+    "ko": "6시간마다",
+    "de": "Alle 6 Stunden",
+    "fr": "Toutes les 6 heures",
+    "ru": "Каждые 6 часов"
+  },
+  "只请求所填订阅地址的访问权限，并在后台按此间隔更新。": {
+    "en": "Requests access only to the entered feed address and refreshes it in the background at this interval.",
+    "zh-TW": "僅請求所填訂閱網址的存取權限，並在背景依此間隔更新。",
+    "ja": "入力したフィードのアドレスだけにアクセス許可を求め、この間隔でバックグラウンド更新します。",
+    "ko": "입력한 피드 주소에 대해서만 접근 권한을 요청하며 이 간격으로 백그라운드에서 업데이트합니다.",
+    "de": "Fordert nur Zugriff auf die eingegebene Feed-Adresse an und aktualisiert sie in diesem Intervall im Hintergrund.",
+    "fr": "Demande l’accès uniquement à l’adresse saisie et l’actualise en arrière-plan à cet intervalle.",
+    "ru": "Запрашивает доступ только к указанному адресу подписки и обновляет его в фоне с этим интервалом."
+  },
+  "订阅来源管理": {
+    "en": "Manage feeds",
+    "zh-TW": "管理訂閱來源",
+    "ja": "フィード管理",
+    "ko": "피드 관리",
+    "de": "Feeds verwalten",
+    "fr": "Gérer les flux",
+    "ru": "Управление подписками"
+  },
+  "更新": {
+    "en": "Refresh",
+    "zh-TW": "更新",
+    "ja": "更新",
+    "ko": "새로 고침",
+    "de": "Aktualisieren",
+    "fr": "Actualiser",
+    "ru": "Обновить"
+  },
+  "订阅条目": {
+    "en": "Feed items",
+    "zh-TW": "訂閱項目",
+    "ja": "フィードの記事",
+    "ko": "피드 항목",
+    "de": "Feed-Einträge",
+    "fr": "Éléments des flux",
+    "ru": "Записи подписок"
+  },
+  "保存并阅读": {
+    "en": "Save and read",
+    "zh-TW": "儲存並閱讀",
+    "ja": "保存して読む",
+    "ko": "저장하고 읽기",
+    "de": "Speichern und lesen",
+    "fr": "Enregistrer et lire",
+    "ru": "Сохранить и прочитать"
+  },
+  "收件箱为空": {
+    "en": "The inbox is empty",
+    "zh-TW": "收件匣為空",
+    "ja": "受信トレイは空です",
+    "ko": "받은편지함이 비어 있습니다",
+    "de": "Der Posteingang ist leer",
+    "fr": "La boîte de réception est vide",
+    "ru": "Входящие пусты"
+  },
+  "尚未更新": {
+    "en": "Not refreshed yet",
+    "zh-TW": "尚未更新",
+    "ja": "まだ更新されていません",
+    "ko": "아직 새로 고침하지 않음",
+    "de": "Noch nicht aktualisiert",
+    "fr": "Pas encore actualisé",
+    "ru": "Ещё не обновлялось"
+  },
+  "移除订阅": {
+    "en": "Remove feed",
+    "zh-TW": "移除訂閱",
+    "ja": "フィードを削除",
+    "ko": "피드 제거",
+    "de": "Feed entfernen",
+    "fr": "Retirer le flux",
+    "ru": "Удалить подписку"
+  },
+  "移除此来源及其收件箱条目？已保存到稍后读的内容会保留。": {
+    "en": "Remove this feed and its inbox items? Content saved to Read Later is kept.",
+    "zh-TW": "移除此來源及其收件匣項目？已儲存到稍後讀的內容會保留。",
+    "ja": "このフィードと受信トレイの記事を削除しますか？「あとで読む」に保存済みの内容は保持されます。",
+    "ko": "이 피드와 받은편지함 항목을 제거할까요? 나중에 읽기에 저장한 콘텐츠는 유지됩니다.",
+    "de": "Diesen Feed und seine Posteingangseinträge entfernen? Unter Später lesen gespeicherte Inhalte bleiben erhalten.",
+    "fr": "Retirer ce flux et ses éléments ? Le contenu enregistré dans À lire plus tard est conservé.",
+    "ru": "Удалить подписку и её входящие записи? Содержимое, сохранённое в «Прочитать позже», останется."
+  },
+  "添加或更换网址时，会在授权后读取该网页并将正文保存到本机。": {
+    "en": "When adding or changing a URL, reads the page after permission is granted and saves its article on this device.",
+    "zh-TW": "新增或更換網址時，會在授權後讀取網頁並將正文儲存到本機。",
+    "ja": "URLを追加または変更すると、許可された場合にページを読み込み、本文をこの端末に保存します。",
+    "ko": "주소를 추가하거나 변경하면 권한이 허용된 경우 웹페이지를 읽고 본문을 이 기기에 저장합니다.",
+    "de": "Beim Hinzufügen oder Ändern einer URL wird die Seite nach erteilter Erlaubnis gelesen und der Artikel auf diesem Gerät gespeichert.",
+    "fr": "Lors de l’ajout ou du changement d’une adresse, lit la page après autorisation et conserve son article sur cet appareil.",
+    "ru": "При добавлении или изменении адреса после получения разрешения читает страницу и сохраняет статью на устройстве."
+  },
+  "清理已移除文章的正文": {
+    "en": "Clean up removed articles",
+    "zh-TW": "清理已移除文章的正文",
+    "ja": "削除済み記事の本文を整理",
+    "ko": "제거된 글 본문 정리",
+    "de": "Entfernte Artikel bereinigen",
+    "fr": "Nettoyer les articles retirés",
+    "ru": "Очистить удалённые статьи"
+  },
+  "清理正文": {
+    "en": "Clean up article text",
+    "zh-TW": "清理正文",
+    "ja": "本文を整理",
+    "ko": "본문 정리",
+    "de": "Artikeltext bereinigen",
+    "fr": "Nettoyer les textes",
+    "ru": "Очистить тексты"
+  },
+  "清理 {0} 篇已移除文章的本地正文和批注？仍在稍后读或回收站的内容会保留。": {
+    "en": "Remove saved text and notes for {0} removed articles? Items still in Read Later or Trash are kept.",
+    "zh-TW": "清理 {0} 篇已移除文章的本機正文與批註？仍在稍後讀或回收筒的內容會保留。",
+    "ja": "削除済みの{0}件の記事の保存本文とメモを整理しますか？「あとで読む」やゴミ箱にある内容は保持されます。",
+    "ko": "제거된 글 {0}개의 저장된 본문과 메모를 정리할까요? 나중에 읽기나 휴지통에 남아 있는 콘텐츠는 유지됩니다.",
+    "de": "Gespeicherte Texte und Notizen von {0} entfernten Artikeln löschen? Einträge unter Später lesen oder im Papierkorb bleiben erhalten.",
+    "fr": "Supprimer les textes et notes de {0} articles retirés ? Les éléments encore dans À lire plus tard ou la Corbeille sont conservés.",
+    "ru": "Удалить сохранённые тексты и заметки {0} удалённых статей? Записи в «Прочитать позже» и корзине останутся."
+  },
+  "本地阅读内容已达到容量上限，请先导出并清理内容。": {
+    "en": "Saved reading content has reached its size limit. Export and clean up content first.",
+    "zh-TW": "本機閱讀內容已達容量上限，請先匯出並清理內容。",
+    "ja": "保存済みの読書内容が容量制限に達しました。エクスポートして内容を整理してください。",
+    "ko": "저장된 읽기 콘텐츠가 용량 한도에 도달했습니다. 먼저 내보내고 콘텐츠를 정리하세요.",
+    "de": "Die gespeicherten Leseinhalte haben die Speichergrenze erreicht. Zuerst exportieren und bereinigen.",
+    "fr": "Le contenu de lecture enregistré a atteint sa limite. Exportez-le puis nettoyez-le.",
+    "ru": "Достигнут предел размера сохранённых статей. Сначала экспортируйте и очистите содержимое."
+  },
+  "阅读内容已在其他页面更新，请重新打开后重试。": {
+    "en": "Reading content changed in another tab. Reopen it and try again.",
+    "zh-TW": "閱讀內容已在其他頁面更新，請重新開啟後重試。",
+    "ja": "別のタブで読書内容が更新されました。開き直して再試行してください。",
+    "ko": "다른 탭에서 읽기 콘텐츠가 변경되었습니다. 다시 연 후 시도하세요.",
+    "de": "Der Leseinhalt wurde in einem anderen Tab geändert. Erneut öffnen und versuchen.",
+    "fr": "Le contenu a été modifié dans un autre onglet. Rouvrez-le et réessayez.",
+    "ru": "Содержимое изменено в другой вкладке. Откройте его заново и повторите попытку."
+  },
+  "网页正文已变化，现有高亮已保留。请先导出或移除高亮后重试。": {
+    "en": "The page text has changed. Existing highlights were kept. Export or remove them before trying again.",
+    "zh-TW": "網頁正文已變更，現有螢光標記已保留。請先匯出或移除標記後重試。",
+    "ja": "ページの本文が変更されています。既存のハイライトは保持しました。エクスポートするか削除してから再試行してください。",
+    "ko": "웹페이지 본문이 변경되었습니다. 기존 강조 표시는 보존되었습니다. 내보내거나 제거한 후 다시 시도하세요.",
+    "de": "Der Seitentext hat sich geändert. Vorhandene Markierungen bleiben erhalten. Vor einem neuen Versuch exportieren oder entfernen.",
+    "fr": "Le texte de la page a changé. Les surlignages sont conservés. Exportez-les ou supprimez-les avant de réessayer.",
+    "ru": "Текст страницы изменился. Выделения сохранены. Экспортируйте или удалите их перед повторной попыткой."
+  },
+  "本地阅读数据无效，原有内容已保留。": {
+    "en": "Local reading data is invalid. Existing content was kept.",
+    "zh-TW": "本機閱讀資料無效，原有內容已保留。",
+    "ja": "端末内の読書データが無効です。既存の内容は保持されています。",
+    "ko": "로컬 읽기 데이터가 잘못되었습니다. 기존 콘텐츠는 보존되었습니다.",
+    "de": "Die lokalen Lesedaten sind ungültig. Vorhandene Inhalte bleiben erhalten.",
+    "fr": "Les données de lecture locales sont invalides. Le contenu existant est conservé.",
+    "ru": "Локальные данные чтения недействительны. Существующее содержимое сохранено."
+  },
+  "请填写有效的 HTTP 或 HTTPS 订阅地址。": {
+    "en": "Enter a valid HTTP or HTTPS feed URL.",
+    "zh-TW": "請填寫有效的 HTTP 或 HTTPS 訂閱網址。",
+    "ja": "有効なHTTPまたはHTTPSのフィードURLを入力してください。",
+    "ko": "올바른 HTTP 또는 HTTPS 피드 주소를 입력하세요.",
+    "de": "Eine gültige HTTP- oder HTTPS-Feed-Adresse eingeben.",
+    "fr": "Saisissez une adresse de flux HTTP ou HTTPS valide.",
+    "ru": "Введите правильный HTTP- или HTTPS-адрес подписки."
+  },
+  "请先授权访问此订阅来源。": {
+    "en": "Allow access to this feed first.",
+    "zh-TW": "請先授權存取此訂閱來源。",
+    "ja": "先にこのフィードへのアクセスを許可してください。",
+    "ko": "먼저 이 피드에 대한 접근을 허용하세요.",
+    "de": "Zuerst den Zugriff auf diesen Feed erlauben.",
+    "fr": "Autorisez d’abord l’accès à ce flux.",
+    "ru": "Сначала разрешите доступ к этой подписке."
+  },
+  "订阅或收件箱已达到容量上限。": {
+    "en": "The feed or inbox limit has been reached.",
+    "zh-TW": "訂閱或收件匣已達容量上限。",
+    "ja": "フィードまたは受信トレイの上限に達しました。",
+    "ko": "피드 또는 받은편지함 한도에 도달했습니다.",
+    "de": "Die Grenze für Feeds oder den Posteingang wurde erreicht.",
+    "fr": "La limite des flux ou de la boîte de réception est atteinte.",
+    "ru": "Достигнут предел подписок или входящих записей."
+  },
+  "订阅内容格式无效，已有条目已保留。": {
+    "en": "The feed format is invalid. Existing items were kept.",
+    "zh-TW": "訂閱內容格式無效，已有項目已保留。",
+    "ja": "フィードの形式が無効です。既存の記事は保持されています。",
+    "ko": "피드 형식이 잘못되었습니다. 기존 항목은 보존되었습니다.",
+    "de": "Das Feed-Format ist ungültig. Vorhandene Einträge bleiben erhalten.",
+    "fr": "Le format du flux est invalide. Les éléments existants sont conservés.",
+    "ru": "Формат подписки недействителен. Существующие записи сохранены."
+  },
+  "订阅内容过大，已有条目已保留。": {
+    "en": "The feed is too large. Existing items were kept.",
+    "zh-TW": "訂閱內容過大，已有項目已保留。",
+    "ja": "フィードが大きすぎます。既存の記事は保持されています。",
+    "ko": "피드가 너무 큽니다. 기존 항목은 보존되었습니다.",
+    "de": "Der Feed ist zu groß. Vorhandene Einträge bleiben erhalten.",
+    "fr": "Le flux est trop volumineux. Les éléments existants sont conservés.",
+    "ru": "Подписка слишком велика. Существующие записи сохранены."
+  },
+  "订阅更新失败，请检查网络后重试。": {
+    "en": "The feed could not be refreshed. Check the network and try again.",
+    "zh-TW": "訂閱更新失敗，請檢查網路後重試。",
+    "ja": "フィードを更新できませんでした。ネットワークを確認して再試行してください。",
+    "ko": "피드를 새로 고치지 못했습니다. 네트워크를 확인한 후 다시 시도하세요.",
+    "de": "Der Feed konnte nicht aktualisiert werden. Netzwerk prüfen und erneut versuchen.",
+    "fr": "Impossible d’actualiser le flux. Vérifiez le réseau et réessayez.",
+    "ru": "Не удалось обновить подписку. Проверьте подключение и повторите попытку."
+  },
+  "订阅更新超时，已有条目已保留。": {
+    "en": "The feed refresh timed out. Existing items were kept.",
+    "zh-TW": "訂閱更新逾時，已有項目已保留。",
+    "ja": "フィードの更新がタイムアウトしました。既存の記事は保持されています。",
+    "ko": "피드 새로 고침 시간이 초과되었습니다. 기존 항목은 보존되었습니다.",
+    "de": "Die Feed-Aktualisierung hat das Zeitlimit überschritten. Vorhandene Einträge bleiben erhalten.",
+    "fr": "L’actualisation du flux a expiré. Les éléments existants sont conservés.",
+    "ru": "Превышено время ожидания обновления. Существующие записи сохранены."
+  },
+  "订阅未能保存，请重试。": {
+    "en": "The feed could not be saved. Try again.",
+    "zh-TW": "訂閱未能儲存，請重試。",
+    "ja": "フィードを保存できませんでした。再試行してください。",
+    "ko": "피드를 저장하지 못했습니다. 다시 시도하세요.",
+    "de": "Der Feed konnte nicht gespeichert werden. Erneut versuchen.",
+    "fr": "Le flux n’a pas pu être enregistré. Réessayez.",
+    "ru": "Не удалось сохранить подписку. Повторите попытку."
+  },
+  "此订阅或条目已被移除。": {
+    "en": "This feed or item has been removed.",
+    "zh-TW": "此訂閱或項目已被移除。",
+    "ja": "このフィードまたは記事は削除されています。",
+    "ko": "이 피드나 항목이 제거되었습니다.",
+    "de": "Dieser Feed oder Eintrag wurde entfernt.",
+    "fr": "Ce flux ou cet élément a été retiré.",
+    "ru": "Эта подписка или запись удалена."
+  },
+  "此订阅来源已添加。": {
+    "en": "This feed has already been added.",
+    "zh-TW": "此訂閱來源已新增。",
+    "ja": "このフィードはすでに追加されています。",
+    "ko": "이 피드는 이미 추가되었습니다.",
+    "de": "Dieser Feed wurde bereits hinzugefügt.",
+    "fr": "Ce flux a déjà été ajouté.",
+    "ru": "Эта подписка уже добавлена."
+  },
+  "无法安排订阅更新，请稍后重试。": {
+    "en": "Cannot schedule feed updates. Try again later.",
+    "zh-TW": "無法安排訂閱更新，請稍後重試。",
+    "ja": "フィードの更新を予約できません。後で再試行してください。",
+    "ko": "피드 업데이트를 예약할 수 없습니다. 나중에 다시 시도하세요.",
+    "de": "Feed-Aktualisierungen können nicht geplant werden. Später erneut versuchen.",
+    "fr": "Impossible de planifier les mises à jour des flux. Réessayez plus tard.",
+    "ru": "Не удалось запланировать обновления подписок. Повторите попытку позже."
+  },
+  "未能加入稍后读，请重试。": {
+    "en": "Could not save to Read Later. Try again.",
+    "zh-TW": "未能加入稍後讀，請重試。",
+    "ja": "「あとで読む」に保存できませんでした。再試行してください。",
+    "ko": "나중에 읽기에 저장하지 못했습니다. 다시 시도하세요.",
+    "de": "Konnte nicht unter Später lesen gespeichert werden. Erneut versuchen.",
+    "fr": "Impossible d’enregistrer dans À lire plus tard. Réessayez.",
+    "ru": "Не удалось сохранить в «Прочитать позже». Повторите попытку."
+  },
+  "请先保存或取消当前批注。": {
+    "en": "Save or cancel the current note first.",
+    "zh-TW": "請先儲存或取消目前批註。",
+    "ja": "先に現在のメモを保存またはキャンセルしてください。",
+    "ko": "먼저 현재 메모를 저장하거나 취소하세요.",
+    "de": "Zuerst die aktuelle Notiz speichern oder abbrechen.",
+    "fr": "Enregistrez ou annulez d’abord la note actuelle.",
+    "ru": "Сначала сохраните или отмените текущую заметку."
+  },
+  "每个来源保留最近 100 条，收件箱最多 500 条；已保存到稍后读的内容不受影响。": {
+    "en": "Keeps the latest 100 items per feed and up to 500 in the inbox. Content saved to Read Later is unaffected.",
+    "zh-TW": "每個來源保留最近 100 項，收件匣最多 500 項；已儲存到稍後讀的內容不受影響。",
+    "ja": "各フィードの最新100件、受信トレイ全体で最大500件を保持します。「あとで読む」に保存済みの内容には影響しません。",
+    "ko": "피드마다 최근 100개, 받은편지함 전체에서 최대 500개 항목을 유지합니다. 나중에 읽기에 저장한 콘텐츠는 영향을 받지 않습니다.",
+    "de": "Behält die letzten 100 Einträge je Feed und bis zu 500 im Posteingang. Unter Später lesen gespeicherte Inhalte bleiben unverändert.",
+    "fr": "Conserve les 100 derniers éléments de chaque flux et jusqu’à 500 dans la boîte. Le contenu enregistré dans À lire plus tard n’est pas affecté.",
+    "ru": "Хранит 100 последних записей каждой подписки и до 500 во входящих. Содержимое в «Прочитать позже» не изменяется."
+  },
+  "移除本机正文": {
+    "en": "Remove saved article",
+    "zh-TW": "移除本機正文",
+    "ja": "保存した本文を削除",
+    "ko": "저장된 본문 제거",
+    "de": "Gespeicherten Artikel entfernen",
+    "fr": "Retirer l’article enregistré",
+    "ru": "Удалить сохранённую статью"
+  },
+  "移除正文": {
+    "en": "Remove article text",
+    "zh-TW": "移除正文",
+    "ja": "本文を削除",
+    "ko": "본문 제거",
+    "de": "Artikeltext entfernen",
+    "fr": "Retirer le texte",
+    "ru": "Удалить текст статьи"
+  },
+  "移除此链接保存的正文、高亮和批注？稍后读链接会保留，可重新提取正文。": {
+    "en": "Remove this link’s saved article, highlights and notes? The Read Later link is kept and its article can be saved again.",
+    "zh-TW": "移除此連結儲存的正文、螢光標記和批註？稍後讀連結會保留，可重新擷取正文。",
+    "ja": "このリンクの保存本文、ハイライト、メモを削除しますか？「あとで読む」のリンクは保持され、本文を再取得できます。",
+    "ko": "이 링크의 저장된 본문, 강조 표시, 메모를 제거할까요? 나중에 읽기 링크는 유지되며 본문을 다시 가져올 수 있습니다.",
+    "de": "Gespeicherten Artikel, Markierungen und Notizen dieses Links entfernen? Der Link unter Später lesen bleibt erhalten und der Artikel kann erneut geladen werden.",
+    "fr": "Retirer l’article, les surlignages et les notes enregistrés pour ce lien ? Le lien À lire plus tard est conservé et l’article pourra être enregistré à nouveau.",
+    "ru": "Удалить сохранённую статью, выделения и заметки этой ссылки? Ссылка в «Прочитать позже» останется, текст можно будет сохранить заново."
+  },
+  "内容与操作": {
+    "en": "Content and actions",
+    "zh-TW": "內容與操作",
+    "ja": "コンテンツと操作",
+    "ko": "콘텐츠 및 작업",
+    "de": "Inhalte und Aktionen",
+    "fr": "Contenu et actions",
+    "ru": "Содержимое и действия"
+  },
+  "搜索来源": {
+    "en": "Search source",
+    "zh-TW": "搜尋來源",
+    "ja": "検索元",
+    "ko": "검색 대상",
+    "de": "Suchquelle",
+    "fr": "Source de recherche",
+    "ru": "Источник поиска"
+  },
+  "打开的标签页": {
+    "en": "Open tabs",
+    "zh-TW": "開啟的分頁",
+    "ja": "開いているタブ",
+    "ko": "열린 탭",
+    "de": "Offene Tabs",
+    "fr": "Onglets ouverts",
+    "ru": "Открытые вкладки"
+  },
+  "浏览历史": {
+    "en": "Browsing history",
+    "zh-TW": "瀏覽歷史",
+    "ja": "閲覧履歴",
+    "ko": "방문 기록",
+    "de": "Browserverlauf",
+    "fr": "Historique de navigation",
+    "ru": "История посещений"
+  },
+  "浏览器书签": {
+    "en": "Browser bookmarks",
+    "zh-TW": "瀏覽器書籤",
+    "ja": "ブラウザーのブックマーク",
+    "ko": "브라우저 북마크",
+    "de": "Browser-Lesezeichen",
+    "fr": "Favoris du navigateur",
+    "ru": "Закладки браузера"
+  },
+  "本机会话": {
+    "en": "Local sessions",
+    "zh-TW": "本機工作階段",
+    "ja": "ローカルセッション",
+    "ko": "로컬 세션",
+    "de": "Lokale Sitzungen",
+    "fr": "Sessions locales",
+    "ru": "Локальные сеансы"
+  },
+  "搜索标题或网址": {
+    "en": "Search titles or URLs",
+    "zh-TW": "搜尋標題或網址",
+    "ja": "タイトルまたはURLを検索",
+    "ko": "제목 또는 URL 검색",
+    "de": "Titel oder URLs suchen",
+    "fr": "Rechercher un titre ou une URL",
+    "ru": "Поиск по заголовку или адресу"
+  },
+  "授权后可按标题和网址搜索打开的普通标签页，并切换或关闭选中的标签。": {
+    "en": "Allow access to search open regular tabs by title or URL, then switch to or close a selected tab.",
+    "zh-TW": "授權後可依標題和網址搜尋開啟的一般分頁，並切換或關閉選取的分頁。",
+    "ja": "許可すると通常のタブをタイトルやURLで検索し、選択したタブへの切り替えや閉じる操作ができます。",
+    "ko": "권한을 허용하면 열린 일반 탭을 제목과 URL로 검색하고 선택한 탭으로 전환하거나 닫을 수 있습니다.",
+    "de": "Mit Zugriff können Sie normale offene Tabs nach Titel oder URL suchen und ausgewählte Tabs wechseln oder schließen.",
+    "fr": "Autorisez l’accès pour rechercher les onglets ordinaires par titre ou URL, puis les activer ou les fermer.",
+    "ru": "Разрешите доступ для поиска обычных вкладок по заголовку или адресу, переключения на них и закрытия."
+  },
+  "授权后仅按输入词读取浏览器历史。结果不会保存或同步。": {
+    "en": "Allow access to search browser history using only your query. Results are never saved or synced.",
+    "zh-TW": "授權後僅依輸入詞讀取瀏覽器歷史。結果不會儲存或同步。",
+    "ja": "許可後は入力した語句でのみ閲覧履歴を検索します。結果は保存・同期されません。",
+    "ko": "허용 후 입력한 검색어로만 방문 기록을 읽습니다. 결과는 저장하거나 동기화하지 않습니다.",
+    "de": "Nach der Freigabe wird der Verlauf nur anhand Ihrer Suche gelesen. Ergebnisse werden weder gespeichert noch synchronisiert.",
+    "fr": "L’historique est consulté uniquement avec votre recherche. Les résultats ne sont ni enregistrés ni synchronisés.",
+    "ru": "После разрешения история читается только по вашему запросу. Результаты не сохраняются и не синхронизируются."
+  },
+  "授权后可搜索浏览器书签。不会修改书签，也不会保存或同步搜索结果。": {
+    "en": "Allow access to search browser bookmarks. Bookmarks stay unchanged, and results are never saved or synced.",
+    "zh-TW": "授權後可搜尋瀏覽器書籤。不會修改書籤，也不會儲存或同步搜尋結果。",
+    "ja": "許可するとブックマークを検索できます。ブックマークの変更や検索結果の保存・同期は行いません。",
+    "ko": "허용하면 브라우저 북마크를 검색할 수 있습니다. 북마크를 변경하거나 검색 결과를 저장·동기화하지 않습니다.",
+    "de": "Mit Zugriff können Sie Lesezeichen suchen. Sie werden nicht geändert; Suchergebnisse werden weder gespeichert noch synchronisiert.",
+    "fr": "Autorisez la recherche des favoris. Ils ne sont pas modifiés et les résultats ne sont ni enregistrés ni synchronisés.",
+    "ru": "Разрешите поиск закладок. Закладки не изменяются, результаты не сохраняются и не синхронизируются."
+  },
+  "此来源需要单独授权，只有点击下面的按钮才会申请权限。": {
+    "en": "This source needs separate permission. Permission is requested only when you click below.",
+    "zh-TW": "此來源需要個別授權，只有點擊下方按鈕才會申請權限。",
+    "ja": "この検索元には個別の許可が必要です。下のボタンを押した場合のみ許可を求めます。",
+    "ko": "이 대상은 별도 권한이 필요합니다. 아래 버튼을 클릭할 때만 권한을 요청합니다.",
+    "de": "Diese Quelle benötigt eine eigene Berechtigung. Sie wird nur über die Schaltfläche unten angefragt.",
+    "fr": "Cette source demande une autorisation distincte, uniquement après un clic sur le bouton ci-dessous.",
+    "ru": "Для этого источника нужно отдельное разрешение. Запрос появится только после нажатия кнопки ниже."
+  },
+  "授权此来源": {
+    "en": "Allow this source",
+    "zh-TW": "授權此來源",
+    "ja": "この検索元を許可",
+    "ko": "이 대상 허용",
+    "de": "Diese Quelle zulassen",
+    "fr": "Autoriser cette source",
+    "ru": "Разрешить источник"
+  },
+  "未获得浏览器访问权限，请重试授权。": {
+    "en": "Browser access was not granted. Try allowing it again.",
+    "zh-TW": "未取得瀏覽器存取權限，請重新授權。",
+    "ja": "ブラウザーへのアクセスが許可されませんでした。もう一度許可してください。",
+    "ko": "브라우저 접근이 허용되지 않았습니다. 다시 허용해 주세요.",
+    "de": "Der Browserzugriff wurde nicht erlaubt. Versuchen Sie es erneut.",
+    "fr": "L’accès au navigateur n’a pas été autorisé. Réessayez.",
+    "ru": "Доступ к браузеру не разрешён. Повторите запрос разрешения."
+  },
+  "此来源需要受支持的浏览器扩展环境。": {
+    "en": "This source requires a supported browser extension environment.",
+    "zh-TW": "此來源需要受支援的瀏覽器擴充功能環境。",
+    "ja": "この検索元には対応するブラウザー拡張機能が必要です。",
+    "ko": "이 대상은 지원되는 브라우저 확장 환경이 필요합니다.",
+    "de": "Diese Quelle benötigt eine unterstützte Browsererweiterung.",
+    "fr": "Cette source nécessite une extension dans un navigateur compatible.",
+    "ru": "Для этого источника требуется поддерживаемое расширение браузера."
+  },
+  "正在读取浏览器结果…": {
+    "en": "Loading browser results…",
+    "zh-TW": "正在讀取瀏覽器結果…",
+    "ja": "ブラウザーの結果を読み込み中…",
+    "ko": "브라우저 결과를 읽는 중…",
+    "de": "Browserergebnisse werden geladen…",
+    "fr": "Chargement des résultats du navigateur…",
+    "ru": "Загрузка результатов браузера…"
+  },
+  "浏览器搜索未完成，请重试。": {
+    "en": "Browser search did not finish. Try again.",
+    "zh-TW": "瀏覽器搜尋未完成，請重試。",
+    "ja": "ブラウザー検索が完了しませんでした。再試行してください。",
+    "ko": "브라우저 검색을 완료하지 못했습니다. 다시 시도해 주세요.",
+    "de": "Die Browsersuche wurde nicht abgeschlossen. Versuchen Sie es erneut.",
+    "fr": "La recherche du navigateur n’a pas abouti. Réessayez.",
+    "ru": "Поиск в браузере не завершён. Повторите попытку."
+  },
+  "浏览器操作未完成，请刷新后重试。": {
+    "en": "The browser action did not finish. Refresh and try again.",
+    "zh-TW": "瀏覽器操作未完成，請重新整理後重試。",
+    "ja": "ブラウザー操作が完了しませんでした。更新して再試行してください。",
+    "ko": "브라우저 작업을 완료하지 못했습니다. 새로 고친 후 다시 시도해 주세요.",
+    "de": "Die Browseraktion wurde nicht abgeschlossen. Aktualisieren Sie und versuchen Sie es erneut.",
+    "fr": "L’action du navigateur n’a pas abouti. Actualisez puis réessayez.",
+    "ru": "Действие браузера не завершено. Обновите результаты и повторите попытку."
+  },
+  "输入文字后搜索浏览历史。": {
+    "en": "Enter text to search browsing history.",
+    "zh-TW": "輸入文字後搜尋瀏覽歷史。",
+    "ja": "文字を入力して閲覧履歴を検索してください。",
+    "ko": "텍스트를 입력하여 방문 기록을 검색하세요.",
+    "de": "Geben Sie Text ein, um den Verlauf zu durchsuchen.",
+    "fr": "Saisissez du texte pour rechercher dans l’historique.",
+    "ru": "Введите текст для поиска в истории посещений."
+  },
+  "关闭标签页": {
+    "en": "Close tab",
+    "zh-TW": "關閉分頁",
+    "ja": "タブを閉じる",
+    "ko": "탭 닫기",
+    "de": "Tab schließen",
+    "fr": "Fermer l’onglet",
+    "ru": "Закрыть вкладку"
+  },
+  "关闭标签页 {0}": {
+    "en": "Close tab {0}",
+    "zh-TW": "關閉分頁 {0}",
+    "ja": "タブ「{0}」を閉じる",
+    "ko": "{0} 탭 닫기",
+    "de": "Tab {0} schließen",
+    "fr": "Fermer l’onglet {0}",
+    "ru": "Закрыть вкладку {0}"
+  },
+  "隐藏模式下不读取或显示浏览器来源和本机会话。": {
+    "en": "Browser sources and local sessions are not read or shown while hidden mode is active.",
+    "zh-TW": "隱藏模式下不會讀取或顯示瀏覽器來源與本機工作階段。",
+    "ja": "非表示モード中はブラウザーの検索元とローカルセッションを読み込み・表示しません。",
+    "ko": "숨김 모드에서는 브라우저 대상과 로컬 세션을 읽거나 표시하지 않습니다.",
+    "de": "Im Ausblendmodus werden Browserquellen und lokale Sitzungen weder gelesen noch angezeigt.",
+    "fr": "Les sources du navigateur et les sessions locales ne sont ni lues ni affichées en mode masqué.",
+    "ru": "В скрытом режиме источники браузера и локальные сеансы не читаются и не отображаются."
+  },
+  "仅保存当前普通窗口的链接，不关闭原标签。会话仅保存在此设备，不参与同步和备份。": {
+    "en": "Save links from the current regular window without closing its tabs. Sessions stay on this device and are excluded from sync and backups.",
+    "zh-TW": "僅儲存目前一般視窗的連結，不關閉原分頁。工作階段僅留在此裝置，不參與同步和備份。",
+    "ja": "現在の通常ウィンドウのリンクを、タブを閉じずに保存します。セッションはこの端末だけに保存され、同期・バックアップされません。",
+    "ko": "현재 일반 창의 링크를 탭을 닫지 않고 저장합니다. 세션은 이 기기에만 보관되며 동기화와 백업에서 제외됩니다.",
+    "de": "Speichert Links des aktuellen normalen Fensters, ohne Tabs zu schließen. Sitzungen bleiben auf diesem Gerät und sind von Synchronisierung und Sicherungen ausgeschlossen.",
+    "fr": "Enregistrez les liens de la fenêtre ordinaire sans fermer les onglets. Les sessions restent sur cet appareil, sans synchronisation ni sauvegarde.",
+    "ru": "Сохраняются ссылки текущего обычного окна без закрытия вкладок. Сеансы остаются на устройстве и не входят в синхронизацию и резервные копии."
+  },
+  "保存窗口和恢复预览需要可选的标签页权限，用于核对标题、网址和已打开的链接。": {
+    "en": "Saving a window and previewing a restore need optional tab access to check titles, URLs, and links already open.",
+    "zh-TW": "儲存視窗和預覽還原需要可選的分頁權限，以核對標題、網址和已開啟的連結。",
+    "ja": "ウィンドウの保存と復元プレビューには、タイトル・URL・開いているリンクを確認するための任意のタブ権限が必要です。",
+    "ko": "창 저장과 복원 미리보기에는 제목, URL, 이미 열린 링크를 확인할 선택적 탭 권한이 필요합니다.",
+    "de": "Zum Speichern und für die Wiederherstellungsvorschau ist optionaler Tabzugriff nötig, um Titel, URLs und bereits offene Links zu prüfen.",
+    "fr": "L’enregistrement et l’aperçu de restauration demandent l’accès facultatif aux onglets pour vérifier titres, URL et liens déjà ouverts.",
+    "ru": "Для сохранения окна и предпросмотра восстановления нужен дополнительный доступ к вкладкам: проверка заголовков, адресов и уже открытых ссылок."
+  },
+  "授权读取标签页": {
+    "en": "Allow tab access",
+    "zh-TW": "授權讀取分頁",
+    "ja": "タブの読み取りを許可",
+    "ko": "탭 읽기 허용",
+    "de": "Tabzugriff zulassen",
+    "fr": "Autoriser l’accès aux onglets",
+    "ru": "Разрешить чтение вкладок"
+  },
+  "刷新会话": {
+    "en": "Refresh sessions",
+    "zh-TW": "重新整理工作階段",
+    "ja": "セッションを更新",
+    "ko": "세션 새로 고침",
+    "de": "Sitzungen aktualisieren",
+    "fr": "Actualiser les sessions",
+    "ru": "Обновить сеансы"
+  },
+  "会话名称": {
+    "en": "Session name",
+    "zh-TW": "工作階段名稱",
+    "ja": "セッション名",
+    "ko": "세션 이름",
+    "de": "Sitzungsname",
+    "fr": "Nom de la session",
+    "ru": "Название сеанса"
+  },
+  "新的会话名称": {
+    "en": "New session name",
+    "zh-TW": "新的工作階段名稱",
+    "ja": "新しいセッション名",
+    "ko": "새 세션 이름",
+    "de": "Neuer Sitzungsname",
+    "fr": "Nouveau nom de session",
+    "ru": "Новое название сеанса"
+  },
+  "预览当前窗口": {
+    "en": "Preview current window",
+    "zh-TW": "預覽目前視窗",
+    "ja": "現在のウィンドウをプレビュー",
+    "ko": "현재 창 미리보기",
+    "de": "Aktuelles Fenster ansehen",
+    "fr": "Aperçu de la fenêtre actuelle",
+    "ru": "Предпросмотр текущего окна"
+  },
+  "重新预览窗口": {
+    "en": "Refresh window preview",
+    "zh-TW": "重新預覽視窗",
+    "ja": "ウィンドウのプレビューを更新",
+    "ko": "창 미리보기 새로 고침",
+    "de": "Fenstervorschau aktualisieren",
+    "fr": "Actualiser l’aperçu de la fenêtre",
+    "ru": "Обновить предпросмотр окна"
+  },
+  "可保存 {0} 个链接，重复 {1} 个，不支持 {2} 个。": {
+    "en": "{0} links can be saved; {1} duplicates and {2} unsupported tabs are excluded.",
+    "zh-TW": "可儲存 {0} 個連結，重複 {1} 個，不支援 {2} 個。",
+    "ja": "保存可能なリンク {0} 件、重複 {1} 件、非対応 {2} 件。",
+    "ko": "저장 가능한 링크 {0}개, 중복 {1}개, 지원되지 않는 탭 {2}개입니다.",
+    "de": "{0} Links können gespeichert werden; {1} Duplikate und {2} nicht unterstützte Tabs werden ausgelassen.",
+    "fr": "{0} liens peuvent être enregistrés ; {1} doublons et {2} onglets non pris en charge sont exclus.",
+    "ru": "Можно сохранить ссылок: {0}; дубликатов: {1}; неподдерживаемых вкладок: {2}."
+  },
+  "确认保存会话": {
+    "en": "Confirm and save session",
+    "zh-TW": "確認儲存工作階段",
+    "ja": "確認してセッションを保存",
+    "ko": "확인 후 세션 저장",
+    "de": "Sitzung bestätigen und speichern",
+    "fr": "Confirmer et enregistrer la session",
+    "ru": "Подтвердить сохранение сеанса"
+  },
+  "正在读取本机会话…": {
+    "en": "Loading local sessions…",
+    "zh-TW": "正在讀取本機工作階段…",
+    "ja": "ローカルセッションを読み込み中…",
+    "ko": "로컬 세션을 읽는 중…",
+    "de": "Lokale Sitzungen werden geladen…",
+    "fr": "Chargement des sessions locales…",
+    "ru": "Загрузка локальных сеансов…"
+  },
+  "已保存的本机会话": {
+    "en": "Saved local sessions",
+    "zh-TW": "已儲存的本機工作階段",
+    "ja": "保存済みローカルセッション",
+    "ko": "저장된 로컬 세션",
+    "de": "Gespeicherte lokale Sitzungen",
+    "fr": "Sessions locales enregistrées",
+    "ru": "Сохранённые локальные сеансы"
+  },
+  "{0} 个链接": {
+    "en": "{0} links",
+    "zh-TW": "{0} 個連結",
+    "ja": "{0} 件のリンク",
+    "ko": "링크 {0}개",
+    "de": "{0} Links",
+    "fr": "{0} liens",
+    "ru": "Ссылок: {0}"
+  },
+  "没有匹配的本机会话。": {
+    "en": "No matching local sessions.",
+    "zh-TW": "沒有符合的本機工作階段。",
+    "ja": "一致するローカルセッションはありません。",
+    "ko": "일치하는 로컬 세션이 없습니다.",
+    "de": "Keine passenden lokalen Sitzungen.",
+    "fr": "Aucune session locale correspondante.",
+    "ru": "Подходящих локальных сеансов нет."
+  },
+  "重命名": {
+    "en": "Rename",
+    "zh-TW": "重新命名",
+    "ja": "名前を変更",
+    "ko": "이름 변경",
+    "de": "Umbenennen",
+    "fr": "Renommer",
+    "ru": "Переименовать"
+  },
+  "删除本机会话": {
+    "en": "Delete local session",
+    "zh-TW": "刪除本機工作階段",
+    "ja": "ローカルセッションを削除",
+    "ko": "로컬 세션 삭제",
+    "de": "Lokale Sitzung löschen",
+    "fr": "Supprimer la session locale",
+    "ru": "Удалить локальный сеанс"
+  },
+  "删除会话“{0}”？已打开的标签页不会关闭。": {
+    "en": "Delete session “{0}”? Open tabs will stay open.",
+    "zh-TW": "刪除工作階段「{0}」？已開啟的分頁不會關閉。",
+    "ja": "セッション「{0}」を削除しますか？開いているタブは閉じません。",
+    "ko": "“{0}” 세션을 삭제할까요? 열린 탭은 닫히지 않습니다.",
+    "de": "Sitzung „{0}“ löschen? Offene Tabs bleiben geöffnet.",
+    "fr": "Supprimer la session « {0} » ? Les onglets ouverts le resteront.",
+    "ru": "Удалить сеанс «{0}»? Открытые вкладки останутся открытыми."
+  },
+  "预览恢复": {
+    "en": "Preview restore",
+    "zh-TW": "預覽還原",
+    "ja": "復元をプレビュー",
+    "ko": "복원 미리보기",
+    "de": "Wiederherstellung ansehen",
+    "fr": "Aperçu de restauration",
+    "ru": "Предпросмотр восстановления"
+  },
+  "会话恢复预览": {
+    "en": "Session restore preview",
+    "zh-TW": "工作階段還原預覽",
+    "ja": "セッション復元プレビュー",
+    "ko": "세션 복원 미리보기",
+    "de": "Vorschau der Sitzungswiederherstellung",
+    "fr": "Aperçu de restauration de session",
+    "ru": "Предпросмотр восстановления сеанса"
+  },
+  "每次最多打开 10 个后台标签。继续下一批需要再次点击，不会关闭现有标签。": {
+    "en": "Open up to 10 background tabs per batch. Click again for each next batch. Existing tabs stay open.",
+    "zh-TW": "每次最多開啟 10 個背景分頁。每批都需再次點擊，不會關閉現有分頁。",
+    "ja": "1回につき最大10個のバックグラウンドタブを開きます。次のバッチには再度クリックが必要です。既存のタブは閉じません。",
+    "ko": "한 번에 백그라운드 탭을 최대 10개 엽니다. 다음 묶음은 다시 클릭해야 하며 기존 탭은 닫지 않습니다.",
+    "de": "Pro Schritt werden bis zu 10 Hintergrund-Tabs geöffnet. Für jeden weiteren Schritt ist ein Klick nötig. Bestehende Tabs bleiben offen.",
+    "fr": "Ouvrez jusqu’à 10 onglets en arrière-plan par lot. Chaque lot suivant nécessite un clic. Les onglets existants restent ouverts.",
+    "ru": "За один раз открывается до 10 фоновых вкладок. Для каждой следующей партии нужен новый щелчок. Текущие вкладки остаются открытыми."
+  },
+  "更新恢复预览": {
+    "en": "Update restore preview",
+    "zh-TW": "更新還原預覽",
+    "ja": "復元プレビューを更新",
+    "ko": "복원 미리보기 갱신",
+    "de": "Wiederherstellungsvorschau aktualisieren",
+    "fr": "Actualiser l’aperçu de restauration",
+    "ru": "Обновить предпросмотр восстановления"
+  },
+  "确认恢复，打开第一批": {
+    "en": "Confirm restore and open first batch",
+    "zh-TW": "確認還原並開啟第一批",
+    "ja": "復元を確認して最初のバッチを開く",
+    "ko": "복원 확인 후 첫 묶음 열기",
+    "de": "Bestätigen und erste Gruppe öffnen",
+    "fr": "Confirmer et ouvrir le premier lot",
+    "ru": "Подтвердить и открыть первую партию"
+  },
+  "继续下一批": {
+    "en": "Continue with next batch",
+    "zh-TW": "繼續下一批",
+    "ja": "次のバッチを開く",
+    "ko": "다음 묶음 계속",
+    "de": "Nächste Gruppe öffnen",
+    "fr": "Ouvrir le lot suivant",
+    "ru": "Открыть следующую партию"
+  },
+  "重试失败的标签页": {
+    "en": "Retry failed tabs",
+    "zh-TW": "重試失敗的分頁",
+    "ja": "失敗したタブを再試行",
+    "ko": "실패한 탭 재시도",
+    "de": "Fehlgeschlagene Tabs erneut versuchen",
+    "fr": "Réessayer les onglets en échec",
+    "ru": "Повторить неудавшиеся вкладки"
+  },
+  "关闭恢复预览": {
+    "en": "Close restore preview",
+    "zh-TW": "關閉還原預覽",
+    "ja": "復元プレビューを閉じる",
+    "ko": "복원 미리보기 닫기",
+    "de": "Wiederherstellungsvorschau schließen",
+    "fr": "Fermer l’aperçu de restauration",
+    "ru": "Закрыть предпросмотр восстановления"
+  },
+  "会话恢复已完成。": {
+    "en": "Session restore is complete.",
+    "zh-TW": "工作階段還原已完成。",
+    "ja": "セッションの復元が完了しました。",
+    "ko": "세션 복원이 완료되었습니다.",
+    "de": "Die Sitzung wurde wiederhergestellt.",
+    "fr": "La session a été restaurée.",
+    "ru": "Сеанс восстановлен."
+  },
+  "已打开 {0}，已跳过 {1}，失败 {2}，剩余 {3}。": {
+    "en": "Opened {0}; skipped {1}; failed {2}; remaining {3}.",
+    "zh-TW": "已開啟 {0}，已略過 {1}，失敗 {2}，剩餘 {3}。",
+    "ja": "開いた件数 {0}、スキップ {1}、失敗 {2}、残り {3}。",
+    "ko": "열림 {0}, 건너뜀 {1}, 실패 {2}, 남음 {3}.",
+    "de": "Geöffnet: {0}; übersprungen: {1}; fehlgeschlagen: {2}; verbleibend: {3}.",
+    "fr": "Ouverts : {0} ; ignorés : {1} ; échecs : {2} ; restants : {3}.",
+    "ru": "Открыто: {0}; пропущено: {1}; ошибок: {2}; осталось: {3}."
+  },
+  "待打开": {
+    "en": "Pending",
+    "zh-TW": "待開啟",
+    "ja": "未処理",
+    "ko": "대기 중",
+    "de": "Ausstehend",
+    "fr": "En attente",
+    "ru": "Ожидает открытия"
+  },
+  "已打开": {
+    "en": "Opened",
+    "zh-TW": "已開啟",
+    "ja": "開きました",
+    "ko": "열림",
+    "de": "Geöffnet",
+    "fr": "Ouvert",
+    "ru": "Открыто"
+  },
+  "已存在，已跳过": {
+    "en": "Already open; skipped",
+    "zh-TW": "已存在，已略過",
+    "ja": "既に開いているためスキップ",
+    "ko": "이미 열려 있어 건너뜀",
+    "de": "Bereits offen; übersprungen",
+    "fr": "Déjà ouvert, ignoré",
+    "ru": "Уже открыто, пропущено"
+  },
+  "打开失败": {
+    "en": "Failed to open",
+    "zh-TW": "開啟失敗",
+    "ja": "開くことができませんでした",
+    "ko": "열기 실패",
+    "de": "Öffnen fehlgeschlagen",
+    "fr": "Échec de l’ouverture",
+    "ru": "Не удалось открыть"
+  },
+  "待预览": {
+    "en": "Preview needed",
+    "zh-TW": "待預覽",
+    "ja": "プレビュー待ち",
+    "ko": "미리보기 필요",
+    "de": "Vorschau nötig",
+    "fr": "Aperçu nécessaire",
+    "ru": "Нужен предпросмотр"
+  },
+  "本机会话未能读取，请重试。": {
+    "en": "Local sessions could not be read. Try again.",
+    "zh-TW": "無法讀取本機工作階段，請重試。",
+    "ja": "ローカルセッションを読み込めませんでした。再試行してください。",
+    "ko": "로컬 세션을 읽지 못했습니다. 다시 시도해 주세요.",
+    "de": "Lokale Sitzungen konnten nicht gelesen werden. Versuchen Sie es erneut.",
+    "fr": "Impossible de lire les sessions locales. Réessayez.",
+    "ru": "Не удалось прочитать локальные сеансы. Повторите попытку."
+  },
+  "本机会话操作未完成，请刷新后重试。": {
+    "en": "The local session action did not finish. Refresh and try again.",
+    "zh-TW": "本機工作階段操作未完成，請重新整理後重試。",
+    "ja": "ローカルセッションの操作が完了しませんでした。更新して再試行してください。",
+    "ko": "로컬 세션 작업을 완료하지 못했습니다. 새로 고친 후 다시 시도해 주세요.",
+    "de": "Die lokale Sitzungsaktion wurde nicht abgeschlossen. Aktualisieren Sie und versuchen Sie es erneut.",
+    "fr": "L’action sur la session locale n’a pas abouti. Actualisez puis réessayez.",
+    "ru": "Действие с локальным сеансом не завершено. Обновите и повторите попытку."
+  },
+  "本机会话已达到容量上限，请先清理不需要的会话。": {
+    "en": "Local session storage is full. Remove unneeded sessions first.",
+    "zh-TW": "本機工作階段已達容量上限，請先清理不需要的工作階段。",
+    "ja": "ローカルセッションの容量上限です。不要なセッションを削除してください。",
+    "ko": "로컬 세션 용량 한도에 도달했습니다. 불필요한 세션을 먼저 삭제하세요.",
+    "de": "Der Speicher für lokale Sitzungen ist voll. Entfernen Sie zuerst nicht benötigte Sitzungen.",
+    "fr": "Le stockage des sessions locales est plein. Supprimez d’abord les sessions inutiles.",
+    "ru": "Достигнут лимит локальных сеансов. Сначала удалите ненужные сеансы."
+  },
+  "会话或标签页已更新，请重新预览。": {
+    "en": "The session or tabs changed. Preview again.",
+    "zh-TW": "工作階段或分頁已更新，請重新預覽。",
+    "ja": "セッションまたはタブが変更されました。再度プレビューしてください。",
+    "ko": "세션 또는 탭이 변경되었습니다. 다시 미리 보세요.",
+    "de": "Sitzung oder Tabs wurden geändert. Erstellen Sie eine neue Vorschau.",
+    "fr": "La session ou les onglets ont changé. Recréez l’aperçu.",
+    "ru": "Сеанс или вкладки изменились. Повторите предпросмотр."
+  },
+  "当前窗口没有可保存的网页标签。": {
+    "en": "The current window has no web tabs to save.",
+    "zh-TW": "目前視窗沒有可儲存的網頁分頁。",
+    "ja": "現在のウィンドウに保存可能なウェブタブがありません。",
+    "ko": "현재 창에 저장할 웹 탭이 없습니다.",
+    "de": "Das aktuelle Fenster enthält keine speicherbaren Webseiten-Tabs.",
+    "fr": "La fenêtre actuelle ne contient aucun onglet web à enregistrer.",
+    "ru": "В текущем окне нет веб-вкладок для сохранения."
+  },
+  "这个会话批次正在恢复，请稍后继续。": {
+    "en": "This session batch is restoring. Continue when it finishes.",
+    "zh-TW": "這批工作階段正在還原，請稍後繼續。",
+    "ja": "このバッチを復元中です。完了してから続けてください。",
+    "ko": "이 세션 묶음을 복원 중입니다. 완료 후 계속하세요.",
+    "de": "Diese Gruppe wird wiederhergestellt. Fahren Sie danach fort.",
+    "fr": "Ce lot est en cours de restauration. Continuez une fois terminé.",
+    "ru": "Эта партия восстанавливается. Продолжите после завершения."
+  },
+  "会话预览已失效，请重新预览。": {
+    "en": "The session preview expired. Preview again.",
+    "zh-TW": "工作階段預覽已失效，請重新預覽。",
+    "ja": "セッションのプレビューが無効になりました。再度プレビューしてください。",
+    "ko": "세션 미리보기가 만료되었습니다. 다시 미리 보세요.",
+    "de": "Die Sitzungsvorschau ist abgelaufen. Erstellen Sie sie erneut.",
+    "fr": "L’aperçu de session a expiré. Recréez-le.",
+    "ru": "Предпросмотр сеанса устарел. Повторите его."
+  },
+  "当前浏览器无法读取或恢复标签会话。": {
+    "en": "This browser cannot read or restore tab sessions.",
+    "zh-TW": "目前瀏覽器無法讀取或還原分頁工作階段。",
+    "ja": "このブラウザーではタブセッションを読み込み・復元できません。",
+    "ko": "이 브라우저에서는 탭 세션을 읽거나 복원할 수 없습니다.",
+    "de": "Dieser Browser kann Tabsitzungen nicht lesen oder wiederherstellen.",
+    "fr": "Ce navigateur ne peut pas lire ni restaurer les sessions d’onglets.",
+    "ru": "Этот браузер не может читать или восстанавливать сеансы вкладок."
+  },
+  "本机会话未能保存，已有会话已保留。": {
+    "en": "The local session was not saved. Existing sessions were kept.",
+    "zh-TW": "本機工作階段未能儲存，已有工作階段已保留。",
+    "ja": "ローカルセッションを保存できませんでした。既存のセッションは保持されています。",
+    "ko": "로컬 세션을 저장하지 못했습니다. 기존 세션은 보존되었습니다.",
+    "de": "Die lokale Sitzung wurde nicht gespeichert. Bestehende Sitzungen bleiben erhalten.",
+    "fr": "La session locale n’a pas été enregistrée. Les sessions existantes sont conservées.",
+    "ru": "Локальный сеанс не сохранён. Существующие сеансы сохранены."
+  },
+  "本机会话数据无效，已有会话已保留。": {
+    "en": "Local session data is invalid. Existing sessions were kept.",
+    "zh-TW": "本機工作階段資料無效，已有工作階段已保留。",
+    "ja": "ローカルセッションのデータが無効です。既存のセッションは保持されています。",
+    "ko": "로컬 세션 데이터가 올바르지 않습니다. 기존 세션은 보존되었습니다.",
+    "de": "Die lokalen Sitzungsdaten sind ungültig. Bestehende Sitzungen bleiben erhalten.",
+    "fr": "Les données de session locale sont invalides. Les sessions existantes sont conservées.",
+    "ru": "Данные локального сеанса недействительны. Существующие сеансы сохранены."
+  },
+  "此浏览器无法提供这项功能。": {
+    "en": "This browser does not support this feature.",
+    "zh-TW": "此瀏覽器不支援這項功能。",
+    "ja": "このブラウザーはこの機能に対応していません。",
+    "ko": "이 브라우저는 이 기능을 지원하지 않습니다.",
+    "de": "Dieser Browser unterstützt diese Funktion nicht.",
+    "fr": "Ce navigateur ne prend pas en charge cette fonction.",
+    "ru": "Этот браузер не поддерживает эту функцию."
+  },
+  "请先授权读取此浏览器来源。": {
+    "en": "Allow access to this browser source first.",
+    "zh-TW": "請先授權讀取此瀏覽器來源。",
+    "ja": "先にこのブラウザー検索元へのアクセスを許可してください。",
+    "ko": "먼저 이 브라우저 대상에 대한 읽기 권한을 허용하세요.",
+    "de": "Erlauben Sie zuerst den Zugriff auf diese Browserquelle.",
+    "fr": "Autorisez d’abord l’accès à cette source du navigateur.",
+    "ru": "Сначала разрешите чтение этого источника браузера."
+  },
+  "无法在无痕或非普通窗口中使用此功能。": {
+    "en": "This feature is unavailable in private or non-regular windows.",
+    "zh-TW": "無法在無痕或非一般視窗中使用此功能。",
+    "ja": "プライベートウィンドウや通常以外のウィンドウでは使えません。",
+    "ko": "시크릿 창이나 일반 창이 아닌 창에서는 이 기능을 사용할 수 없습니다.",
+    "de": "Diese Funktion ist in privaten oder nicht normalen Fenstern nicht verfügbar.",
+    "fr": "Cette fonction est indisponible dans les fenêtres privées ou non ordinaires.",
+    "ru": "Эта функция недоступна в приватных и нестандартных окнах."
+  },
+  "标签页已变化，请刷新结果后重试。": {
+    "en": "The tab changed. Refresh results and try again.",
+    "zh-TW": "分頁已變更，請重新整理結果後重試。",
+    "ja": "タブが変更されました。結果を更新して再試行してください。",
+    "ko": "탭이 변경되었습니다. 결과를 새로 고친 후 다시 시도하세요.",
+    "de": "Der Tab wurde geändert. Aktualisieren Sie die Ergebnisse und versuchen Sie es erneut.",
+    "fr": "L’onglet a changé. Actualisez les résultats puis réessayez.",
+    "ru": "Вкладка изменилась. Обновите результаты и повторите попытку."
+  },
+  "浏览器操作未完成，请重试。": {
+    "en": "The browser action did not finish. Try again.",
+    "zh-TW": "瀏覽器操作未完成，請重試。",
+    "ja": "ブラウザー操作が完了しませんでした。再試行してください。",
+    "ko": "브라우저 작업을 완료하지 못했습니다. 다시 시도하세요.",
+    "de": "Die Browseraktion wurde nicht abgeschlossen. Versuchen Sie es erneut.",
+    "fr": "L’action du navigateur n’a pas abouti. Réessayez.",
+    "ru": "Действие браузера не завершено. Повторите попытку."
+  },
+  "浏览器条目超过容量上限，请减少条目后重试。": {
+    "en": "There are too many browser items. Reduce them and try again.",
+    "zh-TW": "瀏覽器項目超過容量上限，請減少項目後重試。",
+    "ja": "ブラウザー項目が上限を超えています。項目を減らして再試行してください。",
+    "ko": "브라우저 항목이 한도를 초과했습니다. 항목을 줄인 후 다시 시도하세요.",
+    "de": "Es gibt zu viele Browsereinträge. Reduzieren Sie die Anzahl und versuchen Sie es erneut.",
+    "fr": "Il y a trop d’éléments du navigateur. Réduisez leur nombre puis réessayez.",
+    "ru": "Превышен лимит элементов браузера. Уменьшите их число и повторите попытку."
+  },
+  "浏览器条目无效，请刷新后重试。": {
+    "en": "The browser item is invalid. Refresh and try again.",
+    "zh-TW": "瀏覽器項目無效，請重新整理後重試。",
+    "ja": "ブラウザー項目が無効です。更新して再試行してください。",
+    "ko": "브라우저 항목이 올바르지 않습니다. 새로 고친 후 다시 시도하세요.",
+    "de": "Der Browsereintrag ist ungültig. Aktualisieren Sie und versuchen Sie es erneut.",
+    "fr": "L’élément du navigateur est invalide. Actualisez puis réessayez.",
+    "ru": "Элемент браузера недействителен. Обновите и повторите попытку."
+  },
+  "同步冲突可按记录预览、选择和合并，并撤销上次合并。": {
+    "en": "Preview sync conflicts by record, choose what to keep, merge, and undo the last merge.",
+    "zh-TW": "同步衝突可依記錄預覽、選擇和合併，並復原上次合併。",
+    "ja": "同期の競合をレコードごとにプレビュー・選択・統合し、直前の統合を取り消せます。",
+    "ko": "동기화 충돌을 기록별로 미리 보고 선택·병합하며 마지막 병합을 취소할 수 있습니다.",
+    "de": "Synchronisierungskonflikte lassen sich pro Datensatz prüfen und zusammenführen. Die letzte Zusammenführung kann rückgängig gemacht werden.",
+    "fr": "Consultez les conflits de synchronisation par élément, choisissez les versions à fusionner et annulez la dernière fusion.",
+    "ru": "Просматривайте конфликты по записям, выбирайте версии для объединения и отменяйте последнее объединение."
+  },
+  "同步密码可安全更换，各设备需用新密码重新解锁。": {
+    "en": "Change the sync password securely, then unlock each device again with the new password.",
+    "zh-TW": "同步密碼可安全更換，各裝置需用新密碼重新解鎖。",
+    "ja": "同期パスワードを安全に変更できます。各端末で新しいパスワードによる再解除が必要です。",
+    "ko": "동기화 비밀번호를 안전하게 변경할 수 있습니다. 각 기기에서 새 비밀번호로 다시 잠금을 해제해야 합니다.",
+    "de": "Das Synchronisierungspasswort kann sicher geändert werden. Danach müssen alle Geräte mit dem neuen Passwort entsperrt werden.",
+    "fr": "Changez le mot de passe de synchronisation en toute sécurité, puis déverrouillez chaque appareil avec le nouveau mot de passe.",
+    "ru": "Пароль синхронизации можно безопасно изменить. Затем разблокируйте каждое устройство новым паролем."
+  },
+  "可向所选目录定时保存加密完整备份，保留最近 3 份。": {
+    "en": "Schedule encrypted complete backups to a chosen folder and keep the latest three.",
+    "zh-TW": "可定時將加密完整備份儲存至所選目錄，保留最近 3 份。",
+    "ja": "選択したフォルダーへ暗号化した完全バックアップを定期保存し、最新3件を保持できます。",
+    "ko": "선택한 폴더에 암호화된 전체 백업을 정기적으로 저장하고 최신 3개를 보관할 수 있습니다.",
+    "de": "Verschlüsselte vollständige Sicherungen können regelmäßig in einem gewählten Ordner gespeichert werden. Die letzten drei bleiben erhalten.",
+    "fr": "Planifiez des sauvegardes complètes chiffrées dans un dossier choisi et conservez les trois plus récentes.",
+    "ru": "Настройте зашифрованные полные резервные копии в выбранную папку с сохранением трёх последних."
+  },
+  "便笺支持历史预览和恢复，恢复前保留当前版本。": {
+    "en": "Preview and restore note history, preserving the current version before restoring.",
+    "zh-TW": "便箋支援歷史預覽與還原，還原前保留目前版本。",
+    "ja": "メモの履歴をプレビュー・復元でき、復元前に現在のバージョンを保持します。",
+    "ko": "메모 기록을 미리 보고 복원할 수 있으며 복원 전에 현재 버전을 보존합니다.",
+    "de": "Notizverläufe lassen sich prüfen und wiederherstellen. Die aktuelle Fassung wird vorher gesichert.",
+    "fr": "Consultez et restaurez l’historique des notes en conservant la version actuelle avant la restauration.",
+    "ru": "Просматривайте и восстанавливайте историю заметок с сохранением текущей версии перед восстановлением."
+  },
+  "稍后读新增本地正文阅读、高亮批注和 RSS 收件箱。": {
+    "en": "Read Later adds locally saved article text, highlights and notes, and an RSS inbox.",
+    "zh-TW": "稍後讀新增本機正文閱讀、醒目提示註記與 RSS 收件匣。",
+    "ja": "「あとで読む」にローカル本文表示、ハイライトと注釈、RSS受信箱を追加しました。",
+    "ko": "나중에 읽기에 로컬 본문 읽기, 강조 표시와 메모, RSS 수신함이 추가되었습니다.",
+    "de": "Später lesen bietet lokal gespeicherte Artikeltexte, Hervorhebungen mit Notizen und einen RSS-Posteingang.",
+    "fr": "À lire plus tard ajoute les textes enregistrés localement, les surlignages avec annotations et une boîte RSS.",
+    "ru": "В «Прочитать позже» добавлены локальные тексты статей, выделения с заметками и входящие RSS."
+  },
+  "命令面板新增按需授权的标签页、历史和书签搜索，以及本机会话。": {
+    "en": "The command palette adds optional-permission searches for tabs, history and bookmarks, plus local sessions.",
+    "zh-TW": "命令面板新增按需授權的分頁、歷史與書籤搜尋，以及本機工作階段。",
+    "ja": "コマンドパレットに必要に応じて許可するタブ・履歴・ブックマーク検索と、ローカルセッションを追加しました。",
+    "ko": "명령 팔레트에 필요할 때 권한을 허용하는 탭·기록·북마크 검색과 로컬 세션이 추가되었습니다.",
+    "de": "Die Befehlspalette ergänzt die bei Bedarf freigegebene Suche in Tabs, Verlauf und Lesezeichen sowie lokale Sitzungen.",
+    "fr": "La palette de commandes ajoute la recherche dans les onglets, l’historique et les favoris avec autorisation facultative, ainsi que les sessions locales.",
+    "ru": "В палитру команд добавлены поиск вкладок, истории и закладок с отдельным разрешением и локальные сеансы."
+  },
+  "提供 Firefox 桌面兼容包，需临时加载，暂不支持定时目录备份。": {
+    "en": "A Firefox desktop compatibility package is available for temporary loading. Scheduled folder backups are not supported there yet.",
+    "zh-TW": "提供 Firefox 桌面相容套件，需暫時載入，目前不支援定時目錄備份。",
+    "ja": "Firefoxデスクトップ向け互換パッケージを提供します。一時読み込みが必要で、フォルダーへの定期バックアップは未対応です。",
+    "ko": "임시로 로드하는 Firefox 데스크톱 호환 패키지를 제공합니다. 폴더 정기 백업은 아직 지원하지 않습니다.",
+    "de": "Ein Firefox-Desktop-Kompatibilitätspaket kann temporär geladen werden. Geplante Ordnersicherungen werden dort noch nicht unterstützt.",
+    "fr": "Un paquet compatible Firefox pour ordinateur est disponible en chargement temporaire. Les sauvegardes programmées dans un dossier n’y sont pas encore prises en charge.",
+    "ru": "Доступен пакет совместимости для настольного Firefox с временной загрузкой. Плановые копии в папку пока не поддерживаются."
+  },
+  "搜索引擎选择会保存在当前设备。": {
+    "en": "Your search engine selection is saved on this device.",
+    "zh-TW": "搜尋引擎選擇會儲存在目前裝置。",
+    "ja": "検索エンジンの選択をこの端末に保存します。",
+    "ko": "검색 엔진 선택이 현재 기기에 저장됩니다.",
+    "de": "Die Suchmaschinenauswahl wird auf diesem Gerät gespeichert.",
+    "fr": "Le moteur de recherche choisi est enregistré sur cet appareil.",
+    "ru": "Выбранная поисковая система сохраняется на этом устройстве."
   }
 }

@@ -1,4 +1,5 @@
 import { normalizeIconAddress, siteIconAddress, faviconAddress } from './site-icons.js';
+import { getExtensionApi } from './extension-api.js';
 import { readCachedNavigationIcon, navigationIcon, cacheNavigationIconBlob } from './navigation-icon-cache.js';
 import { readBrowserFavicon } from './browser-favicon.js';
 import { getSyncedDataRevision } from './use-synced-data.js';
@@ -22,7 +23,7 @@ export function navigationIconSources(state, { includeTrash = false } = {}) {
 
 // Must be invoked directly by a user click, before any asynchronous reads.
 // Only failed image origins are requested, using existing optional grants.
-export function requestNavigationIconAccess(sources, api = globalThis.chrome) {
+export function requestNavigationIconAccess(sources, api = getExtensionApi()) {
   const origins = [...new Set((sources || []).map(({ source }) => {
     try {
       const url = new URL(normalizeIconAddress(source));

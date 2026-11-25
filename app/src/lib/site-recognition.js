@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { getExtensionApi } from './extension-api.js';
 import { canReadSite, readSiteInfo, siteOrigin } from './site-info.js';
 import { readBrowserFavicon, supportsBrowserFavicons } from './browser-favicon.js';
 import { fallbackSiteName } from './site-form.js';
@@ -13,7 +14,7 @@ async function acquireIcon(source, { force = false, signal } = {}) {
 // Automatic recognition never requests a new permission. A public homepage is
 // read only when its exact origin has already been granted by the user.
 export async function recognizeSite(input, {
-  api = globalThis.chrome, browserIcon = readBrowserFavicon, remoteInfo = readSiteInfo, highResolutionIcon = discoverHighResolutionIcon,
+  api = getExtensionApi(), browserIcon = readBrowserFavicon, remoteInfo = readSiteInfo, highResolutionIcon = discoverHighResolutionIcon,
   iconUrl = '', forceIcon = false, directIcon = acquireIcon, signal,
 } = {}) {
   const origin = siteOrigin(input);

@@ -1,5 +1,6 @@
 import { tr, getLocale } from "../i18n/index.js";
 import { localData } from './local-data.js';
+import { getExtensionApi } from './extension-api.js';
 const PREFIX = 'covelet.clock.v1.';
 const DEMO_PREFIX = 'covelet.clock.demo.v1.';
 const ALARM_PREFIX = 'covelet-clock:';
@@ -82,11 +83,12 @@ export function requestClockNotifications() {
   // The development page can deliver an in-page alert while it remains open;
   // only an installed extension requests OS notification access.
   if (!native()) return Promise.resolve(true);
-  return chrome.permissions.request({ permissions: ['notifications'] });
+  return getExtensionApi().permissions.request({ permissions: ['notifications'] });
 }
 export const supportsClockBackground = () => native();
 
 export async function scheduleClockState(id, state) {
+  const chrome = getExtensionApi();
   if (!native() || !chrome.alarms) return;
   const expected = new Map();
   if (state.notify && state.timer.running) expected.set(clockAlarmName(id, 'timer'), state.timer.startedAt + state.duration - state.timer.elapsed);
@@ -98,6 +100,7 @@ export async function scheduleClockState(id, state) {
 }
 
 async function notification(id, title, message) {
+  const chrome = getExtensionApi();
   if (typeof document !== 'undefined') globalThis.dispatchEvent(new CustomEvent('covelet-clock-alert', { detail: { title, message } }));
   if (!native()) return;
   if (!await chrome.permissions.contains({ permissions: ['notifications'] })) return;
@@ -124,10 +127,11 @@ export async function handleClockAlarm(name) {
   if (kind === 'timer' && parts.length === 2) { await finishClockTimer(id); return; }
   if (kind !== 'alarm' || parts.length !== 3 || !/^[a-z\d-]{1,80}$/i.test(alarmId)) return;
   // An already queued legacy event must never deliver an alarm notification.
-  if (native() && chrome.alarms) await chrome.alarms.clear(name);
+  if (native() && getExtensionApi().alarms) await getExtensionApi().alarms.clear(name);
 }
 
 export async function restoreClockSchedules() {
+  const chrome = getExtensionApi();
   if (!native()) return;
   for (const alarm of await chrome.alarms.getAll()) {
     if (alarm.name.startsWith(ALARM_PREFIX) && alarm.name.slice(ALARM_PREFIX.length).split(':')[1] === 'alarm') await chrome.alarms.clear(alarm.name);
@@ -148,13 +152,14 @@ export async function restoreClockSchedules() {
 
 // Retirement only clears this feature's browser alarm plans. Retain navigation
 // entries and every encrypted runtime record for old backups and sync peers.
-export async function retireClockSchedules(browser = globalThis.chrome) {
+export async function retireClockSchedules(browser = getExtensionApi()) {
   if (!browser?.alarms?.getAll || !browser.alarms.clear) return;
   for (const alarm of await browser.alarms.getAll()) {
     if (typeof alarm.name === 'string' && alarm.name.startsWith(ALARM_PREFIX)) await browser.alarms.clear(alarm.name);
   }
 }
 export async function removeClockState(id) {
+  const chrome = getExtensionApi();
   if (native()) {
     for (const alarm of await chrome.alarms.getAll()) if (alarm.name.startsWith(alarmScope(id))) await chrome.alarms.clear(alarm.name);
   }

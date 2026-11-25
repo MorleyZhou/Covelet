@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { getExtensionApi } from './extension-api.js';
 import { buildProviderUrl } from "./model.js";
 
 // Submission priority belongs to the caller. Matching never changes an engine
@@ -26,15 +27,14 @@ export async function submitWebSearch(
   const query = text.trim();
   if (!query) return;
   if (providerId === "browser") {
-    const chrome = options.api ?? globalThis.chrome;
-    if (!chrome?.search?.query)
+    const api = options.api ?? getExtensionApi();
+    if (!api?.search?.query && !api?.search?.search)
       throw new Error(
         tr("浏览器默认搜索需要在 Covelet 扩展中使用。预览中可临时选择其他引擎。"),
       );
-    await chrome.search.query({
-      text: query,
-      disposition: options.newTab ? "NEW_TAB" : "CURRENT_TAB",
-    });
+    const disposition = options.newTab ? "NEW_TAB" : "CURRENT_TAB";
+    if (api.search.query) await api.search.query({ text: query, disposition });
+    else await api.search.search({ query, disposition });
     return;
   }
   const provider = providers.find((item) => item.id === providerId);

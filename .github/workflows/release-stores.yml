@@ -1,6 +1,6 @@
 name: GitHub release and optional store submission
 
-# Tags publish the GitHub package only. Store submission requires a manual run
+# Tags publish both GitHub browser packages only. Store submission requires a manual run
 # with submit_stores explicitly enabled; its default is false.
 on:
   push:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing tag to build and publish on GitHub (e.g. v0.3.0)
+        description: Existing tag to build and publish on GitHub (e.g. v0.7.0)
         type: string
         required: true
       submit_stores:
@@ -40,6 +40,8 @@ jobs:
       version: ${{ steps.package.outputs.version }}
       zip_name: ${{ steps.package.outputs.zip_name }}
       sha: ${{ steps.package.outputs.sha }}
+      firefox_zip_name: ${{ steps.package.outputs.firefox_zip_name }}
+      firefox_sha: ${{ steps.package.outputs.firefox_sha }}
     steps:
       - name: Validate release tag
         run: |
@@ -70,17 +72,22 @@ jobs:
             assert.equal(JSON.parse(readFileSync(file, 'utf8')).version, version,
               `${file} version must equal tag version ${version}`);
           }
+          const lock = JSON.parse(readFileSync('app/package-lock.json', 'utf8'));
+          assert.equal(lock.version, version, 'Lockfile version must equal tag version');
+          assert.equal(lock.packages[''].version, version, 'Lockfile root package version must equal tag version');
           NODE
 
-      - name: Build and check extension
+      - name: Build and check Chrome and Firefox extensions from the same tag
         working-directory: app
         run: |
           set -euo pipefail
           npm ci
           npm run build:extension
           npm run check:extension --if-present
+          npm run build:firefox
+          npm run check:firefox
 
-      - name: Verify package and prepare release notes and checksum
+      - name: Verify both packages and prepare release notes and checksums
         id: package
         run: |
           node --input-type=module <<'NODE'
@@ -88,19 +95,34 @@ jobs:
           import { createHash } from 'node:crypto';
           import { appendFileSync, readFileSync, statSync, writeFileSync } from 'node:fs';
           const version = process.env.RELEASE_TAG.slice(1);
-          const manifest = JSON.parse(readFileSync('app/dist/extension/manifest.json', 'utf8'));
-          assert.equal(manifest.version, version, 'Built manifest version must equal tag version');
-          const zipName = `covelet-${version}.zip`;
-          const zipPath = `app/dist/${zipName}`;
-          assert(statSync(zipPath).isFile() && statSync(zipPath).size > 0, `Missing or empty ZIP: ${zipPath}`);
-          const sha = createHash('sha256').update(readFileSync(zipPath)).digest('hex');
+          const packages = [
+            { browser: 'Chrome / Edge', directory: 'extension', name: `covelet-${version}.zip` },
+            { browser: 'Firefox', directory: 'extension-firefox', name: `covelet-${version}-firefox.zip` },
+          ];
+          for (const item of packages) {
+            const manifest = JSON.parse(readFileSync(`app/dist/${item.directory}/manifest.json`, 'utf8'));
+            assert.equal(manifest.version, version, `${item.browser} manifest version must equal tag version`);
+            assert.equal(manifest.manifest_version, 3);
+            assert.equal(manifest.background.type, 'module');
+            if (item.directory === 'extension') {
+              assert.equal(manifest.background.service_worker, 'background.js');
+              assert.equal(manifest.background.scripts, undefined);
+            } else {
+              assert.deepEqual(manifest.background.scripts, ['background.js']);
+              assert.equal(manifest.background.service_worker, undefined);
+              assert.equal(manifest.browser_specific_settings.gecko.id, 'covelet@morleyzhou.github.io');
+            }
+            const zipPath = `app/dist/${item.name}`;
+            assert(statSync(zipPath).isFile() && statSync(zipPath).size > 0, `Missing or empty ZIP: ${zipPath}`);
+            item.sha = createHash('sha256').update(readFileSync(zipPath)).digest('hex');
+          }
           const notesPath = `docs/releases/${version}.md`;
           const notes = readFileSync(notesPath, 'utf8').trim();
           assert(notes, `Missing or empty release notes: ${notesPath}`);
-          writeFileSync('app/dist/release-notes.md', `${notes}\n\nPackage: \`${zipName}\`\n\nSHA256: \`${sha}\`\n`);
-          writeFileSync('app/dist/SHA256SUMS.txt', `${sha}  ${zipName}\n`);
-          appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nzip_name=${zipName}\nsha=${sha}\n`);
-          console.log(`${zipName} SHA256: ${sha}`);
+          writeFileSync('app/dist/release-notes.md', `${notes}\n\n${packages.map(item => `${item.browser}: \`${item.name}\`\n\nSHA256: \`${item.sha}\``).join('\n\n')}\n`);
+          writeFileSync('app/dist/SHA256SUMS.txt', packages.map(item => `${item.sha}  ${item.name}\n`).join(''));
+          appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nzip_name=${packages[0].name}\nsha=${packages[0].sha}\nfirefox_zip_name=${packages[1].name}\nfirefox_sha=${packages[1].sha}\n`);
+          for (const item of packages) console.log(`${item.name} SHA256: ${item.sha}`);
           NODE
 
       - uses: actions/upload-artifact@v4
@@ -108,6 +130,7 @@ jobs:
           name: extension-package
           path: |
             app/dist/${{ steps.package.outputs.zip_name }}
+            app/dist/${{ steps.package.outputs.firefox_zip_name }}
             app/dist/release-notes.md
             app/dist/SHA256SUMS.txt
           if-no-files-found: error
@@ -124,10 +147,14 @@ jobs:
       RELEASE_TAG: v${{ needs.build.outputs.version }}
       ZIP_NAME: ${{ needs.build.outputs.zip_name }}
       EXPECTED_SHA: ${{ needs.build.outputs.sha }}
+      FIREFOX_ZIP_NAME: ${{ needs.build.outputs.firefox_zip_name }}
+      EXPECTED_FIREFOX_SHA: ${{ needs.build.outputs.firefox_sha }}
     outputs:
       version: ${{ needs.build.outputs.version }}
       zip_name: ${{ needs.build.outputs.zip_name }}
       sha: ${{ needs.build.outputs.sha }}
+      firefox_zip_name: ${{ needs.build.outputs.firefox_zip_name }}
+      firefox_sha: ${{ needs.build.outputs.firefox_sha }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -136,15 +163,19 @@ jobs:
       - name: Create or update GitHub Release
         run: |
           set -euo pipefail
-          printf '%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" | sha256sum --check --strict
-          printf '%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" | cmp -s - SHA256SUMS.txt
+          [[ "$ZIP_NAME" == "covelet-${RELEASE_TAG#v}.zip" ]]
+          [[ "$FIREFOX_ZIP_NAME" == "covelet-${RELEASE_TAG#v}-firefox.zip" ]]
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{64}$ && "$EXPECTED_FIREFOX_SHA" =~ ^[a-f0-9]{64}$ ]]
+          printf '%s  %s\n%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" "$EXPECTED_FIREFOX_SHA" "$FIREFOX_ZIP_NAME" | cmp -s - SHA256SUMS.txt
           sha256sum --check --strict SHA256SUMS.txt
+          unzip -p "$ZIP_NAME" manifest.json | jq --exit-status --arg version "${RELEASE_TAG#v}" '.version == $version and .manifest_version == 3 and .background.type == "module" and .background.service_worker == "background.js" and .background.scripts == null' >/dev/null
+          unzip -p "$FIREFOX_ZIP_NAME" manifest.json | jq --exit-status --arg version "${RELEASE_TAG#v}" '.version == $version and .manifest_version == 3 and .background.type == "module" and .background.scripts == ["background.js"] and .background.service_worker == null and .browser_specific_settings.gecko.id == "covelet@morleyzhou.github.io"' >/dev/null
           test -s release-notes.md
           if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" "$ZIP_NAME" SHA256SUMS.txt --clobber --repo "$GITHUB_REPOSITORY"
+            gh release upload "$RELEASE_TAG" "$ZIP_NAME" "$FIREFOX_ZIP_NAME" SHA256SUMS.txt --clobber --repo "$GITHUB_REPOSITORY"
             gh release edit "$RELEASE_TAG" --notes-file release-notes.md --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$RELEASE_TAG" "$ZIP_NAME" SHA256SUMS.txt --verify-tag \
+            gh release create "$RELEASE_TAG" "$ZIP_NAME" "$FIREFOX_ZIP_NAME" SHA256SUMS.txt --verify-tag \
               --title "Covelet ${RELEASE_TAG}" --notes-file release-notes.md --repo "$GITHUB_REPOSITORY"
           fi
 
@@ -158,8 +189,11 @@ jobs:
       contents: read
     env:
       EXTENSION_ID: clkholbmabommppnlpcnhdgmibibblgb
+      RELEASE_TAG: v${{ needs.github-release.outputs.version }}
       ZIP_NAME: ${{ needs.github-release.outputs.zip_name }}
       EXPECTED_SHA: ${{ needs.github-release.outputs.sha }}
+      FIREFOX_ZIP_NAME: ${{ needs.github-release.outputs.firefox_zip_name }}
+      EXPECTED_FIREFOX_SHA: ${{ needs.github-release.outputs.firefox_sha }}
     steps:
       - name: Check required Chrome secrets
         env:
@@ -182,10 +216,16 @@ jobs:
         with:
           name: extension-package
 
-      - name: Verify ZIP
+      - name: Verify paired release packages before using Chrome ZIP
         run: |
           set -euo pipefail
-          printf '%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" | sha256sum --check --strict
+          [[ "$ZIP_NAME" == "covelet-${RELEASE_TAG#v}.zip" ]]
+          [[ "$FIREFOX_ZIP_NAME" == "covelet-${RELEASE_TAG#v}-firefox.zip" ]]
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{64}$ && "$EXPECTED_FIREFOX_SHA" =~ ^[a-f0-9]{64}$ ]]
+          printf '%s  %s\n%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" "$EXPECTED_FIREFOX_SHA" "$FIREFOX_ZIP_NAME" | cmp -s - SHA256SUMS.txt
+          sha256sum --check --strict SHA256SUMS.txt
+          unzip -p "$ZIP_NAME" manifest.json | jq --exit-status --arg version "${RELEASE_TAG#v}" '.version == $version and .manifest_version == 3 and .background.type == "module" and .background.service_worker == "background.js" and .background.scripts == null' >/dev/null
+          unzip -p "$FIREFOX_ZIP_NAME" manifest.json | jq --exit-status --arg version "${RELEASE_TAG#v}" '.version == $version and .manifest_version == 3 and .background.type == "module" and .background.scripts == ["background.js"] and .background.service_worker == null and .browser_specific_settings.gecko.id == "covelet@morleyzhou.github.io"' >/dev/null
 
       - name: Authenticate with service account
         id: auth
@@ -254,6 +294,8 @@ jobs:
       RELEASE_TAG: v${{ needs.github-release.outputs.version }}
       ZIP_NAME: ${{ needs.github-release.outputs.zip_name }}
       EXPECTED_SHA: ${{ needs.github-release.outputs.sha }}
+      FIREFOX_ZIP_NAME: ${{ needs.github-release.outputs.firefox_zip_name }}
+      EXPECTED_FIREFOX_SHA: ${{ needs.github-release.outputs.firefox_sha }}
     steps:
       - name: Check required Edge secrets
         env:
@@ -280,10 +322,16 @@ jobs:
         with:
           name: extension-package
 
-      - name: Verify ZIP
+      - name: Verify paired release packages before using Chrome ZIP
         run: |
           set -euo pipefail
-          printf '%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" | sha256sum --check --strict
+          [[ "$ZIP_NAME" == "covelet-${RELEASE_TAG#v}.zip" ]]
+          [[ "$FIREFOX_ZIP_NAME" == "covelet-${RELEASE_TAG#v}-firefox.zip" ]]
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{64}$ && "$EXPECTED_FIREFOX_SHA" =~ ^[a-f0-9]{64}$ ]]
+          printf '%s  %s\n%s  %s\n' "$EXPECTED_SHA" "$ZIP_NAME" "$EXPECTED_FIREFOX_SHA" "$FIREFOX_ZIP_NAME" | cmp -s - SHA256SUMS.txt
+          sha256sum --check --strict SHA256SUMS.txt
+          unzip -p "$ZIP_NAME" manifest.json | jq --exit-status --arg version "${RELEASE_TAG#v}" '.version == $version and .manifest_version == 3 and .background.type == "module" and .background.service_worker == "background.js" and .background.scripts == null' >/dev/null
+          unzip -p "$FIREFOX_ZIP_NAME" manifest.json | jq --exit-status --arg version "${RELEASE_TAG#v}" '.version == $version and .manifest_version == 3 and .background.type == "module" and .background.scripts == ["background.js"] and .background.service_worker == null and .browser_specific_settings.gecko.id == "covelet@morleyzhou.github.io"' >/dev/null
 
       - name: Upload and submit Edge package (API v1.1)
         env:

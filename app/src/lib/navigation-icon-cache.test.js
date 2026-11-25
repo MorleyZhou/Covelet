@@ -16,6 +16,17 @@ const originalLocalGet = localData.get;
 afterEach(() => { Object.assign(encryptedImages, originalStore); localData.get = originalLocalGet; });
 const globalRestores = new WeakMap();
 
+test('Firefox extension pages subscribe to local cross-page icon changes', async t => {
+  const channels = [];
+  replaceGlobal(t, 'location', { protocol: 'moz-extension:' });
+  replaceGlobal(t, 'BroadcastChannel', class { constructor(name) { this.name = name; channels.push(this); } postMessage() {} close() {} });
+  const cache = await isolatedCache(), unsubscribe = cache.subscribeNavigationIcons(() => {});
+  const changed = channels.filter(channel => channel.name === 'covelet.navigation-icons.changed.v1');
+  assert.equal(changed.length, 1);
+  assert.equal(typeof changed[0].onmessage, 'function');
+  unsubscribe();
+});
+
 function replaceGlobal(t, key, value) {
   let restored = globalRestores.get(t);
   if (!restored) { restored = new Set(); globalRestores.set(t, restored); }

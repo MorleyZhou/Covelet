@@ -49,7 +49,7 @@ test('scheduled backup settings use foreground directory grants and background-o
     assert.ok(input, 'expected field: ' + label);
     await act(async () => { Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, 'value').set.call(input, value); input.dispatchEvent(new dom.window.Event('input', { bubbles: true })); });
   }
-  async function fixture(initial = {}) {
+  async function fixture(initial = {}, overrides = {}) {
     let settings = { enabled: false, frequency: 'daily', directoryName: '', lastSuccess: 0, nextDue: 0, lastError: null, phase: 'disabled', permission: null, files: [], ...initial };
     const calls = { configurations: [], messages: [], pickers: [], grants: [], pageRuns: 0, disables: 0, busy: [], flushes: 0 }, listeners = new Set();
     let nextPermission = 'granted', workerFailure;
@@ -73,6 +73,7 @@ test('scheduled backup settings use foreground directory grants and background-o
       pickDirectory(options) { calls.pickers.push({ gesture, options }); return Promise.resolve(directory); },
       subscribeStatus(listener) { listeners.add(listener); return () => listeners.delete(listener); },
       onBusyChange(value) { calls.busy.push(value); }, beforeOperation: async () => { calls.flushes++; },
+      ...overrides,
     })));
     return { calls, directory, set permission(value) { nextPermission = value; }, set failure(value) { workerFailure = value; },
       async publish(patch) { settings = { ...settings, ...patch }; await act(async () => { for (const listener of listeners) listener(structuredClone(settings)); }); },
@@ -136,6 +137,27 @@ test('scheduled backup settings use foreground directory grants and background-o
       await click(button('修改备份计划'));
       assert.doesNotMatch(document.body.textContent, /PRIVATE NATIVE PATH AND SECRET/);
     } finally { await ui.close(); }
+  });
+  await t.test('Firefox native status accepts its UUID origin and rejects foreign origins or senders', async () => {
+    const id = 'covelet@example.test', uuid = 'b142d4f4-4c72-4058-9d90-5321c3fb8e61', listeners = new Set();
+    for (const key of ['chrome', 'browser']) if (!globals.has(key)) globals.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
+    Object.defineProperty(globalThis, 'chrome', { configurable: true, value: { runtime: { id, onMessage: { addListener() { assert.fail('Use Firefox Promise namespace'); } } } } });
+    Object.defineProperty(globalThis, 'browser', { configurable: true, value: { runtime: { id, getURL: path => `moz-extension://${uuid}/${path}`,
+      onMessage: { addListener(listener) { listeners.add(listener); }, removeListener(listener) { listeners.delete(listener); } } } } });
+    const ui = await fixture({}, { subscribeStatus: undefined });
+    const status = { enabled: true, phase: 'idle', files: [], directoryName: 'Mozilla local folder' };
+    const emit = sender => act(async () => { for (const receive of listeners) receive({ type: 'covelet:backup:status', status }, sender); });
+    try {
+      await emit({ id, url: `moz-extension://${uuid}/background.html`, origin: 'moz-extension://foreign-uuid' });
+      assert.doesNotMatch(document.body.textContent, /Mozilla local folder/);
+      await emit({ id: 'foreign@example.test', url: `moz-extension://${uuid}/background.html`, origin: `moz-extension://${uuid}` });
+      assert.doesNotMatch(document.body.textContent, /Mozilla local folder/);
+      await emit({ id, url: 'https://example.test/', origin: `moz-extension://${uuid}` });
+      assert.doesNotMatch(document.body.textContent, /Mozilla local folder/);
+      await emit({ id, url: `moz-extension://${uuid}/background.html`, origin: `moz-extension://${uuid}` });
+      assert.match(document.body.textContent, /Mozilla local folder/);
+    } finally { await ui.close(); }
+    assert.equal(listeners.size, 0);
   });
 });
 

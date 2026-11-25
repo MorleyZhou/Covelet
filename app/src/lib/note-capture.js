@@ -1,4 +1,5 @@
 import { tr } from '../i18n/index.js';
+import { getExtensionApi } from './extension-api.js';
 import { NOTE_LIMITS, noteDocumentText, validateNoteDocument } from './note-document.js';
 import { fromMarkdown } from '@futelab/folio/serialization';
 import { getContentTags } from './content-preferences.js';
@@ -49,7 +50,7 @@ export function captureSourceUrl(value) {
 
 // This function runs only after an explicit capture action. The injected
 // function reads the main frame's DOM selection, never child frame contents.
-export async function readSelectedPage({ api = globalThis.chrome, signal } = {}) {
+export async function readSelectedPage({ api = getExtensionApi(), signal } = {}) {
   if (signal?.aborted) throw cancelled();
   if (!api?.tabs?.query || !api?.scripting?.executeScript) throw unavailable();
   const [tab] = await api.tabs.query({ active: true, currentWindow: true });

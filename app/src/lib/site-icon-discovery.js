@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { getExtensionApi } from './extension-api.js';
 import { canReadSite, siteOrigin } from './site-info.js';
 import { normalizeIconAddress, guessIconFit } from './site-icons.js';
 import { navigationIcon, readCachedNavigationIcon, getNavigationIconFailure } from './navigation-icon-cache.js';
@@ -69,7 +70,7 @@ async function imageSize(url, signal, { loadIcon, cachedIcon, forceIcon }) {
   throw Object.assign(Error(tr("图标不可用。")), getNavigationIconFailure(url) || {}, { source: url });
 }
 
-async function discoverIcon(input, { api = globalThis.chrome, links, activeTab = false, signal, forceIcon = false,
+async function discoverIcon(input, { api = getExtensionApi(), links, activeTab = false, signal, forceIcon = false,
   loadIcon = navigationIcon, cachedIcon = readCachedNavigationIcon } = {}) {
   const origin = siteOrigin(input);
   if (!links) {
@@ -184,7 +185,7 @@ export async function discoverHighResolutionIcon(input, options = {}) {
   finally { clearTimeout(timer); options.signal?.removeEventListener('abort', abort); }
 }
 
-export async function currentPageIconLinks(tabId, api = globalThis.chrome) {
+export async function currentPageIconLinks(tabId, api = getExtensionApi()) {
   if (!Number.isInteger(tabId) || !api?.scripting?.executeScript) return [];
   const result = await api.scripting.executeScript({ target: { tabId }, func: () => Array.from(document.head.querySelectorAll('link[rel]'))
     .filter((link) => /apple-touch-icon|\bicon\b|\bmanifest\b/i.test(link.rel)).slice(0, 24)

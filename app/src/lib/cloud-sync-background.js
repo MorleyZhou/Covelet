@@ -1,4 +1,5 @@
 import { localData } from './local-data.js';
+import { getExtensionApi } from './extension-api.js';
 import { SYNC_JOB_KEY } from './sync-data-rules.js';
 
 const RUN = 'covelet:sync:run';
@@ -8,7 +9,7 @@ const SESSION = 'covelet.cloud.session.v1';
 const SETTINGS = 'covelet.cloud.local.v1';
 const choices = new Set(['local', 'remote']);
 const transportInterrupted = new Set(['CLOUD_TIMEOUT', 'CLOUD_NETWORK', 'CLOUD_OFFLINE']);
-const available = () => globalThis.chrome?.runtime?.id && globalThis.chrome.runtime.sendMessage;
+const available = () => getExtensionApi()?.runtime?.id && getExtensionApi().runtime.sendMessage;
 const interrupted = () => ({ phase: 'error', code: 'DATA_SYNC_LOCAL' });
 
 function fromExtension(extension, sender) {
@@ -17,16 +18,16 @@ function fromExtension(extension, sender) {
 
 export function requestBackgroundCloudSync(choice) {
   if (!available() || choice !== undefined && !choices.has(choice)) return Promise.resolve(interrupted());
-  return globalThis.chrome.runtime.sendMessage({ type: RUN, choice }).catch(interrupted);
+  return getExtensionApi().runtime.sendMessage({ type: RUN, choice }).catch(interrupted);
 }
 
 export function subscribeBackgroundCloudSyncStatus(listener) {
   if (!available()) return () => {};
-  const { runtime } = globalThis.chrome;
+  const extension = getExtensionApi(), { runtime } = extension;
   let active = true;
   let received = false;
   const onMessage = (message, sender) => {
-    if (!fromExtension(globalThis.chrome, sender) || message?.type !== STATUS || !message.status) return;
+    if (!fromExtension(extension, sender) || message?.type !== STATUS || !message.status) return;
     received = true;
     listener(message.status);
   };
@@ -49,7 +50,7 @@ function validJob(job) {
     && (job.choice === null || choices.has(job.choice));
 }
 
-export function startCloudSyncBackground(controller, { extension = globalThis.chrome, ready = Promise.resolve(), store = defaultStore(), uuid = () => crypto.randomUUID(),
+export function startCloudSyncBackground(controller, { extension = getExtensionApi(), ready = Promise.resolve(), store = defaultStore(), uuid = () => crypto.randomUUID(),
   subscribeSettings = listener => localData.subscribe(changes => { if (Object.hasOwn(changes, SETTINGS)) listener(); }),
 } = {}) {
   const { runtime, alarms, storage } = extension;

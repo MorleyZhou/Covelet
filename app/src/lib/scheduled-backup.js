@@ -1,4 +1,5 @@
 import { tr } from '../i18n/index.js';
+import { getExtensionApi } from './extension-api.js';
 import { recoveryCenter } from './recovery-center.js';
 import { PASSWORD_BACKUP_LIMITS, prepareScheduledBackupKey, encryptScheduledBackup } from './password-backup.js';
 import { scheduledBackupStore } from './scheduled-backup-store.js';
@@ -55,7 +56,7 @@ function validate(state) {
 }
 
 export function createScheduledBackups({ store = scheduledBackupStore, capture = () => recoveryCenter.exportCompleteBackup(),
-  alarms = globalThis.chrome?.alarms, now = () => Date.now(), crypto = globalThis.crypto, locks = globalThis.navigator?.locks } = {}) {
+  alarms = getExtensionApi()?.alarms, now = () => Date.now(), crypto = globalThis.crypto, locks = globalThis.navigator?.locks } = {}) {
   let queue = Promise.resolve();
   const exclusive = (action) => {
     if (locks?.request) return locks.request(LOCK, { mode: 'exclusive' }, action);

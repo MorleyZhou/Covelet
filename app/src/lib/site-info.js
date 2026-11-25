@@ -1,4 +1,5 @@
 import { tr, getLocale } from "../i18n/index.js";
+import { getExtensionApi } from './extension-api.js';
 import { normalizeUrl } from './model.js';
 import { normalizeIconAddress } from './site-icons.js';
 import { normalizeIconBlob } from './icon-image-format.js';
@@ -21,18 +22,18 @@ export function siteOrigin(input) {
 
 function hostPattern(input) { return `${siteOrigin(input)}/*`; }
 
-export function supportsSiteInfo(api = globalThis.chrome) {
+export function supportsSiteInfo(api = getExtensionApi()) {
   return Boolean(api?.runtime?.id && api?.permissions?.contains && api?.permissions?.request);
 }
 
-export async function canReadSite(input, { api = globalThis.chrome } = {}) {
+export async function canReadSite(input, { api = getExtensionApi() } = {}) {
   if (!supportsSiteInfo(api)) return false;
   return Boolean(await api.permissions.contains({ origins: [hostPattern(input)] }));
 }
 
 // Keep this non-async and call request immediately: Chrome requires a user
 // gesture. The UI must call it directly from its explicit recognition button.
-export function requestSiteAccess(input, { api = globalThis.chrome } = {}) {
+export function requestSiteAccess(input, { api = getExtensionApi() } = {}) {
   if (!supportsSiteInfo(api)) return Promise.reject(Object.assign(new Error(tr("网页预览无法申请站点访问权限，请加载浏览器扩展后识别，或手动填写。")), { code: 'SITE_INFO_UNAVAILABLE' }));
   const inputs = Array.isArray(input) ? input : [input];
   if (!inputs.length || inputs.length > 16) fail(tr('网址格式无效'), 'SITE_ACCESS_INVALID');
@@ -273,7 +274,7 @@ export async function convertIcon(blob) {
 }
 
 export async function readSiteInfo(input, {
-  api = globalThis.chrome, fetcher = defaultFetch, timeoutMs = 5000, convert = convertIcon, metadataOnly = false,
+  api = getExtensionApi(), fetcher = defaultFetch, timeoutMs = 5000, convert = convertIcon, metadataOnly = false,
 } = {}) {
   const origin = siteOrigin(input);
   if (!supportsSiteInfo(api)) fail(tr("网页预览无法读取站点信息，请加载浏览器扩展后识别，或手动填写。"), 'SITE_INFO_UNAVAILABLE');

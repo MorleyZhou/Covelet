@@ -1,4 +1,5 @@
 import { tr } from '../i18n/index.js';
+import { getExtensionApi } from './extension-api.js';
 import { createEncryptedStore, localData } from './local-data.js';
 import { subscribeSyncedData } from './use-synced-data.js';
 import { migrateLegacyIndexedDb } from './legacy-indexed-data.js';
@@ -107,7 +108,7 @@ function defaultFetch(url, options) {
 
 async function defaultSourceAccess(origin) {
   if (origin === BING_ORIGIN) return true;
-  try { return await globalThis.chrome?.permissions?.contains({ origins: [`${origin}/*`] }) === true; }
+  try { return await getExtensionApi()?.permissions?.contains({ origins: [`${origin}/*`] }) === true; }
   catch { return false; }
 }
 

@@ -1,4 +1,5 @@
 import { normalizeIconAddress, siteIconAddress } from './site-icons.js';
+import { getExtensionApi } from './extension-api.js';
 import { bundledNavigationIconAddress } from './bundled-navigation-icons.js';
 import { validateIconBytes } from './site-info.js';
 import { ICON_IMAGE_LIMIT, ICON_SVG_LIMIT, normalizeIconBlob } from './icon-image-format.js';
@@ -43,7 +44,7 @@ export function retainNavigationIconResources(state) {
 let changes;
 const publish = (item) => { for (const listener of listeners) { try { listener(item); } catch { /* Other mounted icons must still update. */ } } };
 function watchChanges() {
-  if (changes || globalThis.location?.protocol !== 'chrome-extension:' || !globalThis.BroadcastChannel) return;
+  if (changes || !['chrome-extension:', 'moz-extension:'].includes(globalThis.location?.protocol) || !globalThis.BroadcastChannel) return;
   changes = new BroadcastChannel('covelet.navigation-icons.changed.v1');
   changes.onmessage = async ({ data }) => {
     if (data?.version !== 1 || typeof data.url !== 'string') return;
@@ -300,7 +301,7 @@ async function load(url, revision, version, force, signal) {
     if (reason?.code && ['HTTP', 'FORMAT', 'LIMIT', 'REDIRECT', 'NETWORK', 'DECODE', 'STORAGE', 'CANCELLED'].includes(reason.code)) throw reason;
     if (stage === 'NETWORK') {
       let access;
-      try { access = await globalThis.chrome?.permissions?.contains?.({ origins: [`${new URL(url).origin}/*`] }); } catch { /* Unknown access stays a network error. */ }
+      try { access = await getExtensionApi()?.permissions?.contains?.({ origins: [`${new URL(url).origin}/*`] }); } catch { /* Unknown access stays a network error. */ }
       throw imageError(access === false ? 'ACCESS' : 'NETWORK');
     }
     throw imageError(stage);

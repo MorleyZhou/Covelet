@@ -49,3 +49,12 @@ test("explicit additional provider encodes parameters", async () => {
   assert.equal(url.searchParams.get("q"), "a&b=你好");
   assert.equal([...url.searchParams].length, 1);
 });
+
+test('default search feature-detects the older Firefox API without changing current-tab behavior', async () => {
+  const calls = [];
+  await submitWebSearch('literal & query=中文', 'browser', [], { api: { search: { search: async options => calls.push(options) } } });
+  assert.deepEqual(calls, [{ query: 'literal & query=中文', disposition: 'CURRENT_TAB' }]);
+  await assert.rejects(submitWebSearch('private', 'browser', [], { api: { search: {
+    query: async () => { throw Error('Query rejected'); }, search: () => assert.fail('Never retry a rejected search'),
+  } } }), /Query rejected/);
+});

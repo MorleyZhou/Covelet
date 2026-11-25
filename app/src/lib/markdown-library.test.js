@@ -7,7 +7,8 @@ import { Lexer } from 'marked';
 import { localData } from './local-data.js';
 import { createEmptyState, letterIcon } from './model.js';
 import { noteDocumentText } from './note-document.js';
-import { inspectMarkdownLibrary, exportMarkdownLibrary, MARKDOWN_LIBRARY_LIMITS } from './markdown-library.js';
+import { inspectMarkdownLibrary, exportMarkdownLibrary, exportReadingMarkdown, MARKDOWN_LIBRARY_LIMITS } from './markdown-library.js';
+import { createEmptyReadingLibrary } from './reading-library.js';
 
 const NAV = 'owntab.local.v1', PREFS = 'covelet.content.preferences.v1', TOOLS = 'covelet.tools.v1', WRITE = 'owntab.local.write.v1';
 const chain = [WRITE, PREFS, TOOLS], encoder = new TextEncoder();
@@ -54,6 +55,14 @@ function fixture(t, { locked = false } = {}) {
   return { records, acquisitions, locks, hooks, reads, writes, network };
 }
 const selectedKeys = (plan) => plan.rows.filter((row) => !row.issue).map((row) => row.key);
+function attachArticle(records, id, body, note = '') {
+  const key = 'covelet.reading-library.v1', library = records[key] ||= createEmptyReadingLibrary();
+  const record = records[TOOLS].reading.find((item) => item.id === id);
+  library.articles[id] = { id, url: record.url, title: record.title, text: body,
+    blocks: [{ type: 'paragraph', text: body, start: 0, end: body.length }], revision: 1, createdAt: 1000, updatedAt: 1000,
+    highlights: [{ id: `highlight-${id}`, start: 0, end: body.length, quote: body, note, revision: 1, createdAt: 1000, updatedAt: 1000 }] };
+  return library;
+}
 async function files(result) { return Object.fromEntries(Object.entries(unzipSync(new Uint8Array(await result.blob.arrayBuffer()))).map(([name, bytes]) => [name, strFromU8(bytes)])); }
 function document(source) {
   const match = /^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/u.exec(source); assert(match);
@@ -68,6 +77,55 @@ function links(tokens) {
   return tokens.flatMap((token) => [...(token.type === 'link' ? [token] : []), ...links(token.tokens || []),
     ...(token.items || []).flatMap((item) => links(item.tokens || []))]);
 }
+
+test('reading export includes local body and highlight notes, with private caches excluded even when unlocked', async (t) => {
+  const f = fixture(t);
+  attachArticle(f.records, 'reading-public', 'A visible quasar observation.', 'Compare telescope calibration.');
+  attachArticle(f.records, 'reading-private', 'Do not disclose private extracted body.', 'Secret annotation.');
+  const plan = await inspectMarkdownLibrary({ types: ['reading'] });
+  assert.equal(plan.totalCount, 1);
+  const archive = await files(await exportMarkdownLibrary(plan, { selectedKeys: ['reading:reading-public'] }));
+  const exported = archive['reading/Public reading.md'];
+  assert(exported.includes('A visible quasar observation.'));
+  assert(exported.includes('> A visible quasar observation.'));
+  assert(exported.includes('Compare telescope calibration.'));
+  assert(!JSON.stringify(archive).includes('Secret annotation'));
+  assert(!JSON.stringify(archive).includes('private extracted'));
+  assert.equal(f.network.mock.callCount(), 0);
+});
+
+test('concurrent annotations invalidate an existing Markdown preview', async (t) => {
+  const f = fixture(t), library = attachArticle(f.records, 'reading-public', 'A visible quasar observation.', 'Original annotation');
+  const plan = await inspectMarkdownLibrary({ types: ['reading'] });
+  library.articles['reading-public'].highlights[0].note = 'Changed annotation without changing tools';
+  library.articles['reading-public'].revision++; library.revision++;
+  await assert.rejects(exportMarkdownLibrary(plan, { selectedKeys: ['reading:reading-public'] }), { code: 'REVISION_CONFLICT' });
+});
+
+test('single-reader Markdown export guards privacy and every displayed revision', async (t) => {
+  const f = fixture(t); attachArticle(f.records, 'reading-public', 'A locally saved paragraph.', 'Preserve this highlighted note');
+  const guard = { expectedReadingRevision: 1, expectedArticleRevision: 1, expectedPreferencesRevision: 7 };
+  const exported = await exportReadingMarkdown('reading-public', guard);
+  assert.equal(exported.filename, 'Public reading.md');
+  assert((await exported.blob.text()).includes('Preserve this highlighted note'));
+  await assert.rejects(exportReadingMarkdown('reading-public', { ...guard, expectedArticleRevision: 2 }), { code: 'REVISION_CONFLICT' });
+  f.records[PREFS].privateKeys.push('reading:reading-public');
+  await assert.rejects(exportReadingMarkdown('reading-public', guard), { code: 'MARKDOWN_LIBRARY_SELECTION' });
+  assert.equal(f.network.mock.callCount(), 0);
+});
+
+test('reading Markdown does not turn images or highlight notes into automatic remote resources', async (t) => {
+  const f = fixture(t), body = 'Literal <img src="https://tracker.example/pixel"> ![pixel](https://tracker.example/pixel)';
+  const library = attachArticle(f.records, 'reading-public', body, '<iframe src="https://tracker.example/frame"></iframe>');
+  const article = library.articles['reading-public'];
+  article.blocks.push({ type: 'image', text: 'A saved image', url: 'https://tracker.example/picture.png', start: body.length + 2, end: body.length + 2 + 13 });
+  article.text += '\n\nA saved image';
+  const result = await exportReadingMarkdown('reading-public', { expectedReadingRevision: 1, expectedArticleRevision: 1, expectedPreferencesRevision: 7 });
+  const tokens = Lexer.lex(document(await result.blob.text()).body);
+  const forbidden = (items) => items.flatMap(item => [...(['html', 'image'].includes(item.type) ? [item] : []), ...forbidden(item.tokens || []), ...(item.items || []).flatMap(row => forbidden(row.tokens || []))]);
+  assert.deepEqual(forbidden(tokens), []);
+  assert(links(tokens).some(item => item.href === 'https://tracker.example/picture.png'), 'Images become explicit links');
+});
 
 test('mixed library export takes a locked read-only snapshot and excludes all marked/inherited private content even unlocked', async (t) => {
   const f = fixture(t), before = structuredClone(f.records), plan = await inspectMarkdownLibrary();

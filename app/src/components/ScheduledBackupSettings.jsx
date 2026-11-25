@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { tr, getLocale } from '../i18n/index.js';
 import { scheduledBackups } from '../lib/scheduled-backup.js';
+import { extensionOrigin, getExtensionApi } from '../lib/extension-api.js';
 import { validateBackupPassword } from '../lib/password-backup.js';
 import { userErrorMessage } from '../lib/user-error.js';
 import { Button } from './ui/button.jsx';
@@ -9,16 +10,17 @@ import './scheduled-backup-settings.css';
 
 const pickNativeDirectory = options => globalThis.showDirectoryPicker(options);
 const sendNativeMessage = message => {
-  if (!globalThis.chrome?.runtime?.id || !globalThis.chrome.runtime.sendMessage)
+  const api = getExtensionApi();
+  if (!api?.runtime?.id || !api.runtime.sendMessage)
     return Promise.reject(new Error(tr('无法连接备份后台，请重新打开 Covelet。')));
-  return globalThis.chrome.runtime.sendMessage(message);
+  return api.runtime.sendMessage(message);
 };
 const subscribeNativeStatus = listener => {
-  const runtime = globalThis.chrome?.runtime;
+  const api = getExtensionApi(), runtime = api?.runtime;
   if (!runtime?.id || !runtime.onMessage) return () => {};
   const receive = (message, sender) => {
     if (sender?.id !== runtime.id || sender.url && !sender.url.startsWith(runtime.getURL(''))
-      || sender.origin && sender.origin !== `chrome-extension://${runtime.id}` || message?.type !== 'covelet:backup:status') return;
+      || sender.origin && sender.origin !== extensionOrigin(api) || message?.type !== 'covelet:backup:status') return;
     if (typeof message.status?.enabled === 'boolean' && Array.isArray(message.status.files)) listener(message.status);
     else if (message.status?.phase === 'error' && typeof message.status.lastError?.message === 'string') listener({ phase: 'error', lastError: message.status.lastError });
   };

@@ -1,4 +1,5 @@
 import { normalizeIconAddress } from './site-icons.js';
+import { extensionRoot } from './extension-api.js';
 
 // Exact, reviewed source addresses only. Never infer a brand from a hostname,
 // entry ID, custom icon path, query string, or the name of a saved website.
@@ -14,9 +15,10 @@ export const BUNDLED_NAVIGATION_ICONS = Object.freeze({
 export function bundledNavigationIconAddress(input, api = globalThis.chrome) {
   try {
     const file = BUNDLED_NAVIGATION_ICONS[normalizeIconAddress(input)];
-    if (!file || !api?.runtime?.id || typeof api.runtime.getURL !== 'function') return '';
+    const root = extensionRoot(api);
+    if (!file || !root) return '';
     const path = `assets/default-sites/${file}`, url = new URL(api.runtime.getURL(path));
-    return url.protocol === 'chrome-extension:' && url.host === api.runtime.id && url.pathname === `/${path}`
-      && !url.search && !url.hash ? url.href : '';
+    return url.protocol === root.protocol && url.host === root.host && url.pathname === `/${path}`
+      && !url.username && !url.password && !url.search && !url.hash ? url.href : '';
   } catch { return ''; }
 }

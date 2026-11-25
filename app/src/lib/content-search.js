@@ -1,5 +1,6 @@
 // Search only Covelet-owned data. This module never reads browser history,
 // open tabs or storage, and does not change the records passed to it.
+import { readerSearchText } from './reading-extraction.js';
 export const contentKey = (type, id) => `${type}:${id}`;
 
 const normalize = (value) => typeof value === 'string'
@@ -122,7 +123,7 @@ function noteExcerpt(body, tokens) {
  * Title/alias matching also supports approximate Chinese pinyin initials.
  * Results retain original entry/record references and original URLs.
  */
-export function collectCoveletContent(navigation, tools, query, { aliases = {}, hiddenKeys = [], desktops = [], library, tagIds = [], allowEmptyQuery = false } = {}) {
+export function collectCoveletContent(navigation, tools, query, { aliases = {}, hiddenKeys = [], desktops = [], library, readingLibrary = tools?.readingLibrary, tagIds = [], allowEmptyQuery = false } = {}) {
   const normalized = normalize(query);
   const selectedTags = Array.isArray(tagIds) ? [...new Set(tagIds)] : [];
   if ((!normalized && !selectedTags.length && !allowEmptyQuery) || normalized.length > 2000) return [];
@@ -139,7 +140,8 @@ export function collectCoveletContent(navigation, tools, query, { aliases = {}, 
     const metadata = library?.items?.[key];
     if (!selectedTags.every((id) => metadata?.tagIds?.includes(id))) return;
     const title = ['site', 'folder'].includes(type) ? record.name : record.title;
-    const body = type === 'note' ? record.body : '';
+    const article = type === 'reading' ? readingLibrary?.articles?.[record.id] : null;
+    const body = type === 'note' ? record.body : article?.url === record.url ? readerSearchText(article) : '';
     const description = ['site', 'reading'].includes(type) ? metadata?.description || '' : '';
     const tagNames = (library?.tags || []).filter((tag) => metadata?.tagIds?.includes(tag.id)).map((tag) => normalize(tag.name));
     const fields = searchableFields(record, type);
@@ -147,7 +149,7 @@ export function collectCoveletContent(navigation, tools, query, { aliases = {}, 
       [...aliasesFor(aliases, key), ...tagNames], tokens, normalized) : 1;
     if (!score) return;
     results.push({ key, type, id: record.id, title: typeof title === 'string' ? title : '',
-      subtitle: type === 'note' ? noteExcerpt(body, tokens) : description ? noteExcerpt(description, tokens) : typeof record.url === 'string' ? record.url : '',
+      subtitle: body && (type === 'note' || normalized) ? noteExcerpt(body, tokens) : description ? noteExcerpt(description, tokens) : typeof record.url === 'string' ? record.url : '',
       ...(type === 'note' ? {} : { url: record.url }),
       ...(['site', 'folder'].includes(type) ? { entry: record } : { record }), score });
   };

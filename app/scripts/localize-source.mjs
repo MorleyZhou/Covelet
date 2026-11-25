@@ -9,7 +9,7 @@ const mode = process.argv[2];
 if (!['--extract', '--write', '--catalog'].includes(mode)) throw Error('Use --extract, --write or --catalog.');
 if (mode === '--catalog') {
   const locales = ['en', 'zh-TW', 'ja', 'ko', 'de', 'fr', 'ru'], catalog = Object.create(null);
-  for (const file of ['errors.en.txt', 'folio.en.txt', 'folio.phrases.txt', 'phrases.txt']) {
+  for (const file of ['errors.en.txt', 'folio.en.txt', 'folio.phrases.txt', 'phrases.txt', 'reader.phrases.txt', 'command-browser.phrases.txt', 'release.phrases.txt']) {
     const lines = (await readFile(resolve(sourceRoot, 'i18n', file), 'utf8')).split(/\r?\n/);
     for (const line of lines) {
       if (!line.trim() || line.startsWith('#')) continue;

@@ -30,6 +30,10 @@ import { useLocalDateKey } from '../lib/use-local-date.js';
 import { inspectMarkdownNotes, importMarkdownNotes, exportMarkdownNotes } from '../lib/markdown-notes.js';
 import PinToDesktopDialog from './PinToDesktopDialog.jsx';
 import NoteHistory from './NoteHistory.jsx';
+import ReadingReader from './ReadingReader.jsx';
+import RssInbox from './RssInbox.jsx';
+import { requestSiteAccess } from '../lib/site-info.js';
+import { cleanupRemovedReadingArticles } from '../lib/reading-library.js';
 
 const newest = (items) => [...items].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
 const stop = (event) => event.stopPropagation();
@@ -340,6 +344,8 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
   const [selectedTagIds, setSelectedTagIds] = useState([]), [discarding, setDiscarding] = useState(null);
   const [copy, setCopy] = useState(null), [copyStatus, setCopyStatus] = useState('');
   const [queryRecordId, setQueryRecordId] = useState(null);
+  const [readerId, setReaderId] = useState(null), [readerBusy, setReaderBusy] = useState(false), [readerDirty, setReaderDirty] = useState(false), [inboxOpen, setInboxOpen] = useState(false);
+  const [cleanup, setCleanup] = useState(null);
   const today = useLocalDateKey(), revisitInputId = useId(), listRef = useRef(null);
   const [page, setPage] = useState(0), [selectionMode, setSelectionMode] = useState(false), [selected, setSelected] = useState({});
   const [bulkAction, setBulkAction] = useState('read'), [bulkDelete, setBulkDelete] = useState(null), [bulkStatus, setBulkStatus] = useState('');
@@ -357,7 +363,7 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
   const changedElsewhere = draft.id && (!latest || latest.revision !== draft.revision
     || contentPreferences.ready && !draftHidden && !sameMetadata(metadataFor(`reading:${draft.id}`), originalMetadata));
   const draftHasContent = Boolean(draft.url || draft.title || draft.revisitOn || metadata.description || metadata.tagIds.length);
-  const busy = action.busy || unlocking || metadataBusy;
+  const busy = action.busy || unlocking || metadataBusy || readerBusy;
   function select(record) {
     const nextMetadata = record ? metadataFor(`reading:${record.id}`) : emptyMetadata();
     setDraft(record ? { ...record } : { title: '', url: '' });
@@ -365,19 +371,23 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
   }
   const selectedInitial = useRef(null);
   useEffect(() => {
-    if (!initialRecordId || !data || selectedInitial.current === initialRecordId) return;
+    if (!initialRecordId || !data || !contentPreferences.ready || selectedInitial.current === initialRecordId) return;
     selectedInitial.current = initialRecordId;
     const record = data.reading.find((item) => item.id === initialRecordId);
-    if (record) { setFilter(record.status); setQuery(record.title); setQueryRecordId(record.id); } else action.setError(tr('这条记录已被移除。'));
-  }, [initialRecordId, data]);
-  useEffect(() => { onDirtyChange(draftHasContent); }, [draftHasContent, onDirtyChange]);
+    if (record && !hidden(`reading:${record.id}`)) { setFilter(record.status); setReaderId(record.id); setQuery(''); setQueryRecordId(record.id); } else action.setError(tr('这条记录已被移除。'));
+  }, [initialRecordId, data, contentPreferences.ready]);
+  useEffect(() => { onDirtyChange(draftHasContent || readerDirty); }, [draftHasContent, readerDirty, onDirtyChange]);
   useEffect(() => { onBusyChange?.(busy); }, [busy, onBusyChange]);
   useEffect(() => {
     if (queryRecordId && hidden(`reading:${queryRecordId}`)) { setQuery(''); setQueryRecordId(null); }
-  }, [queryRecordId, locked, presentation.hiddenKeys, preferences.privateKeys]);
+    if (readerId && (hidden(`reading:${readerId}`) || rawData && !rawData.reading.some(item => item.id === readerId))) { setReaderId(null); setReaderDirty(false); }
+  }, [queryRecordId, readerId, rawData, locked, presentation.hiddenKeys, preferences.privateKeys]);
   const visibleRecords = newest(data?.reading || []).filter((item) => !hidden(`reading:${item.id}`));
+  const articleFor = item => rawData?.readingLibrary?.articles?.[item.id]?.url === item.url ? rawData.readingLibrary.articles[item.id] : null;
+  const retainedArticleIds = new Set([...(rawData?.reading || []).map(item => item.id), ...(rawData?.trash || []).filter(item => item.kind === 'reading').map(item => item.record.id)]);
+  const removedArticleCount = locked ? 0 : Object.keys(rawData?.readingLibrary?.articles || {}).filter(id => !retainedArticleIds.has(id)).length;
   const records = visibleRecords.filter((item) => (filter === 'due' ? isReadingDue(item, today) : item.status === filter) && matchesTags(metadataFor(`reading:${item.id}`), selectedTagIds)
-    && (!visibleQuery || core?.contains(`${item.title}\n${item.url}\n${metadataFor(`reading:${item.id}`).description}`, visibleQuery)));
+    && (!visibleQuery || core?.contains(`${item.title}\n${item.url}\n${metadataFor(`reading:${item.id}`).description}\n${articleFor(item)?.title || ''}\n${articleFor(item)?.text || ''}\n${(articleFor(item)?.highlights || []).map(value => `${value.quote}\n${value.note}`).join('\n')}`, visibleQuery)));
   if (filter === 'due') records.sort((a, b) => a.revisitOn.localeCompare(b.revisitOn) || b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
   const availableTagIds = [...new Set(visibleRecords.flatMap((item) => metadataFor(`reading:${item.id}`).tagIds))];
   const pageCount = Math.max(1, Math.ceil(records.length / READING_PAGE_SIZE)), currentPage = Math.min(page, pageCount - 1);
@@ -459,7 +469,14 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
     <PrivateEditor hidden={draftHidden} busy={busy} onBusyChange={setUnlocking} onDiscard={() => setDiscarding({ record: null })} className="reading-draft-surface"><form className="reading-add-form" onSubmit={(event) => {
       event.preventDefault();
       if (draftHidden || selectionMode || busy || !contentPreferences.ready || changedElsewhere) return;
+      // Only an explicit new/changed URL submission may request webpage access.
+      // A denied grant still saves the normal link; extraction can be retried.
+      let access = Promise.resolve(false);
+      if (!draft.id || draft.url !== latest?.url) {
+        try { access = requestSiteAccess(draft.url).catch(() => false); } catch { /* Preserve ordinary link saving. */ }
+      }
       action.run(async () => {
+        await access;
         await saveReadingItem({ ...draft, revisitOn: draft.revisitOn || null, status: draft.status || 'unread' }, { metadata, expectedPreferencesRevision: preferences.revision, expectedMetadata: originalMetadata });
         select(null);
       });
@@ -474,9 +491,12 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
       <div className="reading-metadata-fields"><ContentMetadataEditor preferences={preferences} contentKey={draft.id ? `reading:${draft.id}` : undefined} value={metadata}
         onChange={setMetadata} disabled={action.busy || unlocking || draftHidden || selectionMode || !contentPreferences.ready} onBusyChange={setMetadataBusy} /></div>
     </form></PrivateEditor>
+    <p className="reading-extraction-help">{tr('添加或更换网址时，会在授权后读取该网页并将正文保存到本机。')}</p>
     {discarding && <Confirm privacySafe action={tr('放弃修改')} busy={busy} onCancel={() => setDiscarding(null)} onConfirm={() => { select(discarding.record); setDiscarding(null); }}>{tr('当前内容尚未保存，放弃修改？')}</Confirm>}
     <div className="personal-tools-toolbar"><TabsList className="tool-segments" aria-label={tr('阅读筛选')}>{[['unread', tr("未读")], ['read', tr("已读")], ['archived', tr("归档")], ['due', tr('待再看')]].map(([value, label]) => <TabsTrigger key={value} value={value} disabled={busy}>{label}</TabsTrigger>)}</TabsList><div className="tool-search"><MagnifyingGlass size={16} /><Input unstyled aria-label={tr("搜索稍后读")} placeholder={tr("搜索")} maxLength={100} value={visibleQuery} disabled={busy} onChange={(event) => { setQuery(event.target.value); setQueryRecordId(null); setPage(0); clearSelection(); }} /></div></div>
     <div className="reading-filter-actions"><ContentTagFilter preferences={preferences} availableTagIds={availableTagIds} selectedTagIds={selectedTagIds} onChange={changeTags} disabled={busy || !contentPreferences.ready} />
+      <Button type="button" variant="ghost" size="sm" disabled={busy || draftHasContent || !contentPreferences.ready} onClick={() => setInboxOpen(true)}>{tr('订阅收件箱')}</Button>
+      <Button type="button" variant="ghost" size="sm" disabled={busy || locked || !removedArticleCount} onClick={() => setCleanup({ count: removedArticleCount, revision: rawData.readingLibrary.revision })}>{tr('清理已移除文章的正文')}</Button>
       <Button type="button" variant="ghost" size="sm" disabled={busy || draftHasContent || !contentPreferences.ready || !selectionMode && !records.length} onClick={() => { setSelectionMode((value) => !value); clearSelection(); action.setError(''); }}>{selectionMode ? tr('取消选择') : tr('批量选择')}</Button></div>
     {selectionMode && <div className="reading-bulk-toolbar"><label><Checkbox aria-label={tr('全选本页链接')} checked={pageRecords.length && pageSelected === pageRecords.length ? true : pageSelected ? 'indeterminate' : false}
       disabled={busy || !pageRecords.length} onCheckedChange={(checked) => togglePage(checked === true)} />{tr('全选本页')}</label><span>{tr('已选 {0} 条链接', [formatNumber(selectedIds.length)])}</span>
@@ -514,7 +534,7 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
     </Dialog>}
     {deleting && !deletionHidden && <Confirm busy={busy} onCancel={() => setDeleting(null)} onConfirm={() => action.run(async () => { await deletePersonalRecord('reading', deleting.id, deleting.revision); if (draft.id === deleting.id) select(null); setDeleting(null); })}>{tr("删除“{0}”？", [deleting.title])}</Confirm>}
     <TabsContent ref={listRef} value={filter} className="reading-records">{pageRecords.map((item) => <div className="reading-record" key={item.id} data-record-id={item.id}>{selectionMode && <Checkbox className="reading-record-select" aria-label={tr('选择“{0}”', [item.title])} checked={Object.hasOwn(selected, item.id)} disabled={busy} onCheckedChange={(checked) => toggleRecord(item, checked === true)} />}
-      <div className="reading-record-content"><a href={item.url} target="_blank" rel="noreferrer noopener"><strong>{item.title}</strong><small>{new URL(item.url).hostname}</small><ArrowSquareOut size={15} /></a>
+      <div className="reading-record-content"><Button type="button" variant="unstyled" size="unstyled" className="reading-record-open" disabled={busy || selectionMode} onClick={() => setReaderId(item.id)}><strong>{item.title}</strong><small>{new URL(item.url).hostname}</small></Button>
       {item.revisitOn && <div className="reading-record-revisit" data-due={isReadingDue(item, today) || undefined}><time dateTime={item.revisitOn}>{tr('再看日期：{0}', [formatReadingDay(item.revisitOn)])}</time>
         {filter === 'due' && <span>{item.status === 'unread' ? tr('未读') : item.status === 'read' ? tr('已读') : tr('归档')}</span>}</div>}
       {metadataFor(`reading:${item.id}`).description && <p className="reading-record-description">{metadataFor(`reading:${item.id}`).description}</p>}
@@ -526,5 +546,12 @@ function ReadingTools({ Dialog, onBusyChange, onDirtyChange, initialRecordId }) 
       <Button variant="ghost" type="button" className="button quiet" disabled={busy} aria-label={tr("删除链接")} title={tr("删除")} onClick={() => setDeleting(item)}><Trash size={17} /></Button></div>}</div>)}{!records.length && <p className="tool-empty">{visibleQuery || selectedTagIds.length ? tr("没有找到链接") : filter === 'due' ? tr('暂无待再看的链接') : tr("暂无链接")}</p>}</TabsContent>
     {pageCount > 1 && <nav className="reading-pagination" aria-label={tr('列表分页')}><Button type="button" variant="ghost" size="sm" disabled={busy || currentPage === 0} onClick={() => setPage(currentPage - 1)}>{tr('上一页')}</Button>
       <span>{tr('第 {0} 页，共 {1} 页', [formatNumber(currentPage + 1), formatNumber(pageCount)])}</span><Button type="button" variant="ghost" size="sm" disabled={busy || currentPage >= pageCount - 1} onClick={() => setPage(currentPage + 1)}>{tr('下一页')}</Button></nav>}
+    {readerId && rawData?.reading.some(item => item.id === readerId) && <ReadingReader key={readerId} record={rawData.reading.find(item => item.id === readerId)} Dialog={Dialog}
+      hidden={hidden(`reading:${readerId}`)} exportBlocked={preferences.privateKeys.includes(`reading:${readerId}`) || presentation.hiddenKeys.has(`reading:${readerId}`)} preferencesRevision={preferences.revision}
+      onClose={() => { setReaderId(null); setReaderDirty(false); }} onBusyChange={setReaderBusy} onDirtyChange={setReaderDirty} />}
+    {inboxOpen && <RssInbox Dialog={Dialog} hiddenReadingIds={new Set(locked ? [...preferences.privateKeys, ...presentation.hiddenKeys].filter(key => key.startsWith('reading:')).map(key => key.slice(8)) : [])}
+      hiddenReadingUrls={new Set(locked ? (rawData?.reading || []).filter(item => hidden(`reading:${item.id}`)).map(item => item.url) : [])}
+      onClose={() => setInboxOpen(false)} onOpenReading={record => { setInboxOpen(false); setReaderId(record.id); }} />}
+    {cleanup && !locked && <Confirm busy={busy} action={tr('清理正文')} onCancel={() => setCleanup(null)} onConfirm={() => action.run(async () => { await cleanupRemovedReadingArticles({ expectedRevision: cleanup.revision }); setCleanup(null); })}>{tr('清理 {0} 篇已移除文章的本地正文和批注？仍在稍后读或回收站的内容会保留。', [cleanup.count])}</Confirm>}
   </div></Tabs>;
 }

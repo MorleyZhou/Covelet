@@ -1,0 +1,22 @@
+.modal.wide.rss-inbox-modal { display: flex; flex-direction: column; width: min(1000px, calc(100vw - 32px)); height: min(730px, calc(100dvh - 32px)); overflow: hidden; }
+.rss-inbox-panel { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; gap: 12px; }
+.rss-inbox-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.rss-inbox-toolbar > div { display: flex; gap: 6px; }
+.rss-inbox-panel label { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
+.rss-inbox-panel select { color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 7px; font: inherit; min-width: 0; }
+.rss-inbox-panel .hint { margin: 0; font-size: 12px; line-height: 1.6; color: var(--muted); }
+.rss-inbox-add { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; }
+.rss-inbox-add label { align-items: stretch; flex-direction: column; }
+.rss-inbox-add input { min-width: 0; width: 100%; }
+.rss-inbox-add .hint { grid-column: 1 / -1; }
+.rss-inbox-workspace { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 20px; flex: 1; min-width: 0; min-height: 0; }
+.rss-inbox-feeds, .rss-inbox-items { overflow: auto; min-width: 0; min-height: 0; overscroll-behavior: contain; }
+.rss-inbox-feeds section { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.rss-inbox-feeds small, .rss-inbox-items small { font-size: 11px; color: var(--muted); }
+.rss-inbox-feeds strong { overflow-wrap: anywhere; }
+.rss-inbox-items article { padding: 12px 0 18px; border-bottom: 1px solid var(--line); }
+.rss-inbox-items h3 { margin: 6px 0; font-size: 17px; line-height: 1.5; overflow-wrap: anywhere; }
+.rss-inbox-items p { font-size: 13px; line-height: 1.75; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+.rss-inbox-items article > div:last-child { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.rss-inbox-items a { font-size: 12px; color: var(--muted); }
+@media (max-width: 650px) { .rss-inbox-workspace { grid-template-columns: minmax(0, 1fr); overflow: auto; } .rss-inbox-feeds { max-height: 160px; } .rss-inbox-add { grid-template-columns: minmax(0, 1fr); } }

@@ -339,16 +339,24 @@ export function emptyPersonalTrash({ expectedRevision, ids } = {}) {
 export async function saveReadingItem({ id, revision, url, title: name, status = 'unread', revisitOn }, options = {}) {
   const address = normalizeUrl(url);
   if (revisitOn !== undefined && revisitOn !== null) validateRevisitOn(revisitOn);
-  return saveContentRecord('reading', (data) => {
+  let capture = !id;
+  const saved = await saveContentRecord('reading', (data) => {
     const existing = data.reading.find((item) => item.url === address && item.id !== id);
     if (existing) fail(tr("这个链接已在稍后读中。"));
     const record = id ? recordFor(data.reading, id, revision) : newRecord('');
+    capture ||= record.url !== address;
     Object.assign(record, { title: title(name, new URL(address).hostname), url: address, status, updatedAt: Math.max(Date.now(), record.updatedAt), revision: record.revision + (id ? 1 : 0) });
     if (revisitOn === null) delete record.revisitOn;
     else if (revisitOn !== undefined) record.revisitOn = revisitOn;
     if (!id) data.reading.push(record);
     return record;
   }, options);
+  // The durable link succeeds independently of permissions, network, extraction
+  // and cache capacity. RSS ingestion opts out; its body is captured on opening.
+  if (capture && options.extract !== false) {
+    void import('./reading-library.js').then(({ saveReadingArticle }) => saveReadingArticle(saved)).catch(() => {});
+  }
+  return saved;
 }
 
 export async function bulkReadingItems(inputIds, action, options = {}) {

@@ -3,6 +3,18 @@ import { Disclosure } from './ui/disclosure.jsx';
 
 export default function WhatsNew() {
   return <>
+    <Disclosure title={tr('{0} 更新内容', ['0.7.0'])}>
+      <ul>
+        <li>{tr('同步冲突可按记录预览、选择和合并，并撤销上次合并。')}</li>
+        <li>{tr('同步密码可安全更换，各设备需用新密码重新解锁。')}</li>
+        <li>{tr('可向所选目录定时保存加密完整备份，保留最近 3 份。')}</li>
+        <li>{tr('便笺支持历史预览和恢复，恢复前保留当前版本。')}</li>
+        <li>{tr('稍后读新增本地正文阅读、高亮批注和 RSS 收件箱。')}</li>
+        <li>{tr('命令面板新增按需授权的标签页、历史和书签搜索，以及本机会话。')}</li>
+        <li>{tr('提供 Firefox 桌面兼容包，需临时加载，暂不支持定时目录备份。')}</li>
+        <li>{tr('搜索引擎选择会保存在当前设备。')}</li>
+      </ul>
+    </Disclosure>
     <Disclosure title={tr('{0} 更新内容', ['0.6.0'])}>
       <ul>
         <li>{tr('命令面板与结构化查询统一查找内容，搜索结果可定位便笺段落。')}</li>
@@ -10,7 +22,6 @@ export default function WhatsNew() {
         <li>{tr('稍后读可批量整理标签和日期，动态清单支持任一与排除条件。')}</li>
         <li>{tr('从 Raindrop 和 OneTab 文件迁入，明确选择重复项的标签与备注合并。')}</li>
         <li>{tr('每个桌面可设置独立外观，网站、稍后读和便笺可导出为 Markdown 资料库。')}</li>
-        <li>{tr('同步冲突可逐条预览并合并，支持撤销上次合并。图片同步支持中断后重试。')}</li>
       </ul>
     </Disclosure>
     <Disclosure title={tr('{0} 更新内容', ['0.5.1'])}>

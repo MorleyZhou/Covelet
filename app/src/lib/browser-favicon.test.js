@@ -28,6 +28,13 @@ test('browser favicon API is used only with its declared permission and exact ow
   assert.equal(calls, 0);
 });
 
+test('Firefox never constructs or fetches a Chromium native favicon endpoint', async () => {
+  const value = { runtime: { id: 'covelet@example.test', getManifest: () => ({ permissions: [] }),
+    getURL: path => `moz-extension://33befc58-b630-48b9-a4ca-ae56cf4018f1/${path.replace(/^\//, '')}` } };
+  assert.equal(supportsBrowserFavicons(value), false);
+  assert.equal(await readBrowserFavicon('https://example.test/private', { api: value, fetcher() { assert.fail('No native favicon request on Firefox'); } }), null);
+});
+
 test('new sites use internal favicon URLs without host permission or private URL components', async () => {
   const value = api(), calls = [];
   const fetcher = async (url, options) => { calls.push({ url, options }); return response(isDefault(url) ? DEFAULT : SITE); };

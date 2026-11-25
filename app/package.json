@@ -1,6 +1,6 @@
 {
   "name": "covelet",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +17,12 @@
     "build:wasm": "node scripts/build-wasm.mjs --rebuild",
     "build:sync-wasm": "node scripts/build-sync-wasm.mjs --rebuild",
     "build:unpacked": "node scripts/build-extension.mjs --unpacked",
+    "build:firefox": "node scripts/build-extension.mjs --browser firefox",
+    "build:firefox:unpacked": "node scripts/build-extension.mjs --browser firefox --unpacked",
+    "check:firefox": "node scripts/check-extension.mjs --browser firefox",
+    "test:firefox": "node scripts/verify-firefox-core.mjs",
+    "test:firefox:native": "node scripts/verify-firefox-native-core.mjs",
+    "test:firefox:r2": "node scripts/verify-firefox-r2.mjs",
     "build:extension": "node scripts/build-extension.mjs",
     "check:extension": "node scripts/check-extension.mjs",
     "build:github-wasm": "node scripts/build-github-wasm.mjs --rebuild",

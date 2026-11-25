@@ -1,4 +1,5 @@
 import { defineBackground } from 'wxt/utils/define-background';
+import { getExtensionApi } from '../src/lib/extension-api.js';
 import { retireClockSchedules } from '../src/lib/clock-runtime.js';
 import { initializeLanguage, subscribeLanguage, tr } from '../src/i18n/index.js';
 import { localData } from '../src/lib/local-data.js';
@@ -15,13 +16,17 @@ import { validateIconBytes } from '../src/lib/site-info.js';
 import { scheduledBackups } from '../src/lib/scheduled-backup.js';
 import { startScheduledBackupBackground } from '../src/lib/scheduled-backup-background.js';
 import { validateNoteHistory } from '../src/lib/note-history-core.js';
+import { rssInbox } from '../src/lib/rss-inbox.js';
+import { startRssInboxBackground } from '../src/lib/rss-inbox-background.js';
 
 export default defineBackground({ type: 'module', main() {
+  const chrome = getExtensionApi();
   const languageReady = initializeLanguage();
   setWorkerSyncValidators({ migrateNavigationState, validatePersonalTools, validateContentPreferences,
     validateSavedDesktopTemplates, validateContributionDays, validateNavigationIconRecord, validateIconBytes, validateNoteHistory });
   startCloudSyncBackground(createCloudSync(), { ready: languageReady });
   startScheduledBackupBackground(scheduledBackups, { ready: languageReady });
+  startRssInboxBackground(rssInbox, { ready: languageReady });
   const updateActionTitle = () => chrome.action.setTitle({ title: tr('添加到 Covelet') }).catch(() => {});
   subscribeLanguage(updateActionTitle);
   languageReady.then(updateActionTitle);

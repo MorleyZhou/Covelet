@@ -11,12 +11,15 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { zipSync } from "fflate";
+import { extensionBrowser, extensionDirectory } from './extension-target.mjs';
 
 const appRoot = realpathSync(
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."),
 );
 const distRoot = path.resolve(appRoot, "dist");
-const extensionRoot = path.resolve(distRoot, "extension");
+const browser = extensionBrowser(process.argv.slice(2));
+const directory = extensionDirectory(browser);
+const extensionRoot = path.resolve(distRoot, directory);
 const unpackedOnly = process.argv.includes("--unpacked");
 // Explicit release packaging for sessions where the user has disabled checks.
 // The normal release command retains every existing validation step.
@@ -24,7 +27,7 @@ const skipChecks = process.argv.includes("--skip-checks");
 
 // WXT clears its target output directory. Check the exact absolute scope and reject
 // junctions/symlinks before allowing it to touch that directory on Windows.
-if (path.relative(appRoot, extensionRoot) !== path.join("dist", "extension")) {
+if (path.relative(appRoot, extensionRoot) !== path.join("dist", directory)) {
   throw new Error("Unsafe extension output directory.");
 }
 for (const candidate of [distRoot, extensionRoot, path.join(appRoot, ".wxt")]) {
@@ -63,7 +66,7 @@ run(process.execPath, [
   path.join(appRoot, "node_modules", "wxt", "bin", "wxt.mjs"),
   "build",
   "--browser",
-  "chrome",
+  browser,
   "--mv3",
 ]);
 if (unpackedOnly) {
@@ -71,7 +74,7 @@ if (unpackedOnly) {
   console.log("Build-only output for manual browser testing; tests and extension checks were not run.");
   process.exit(0);
 }
-if (!skipChecks) run(process.execPath, [path.join(appRoot, "scripts", "check-extension.mjs")]);
+if (!skipChecks) run(process.execPath, [path.join(appRoot, "scripts", "check-extension.mjs"), '--browser', browser]);
 
 const files = Object.create(null);
 function collect(directory) {
@@ -100,7 +103,7 @@ collect(extensionRoot);
 const manifest = JSON.parse(
   readFileSync(path.join(extensionRoot, "manifest.json"), "utf8"),
 );
-const archive = path.join(distRoot, `covelet-${manifest.version}.zip`);
+const archive = path.join(distRoot, `covelet-${manifest.version}${browser === 'firefox' ? '-firefox' : ''}.zip`);
 try {
   const stat = lstatSync(archive);
   if (stat.isSymbolicLink() || !stat.isFile())
@@ -115,5 +118,5 @@ console.log(`Extension ZIP: ${archive} (${Object.keys(files).length} files)`);
 console.log(
   skipChecks
     ? "Build and archive only; tests, WASM checks, extension checks and browser QA were not run."
-    : "Build and static checks only; Chrome runtime acceptance and Web Store review remain separate.",
+    : `Build and static checks only; ${browser} runtime acceptance and store review remain separate.`,
 );

@@ -366,7 +366,7 @@ function DragArtwork({ entry, entries, snapshot, compact = false, hidden = false
     : <SiteIcon entry={entry} initialAppearance={snapshot} children={entries.filter((child) => child.parentId === entry.id).sort((a, b) => a.order - b.order)} />;
 }
 
-function Modal({ title, titleContent, titleActions, onClose, onBack, backLabel = tr("返回"), closeDisabled = false, children, wide = false, maximizable = false, className = "", privacyKeys = [] }) {
+function Modal({ title, titleContent, titleActions, onClose, onBack, onEscapeKeyDown, backLabel = tr("返回"), closeDisabled = false, children, wide = false, maximizable = false, className = "", privacyKeys = [] }) {
   const ref = useRef(null);
   const presentation = useContext(PresentationContext), shielded = presentation.active && privacyKeys.some((key) => presentation.hiddenKeys.has(key));
   const [maximized, setMaximized] = useState(false), [surface, setSurface] = useState(null);
@@ -403,7 +403,7 @@ function Modal({ title, titleContent, titleActions, onClose, onBack, backLabel =
         if (surfaces.some((surface) => !surface.contains(opener.current))) return;
         if (opener.current?.isConnected && !opener.current.matches(':disabled') && !opener.current.closest('[hidden], [inert], [aria-hidden="true"]')) opener.current.focus({ preventScroll: true });
       }}
-      onEscapeKeyDown={(event) => { if (closeDisabled || event.target?.closest('.folder-name-editor')) event.preventDefault(); }}
+      onEscapeKeyDown={(event) => { onEscapeKeyDown?.(event); if (closeDisabled || event.target?.closest('.folder-name-editor')) event.preventDefault(); }}
       onInteractOutside={(event) => { if (closeDisabled) event.preventDefault(); }}
       onKeyDown={(event) => event.stopPropagation()}
       onContextMenu={(event) => event.stopPropagation()}

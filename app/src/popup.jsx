@@ -1,4 +1,5 @@
 import { userErrorMessage } from './lib/user-error.js';
+import { getExtensionApi } from './lib/extension-api.js';
 import { tr, getLocale, initializeLanguage } from "./i18n/index.js";
 import { useLanguage } from './i18n/react.js';
 import { useEffect, useRef, useState } from 'react';
@@ -75,7 +76,7 @@ function AddCurrentPage() {
     (async () => {
       try {
         // activeTab exposes only the invoked page; no tabs permission or window capture.
-        const [tabs, state] = await Promise.all([chrome.tabs.query({ active: true, currentWindow: true }), loadState()]);
+        const [tabs, state] = await Promise.all([getExtensionApi().tabs.query({ active: true, currentWindow: true }), loadState()]);
         const tab = tabs[0];
         let url = '';
         try { url = normalizeUrl(tab?.url || ''); } catch { /* Internal browser pages can be entered manually. */ }

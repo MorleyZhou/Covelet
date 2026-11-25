@@ -28,3 +28,14 @@ test('bundled seeds do not match custom paths, query strings, lookalike domains 
   assert.equal(bundledNavigationIconAddress(source, {}), '');
   assert.equal(bundledNavigationIconAddress(source, { runtime: { id, getURL: () => 'https://www.google.com/logo.png' } }), '');
 });
+
+test('Firefox bundled icons validate the runtime UUID origin rather than its Gecko ID', () => {
+  const source = createLegacySeedNavigation().entries[0].iconUrl, file = BUNDLED_NAVIGATION_ICONS[source];
+  const uuid = '33befc58-b630-48b9-a4ca-ae56cf4018f1';
+  const runtime = { id: 'covelet@example.test', getURL: path => `moz-extension://${uuid}/${path}` };
+  assert.equal(bundledNavigationIconAddress(source, { runtime }), `moz-extension://${uuid}/assets/default-sites/${file}`);
+  for (const destination of [`moz-extension://other-uuid/assets/default-sites/${file}`, `https://example.test/assets/default-sites/${file}`,
+    `moz-extension://${uuid}/assets/default-sites/${file}?remote=1`, `moz-extension://${uuid}/assets/default-sites/other.png`]) {
+    assert.equal(bundledNavigationIconAddress(source, { runtime: { ...runtime, getURL: path => path ? destination : `moz-extension://${uuid}/` } }), '');
+  }
+});

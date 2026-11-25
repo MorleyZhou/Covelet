@@ -33,6 +33,9 @@ export function permissionPurpose(permission) {
     activeTab: tr('点击工具栏后，临时读取当前网页的网址、标题和图标地址。'),
     scripting: tr('点击工具栏后读取当前网页信息，帮助添加网站。'),
     alarms: tr('接续后台同步并清理旧版时钟提醒。'),
+    tabs: tr('授权后可按标题和网址搜索打开的普通标签页，并切换或关闭选中的标签。'),
+    history: tr('授权后仅按输入词读取浏览器历史。结果不会保存或同步。'),
+    bookmarks: tr('授权后可搜索浏览器书签。不会修改书签，也不会保存或同步搜索结果。'),
     notifications: tr('旧版时钟使用的通知权限，当前版本不再发送通知。'),
   }[permission] || tr('此权限由当前扩展声明；请在浏览器扩展详情中核对用途。');
 }
@@ -45,6 +48,9 @@ export function permissionLabel(permission) {
     activeTab: tr('当前网页'),
     scripting: tr('读取网页信息'),
     alarms: tr('后台任务'),
+    tabs: tr('打开的标签页'),
+    history: tr('浏览历史'),
+    bookmarks: tr('浏览器书签'),
     notifications: tr('通知'),
   }[permission] || permission;
 }
