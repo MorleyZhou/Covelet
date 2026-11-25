@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { zipSync, strToU8 } from 'fflate';
-import { createAmoJwt, inspectAmoInputs, submitFirefoxAmo, runAmoCli } from '../../scripts/submit-firefox-amo.mjs';
+import { createAmoJwt, inspectAmoInputs, submitFirefoxAmo, runAmoCli, amoFailureSummary } from '../../scripts/submit-firefox-amo.mjs';
 
 // Production AMO FileUploadSerializer declares UUIDField(format='hex').
 const guid = 'covelet@morleyzhou.github.io', versionString = '0.7.0', uploadId = '1234567812344234a234123456789012';
@@ -297,4 +297,120 @@ test('GUID, upload channel/version and remote version identity mismatches stop s
 
 test('receipt persistence must succeed before any remote request', async () => {
   const f = fixture(); await assert.rejects(submitFirefoxAmo(f.input, { ...f.options, writeReceipt: async () => { throw new Error(f.input.secret); } }), { code: 'AMO_RECEIPT_WRITE_FAILED' }); assert.equal(f.calls.length, 0);
+});
+
+function throttled(body, retryAfter) {
+  const response = new Response(body, { status: 429, headers: retryAfter === undefined ? {} : { 'Retry-After': retryAfter } });
+  response.body.getReader = () => assert.fail('429 response bodies must never be read');
+  return response;
+}
+function fakeTime(f) {
+  let instant = 1700000000000; const waits = [];
+  f.options.now = () => instant;
+  f.options.sleep = async ms => { waits.push(ms); instant += ms; };
+  return { waits, now: () => instant };
+}
+
+test('GET 429 honors Retry-After seconds and HTTP dates with a fresh JWT per attempt', async () => {
+  for (const header of ['2', new Date(1700000005000).toUTCString()]) {
+    const f = fixture(), clock = fakeTime(f); let limited = false;
+    f.hooks.onRequest = () => { if (!limited) { limited = true; return throttled(f.input.secret, header); } return null; };
+    const result = await f.run();
+    assert.equal(result.completed, true); assert.equal(clock.waits[0], header === '2' ? 2000 : 5000);
+    assert.notEqual(f.calls[0].headers.Authorization, f.calls[1].headers.Authorization);
+    assert.equal(f.calls[0].path, f.calls[1].path); assert.equal(result.rateLimit.retries, 1); assert.equal(result.rateLimit.retryAt, null);
+    assert(!JSON.stringify(f.receipts).includes(f.input.secret));
+  }
+});
+
+test('POST 429 reuses the same FormData and JSON payload, without duplicate accepted creation', async () => {
+  const f = fixture(), clock = fakeTime(f); let uploads = 0, creates = 0;
+  f.hooks.onRequest = ({ path, options }) => {
+    if (options.method === 'POST' && path === 'addons/upload/' && uploads++ === 0) return throttled(f.input.secret, '2');
+    if (options.method === 'POST' && path === 'addons/addon/' && creates++ < 2) return throttled(f.input.secret);
+    return null;
+  };
+  const result = await f.run(); assert.equal(result.completed, true);
+  const uploadCalls = f.calls.filter(call => call.method === 'POST' && call.path === 'addons/upload/');
+  assert.equal(uploadCalls.length, 2); assert.equal(uploadCalls[0].body, uploadCalls[1].body);
+  const createCalls = f.calls.filter(call => call.method === 'POST' && call.path === 'addons/addon/');
+  assert.equal(createCalls.length, 3); assert(createCalls.every(call => call.body === createCalls[0].body));
+  assert.equal(new Set([...uploadCalls, ...createCalls].map(call => call.headers.Authorization)).size, 5);
+  // One normal validation poll plus exponential rate-limit backoff shared by all requests.
+  assert.deepEqual(clock.waits, [2000, 15000, 30000, 60000]); assert.equal(result.rateLimit.retries, 3);
+});
+
+test('429 retry count is capped at four and preserves safe retryAt without reading bodies', async () => {
+  const f = fixture(), clock = fakeTime(f); f.hooks.onRequest = () => throttled(f.input.secret);
+  let error; try { await f.run(); } catch (value) { error = value; }
+  assert.equal(error.code, 'AMO_HTTP_429'); assert.equal(f.calls.length, 5);
+  assert.deepEqual(clock.waits, [15000, 30000, 60000, 120000]);
+  assert.deepEqual(error.receipt.rateLimit, { retries: 4, waitedMs: 225000, retryAt: clock.now() + 120000, exhausted: true });
+  assert.equal(error.receipt.failedStage, 'preflight'); assert(!JSON.stringify(error.receipt).includes(f.input.secret));
+});
+
+test('Retry-After beyond ten minutes stops without sleeping or creating anything', async () => {
+  const f = fixture(), clock = fakeTime(f); f.hooks.onRequest = () => throttled(f.input.secret, '601');
+  let error; try { await f.run(); } catch (value) { error = value; }
+  assert.equal(error.code, 'AMO_HTTP_429'); assert.equal(f.calls.length, 1); assert.deepEqual(clock.waits, []);
+  assert.equal(error.receipt.rateLimit.retryAt, clock.now() + 601000); assert.equal(error.receipt.rateLimit.exhausted, true);
+});
+
+test('rate-limit waiting budget is shared across different API endpoints', async () => {
+  const f = fixture(), clock = fakeTime(f); let readLimited = false;
+  f.options.rateLimitBudgetMs = 3000;
+  f.hooks.onRequest = ({ path, options }) => {
+    if (options.method === 'GET' && !readLimited) { readLimited = true; return throttled(f.input.secret, '2'); }
+    if (path === 'addons/upload/' && options.method === 'POST') return throttled(f.input.secret, '2');
+    return null;
+  };
+  let error; try { await f.run(); } catch (value) { error = value; }
+  assert.equal(error.code, 'AMO_HTTP_429'); assert.deepEqual(clock.waits, [2000]);
+  assert.equal(error.receipt.rateLimit.waitedMs, 2000); assert.equal(error.receipt.rateLimit.exhausted, true);
+});
+
+test('retained upload UUID survives poll throttling and resumes without another upload POST', async () => {
+  const f = fixture(), clock = fakeTime(f); let limited = false;
+  const previousReceipt = { format: 'covelet-amo-submission', ...inspectAmoInputs(f.input.zip, f.input.source, f.input.metadata), uploadUuid: uploadId };
+  f.hooks.onRequest = ({ path }) => { if (path === `addons/upload/${uploadId}/` && !limited) { limited = true; return throttled(f.input.secret, '3'); } return null; };
+  const result = await f.run({ previousReceipt }); assert.equal(result.completed, true); assert.equal(result.uploadUuid, uploadId);
+  assert.deepEqual(clock.waits, [3000]); assert(!f.calls.some(call => call.path === 'addons/upload/' && call.method === 'POST'));
+});
+
+test('a 429-rejected create POST is retryable from the same upload rather than an unknown mutation', async () => {
+  const f = fixture(); fakeTime(f); f.options.maxRateLimitRetries = 0;
+  f.hooks.onRequest = ({ path, options }) => path === 'addons/addon/' && options.method === 'POST' ? throttled(f.input.secret, '30') : null;
+  let error; try { await f.run(); } catch (value) { error = value; }
+  assert.equal(error.code, 'AMO_HTTP_429'); assert.equal(error.receipt.mutationUncertain, false); assert.equal(error.receipt.uploadUuid, uploadId);
+  assert.equal(error.receipt.failedStage, 'creating-version');
+  f.hooks.onRequest = null;
+  const before = f.calls.length, result = await f.run({ previousReceipt: error.receipt });
+  assert.equal(result.completed, true); assert(!f.calls.slice(before).some(call => call.path === 'addons/upload/' && call.method === 'POST'));
+});
+
+test('missing, malformed, zero or past Retry-After uses nonzero default backoff', async () => {
+  for (const header of [undefined, 'not-a-date-or-number', '0', 'Wed, 01 Jan 2020 00:00:00 GMT']) {
+    const f = fixture(), clock = fakeTime(f); let limited = false;
+    f.hooks.onRequest = () => { if (!limited) { limited = true; return throttled(f.input.secret, header); } return null; };
+    await f.run(); assert.equal(clock.waits[0], 15000);
+  }
+});
+
+test('default validation polling waits fifteen seconds and stops after forty polls', async () => {
+  const f = fixture(), clock = fakeTime(f); delete f.options.maxPolls; f.hooks.neverProcessed = true;
+  await assert.rejects(f.run(), { code: 'AMO_VALIDATION_TIMEOUT' });
+  assert.equal(clock.waits.length, 40); assert(clock.waits.every(value => value === 15000));
+  assert.equal(f.calls.filter(call => call.path === `addons/upload/${uploadId}/`).length, 40);
+});
+
+test('failure CLI summary exposes safe stage/IDs/validation/rate-limit state without raw payloads', async () => {
+  const f = fixture(); fakeTime(f); f.options.maxRateLimitRetries = 0;
+  f.hooks.onRequest = ({ path }) => path === `addons/upload/${uploadId}/` ? throttled(f.input.secret, '30') : null;
+  let error; try { await f.run(); } catch (value) { error = value; }
+  error.receipt.raw = { body: f.input.secret, url: 'https://private.example' };
+  const summary = amoFailureSummary(error);
+  assert.equal(summary.code, 'AMO_HTTP_429'); assert.equal(summary.stage, 'failed'); assert.equal(summary.failedStage, 'validating');
+  assert.equal(summary.uploadUuid, uploadId); assert.equal(summary.addonId, null); assert.equal(summary.versionId, null);
+  assert.equal(summary.validation.processed, false); assert.equal(summary.rateLimit.exhausted, true);
+  const text = JSON.stringify(summary); assert(!text.includes(f.input.secret)); assert(!text.includes('private.example')); assert(!text.includes('raw'));
 });

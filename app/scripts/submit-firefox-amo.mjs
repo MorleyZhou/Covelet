@@ -131,13 +131,39 @@ async function responseJson(response) {
   try { const result = JSON.parse(bodyText); if (!object(result)) fail('AMO_RESPONSE_INVALID'); return result; }
   catch { fail('AMO_RESPONSE_INVALID'); }
 }
+function retryDelay(header, instant, attempt) {
+  const fallback = 15000 * 2 ** Math.min(attempt, 3);
+  if (typeof header !== 'string' || header.length > 128) return fallback;
+  let duration;
+  if (/^\d+$/u.test(header.trim())) {
+    const seconds = Number(header.trim());
+    if (Number.isSafeInteger(seconds)) duration = seconds * 1000;
+  } else {
+    const when = Date.parse(header);
+    if (Number.isFinite(when)) duration = when - instant;
+  }
+  return Number.isSafeInteger(duration) && duration > 0 ? Math.max(1000, duration) : fallback;
+}
+export function amoFailureSummary(error) {
+  const code = /^AMO_[A-Z0-9_]+$/u.test(error?.code || '') ? error.code : 'AMO_SUBMISSION_FAILED';
+  const receipt = error?.receipt;
+  if (!receipt) return { code };
+  return { code, stage: receipt.stage, failedStage: receipt.failedStage,
+    addonId: receipt.addonId, versionId: receipt.versionId, uploadUuid: receipt.uploadUuid,
+    ...(receipt.validation && { validation: receipt.validation }),
+    ...(receipt.rateLimit && { rateLimit: receipt.rateLimit }),
+    ...(receipt.diagnostics && { diagnostics: receipt.diagnostics }) };
+}
 
 /** All network and receipt boundaries are injectable; importing this file never submits. */
 export async function submitFirefoxAmo({ zip, source, metadata, issuer, secret, addonId, previousReceipt = null }, {
   fetch: fetchImpl = globalThis.fetch, now = Date.now, sleep = ms => new Promise(done => setTimeout(done, ms)),
-  writeReceipt = async () => {}, pollInterval = 3000, maxPolls = 100,
+  writeReceipt = async () => {}, pollInterval = 15000, maxPolls = 40,
+  maxRateLimitRetries = 4, rateLimitBudgetMs = 600000,
 } = {}) {
   createAmoJwt(issuer, secret, { now }); // Fail before reading or calling any remote endpoint.
+  if (!Number.isSafeInteger(maxRateLimitRetries) || maxRateLimitRetries < 0 || maxRateLimitRetries > 4
+    || !Number.isSafeInteger(rateLimitBudgetMs) || rateLimitBudgetMs < 0 || rateLimitBudgetMs > 600000) fail('AMO_RETRY_OPTIONS_INVALID');
   const identity = inspectAmoInputs(zip, source, metadata);
   if (addonId !== undefined && (typeof addonId !== 'string' || !/^[A-Za-z0-9@{}._+-]{1,255}$/u.test(addonId))) fail('AMO_ADDON_ID_INVALID');
   const priorMatches = object(previousReceipt) && previousReceipt.format === 'covelet-amo-submission' && Object.entries(identity).every(([key, value]) => previousReceipt[key] === value);
@@ -153,6 +179,7 @@ export async function submitFirefoxAmo({ zip, source, metadata, issuer, secret, 
   };
   let mutationUncertain = priorMatches && previousReceipt.mutationUncertain === true;
   let knownCreated = false;
+  let rateLimitRetries = 0, rateLimitWaitedMs = 0;
   function diagnose(value) {
     const next = safeDiagnostics(value, [issuer, secret]);
     if (!next.fields.length && !next.messages.length) return;
@@ -165,20 +192,40 @@ export async function submitFirefoxAmo({ zip, source, metadata, issuer, secret, 
     try { await writeReceipt(structuredClone(receipt)); } catch { fail('AMO_RECEIPT_WRITE_FAILED'); }
   }
   async function request(path, { method = 'GET', body, missing = false } = {}) {
-    const headers = { Authorization: `JWT ${createAmoJwt(issuer, secret, { now })}`, Accept: 'application/json' };
-    if (body && !(body instanceof FormData)) { headers['Content-Type'] = 'application/json'; body = JSON.stringify(body); }
-    let response;
-    try { response = await fetchImpl(`${API}${path}`, { method, headers, body, credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(120000) }); }
-    catch { fail('AMO_NETWORK_ERROR'); }
-    if (missing && response.status === 404) return null;
-    if (!response.ok) {
-      if ([400, 409, 422].includes(response.status)) {
-        try { diagnose(await responseJson(response)); } catch { /* Diagnostics never replace the HTTP failure. */ }
+    const jsonBody = body && !(body instanceof FormData);
+    if (jsonBody) body = JSON.stringify(body);
+    for (;;) {
+      const headers = { Authorization: `JWT ${createAmoJwt(issuer, secret, { now })}`, Accept: 'application/json' };
+      if (jsonBody) headers['Content-Type'] = 'application/json';
+      let response;
+      try { response = await fetchImpl(`${API}${path}`, { method, headers, body, credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(120000) }); }
+      catch { fail('AMO_NETWORK_ERROR'); }
+      if (response.status === 429) {
+        // Do not read rate-limit bodies: they may contain private request data.
+        try { await response.body?.cancel(); } catch { /* Release, never parse or print. */ }
+        const duration = retryDelay(response.headers?.get('retry-after'), now(), rateLimitRetries);
+        const retryAt = Math.min(8640000000000000, now() + duration);
+        const exhausted = rateLimitRetries >= maxRateLimitRetries || duration > rateLimitBudgetMs - rateLimitWaitedMs;
+        receipt.rateLimit = { retries: rateLimitRetries, waitedMs: rateLimitWaitedMs, retryAt, exhausted };
+        await save(receipt.stage);
+        if (exhausted) fail('AMO_HTTP_429');
+        rateLimitRetries++; rateLimitWaitedMs += duration;
+        receipt.rateLimit = { retries: rateLimitRetries, waitedMs: rateLimitWaitedMs, retryAt, exhausted: false };
+        await save(receipt.stage);
+        await sleep(duration);
+        continue; // Same URL/method/body; the next attempt always gets a new JWT.
       }
-      fail(`AMO_HTTP_${Number.isInteger(response.status) ? response.status : 'ERROR'}`);
+      if (receipt.rateLimit) { receipt.rateLimit.exhausted = false; receipt.rateLimit.retryAt = null; }
+      if (missing && response.status === 404) return null;
+      if (!response.ok) {
+        if ([400, 409, 422].includes(response.status)) {
+          try { diagnose(await responseJson(response)); } catch { /* Diagnostics never replace the HTTP failure. */ }
+        }
+        fail(`AMO_HTTP_${Number.isInteger(response.status) ? response.status : 'ERROR'}`);
+      }
+      if (response.status === 204) return null;
+      return responseJson(response);
     }
-    if (response.status === 204) return null;
-    return responseJson(response);
   }
   function acceptAddon(value) {
     if (!id(value?.id) || value.guid !== identity.guid) fail('AMO_ADDON_MISMATCH');
@@ -247,6 +294,9 @@ export async function submitFirefoxAmo({ zip, source, metadata, issuer, secret, 
         }
         knownCreated = true;
       } catch (error) {
+        // A completed 429 response rejects this POST. Its unchanged validated
+        // upload can be resumed later, without treating rejection as a lost POST.
+        if (error.code === 'AMO_HTTP_429') { receipt.mutationUncertain = false; throw error; }
         // A lost response can mean the POST committed. Query instead of repeating it.
         let found;
         try { found = await findExisting(); } catch { throw error; }
@@ -291,6 +341,7 @@ export async function submitFirefoxAmo({ zip, source, metadata, issuer, secret, 
     return structuredClone(receipt);
   } catch (error) {
     const code = /^AMO_[A-Z0-9_]+$/u.test(error?.code || '') ? error.code : 'AMO_UNEXPECTED_ERROR';
+    receipt.failedStage = receipt.stage;
     receipt.result = receipt.versionId || receipt.mutationUncertain ? 'partial' : 'failed'; receipt.completed = false; receipt.error = { code };
     try { await save('failed'); } catch { receipt.error = { code: 'AMO_RECEIPT_WRITE_FAILED' }; }
     const safe = new Error(receipt.error.code); safe.code = receipt.error.code; safe.receipt = structuredClone(receipt); throw safe;
@@ -329,7 +380,6 @@ export async function runAmoCli(args = process.argv.slice(2), env = process.env)
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   runAmoCli().then(receipt => console.log(JSON.stringify({ result: receipt.result, addonId: receipt.addonId, versionId: receipt.versionId, fileStatus: receipt.fileStatus, completed: receipt.completed, publication: receipt.publication })))
     .catch(error => {
-      const code = /^AMO_[A-Z0-9_]+$/u.test(error?.code || '') ? error.code : 'AMO_SUBMISSION_FAILED';
-      console.error(JSON.stringify({ code, ...(error.receipt?.diagnostics && { diagnostics: error.receipt.diagnostics }) })); process.exitCode = 1;
+      console.error(JSON.stringify(amoFailureSummary(error))); process.exitCode = 1;
     });
 }
