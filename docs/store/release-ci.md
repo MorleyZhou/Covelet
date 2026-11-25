@@ -1,5 +1,9 @@
 # GitHub 发布与可选商店提交 CI
 
+Firefox AMO 签名/送审尚未接入。接入时使用 GitHub Secrets `AMO_JWT_ISSUER`（API key / JWT issuer）和 `AMO_JWT_SECRET`（JWT secret）；已有密钥无需重新申请，值不写入仓库或聊天。`listed` 渠道提交 AMO 商店，`unlisted` 仅签名后自行分发。现有 Gecko ID 为 `covelet@morleyzhou.github.io`，不是 secret。
+
+首次上架还需 listing metadata（categories、summary、version.license）；本项目经构建打包，应提供匹配源码、lockfile 和构建说明，并按实际联网行为补齐 Firefox 数据声明。配置密钥不代表已经提交或上架。参见 [web-ext sign 官方参数](https://extensionworkshop.com/documentation/develop/web-ext-command-reference/)、[源码要求](https://extensionworkshop.com/documentation/publish/source-code-submission/)和[数据声明](https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/)。
+
 推送 `v*` tag 会从同一源码构建 Chrome/Edge 与 Firefox 两份 ZIP、生成双文件校验清单，并创建或更新 GitHub Release。Chrome/Edge 商店送审由手动运行 `workflow_dispatch` 并显式设置 **`submit_stores=true`** 触发，默认值为 `false`。此工作流不上传或提交 Mozilla AMO。
 
 工作流：[release-stores.yml](../../.github/workflows/release-stores.yml)，Actions 名称为 **GitHub release and optional store submission**。审核通过后的上线时间由商店决定；CI 成功不代表商店已上线。
